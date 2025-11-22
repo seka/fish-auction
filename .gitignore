@@ -1,0 +1,41 @@
+# Binaries
+/backend/main
+/backend/backend
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.next/
+out/
+build/
+dist/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+docker-compose.override.yml
