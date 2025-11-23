@@ -224,6 +224,30 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(invoices)
 }
 
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var creds struct {
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if creds.Password == "admin-password" {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "admin_session",
+			Value:    "authenticated",
+			Path:     "/",
+			HttpOnly: true,
+			MaxAge:   86400, // 1 day
+		})
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	} else {
+		http.Error(w, "Invalid password", http.StatusUnauthorized)
+	}
+}
+
 func (h *Handler) GetFishermen(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.DB.Query("SELECT id, name FROM fishermen")
 	if err != nil {

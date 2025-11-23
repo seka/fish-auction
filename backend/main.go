@@ -119,6 +119,12 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			h.Login(w, r)
+		}
+	})
+
 	log.Println("Server starting on :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
