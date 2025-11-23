@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev
     ports:
       - "8080:8080"
     environment:
@@ -15,6 +17,8 @@ services:
       - db
     networks:
       - app-network
+    volumes:
+      - ./backend:/app
 
   frontend:
     build:
