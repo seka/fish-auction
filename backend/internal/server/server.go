@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/handler"
+	"github.com/seka/fish-auction/backend/internal/server/handler"
 )
 
 type Server struct {
@@ -29,53 +29,21 @@ func New(db *sql.DB) *Server {
 }
 
 func (s *Server) routes() {
-	h := handler.NewHandler(s.db)
+	healthHandler := handler.NewHealthHandler()
+	fishermanHandler := handler.NewFishermanHandler(s.db)
+	buyerHandler := handler.NewBuyerHandler(s.db)
+	itemHandler := handler.NewItemHandler(s.db)
+	bidHandler := handler.NewBidHandler(s.db)
+	invoiceHandler := handler.NewInvoiceHandler(s.db)
+	authHandler := handler.NewAuthHandler()
 
-	s.router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Backend is healthy!")
-	})
-
-	s.router.HandleFunc("/api/fishermen", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.CreateFisherman(w, r)
-		} else if r.Method == http.MethodGet {
-			h.GetFishermen(w, r)
-		}
-	})
-
-	s.router.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.CreateBuyer(w, r)
-		} else if r.Method == http.MethodGet {
-			h.GetBuyers(w, r)
-		}
-	})
-
-	s.router.HandleFunc("/api/items", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.CreateItem(w, r)
-		} else if r.Method == http.MethodGet {
-			h.GetItems(w, r)
-		}
-	})
-
-	s.router.HandleFunc("/api/bid", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.BidItem(w, r)
-		}
-	})
-
-	s.router.HandleFunc("/api/invoices", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.GetInvoices(w, r)
-		}
-	})
-
-	s.router.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.Login(w, r)
-		}
-	})
+	healthHandler.RegisterRoutes(s.router)
+	fishermanHandler.RegisterRoutes(s.router)
+	buyerHandler.RegisterRoutes(s.router)
+	itemHandler.RegisterRoutes(s.router)
+	bidHandler.RegisterRoutes(s.router)
+	invoiceHandler.RegisterRoutes(s.router)
+	authHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) Run() error {
