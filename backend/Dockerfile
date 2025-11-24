@@ -14,7 +14,7 @@ CMD ["air", "-c", ".air.toml"]
 # Builder stage
 FROM base AS builder
 COPY . .
-RUN go build -o main .
+RUN go build -o main ./cmd/server/main.go
 
 # Production stage
 FROM alpine:latest AS prod

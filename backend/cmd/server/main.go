@@ -9,7 +9,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/seka/fish-auction/backend/internal"
+	"github.com/seka/fish-auction/backend/internal/handler"
 )
 
 func main() {
@@ -76,7 +76,7 @@ func main() {
 		log.Fatal("Failed to run migrations:", err)
 	}
 
-	h := internal.NewHandler(db)
+	h := handler.NewHandler(db)
 
 	// Routes
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
