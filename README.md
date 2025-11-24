@@ -19,6 +19,21 @@
 
 ### Setup
 
+#### 1. HTTPS Certificates (mkcert)
+
+開発環境ではHTTPSを使用します。`mkcert` を使用して証明書を作成してください。
+
+```bash
+# Install local CA (First time only)
+mkcert -install
+
+# Generate certificates
+mkdir -p nginx/certs
+mkcert -key-file nginx/certs/key.pem -cert-file nginx/certs/cert.pem localhost 127.0.0.1
+```
+
+#### 2. Build and Run
+
 以下のコマンドを実行して、アプリケーションをビルド・起動します。
 
 ```bash
