@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -19,7 +20,7 @@ func NewInvoiceHandler(uc usecase.InvoiceUseCase) *InvoiceHandler {
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	invoices, err := h.useCase.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.HandleError(w, err)
 		return
 	}
 

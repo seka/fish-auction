@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"errors"
 	"strings"
 
+	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
@@ -14,7 +14,10 @@ type Buyer struct {
 
 func (e *Buyer) Validate() error {
 	if strings.TrimSpace(e.Name) == "" {
-		return errors.New("buyer name cannot be empty")
+		return &errors.ValidationError{
+			Field:   "name",
+			Message: "cannot be empty",
+		}
 	}
 	return nil
 }

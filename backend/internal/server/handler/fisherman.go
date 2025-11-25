@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -19,21 +20,17 @@ func NewFishermanHandler(uc usecase.FishermanUseCase) *FishermanHandler {
 func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateFishermanRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		util.HandleError(w, err)
 		return
 	}
 
 	fisherman, err := h.useCase.Create(r.Context(), req.Name)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.HandleError(w, err)
 		return
 	}
 
-	resp := dto.FishermanResponse{
-		ID:   fisherman.ID,
-		Name: fisherman.Name,
-	}
-
+	resp := dto.FishermanResponse{ID: fisherman.ID, Name: fisherman.Name}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -41,16 +38,13 @@ func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
 	fishermen, err := h.useCase.List(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.HandleError(w, err)
 		return
 	}
 
 	resp := make([]dto.FishermanResponse, len(fishermen))
 	for i, f := range fishermen {
-		resp[i] = dto.FishermanResponse{
-			ID:   f.ID,
-			Name: f.Name,
-		}
+		resp[i] = dto.FishermanResponse{ID: f.ID, Name: f.Name}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -20,7 +21,7 @@ func NewBidHandler(uc usecase.BidUseCase) *BidHandler {
 func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateBidRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		util.HandleError(w, err)
 		return
 	}
 
@@ -30,26 +31,18 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Price:   req.Price,
 	}
 
-	result, err := h.useCase.Bid(r.Context(), bid)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if _, err := h.useCase.Bid(r.Context(), bid); err != nil {
+		util.HandleError(w, err)
 		return
 	}
 
-	resp := dto.BidResponse{
-		ID:        result.ID,
-		ItemID:    result.ItemID,
-		BuyerID:   result.BuyerID,
-		Price:     result.Price,
-		CreatedAt: result.CreatedAt,
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Bid placed successfully"})
 }
 
 func (h *BidHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/bid", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/bids", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			h.Create(w, r)
 		} else {
