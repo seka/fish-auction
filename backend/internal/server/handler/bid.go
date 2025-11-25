@@ -1,19 +1,19 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 
-	"github.com/seka/fish-auction/backend/internal/model"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
 type BidHandler struct {
-	db *sql.DB
+	useCase usecase.BidUseCase
 }
 
-func NewBidHandler(db *sql.DB) *BidHandler {
-	return &BidHandler{db: db}
+func NewBidHandler(uc usecase.BidUseCase) *BidHandler {
+	return &BidHandler{useCase: uc}
 }
 
 func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -23,35 +23,14 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, err := h.db.Begin()
+	result, err := h.useCase.Bid(r.Context(), &t)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Update Item Status
-	_, err = tx.Exec("UPDATE auction_items SET status = 'Sold' WHERE id = $1", t.ItemID)
-	if err != nil {
-		tx.Rollback()
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Insert Transaction
-	err = tx.QueryRow("INSERT INTO transactions (item_id, buyer_id, price) VALUES ($1, $2, $3) RETURNING id, created_at", t.ItemID, t.BuyerID, t.Price).Scan(&t.ID, &t.CreatedAt)
-	if err != nil {
-		tx.Rollback()
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(t)
+	json.NewEncoder(w).Encode(result)
 }
 
 func (h *BidHandler) RegisterRoutes(mux *http.ServeMux) {

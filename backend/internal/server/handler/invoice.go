@@ -1,52 +1,25 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 
-	"github.com/seka/fish-auction/backend/internal/model"
+	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
 type InvoiceHandler struct {
-	db *sql.DB
+	useCase usecase.InvoiceUseCase
 }
 
-func NewInvoiceHandler(db *sql.DB) *InvoiceHandler {
-	return &InvoiceHandler{db: db}
+func NewInvoiceHandler(uc usecase.InvoiceUseCase) *InvoiceHandler {
+	return &InvoiceHandler{useCase: uc}
 }
 
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query(`
-		SELECT b.id, b.name, SUM(t.price) as total_price
-		FROM transactions t
-		JOIN buyers b ON t.buyer_id = b.id
-		GROUP BY b.id, b.name
-	`)
+	invoices, err := h.useCase.List(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-	defer rows.Close()
-
-	var invoices []model.InvoiceItem
-	for rows.Next() {
-		var id int
-		var name string
-		var totalPrice int
-		if err := rows.Scan(&id, &name, &totalPrice); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// 8% Tax
-		totalAmount := int(float64(totalPrice) * 1.08)
-
-		invoices = append(invoices, model.InvoiceItem{
-			BuyerID:     id,
-			BuyerName:   name,
-			TotalAmount: totalAmount,
-		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")

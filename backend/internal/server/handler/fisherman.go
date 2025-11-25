@@ -1,55 +1,46 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 
-	"github.com/seka/fish-auction/backend/internal/model"
+	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
 type FishermanHandler struct {
-	db *sql.DB
+	useCase usecase.FishermanUseCase
 }
 
-func NewFishermanHandler(db *sql.DB) *FishermanHandler {
-	return &FishermanHandler{db: db}
+func NewFishermanHandler(uc usecase.FishermanUseCase) *FishermanHandler {
+	return &FishermanHandler{useCase: uc}
 }
 
 func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var f model.Fisherman
-	if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+	var req struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err := h.db.QueryRow("INSERT INTO fishermen (name) VALUES ($1) RETURNING id", f.Name).Scan(&f.ID)
+	fisherman, err := h.useCase.Create(r.Context(), req.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(f)
+	json.NewEncoder(w).Encode(fisherman)
 }
 
 func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query("SELECT id, name FROM fishermen")
+	fishermen, err := h.useCase.List(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
 
-	var fishermen []model.Fisherman
-	for rows.Next() {
-		var f model.Fisherman
-		if err := rows.Scan(&f.ID, &f.Name); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		fishermen = append(fishermen, f)
-	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fishermen)
 }

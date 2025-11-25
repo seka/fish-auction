@@ -1,55 +1,46 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 
-	"github.com/seka/fish-auction/backend/internal/model"
+	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
 type BuyerHandler struct {
-	db *sql.DB
+	useCase usecase.BuyerUseCase
 }
 
-func NewBuyerHandler(db *sql.DB) *BuyerHandler {
-	return &BuyerHandler{db: db}
+func NewBuyerHandler(uc usecase.BuyerUseCase) *BuyerHandler {
+	return &BuyerHandler{useCase: uc}
 }
 
 func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var b model.Buyer
-	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+	var req struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err := h.db.QueryRow("INSERT INTO buyers (name) VALUES ($1) RETURNING id", b.Name).Scan(&b.ID)
+	buyer, err := h.useCase.Create(r.Context(), req.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(b)
+	json.NewEncoder(w).Encode(buyer)
 }
 
 func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query("SELECT id, name FROM buyers")
+	buyers, err := h.useCase.List(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
 
-	var buyers []model.Buyer
-	for rows.Next() {
-		var b model.Buyer
-		if err := rows.Scan(&b.ID, &b.Name); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		buyers = append(buyers, b)
-	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(buyers)
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,35 +14,47 @@ import (
 )
 
 type Server struct {
-	db     *sql.DB
-	router *http.ServeMux
+	router           *http.ServeMux
+	healthHandler    *handler.HealthHandler
+	fishermanHandler *handler.FishermanHandler
+	buyerHandler     *handler.BuyerHandler
+	itemHandler      *handler.ItemHandler
+	bidHandler       *handler.BidHandler
+	invoiceHandler   *handler.InvoiceHandler
+	authHandler      *handler.AuthHandler
 }
 
-func New(db *sql.DB) *Server {
+func New(
+	healthHandler *handler.HealthHandler,
+	fishermanHandler *handler.FishermanHandler,
+	buyerHandler *handler.BuyerHandler,
+	itemHandler *handler.ItemHandler,
+	bidHandler *handler.BidHandler,
+	invoiceHandler *handler.InvoiceHandler,
+	authHandler *handler.AuthHandler,
+) *Server {
 	s := &Server{
-		db:     db,
-		router: http.NewServeMux(),
+		router:           http.NewServeMux(),
+		healthHandler:    healthHandler,
+		fishermanHandler: fishermanHandler,
+		buyerHandler:     buyerHandler,
+		itemHandler:      itemHandler,
+		bidHandler:       bidHandler,
+		invoiceHandler:   invoiceHandler,
+		authHandler:      authHandler,
 	}
 	s.routes()
 	return s
 }
 
 func (s *Server) routes() {
-	healthHandler := handler.NewHealthHandler()
-	fishermanHandler := handler.NewFishermanHandler(s.db)
-	buyerHandler := handler.NewBuyerHandler(s.db)
-	itemHandler := handler.NewItemHandler(s.db)
-	bidHandler := handler.NewBidHandler(s.db)
-	invoiceHandler := handler.NewInvoiceHandler(s.db)
-	authHandler := handler.NewAuthHandler()
-
-	healthHandler.RegisterRoutes(s.router)
-	fishermanHandler.RegisterRoutes(s.router)
-	buyerHandler.RegisterRoutes(s.router)
-	itemHandler.RegisterRoutes(s.router)
-	bidHandler.RegisterRoutes(s.router)
-	invoiceHandler.RegisterRoutes(s.router)
-	authHandler.RegisterRoutes(s.router)
+	s.healthHandler.RegisterRoutes(s.router)
+	s.fishermanHandler.RegisterRoutes(s.router)
+	s.buyerHandler.RegisterRoutes(s.router)
+	s.itemHandler.RegisterRoutes(s.router)
+	s.bidHandler.RegisterRoutes(s.router)
+	s.invoiceHandler.RegisterRoutes(s.router)
+	s.authHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) Run() error {
