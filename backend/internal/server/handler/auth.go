@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -17,9 +18,7 @@ func NewAuthHandler(uc usecase.AuthUseCase) *AuthHandler {
 }
 
 func (h *AuthHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Password string `json:"password"`
-	}
+	var req dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -47,8 +46,10 @@ func (h *AuthHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
+	resp := dto.LoginResponse{Success: true}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {

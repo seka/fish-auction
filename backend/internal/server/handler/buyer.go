@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -16,9 +17,7 @@ func NewBuyerHandler(uc usecase.BuyerUseCase) *BuyerHandler {
 }
 
 func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Name string `json:"name"`
-	}
+	var req dto.CreateBuyerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -30,8 +29,13 @@ func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := dto.BuyerResponse{
+		ID:   buyer.ID,
+		Name: buyer.Name,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(buyer)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -41,8 +45,16 @@ func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := make([]dto.BuyerResponse, len(buyers))
+	for i, b := range buyers {
+		resp[i] = dto.BuyerResponse{
+			ID:   b.ID,
+			Name: b.Name,
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(buyers)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {

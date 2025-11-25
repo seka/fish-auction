@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -17,20 +18,37 @@ func NewItemHandler(uc usecase.ItemUseCase) *ItemHandler {
 }
 
 func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var item model.AuctionItem
-	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+	var req dto.CreateItemRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	created, err := h.useCase.Create(r.Context(), &item)
+	item := &model.AuctionItem{
+		FishermanID: req.FishermanID,
+		FishType:    req.FishType,
+		Quantity:    req.Quantity,
+		Unit:        req.Unit,
+	}
+
+	created, err := h.useCase.Create(r.Context(), item)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	resp := dto.ItemResponse{
+		ID:          created.ID,
+		FishermanID: created.FishermanID,
+		FishType:    created.FishType,
+		Quantity:    created.Quantity,
+		Unit:        created.Unit,
+		Status:      created.Status,
+		CreatedAt:   created.CreatedAt,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(created)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -41,8 +59,21 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := make([]dto.ItemResponse, len(items))
+	for i, item := range items {
+		resp[i] = dto.ItemResponse{
+			ID:          item.ID,
+			FishermanID: item.FishermanID,
+			FishType:    item.FishType,
+			Quantity:    item.Quantity,
+			Unit:        item.Unit,
+			Status:      item.Status,
+			CreatedAt:   item.CreatedAt,
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(items)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *ItemHandler) RegisterRoutes(mux *http.ServeMux) {

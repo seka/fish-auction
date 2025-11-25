@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
@@ -22,8 +23,17 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := make([]dto.InvoiceResponse, len(invoices))
+	for i, inv := range invoices {
+		resp[i] = dto.InvoiceResponse{
+			BuyerID:     inv.BuyerID,
+			BuyerName:   inv.BuyerName,
+			TotalAmount: inv.TotalAmount,
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(invoices)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *InvoiceHandler) RegisterRoutes(mux *http.ServeMux) {

@@ -3,11 +3,11 @@ package model
 import "time"
 
 type AuctionItem struct {
-	ID          int       `json:"id"`
-	FishermanID int       `json:"fisherman_id"`
-	FishType    string    `json:"fish_type"`
-	Quantity    int       `json:"quantity"`
-	Unit        string    `json:"unit"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          int
+	FishermanID int
+	FishType    string
+	Quantity    int
+	Unit        string
+	Status      string
+	CreatedAt   time.Time
 }
