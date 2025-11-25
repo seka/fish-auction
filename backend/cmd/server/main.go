@@ -37,14 +37,17 @@ func main() {
 	fishermanRepo := postgres.NewFishermanRepository(db)
 	buyerRepo := postgres.NewBuyerRepository(db)
 	itemRepo := postgres.NewItemRepository(db)
-	transactionRepo := postgres.NewTransactionRepository(db)
+	bidRepo := postgres.NewBidRepository(db)
+
+	// Initialize Transaction Manager
+	txMgr := postgres.NewTransactionManager(db)
 
 	// Initialize Use Cases
 	fishermanUseCase := usecase.NewFishermanInteractor(fishermanRepo)
 	buyerUseCase := usecase.NewBuyerInteractor(buyerRepo)
 	itemUseCase := usecase.NewItemInteractor(itemRepo)
-	bidUseCase := usecase.NewBidInteractor(itemRepo, transactionRepo)
-	invoiceUseCase := usecase.NewInvoiceInteractor(transactionRepo)
+	bidUseCase := usecase.NewBidInteractor(itemRepo, bidRepo, txMgr)
+	invoiceUseCase := usecase.NewInvoiceInteractor(bidRepo)
 	authUseCase := usecase.NewAuthInteractor()
 
 	// Initialize Handlers

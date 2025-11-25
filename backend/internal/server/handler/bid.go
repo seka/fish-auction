@@ -24,13 +24,13 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transaction := &model.Transaction{
+	bid := &model.Bid{
 		ItemID:  req.ItemID,
 		BuyerID: req.BuyerID,
 		Price:   req.Price,
 	}
 
-	result, err := h.useCase.Bid(r.Context(), transaction)
+	result, err := h.useCase.Bid(r.Context(), bid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

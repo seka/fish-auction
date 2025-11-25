@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type Transaction struct {
+type Bid struct {
 	ID        int
 	ItemID    int
 	BuyerID   int

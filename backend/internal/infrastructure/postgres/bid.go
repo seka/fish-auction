@@ -9,19 +9,28 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type TransactionRepository struct {
+type BidRepository struct {
 	db *sql.DB
 }
 
-func NewTransactionRepository(db *sql.DB) repository.TransactionRepository {
-	return &TransactionRepository{db: db}
+func NewBidRepository(db *sql.DB) repository.BidRepository {
+	return &BidRepository{db: db}
 }
 
-func (r *TransactionRepository) Create(ctx context.Context, t *model.Transaction) (*model.Transaction, error) {
-	var e entity.Transaction
-	err := r.db.QueryRowContext(ctx,
+// getDB returns the transaction if one exists in context, otherwise returns the default DB
+func (r *BidRepository) getDB(ctx context.Context) dbExecutor {
+	if tx, ok := GetTx(ctx); ok {
+		return tx
+	}
+	return r.db
+}
+
+func (r *BidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+	db := r.getDB(ctx)
+	var e entity.Bid
+	err := db.QueryRowContext(ctx,
 		"INSERT INTO transactions (item_id, buyer_id, price) VALUES ($1, $2, $3) RETURNING id, item_id, buyer_id, price, created_at",
-		t.ItemID, t.BuyerID, t.Price,
+		bid.ItemID, bid.BuyerID, bid.Price,
 	).Scan(&e.ID, &e.ItemID, &e.BuyerID, &e.Price, &e.CreatedAt)
 	if err != nil {
 		return nil, err
@@ -29,7 +38,7 @@ func (r *TransactionRepository) Create(ctx context.Context, t *model.Transaction
 	return e.ToModel(), nil
 }
 
-func (r *TransactionRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
+func (r *BidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT b.id, b.name, SUM(t.price) as total_price
 		FROM transactions t

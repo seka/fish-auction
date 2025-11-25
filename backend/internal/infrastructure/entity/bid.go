@@ -6,7 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
-type Transaction struct {
+type Bid struct {
 	ID        int       `db:"id"`
 	ItemID    int       `db:"item_id"`
 	BuyerID   int       `db:"buyer_id"`
@@ -14,8 +14,8 @@ type Transaction struct {
 	CreatedAt time.Time `db:"created_at"`
 }
 
-func (e *Transaction) ToModel() *model.Transaction {
-	return &model.Transaction{
+func (e *Bid) ToModel() *model.Bid {
+	return &model.Bid{
 		ID:        e.ID,
 		ItemID:    e.ItemID,
 		BuyerID:   e.BuyerID,

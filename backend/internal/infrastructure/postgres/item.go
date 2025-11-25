@@ -17,9 +17,25 @@ func NewItemRepository(db *sql.DB) repository.ItemRepository {
 	return &ItemRepository{db: db}
 }
 
+// dbExecutor is an interface that both *sql.DB and *sql.Tx implement
+type dbExecutor interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
+
+// getDB returns the transaction if one exists in context, otherwise returns the default DB
+func (r *ItemRepository) getDB(ctx context.Context) dbExecutor {
+	if tx, ok := GetTx(ctx); ok {
+		return tx
+	}
+	return r.db
+}
+
 func (r *ItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+	db := r.getDB(ctx)
 	var e entity.AuctionItem
-	err := r.db.QueryRowContext(ctx,
+	err := db.QueryRowContext(ctx,
 		"INSERT INTO auction_items (fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, 'Pending') RETURNING id, fisherman_id, fish_type, quantity, unit, status, created_at",
 		item.FishermanID, item.FishType, item.Quantity, item.Unit,
 	).Scan(&e.ID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
@@ -30,6 +46,7 @@ func (r *ItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 }
 
 func (r *ItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+	db := r.getDB(ctx)
 	query := "SELECT id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items"
 	var args []interface{}
 	if status != "" {
@@ -38,7 +55,7 @@ func (r *ItemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	}
 	query += " ORDER BY created_at DESC"
 
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,6 +73,7 @@ func (r *ItemRepository) List(ctx context.Context, status string) ([]model.Aucti
 }
 
 func (r *ItemRepository) UpdateStatus(ctx context.Context, id int, status string) error {
-	_, err := r.db.ExecContext(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
+	db := r.getDB(ctx)
+	_, err := db.ExecContext(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	return err
 }

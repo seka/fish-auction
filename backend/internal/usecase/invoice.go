@@ -13,10 +13,10 @@ type InvoiceUseCase interface {
 }
 
 type invoiceInteractor struct {
-	repo repository.TransactionRepository
+	repo repository.BidRepository
 }
 
-func NewInvoiceInteractor(repo repository.TransactionRepository) InvoiceUseCase {
+func NewInvoiceInteractor(repo repository.BidRepository) InvoiceUseCase {
 	return &invoiceInteractor{repo: repo}
 }
 
