@@ -18,7 +18,11 @@ func NewFishermanRepository(db *sql.DB) repository.FishermanRepository {
 }
 
 func (r *FishermanRepository) Create(ctx context.Context, name string) (*model.Fisherman, error) {
-	var e entity.Fisherman
+	e := entity.Fisherman{Name: name}
+	if err := e.Validate(); err != nil {
+		return nil, err
+	}
+
 	err := r.db.QueryRowContext(ctx, "INSERT INTO fishermen (name) VALUES ($1) RETURNING id, name", name).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, err

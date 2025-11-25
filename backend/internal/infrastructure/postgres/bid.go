@@ -27,7 +27,16 @@ func (r *BidRepository) getDB(ctx context.Context) dbExecutor {
 
 func (r *BidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 	db := r.getDB(ctx)
-	var e entity.Bid
+
+	e := entity.Bid{
+		ItemID:  bid.ItemID,
+		BuyerID: bid.BuyerID,
+		Price:   bid.Price,
+	}
+	if err := e.Validate(); err != nil {
+		return nil, err
+	}
+
 	err := db.QueryRowContext(ctx,
 		"INSERT INTO transactions (item_id, buyer_id, price) VALUES ($1, $2, $3) RETURNING id, item_id, buyer_id, price, created_at",
 		bid.ItemID, bid.BuyerID, bid.Price,

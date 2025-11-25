@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"errors"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -12,6 +13,19 @@ type Bid struct {
 	BuyerID   int       `db:"buyer_id"`
 	Price     int       `db:"price"`
 	CreatedAt time.Time `db:"created_at"`
+}
+
+func (e *Bid) Validate() error {
+	if e.ItemID <= 0 {
+		return errors.New("item_id must be positive")
+	}
+	if e.BuyerID <= 0 {
+		return errors.New("buyer_id must be positive")
+	}
+	if e.Price <= 0 {
+		return errors.New("price must be positive")
+	}
+	return nil
 }
 
 func (e *Bid) ToModel() *model.Bid {

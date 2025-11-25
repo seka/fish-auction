@@ -34,7 +34,17 @@ func (r *ItemRepository) getDB(ctx context.Context) dbExecutor {
 
 func (r *ItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	db := r.getDB(ctx)
-	var e entity.AuctionItem
+
+	e := entity.AuctionItem{
+		FishermanID: item.FishermanID,
+		FishType:    item.FishType,
+		Quantity:    item.Quantity,
+		Unit:        item.Unit,
+	}
+	if err := e.Validate(); err != nil {
+		return nil, err
+	}
+
 	err := db.QueryRowContext(ctx,
 		"INSERT INTO auction_items (fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, 'Pending') RETURNING id, fisherman_id, fish_type, quantity, unit, status, created_at",
 		item.FishermanID, item.FishType, item.Quantity, item.Unit,

@@ -18,7 +18,11 @@ func NewBuyerRepository(db *sql.DB) repository.BuyerRepository {
 }
 
 func (r *BuyerRepository) Create(ctx context.Context, name string) (*model.Buyer, error) {
-	var e entity.Buyer
+	e := entity.Buyer{Name: name}
+	if err := e.Validate(); err != nil {
+		return nil, err
+	}
+
 	err := r.db.QueryRowContext(ctx, "INSERT INTO buyers (name) VALUES ($1) RETURNING id, name", name).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, err
