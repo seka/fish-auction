@@ -26,7 +26,12 @@ func TestItemHandler_Create(t *testing.T) {
 		}
 		mockListUC := &mock.MockListItemsUseCase{}
 
-		h := handler.NewItemHandler(mockCreateUC, mockListUC)
+		mockReg := &mock.MockRegistry{
+			CreateItemUC: mockCreateUC,
+			ListItemsUC:  mockListUC,
+		}
+
+		h := handler.NewItemHandler(mockReg)
 
 		reqBody := dto.CreateItemRequest{
 			FishermanID: 1,
@@ -62,7 +67,12 @@ func TestItemHandler_Create(t *testing.T) {
 		mockCreateUC := &mock.MockCreateItemUseCase{}
 		mockListUC := &mock.MockListItemsUseCase{}
 
-		h := handler.NewItemHandler(mockCreateUC, mockListUC)
+		mockReg := &mock.MockRegistry{
+			CreateItemUC: mockCreateUC,
+			ListItemsUC:  mockListUC,
+		}
+
+		h := handler.NewItemHandler(mockReg)
 
 		req := httptest.NewRequest(http.MethodPost, "/api/items", bytes.NewReader([]byte("invalid json")))
 		w := httptest.NewRecorder()
@@ -82,7 +92,12 @@ func TestItemHandler_Create(t *testing.T) {
 		}
 		mockListUC := &mock.MockListItemsUseCase{}
 
-		h := handler.NewItemHandler(mockCreateUC, mockListUC)
+		mockReg := &mock.MockRegistry{
+			CreateItemUC: mockCreateUC,
+			ListItemsUC:  mockListUC,
+		}
+
+		h := handler.NewItemHandler(mockReg)
 
 		reqBody := dto.CreateItemRequest{
 			FishermanID: 1,
@@ -115,7 +130,12 @@ func TestItemHandler_List(t *testing.T) {
 			},
 		}
 
-		h := handler.NewItemHandler(mockCreateUC, mockListUC)
+		mockReg := &mock.MockRegistry{
+			CreateItemUC: mockCreateUC,
+			ListItemsUC:  mockListUC,
+		}
+
+		h := handler.NewItemHandler(mockReg)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/items?status=Available", nil)
 		w := httptest.NewRecorder()

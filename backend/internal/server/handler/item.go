@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/item"
@@ -15,10 +16,10 @@ type ItemHandler struct {
 	listUseCase   item.ListItemsUseCase
 }
 
-func NewItemHandler(createUC item.CreateItemUseCase, listUC item.ListItemsUseCase) *ItemHandler {
+func NewItemHandler(r registry.UseCase) *ItemHandler {
 	return &ItemHandler{
-		createUseCase: createUC,
-		listUseCase:   listUC,
+		createUseCase: r.NewCreateItemUseCase(),
+		listUseCase:   r.NewListItemsUseCase(),
 	}
 }
 

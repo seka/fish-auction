@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/bid"
@@ -16,10 +17,10 @@ type BidHandler struct {
 	listInvoicesUseCase invoice.ListInvoicesUseCase
 }
 
-func NewBidHandler(createUC bid.CreateBidUseCase, listInvoicesUC invoice.ListInvoicesUseCase) *BidHandler {
+func NewBidHandler(r registry.UseCase) *BidHandler {
 	return &BidHandler{
-		createUseCase:       createUC,
-		listInvoicesUseCase: listInvoicesUC,
+		createUseCase:       r.NewCreateBidUseCase(),
+		listInvoicesUseCase: r.NewListInvoicesUseCase(),
 	}
 }
 

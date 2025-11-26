@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
@@ -14,10 +15,10 @@ type BuyerHandler struct {
 	listUseCase   buyer.ListBuyersUseCase
 }
 
-func NewBuyerHandler(createUC buyer.CreateBuyerUseCase, listUC buyer.ListBuyersUseCase) *BuyerHandler {
+func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 	return &BuyerHandler{
-		createUseCase: createUC,
-		listUseCase:   listUC,
+		createUseCase: r.NewCreateBuyerUseCase(),
+		listUseCase:   r.NewListBuyersUseCase(),
 	}
 }
 

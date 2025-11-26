@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
@@ -13,8 +14,8 @@ type InvoiceHandler struct {
 	listUseCase invoice.ListInvoicesUseCase
 }
 
-func NewInvoiceHandler(listUC invoice.ListInvoicesUseCase) *InvoiceHandler {
-	return &InvoiceHandler{listUseCase: listUC}
+func NewInvoiceHandler(r registry.UseCase) *InvoiceHandler {
+	return &InvoiceHandler{listUseCase: r.NewListInvoicesUseCase()}
 }
 
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {

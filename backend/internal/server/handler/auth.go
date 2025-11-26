@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
@@ -14,8 +15,8 @@ type AuthHandler struct {
 	loginUseCase auth.LoginUseCase
 }
 
-func NewAuthHandler(loginUC auth.LoginUseCase) *AuthHandler {
-	return &AuthHandler{loginUseCase: loginUC}
+func NewAuthHandler(r registry.UseCase) *AuthHandler {
+	return &AuthHandler{loginUseCase: r.NewLoginUseCase()}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {

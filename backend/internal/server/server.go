@@ -24,7 +24,7 @@ type Server struct {
 	authHandler      *handler.AuthHandler
 }
 
-func New(
+func NewServer(
 	healthHandler *handler.HealthHandler,
 	fishermanHandler *handler.FishermanHandler,
 	buyerHandler *handler.BuyerHandler,
@@ -57,9 +57,12 @@ func (s *Server) routes() {
 	s.authHandler.RegisterRoutes(s.router)
 }
 
-func (s *Server) Run() error {
+func (s *Server) Start(addr string) error {
+	if addr == "" {
+		addr = ":8080"
+	}
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    addr,
 		Handler: s.router,
 	}
 

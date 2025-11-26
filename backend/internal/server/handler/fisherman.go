@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
@@ -14,10 +15,10 @@ type FishermanHandler struct {
 	listUseCase   fisherman.ListFishermenUseCase
 }
 
-func NewFishermanHandler(createUC fisherman.CreateFishermanUseCase, listUC fisherman.ListFishermenUseCase) *FishermanHandler {
+func NewFishermanHandler(r registry.UseCase) *FishermanHandler {
 	return &FishermanHandler{
-		createUseCase: createUC,
-		listUseCase:   listUC,
+		createUseCase: r.NewCreateFishermanUseCase(),
+		listUseCase:   r.NewListFishermenUseCase(),
 	}
 }
 
