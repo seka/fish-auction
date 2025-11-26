@@ -9,13 +9,13 @@ import (
 )
 
 type AuctionItem struct {
-	ID          int       `db:"id"`
-	FishermanID int       `db:"fisherman_id"`
-	FishType    string    `db:"fish_type"`
-	Quantity    int       `db:"quantity"`
-	Unit        string    `db:"unit"`
-	Status      string    `db:"status"`
-	CreatedAt   time.Time `db:"created_at"`
+	ID          int              `db:"id"`
+	FishermanID int              `db:"fisherman_id"`
+	FishType    string           `db:"fish_type"`
+	Quantity    int              `db:"quantity"`
+	Unit        string           `db:"unit"`
+	Status      model.ItemStatus `db:"status"`
+	CreatedAt   time.Time        `db:"created_at"`
 }
 
 func (e *AuctionItem) Validate() error {
@@ -41,6 +41,12 @@ func (e *AuctionItem) Validate() error {
 		return &errors.ValidationError{
 			Field:   "unit",
 			Message: "cannot be empty",
+		}
+	}
+	if !e.Status.IsValid() {
+		return &errors.ValidationError{
+			Field:   "status",
+			Message: "invalid status value",
 		}
 	}
 	return nil

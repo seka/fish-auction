@@ -31,7 +31,7 @@ func (i *bidInteractor) Bid(ctx context.Context, bid *model.Bid) (*model.Bid, er
 
 	err := i.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
 		// Update item status to "Sold"
-		if err := i.itemRepo.UpdateStatus(txCtx, bid.ItemID, "Sold"); err != nil {
+		if err := i.itemRepo.UpdateStatus(txCtx, bid.ItemID, model.ItemStatusSold); err != nil {
 			return err
 		}
 

@@ -44,7 +44,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		FishType:    created.FishType,
 		Quantity:    created.Quantity,
 		Unit:        created.Unit,
-		Status:      created.Status,
+		Status:      created.Status.String(),
 		CreatedAt:   created.CreatedAt,
 	}
 
@@ -68,7 +68,7 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 			FishType:    item.FishType,
 			Quantity:    item.Quantity,
 			Unit:        item.Unit,
-			Status:      item.Status,
+			Status:      item.Status.String(),
 			CreatedAt:   item.CreatedAt,
 		}
 	}

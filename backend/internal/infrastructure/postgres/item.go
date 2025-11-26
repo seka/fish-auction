@@ -82,7 +82,7 @@ func (r *ItemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	return items, nil
 }
 
-func (r *ItemRepository) UpdateStatus(ctx context.Context, id int, status string) error {
+func (r *ItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	db := r.getDB(ctx)
 	_, err := db.ExecContext(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	return err
