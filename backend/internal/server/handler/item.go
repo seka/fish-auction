@@ -11,11 +11,11 @@ import (
 )
 
 type ItemHandler struct {
-	createUseCase *item.CreateItemUseCase
-	listUseCase   *item.ListItemsUseCase
+	createUseCase item.CreateItemUseCase
+	listUseCase   item.ListItemsUseCase
 }
 
-func NewItemHandler(createUC *item.CreateItemUseCase, listUC *item.ListItemsUseCase) *ItemHandler {
+func NewItemHandler(createUC item.CreateItemUseCase, listUC item.ListItemsUseCase) *ItemHandler {
 	return &ItemHandler{
 		createUseCase: createUC,
 		listUseCase:   listUC,

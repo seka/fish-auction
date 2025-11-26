@@ -9,12 +9,12 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type ItemRepository struct {
+type itemRepository struct {
 	db *sql.DB
 }
 
 func NewItemRepository(db *sql.DB) repository.ItemRepository {
-	return &ItemRepository{db: db}
+	return &itemRepository{db: db}
 }
 
 // dbExecutor is an interface that both *sql.DB and *sql.Tx implement
@@ -25,14 +25,14 @@ type dbExecutor interface {
 }
 
 // getDB returns the transaction if one exists in context, otherwise returns the default DB
-func (r *ItemRepository) getDB(ctx context.Context) dbExecutor {
+func (r *itemRepository) getDB(ctx context.Context) dbExecutor {
 	if tx, ok := GetTx(ctx); ok {
 		return tx
 	}
 	return r.db
 }
 
-func (r *ItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	db := r.getDB(ctx)
 
 	e := entity.AuctionItem{
@@ -55,7 +55,7 @@ func (r *ItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 	return e.ToModel(), nil
 }
 
-func (r *ItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+func (r *itemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	db := r.getDB(ctx)
 	query := "SELECT id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items"
 	var args []interface{}
@@ -82,7 +82,7 @@ func (r *ItemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	return items, nil
 }
 
-func (r *ItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	db := r.getDB(ctx)
 	_, err := db.ExecContext(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	return err

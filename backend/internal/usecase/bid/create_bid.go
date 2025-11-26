@@ -7,8 +7,13 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// CreateBidUseCase handles the creation of bids with transaction management
-type CreateBidUseCase struct {
+// CreateBidUseCase defines the interface for creating bids
+type CreateBidUseCase interface {
+	Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error)
+}
+
+// createBidUseCase handles the creation of bids
+type createBidUseCase struct {
 	itemRepo repository.ItemRepository
 	bidRepo  repository.BidRepository
 	txMgr    repository.TransactionManager
@@ -19,16 +24,16 @@ func NewCreateBidUseCase(
 	itemRepo repository.ItemRepository,
 	bidRepo repository.BidRepository,
 	txMgr repository.TransactionManager,
-) *CreateBidUseCase {
-	return &CreateBidUseCase{
+) CreateBidUseCase {
+	return &createBidUseCase{
 		itemRepo: itemRepo,
 		bidRepo:  bidRepo,
 		txMgr:    txMgr,
 	}
 }
 
-// Execute creates a new bid and updates the item status atomically
-func (uc *CreateBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+// Execute creates a new bid
+func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 	var result *model.Bid
 
 	err := uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {

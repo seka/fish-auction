@@ -10,11 +10,11 @@ import (
 )
 
 type BuyerHandler struct {
-	createUseCase *buyer.CreateBuyerUseCase
-	listUseCase   *buyer.ListBuyersUseCase
+	createUseCase buyer.CreateBuyerUseCase
+	listUseCase   buyer.ListBuyersUseCase
 }
 
-func NewBuyerHandler(createUC *buyer.CreateBuyerUseCase, listUC *buyer.ListBuyersUseCase) *BuyerHandler {
+func NewBuyerHandler(createUC buyer.CreateBuyerUseCase, listUC buyer.ListBuyersUseCase) *BuyerHandler {
 	return &BuyerHandler{
 		createUseCase: createUC,
 		listUseCase:   listUC,

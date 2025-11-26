@@ -7,17 +7,22 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListFishermenUseCase handles listing fishermen
-type ListFishermenUseCase struct {
+// ListFishermenUseCase defines the interface for listing fishermen
+type ListFishermenUseCase interface {
+	Execute(ctx context.Context) ([]model.Fisherman, error)
+}
+
+// listFishermenUseCase handles listing fishermen
+type listFishermenUseCase struct {
 	repo repository.FishermanRepository
 }
 
 // NewListFishermenUseCase creates a new instance of ListFishermenUseCase
-func NewListFishermenUseCase(repo repository.FishermanRepository) *ListFishermenUseCase {
-	return &ListFishermenUseCase{repo: repo}
+func NewListFishermenUseCase(repo repository.FishermanRepository) ListFishermenUseCase {
+	return &listFishermenUseCase{repo: repo}
 }
 
 // Execute lists all fishermen
-func (uc *ListFishermenUseCase) Execute(ctx context.Context) ([]model.Fisherman, error) {
+func (uc *listFishermenUseCase) Execute(ctx context.Context) ([]model.Fisherman, error) {
 	return uc.repo.List(ctx)
 }

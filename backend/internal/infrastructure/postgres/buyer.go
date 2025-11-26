@@ -9,15 +9,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type BuyerRepository struct {
+type buyerRepository struct {
 	db *sql.DB
 }
 
 func NewBuyerRepository(db *sql.DB) repository.BuyerRepository {
-	return &BuyerRepository{db: db}
+	return &buyerRepository{db: db}
 }
 
-func (r *BuyerRepository) Create(ctx context.Context, name string) (*model.Buyer, error) {
+func (r *buyerRepository) Create(ctx context.Context, name string) (*model.Buyer, error) {
 	e := entity.Buyer{Name: name}
 	if err := e.Validate(); err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (r *BuyerRepository) Create(ctx context.Context, name string) (*model.Buyer
 	return e.ToModel(), nil
 }
 
-func (r *BuyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
+func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT id, name FROM buyers")
 	if err != nil {
 		return nil, err

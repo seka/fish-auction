@@ -10,11 +10,11 @@ import (
 )
 
 type FishermanHandler struct {
-	createUseCase *fisherman.CreateFishermanUseCase
-	listUseCase   *fisherman.ListFishermenUseCase
+	createUseCase fisherman.CreateFishermanUseCase
+	listUseCase   fisherman.ListFishermenUseCase
 }
 
-func NewFishermanHandler(createUC *fisherman.CreateFishermanUseCase, listUC *fisherman.ListFishermenUseCase) *FishermanHandler {
+func NewFishermanHandler(createUC fisherman.CreateFishermanUseCase, listUC fisherman.ListFishermenUseCase) *FishermanHandler {
 	return &FishermanHandler{
 		createUseCase: createUC,
 		listUseCase:   listUC,

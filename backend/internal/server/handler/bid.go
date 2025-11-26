@@ -8,14 +8,19 @@ import (
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/bid"
+	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
 )
 
 type BidHandler struct {
-	createUseCase *bid.CreateBidUseCase
+	createUseCase       bid.CreateBidUseCase
+	listInvoicesUseCase invoice.ListInvoicesUseCase
 }
 
-func NewBidHandler(createUC *bid.CreateBidUseCase) *BidHandler {
-	return &BidHandler{createUseCase: createUC}
+func NewBidHandler(createUC bid.CreateBidUseCase, listInvoicesUC invoice.ListInvoicesUseCase) *BidHandler {
+	return &BidHandler{
+		createUseCase:       createUC,
+		listInvoicesUseCase: listInvoicesUC,
+	}
 }
 
 func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {

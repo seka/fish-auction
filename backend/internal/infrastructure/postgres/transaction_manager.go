@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
@@ -27,22 +28,16 @@ func (tm *transactionManager) WithTransaction(ctx context.Context, fn func(ctx c
 	}
 
 	// Store transaction in context
-	ctx = context.WithValue(ctx, txKey{}, tx)
+	txCtx := context.WithValue(ctx, txKey{}, tx)
 
-	// Handle commit/rollback
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p) // re-throw panic after rollback
-		} else if err != nil {
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
+	if err := fn(txCtx); err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
 		}
-	}()
+		return err
+	}
 
-	err = fn(ctx)
-	return err
+	return tx.Commit()
 }
 
 // GetTx retrieves the transaction from context, if any

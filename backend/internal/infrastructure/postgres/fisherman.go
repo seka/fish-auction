@@ -9,15 +9,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type FishermanRepository struct {
+type fishermanRepository struct {
 	db *sql.DB
 }
 
 func NewFishermanRepository(db *sql.DB) repository.FishermanRepository {
-	return &FishermanRepository{db: db}
+	return &fishermanRepository{db: db}
 }
 
-func (r *FishermanRepository) Create(ctx context.Context, name string) (*model.Fisherman, error) {
+func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.Fisherman, error) {
 	e := entity.Fisherman{Name: name}
 	if err := e.Validate(); err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (r *FishermanRepository) Create(ctx context.Context, name string) (*model.F
 	return e.ToModel(), nil
 }
 
-func (r *FishermanRepository) List(ctx context.Context) ([]model.Fisherman, error) {
+func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT id, name FROM fishermen")
 	if err != nil {
 		return nil, err

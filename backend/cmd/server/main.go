@@ -84,15 +84,15 @@ func buildTransactionManager(db *sql.DB) repository.TransactionManager {
 }
 
 type useCases struct {
-	createFisherman *fisherman.CreateFishermanUseCase
-	listFishermen   *fisherman.ListFishermenUseCase
-	createBuyer     *buyer.CreateBuyerUseCase
-	listBuyers      *buyer.ListBuyersUseCase
-	createItem      *item.CreateItemUseCase
-	listItems       *item.ListItemsUseCase
-	createBid       *bid.CreateBidUseCase
-	listInvoices    *invoice.ListInvoicesUseCase
-	login           *auth.LoginUseCase
+	createFisherman fisherman.CreateFishermanUseCase
+	listFishermen   fisherman.ListFishermenUseCase
+	createBuyer     buyer.CreateBuyerUseCase
+	listBuyers      buyer.ListBuyersUseCase
+	createItem      item.CreateItemUseCase
+	listItems       item.ListItemsUseCase
+	createBid       bid.CreateBidUseCase
+	listInvoices    invoice.ListInvoicesUseCase
+	login           auth.LoginUseCase
 }
 
 func buildUseCases(repos *repositories, txMgr repository.TransactionManager) *useCases {
@@ -125,7 +125,7 @@ func buildHandlers(ucs *useCases) *handlers {
 		fisherman: handler.NewFishermanHandler(ucs.createFisherman, ucs.listFishermen),
 		buyer:     handler.NewBuyerHandler(ucs.createBuyer, ucs.listBuyers),
 		item:      handler.NewItemHandler(ucs.createItem, ucs.listItems),
-		bid:       handler.NewBidHandler(ucs.createBid),
+		bid:       handler.NewBidHandler(ucs.createBid, ucs.listInvoices),
 		invoice:   handler.NewInvoiceHandler(ucs.listInvoices),
 		auth:      handler.NewAuthHandler(ucs.login),
 	}

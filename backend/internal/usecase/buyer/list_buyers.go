@@ -7,17 +7,22 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListBuyersUseCase handles listing buyers
-type ListBuyersUseCase struct {
+// ListBuyersUseCase defines the interface for listing buyers
+type ListBuyersUseCase interface {
+	Execute(ctx context.Context) ([]model.Buyer, error)
+}
+
+// listBuyersUseCase handles listing buyers
+type listBuyersUseCase struct {
 	repo repository.BuyerRepository
 }
 
 // NewListBuyersUseCase creates a new instance of ListBuyersUseCase
-func NewListBuyersUseCase(repo repository.BuyerRepository) *ListBuyersUseCase {
-	return &ListBuyersUseCase{repo: repo}
+func NewListBuyersUseCase(repo repository.BuyerRepository) ListBuyersUseCase {
+	return &listBuyersUseCase{repo: repo}
 }
 
 // Execute lists all buyers
-func (uc *ListBuyersUseCase) Execute(ctx context.Context) ([]model.Buyer, error) {
+func (uc *listBuyersUseCase) Execute(ctx context.Context) ([]model.Buyer, error) {
 	return uc.repo.List(ctx)
 }

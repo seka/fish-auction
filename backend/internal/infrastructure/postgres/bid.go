@@ -9,23 +9,23 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type BidRepository struct {
+type bidRepository struct {
 	db *sql.DB
 }
 
 func NewBidRepository(db *sql.DB) repository.BidRepository {
-	return &BidRepository{db: db}
+	return &bidRepository{db: db}
 }
 
 // getDB returns the transaction if one exists in context, otherwise returns the default DB
-func (r *BidRepository) getDB(ctx context.Context) dbExecutor {
+func (r *bidRepository) getDB(ctx context.Context) dbExecutor {
 	if tx, ok := GetTx(ctx); ok {
 		return tx
 	}
 	return r.db
 }
 
-func (r *BidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+func (r *bidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 	db := r.getDB(ctx)
 
 	e := entity.Bid{
@@ -47,7 +47,7 @@ func (r *BidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid,
 	return e.ToModel(), nil
 }
 
-func (r *BidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
+func (r *bidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT b.id, b.name, SUM(t.price) as total_price
 		FROM transactions t
