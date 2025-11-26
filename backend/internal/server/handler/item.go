@@ -7,15 +7,19 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/item"
 )
 
 type ItemHandler struct {
-	useCase usecase.ItemUseCase
+	createUseCase *item.CreateItemUseCase
+	listUseCase   *item.ListItemsUseCase
 }
 
-func NewItemHandler(uc usecase.ItemUseCase) *ItemHandler {
-	return &ItemHandler{useCase: uc}
+func NewItemHandler(createUC *item.CreateItemUseCase, listUC *item.ListItemsUseCase) *ItemHandler {
+	return &ItemHandler{
+		createUseCase: createUC,
+		listUseCase:   listUC,
+	}
 }
 
 func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +36,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Unit:        req.Unit,
 	}
 
-	created, err := h.useCase.Create(r.Context(), item)
+	created, err := h.createUseCase.Execute(r.Context(), item)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -54,7 +58,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
-	items, err := h.useCase.List(r.Context(), status)
+	items, err := h.listUseCase.Execute(r.Context(), status)
 	if err != nil {
 		util.HandleError(w, err)
 		return

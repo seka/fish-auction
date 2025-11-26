@@ -7,15 +7,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/bid"
 )
 
 type BidHandler struct {
-	useCase usecase.BidUseCase
+	createUseCase *bid.CreateBidUseCase
 }
 
-func NewBidHandler(uc usecase.BidUseCase) *BidHandler {
-	return &BidHandler{useCase: uc}
+func NewBidHandler(createUC *bid.CreateBidUseCase) *BidHandler {
+	return &BidHandler{createUseCase: createUC}
 }
 
 func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +31,7 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Price:   req.Price,
 	}
 
-	if _, err := h.useCase.Bid(r.Context(), bid); err != nil {
+	if _, err := h.createUseCase.Execute(r.Context(), bid); err != nil {
 		util.HandleError(w, err)
 		return
 	}

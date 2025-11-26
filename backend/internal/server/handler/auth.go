@@ -7,15 +7,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 )
 
 type AuthHandler struct {
-	useCase usecase.AuthUseCase
+	loginUseCase *auth.LoginUseCase
 }
 
-func NewAuthHandler(uc usecase.AuthUseCase) *AuthHandler {
-	return &AuthHandler{useCase: uc}
+func NewAuthHandler(loginUC *auth.LoginUseCase) *AuthHandler {
+	return &AuthHandler{loginUseCase: loginUC}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, err := h.useCase.Login(r.Context(), req.Password)
+	success, err := h.loginUseCase.Execute(r.Context(), req.Password)
 	if err != nil {
 		util.HandleError(w, err)
 		return

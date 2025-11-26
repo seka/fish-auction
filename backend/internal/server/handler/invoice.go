@@ -6,19 +6,19 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
 )
 
 type InvoiceHandler struct {
-	useCase usecase.InvoiceUseCase
+	listUseCase *invoice.ListInvoicesUseCase
 }
 
-func NewInvoiceHandler(uc usecase.InvoiceUseCase) *InvoiceHandler {
-	return &InvoiceHandler{useCase: uc}
+func NewInvoiceHandler(listUC *invoice.ListInvoicesUseCase) *InvoiceHandler {
+	return &InvoiceHandler{listUseCase: listUC}
 }
 
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
-	invoices, err := h.useCase.List(r.Context())
+	invoices, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
 		util.HandleError(w, err)
 		return

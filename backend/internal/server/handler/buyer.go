@@ -6,15 +6,19 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 )
 
 type BuyerHandler struct {
-	useCase usecase.BuyerUseCase
+	createUseCase *buyer.CreateBuyerUseCase
+	listUseCase   *buyer.ListBuyersUseCase
 }
 
-func NewBuyerHandler(uc usecase.BuyerUseCase) *BuyerHandler {
-	return &BuyerHandler{useCase: uc}
+func NewBuyerHandler(createUC *buyer.CreateBuyerUseCase, listUC *buyer.ListBuyersUseCase) *BuyerHandler {
+	return &BuyerHandler{
+		createUseCase: createUC,
+		listUseCase:   listUC,
+	}
 }
 
 func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +27,7 @@ func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		util.HandleError(w, err)
 		return
 	}
-	buyer, err := h.useCase.Create(r.Context(), req.Name)
+	buyer, err := h.createUseCase.Execute(r.Context(), req.Name)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -34,7 +38,7 @@ func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
-	buyers, err := h.useCase.List(r.Context())
+	buyers, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
 		util.HandleError(w, err)
 		return

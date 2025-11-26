@@ -6,15 +6,19 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
 )
 
 type FishermanHandler struct {
-	useCase usecase.FishermanUseCase
+	createUseCase *fisherman.CreateFishermanUseCase
+	listUseCase   *fisherman.ListFishermenUseCase
 }
 
-func NewFishermanHandler(uc usecase.FishermanUseCase) *FishermanHandler {
-	return &FishermanHandler{useCase: uc}
+func NewFishermanHandler(createUC *fisherman.CreateFishermanUseCase, listUC *fisherman.ListFishermenUseCase) *FishermanHandler {
+	return &FishermanHandler{
+		createUseCase: createUC,
+		listUseCase:   listUC,
+	}
 }
 
 func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +28,7 @@ func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fisherman, err := h.useCase.Create(r.Context(), req.Name)
+	fisherman, err := h.createUseCase.Execute(r.Context(), req.Name)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -36,7 +40,7 @@ func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
-	fishermen, err := h.useCase.List(r.Context())
+	fishermen, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
 		util.HandleError(w, err)
 		return

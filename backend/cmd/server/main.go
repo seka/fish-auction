@@ -9,7 +9,12 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/postgres"
 	"github.com/seka/fish-auction/backend/internal/server"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
-	"github.com/seka/fish-auction/backend/internal/usecase"
+	"github.com/seka/fish-auction/backend/internal/usecase/auth"
+	"github.com/seka/fish-auction/backend/internal/usecase/bid"
+	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
+	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
+	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
+	"github.com/seka/fish-auction/backend/internal/usecase/item"
 )
 
 func main() {
@@ -43,21 +48,29 @@ func main() {
 	txMgr := postgres.NewTransactionManager(db)
 
 	// Initialize Use Cases
-	fishermanUseCase := usecase.NewFishermanInteractor(fishermanRepo)
-	buyerUseCase := usecase.NewBuyerInteractor(buyerRepo)
-	itemUseCase := usecase.NewItemInteractor(itemRepo)
-	bidUseCase := usecase.NewBidInteractor(itemRepo, bidRepo, txMgr)
-	invoiceUseCase := usecase.NewInvoiceInteractor(bidRepo)
-	authUseCase := usecase.NewAuthInteractor()
+	createFishermanUC := fisherman.NewCreateFishermanUseCase(fishermanRepo)
+	listFishermenUC := fisherman.NewListFishermenUseCase(fishermanRepo)
+
+	createBuyerUC := buyer.NewCreateBuyerUseCase(buyerRepo)
+	listBuyersUC := buyer.NewListBuyersUseCase(buyerRepo)
+
+	createItemUC := item.NewCreateItemUseCase(itemRepo)
+	listItemsUC := item.NewListItemsUseCase(itemRepo)
+
+	createBidUC := bid.NewCreateBidUseCase(itemRepo, bidRepo, txMgr)
+
+	listInvoicesUC := invoice.NewListInvoicesUseCase(bidRepo)
+
+	loginUC := auth.NewLoginUseCase()
 
 	// Initialize Handlers
 	healthHandler := handler.NewHealthHandler()
-	fishermanHandler := handler.NewFishermanHandler(fishermanUseCase)
-	buyerHandler := handler.NewBuyerHandler(buyerUseCase)
-	itemHandler := handler.NewItemHandler(itemUseCase)
-	bidHandler := handler.NewBidHandler(bidUseCase)
-	invoiceHandler := handler.NewInvoiceHandler(invoiceUseCase)
-	authHandler := handler.NewAuthHandler(authUseCase)
+	fishermanHandler := handler.NewFishermanHandler(createFishermanUC, listFishermenUC)
+	buyerHandler := handler.NewBuyerHandler(createBuyerUC, listBuyersUC)
+	itemHandler := handler.NewItemHandler(createItemUC, listItemsUC)
+	bidHandler := handler.NewBidHandler(createBidUC)
+	invoiceHandler := handler.NewInvoiceHandler(listInvoicesUC)
+	authHandler := handler.NewAuthHandler(loginUC)
 
 	// Start Server
 	srv := server.New(
