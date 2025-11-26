@@ -1,6 +1,7 @@
 # Binaries
 /backend/main
 /backend/backend
+/backend/server
 *.exe
 *.exe~
 *.dll
