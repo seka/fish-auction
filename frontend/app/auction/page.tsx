@@ -1,68 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-interface AuctionItem {
-    id: number;
-    fisherman_id: number;
-    fish_type: string;
-    quantity: number;
-    unit: string;
-    status: string;
-    created_at: string;
-}
+import { useState } from 'react';
+import { useItems, AuctionItem } from '@/hooks/useItems';
+import { useSubmitBid } from '@/hooks/useBids';
 
 export default function AuctionPage() {
-    const [items, setItems] = useState<AuctionItem[]>([]);
     const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
     const [buyerId, setBuyerId] = useState('');
     const [price, setPrice] = useState('');
     const [message, setMessage] = useState('');
 
-    const fetchItems = async () => {
-        try {
-            const res = await fetch('/api/items?status=Pending');
-            if (res.ok) {
-                const data = await res.json();
-                setItems(data || []);
-            }
-        } catch (error) {
-            console.error('Failed to fetch items', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchItems();
-        const interval = setInterval(fetchItems, 5000); // Poll every 5s
-        return () => clearInterval(interval);
-    }, []);
+    const { items, refetch } = useItems({
+        status: 'Pending',
+        pollingInterval: 5000
+    });
+    const { submitBid } = useSubmitBid();
 
     const handleBid = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedItem) return;
 
-        try {
-            const res = await fetch('/api/bid', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    item_id: selectedItem.id,
-                    buyer_id: parseInt(buyerId),
-                    price: parseInt(price),
-                }),
-            });
+        const success = await submitBid({
+            item_id: selectedItem.id,
+            buyer_id: parseInt(buyerId),
+            price: parseInt(price),
+        });
 
-            if (res.ok) {
-                setMessage(`Successfully bought ${selectedItem.fish_type}!`);
-                setSelectedItem(null);
-                setBuyerId('');
-                setPrice('');
-                fetchItems();
-            } else {
-                setMessage('Failed to submit bid');
-            }
-        } catch (error) {
-            setMessage('Error submitting bid');
+        if (success) {
+            setMessage(`Successfully bought ${selectedItem.fish_type}!`);
+            setSelectedItem(null);
+            setBuyerId('');
+            setPrice('');
+            refetch();
+        } else {
+            setMessage('Failed to submit bid');
         }
     };
 
@@ -93,8 +64,8 @@ export default function AuctionPage() {
                             <div
                                 key={item.id}
                                 className={`p-6 border rounded-xl cursor-pointer transition-all duration-200 ${selectedItem?.id === item.id
-                                        ? 'border-orange-500 bg-orange-50 shadow-md transform scale-[1.01]'
-                                        : 'bg-white hover:shadow-md border-gray-200'
+                                    ? 'border-orange-500 bg-orange-50 shadow-md transform scale-[1.01]'
+                                    : 'bg-white hover:shadow-md border-gray-200'
                                     }`}
                                 onClick={() => setSelectedItem(item)}
                             >

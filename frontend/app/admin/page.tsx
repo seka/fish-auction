@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRegisterFisherman } from '@/hooks/useFishermen';
+import { useRegisterBuyer } from '@/hooks/useBuyers';
+import { useRegisterItem } from '@/hooks/useItems';
 
 export default function AdminPage() {
     const [fishermanName, setFishermanName] = useState('');
@@ -8,67 +11,48 @@ export default function AdminPage() {
     const [item, setItem] = useState({ fishermanId: '', fishType: '', quantity: '', unit: '' });
     const [message, setMessage] = useState('');
 
-    const registerFisherman = async (e: React.FormEvent) => {
+    const { registerFisherman, isLoading: isFishermanLoading } = useRegisterFisherman();
+    const { registerBuyer, isLoading: isBuyerLoading } = useRegisterBuyer();
+    const { registerItem, isLoading: isItemLoading } = useRegisterItem();
+
+    const handleRegisterFisherman = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const res = await fetch('/api/fishermen', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: fishermanName }),
-            });
-            if (res.ok) {
-                setMessage('Fisherman registered!');
-                setFishermanName('');
-            } else {
-                setMessage('Failed to register fisherman');
-            }
-        } catch (error) {
-            setMessage('Error registering fisherman');
+        const success = await registerFisherman({ name: fishermanName });
+        if (success) {
+            setMessage('Fisherman registered!');
+            setFishermanName('');
+        } else {
+            setMessage('Failed to register fisherman');
         }
     };
 
-    const registerBuyer = async (e: React.FormEvent) => {
+    const handleRegisterBuyer = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const res = await fetch('/api/buyers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: buyerName }),
-            });
-            if (res.ok) {
-                setMessage('Buyer registered!');
-                setBuyerName('');
-            } else {
-                setMessage('Failed to register buyer');
-            }
-        } catch (error) {
-            setMessage('Error registering buyer');
+        const success = await registerBuyer({ name: buyerName });
+        if (success) {
+            setMessage('Buyer registered!');
+            setBuyerName('');
+        } else {
+            setMessage('Failed to register buyer');
         }
     };
 
-    const registerItem = async (e: React.FormEvent) => {
+    const handleRegisterItem = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const res = await fetch('/api/items', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fisherman_id: parseInt(item.fishermanId),
-                    fish_type: item.fishType,
-                    quantity: parseInt(item.quantity),
-                    unit: item.unit,
-                }),
-            });
-            if (res.ok) {
-                setMessage('Item registered!');
-                setItem({ fishermanId: '', fishType: '', quantity: '', unit: '' });
-            } else {
-                setMessage('Failed to register item');
-            }
-        } catch (error) {
-            setMessage('Error registering item');
+        const success = await registerItem({
+            fisherman_id: parseInt(item.fishermanId),
+            fish_type: item.fishType,
+            quantity: parseInt(item.quantity),
+            unit: item.unit,
+        });
+        if (success) {
+            setMessage('Item registered!');
+            setItem({ fishermanId: '', fishType: '', quantity: '', unit: '' });
+        } else {
+            setMessage('Failed to register item');
         }
     };
+
 
     return (
         <div className="max-w-5xl mx-auto">
@@ -88,7 +72,7 @@ export default function AdminPage() {
                         <span className="w-2 h-6 bg-indigo-500 mr-3 rounded-full"></span>
                         漁師登録
                     </h2>
-                    <form onSubmit={registerFisherman} className="space-y-4">
+                    <form onSubmit={handleRegisterFisherman} className="space-y-4">
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">氏名</label>
                             <input
@@ -115,7 +99,7 @@ export default function AdminPage() {
                         <span className="w-2 h-6 bg-green-500 mr-3 rounded-full"></span>
                         中買人登録
                     </h2>
-                    <form onSubmit={registerBuyer} className="space-y-4">
+                    <form onSubmit={handleRegisterBuyer} className="space-y-4">
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">屋号・氏名</label>
                             <input
@@ -142,7 +126,7 @@ export default function AdminPage() {
                         <span className="w-2 h-6 bg-orange-500 mr-3 rounded-full"></span>
                         出品登録 (セリ対象)
                     </h2>
-                    <form onSubmit={registerItem} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form onSubmit={handleRegisterItem} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">漁師ID</label>
                             <input

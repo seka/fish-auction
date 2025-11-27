@@ -43,7 +43,7 @@ export default function LoginPage() {
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
-                            <label htmlFor="password" class="sr-only">
+                            <label htmlFor="password" className="sr-only">
                                 パスワード
                             </label>
                             <input

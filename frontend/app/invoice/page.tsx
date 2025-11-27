@@ -1,31 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-interface InvoiceItem {
-    buyer_id: number;
-    buyer_name: string;
-    total_amount: number;
-}
+import { useInvoices } from '@/hooks/useInvoices';
 
 export default function InvoicePage() {
-    const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
-
-    const fetchInvoices = async () => {
-        try {
-            const res = await fetch('/api/invoices');
-            if (res.ok) {
-                const data = await res.json();
-                setInvoices(data || []);
-            }
-        } catch (error) {
-            console.error('Failed to fetch invoices', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchInvoices();
-    }, []);
+    const { invoices } = useInvoices();
 
     return (
         <div className="max-w-5xl mx-auto">
