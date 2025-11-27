@@ -17,9 +17,9 @@ func main() {
 		log.Fatal("Failed to load config:", err)
 	}
 
-	// Initialize Repository Registry (handles DB connection and migration)
+	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
 	connStr := cfg.DBConnectionURL()
-	repoReg, db, err := registry.NewRepositoryRegistry(connStr)
+	repoReg, db, err := registry.NewRepositoryRegistry(connStr, cfg.RedisAddr, cfg.CacheTTL)
 	if err != nil {
 		log.Fatal(err)
 	}

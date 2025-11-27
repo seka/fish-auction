@@ -6,15 +6,20 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type itemRepository struct {
-	db *sql.DB
+	db    *sql.DB
+	cache cache.ItemCache
 }
 
-func NewItemRepository(db *sql.DB) repository.ItemRepository {
-	return &itemRepository{db: db}
+func NewItemRepository(db *sql.DB, itemCache cache.ItemCache) repository.ItemRepository {
+	return &itemRepository{
+		db:    db,
+		cache: itemCache,
+	}
 }
 
 // dbExecutor is an interface that both *sql.DB and *sql.Tx implement
@@ -82,8 +87,40 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	return items, nil
 }
 
+func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
+	// キャッシュを確認
+	if item, err := r.cache.Get(ctx, id); err == nil && item != nil {
+		return item, nil
+	}
+
+	// DBから取得
+	db := r.getDB(ctx)
+	var e entity.AuctionItem
+	err := db.QueryRowContext(ctx,
+		"SELECT id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items WHERE id = $1",
+		id,
+	).Scan(&e.ID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	item := e.ToModel()
+
+	// キャッシュに保存（エラーは無視）
+	_ = r.cache.Set(ctx, id, item)
+
+	return item, nil
+}
+
 func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	db := r.getDB(ctx)
 	_, err := db.ExecContext(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// キャッシュを削除（エラーは無視）
+	_ = r.cache.Delete(ctx, id)
+
+	return nil
 }

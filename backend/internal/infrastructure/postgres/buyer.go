@@ -6,15 +6,20 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type buyerRepository struct {
-	db *sql.DB
+	db    *sql.DB
+	cache cache.BuyerCache
 }
 
-func NewBuyerRepository(db *sql.DB) repository.BuyerRepository {
-	return &buyerRepository{db: db}
+func NewBuyerRepository(db *sql.DB, buyerCache cache.BuyerCache) repository.BuyerRepository {
+	return &buyerRepository{
+		db:    db,
+		cache: buyerCache,
+	}
 }
 
 func (r *buyerRepository) Create(ctx context.Context, name string) (*model.Buyer, error) {
@@ -46,4 +51,28 @@ func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
 		buyers = append(buyers, *e.ToModel())
 	}
 	return buyers, nil
+}
+
+func (r *buyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+	// キャッシュを確認
+	if buyer, err := r.cache.Get(ctx, id); err == nil && buyer != nil {
+		return buyer, nil
+	}
+
+	// DBから取得
+	var e entity.Buyer
+	err := r.db.QueryRowContext(ctx,
+		"SELECT id, name FROM buyers WHERE id = $1",
+		id,
+	).Scan(&e.ID, &e.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	buyer := e.ToModel()
+
+	// キャッシュに保存（エラーは無視）
+	_ = r.cache.Set(ctx, id, buyer)
+
+	return buyer, nil
 }

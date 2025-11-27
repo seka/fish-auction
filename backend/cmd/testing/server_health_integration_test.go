@@ -43,8 +43,13 @@ func TestServerIntegration(t *testing.T) {
 		}
 	}()
 
-	// 5. Registry を初期化（DB 接続とマイグレーション）
-	repoReg, db, err := registry.NewRepositoryRegistry(cfg.TestDBConnStr(testDBName))
+	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
+	// テストでは Redis をローカルホストに接続
+	repoReg, db, err := registry.NewRepositoryRegistry(
+		cfg.TestDBConnStr(testDBName),
+		"localhost:6379",
+		5*time.Minute,
+	)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}

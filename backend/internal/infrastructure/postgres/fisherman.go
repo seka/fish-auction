@@ -6,15 +6,20 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type fishermanRepository struct {
-	db *sql.DB
+	db    *sql.DB
+	cache cache.FishermanCache
 }
 
-func NewFishermanRepository(db *sql.DB) repository.FishermanRepository {
-	return &fishermanRepository{db: db}
+func NewFishermanRepository(db *sql.DB, fishermanCache cache.FishermanCache) repository.FishermanRepository {
+	return &fishermanRepository{
+		db:    db,
+		cache: fishermanCache,
+	}
 }
 
 func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.Fisherman, error) {
@@ -46,4 +51,28 @@ func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, erro
 		fishermen = append(fishermen, *e.ToModel())
 	}
 	return fishermen, nil
+}
+
+func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
+	// キャッシュを確認
+	if fisherman, err := r.cache.Get(ctx, id); err == nil && fisherman != nil {
+		return fisherman, nil
+	}
+
+	// DBから取得
+	var e entity.Fisherman
+	err := r.db.QueryRowContext(ctx,
+		"SELECT id, name FROM fishermen WHERE id = $1",
+		id,
+	).Scan(&e.ID, &e.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	fisherman := e.ToModel()
+
+	// キャッシュに保存（エラーは無視）
+	_ = r.cache.Set(ctx, id, fisherman)
+
+	return fisherman, nil
 }

@@ -1,12 +1,15 @@
 package registry
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/postgres"
 	"github.com/seka/fish-auction/backend/migrations"
 )
@@ -22,12 +25,14 @@ type Repository interface {
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db *sql.DB
+	db       *sql.DB
+	cache    *redis.Client
+	cacheTTL time.Duration
 }
 
 // NewRepositoryRegistry creates a new Repository registry
-// It handles DB connection and migration initialization
-func NewRepositoryRegistry(connStr string) (Repository, *sql.DB, error) {
+// It handles DB connection, Redis connection, and migration initialization
+func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (Repository, *sql.DB, error) {
 	// Connect to database with retry
 	var db *sql.DB
 	var err error
@@ -61,11 +66,26 @@ func NewRepositoryRegistry(connStr string) (Repository, *sql.DB, error) {
 		return nil, nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	return &repositoryRegistry{db: db}, db, nil
+	// Connect to Redis
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: redisAddr,
+	})
+
+	if err := redisClient.Ping(context.Background()).Err(); err != nil {
+		db.Close()
+		return nil, nil, fmt.Errorf("failed to connect to redis: %w", err)
+	}
+
+	return &repositoryRegistry{
+		db:       db,
+		cache:    redisClient,
+		cacheTTL: cacheTTL,
+	}, db, nil
 }
 
 func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
-	return postgres.NewItemRepository(r.db)
+	itemCache := cache.NewItemCache(r.cache, r.cacheTTL)
+	return postgres.NewItemRepository(r.db, itemCache)
 }
 
 func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
@@ -73,11 +93,13 @@ func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
 }
 
 func (r *repositoryRegistry) NewBuyerRepository() repository.BuyerRepository {
-	return postgres.NewBuyerRepository(r.db)
+	buyerCache := cache.NewBuyerCache(r.cache, r.cacheTTL)
+	return postgres.NewBuyerRepository(r.db, buyerCache)
 }
 
 func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanRepository {
-	return postgres.NewFishermanRepository(r.db)
+	fishermanCache := cache.NewFishermanCache(r.cache, r.cacheTTL)
+	return postgres.NewFishermanRepository(r.db, fishermanCache)
 }
 
 func (r *repositoryRegistry) NewTransactionManager() repository.TransactionManager {

@@ -13,8 +13,10 @@ services:
       - DB_PASSWORD=postgres
       - DB_NAME=fish_auction
       - DB_PORT=5432
+      - REDIS_ADDR=redis:6379
     depends_on:
       - db
+      - redis
     networks:
       - app-network
     volumes:
@@ -46,6 +48,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   nginx:
     image: nginx:alpine

@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 )
 
 type Config struct {
@@ -12,9 +14,13 @@ type Config struct {
 	DBPassword    string
 	DBName        string
 	ServerAddress string
+	RedisAddr     string
+	CacheTTL      time.Duration
 }
 
 func Load() (*Config, error) {
+	cacheTTL := getEnvInt("CACHE_TTL_SECONDS", 300) // デフォルト5分
+
 	cfg := &Config{
 		DBHost:        os.Getenv("DB_HOST"),
 		DBPort:        os.Getenv("DB_PORT"),
@@ -22,6 +28,8 @@ func Load() (*Config, error) {
 		DBPassword:    os.Getenv("DB_PASSWORD"),
 		DBName:        os.Getenv("DB_NAME"),
 		ServerAddress: os.Getenv("SERVER_ADDRESS"),
+		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
+		CacheTTL:      time.Duration(cacheTTL) * time.Second,
 	}
 
 	if cfg.ServerAddress == "" {
@@ -33,6 +41,22 @@ func Load() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
 }
 
 func (c *Config) DBConnectionURL() string {
