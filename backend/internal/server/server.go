@@ -15,6 +15,7 @@ import (
 
 type Server struct {
 	router           *http.ServeMux
+	httpServer       *http.Server
 	healthHandler    *handler.HealthHandler
 	fishermanHandler *handler.FishermanHandler
 	buyerHandler     *handler.BuyerHandler
@@ -61,14 +62,14 @@ func (s *Server) Start(addr string) error {
 	if addr == "" {
 		addr = ":8080"
 	}
-	srv := &http.Server{
+	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: s.router,
 	}
 
 	go func() {
-		log.Println("Server starting on :8080")
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Printf("Server starting on %s\n", addr)
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
@@ -78,12 +79,20 @@ func (s *Server) Start(addr string) error {
 	<-quit
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := s.httpServer.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
 
 	log.Println("Server exiting")
 	return nil
+}
+
+// Shutdown gracefully shuts down the server
+func (s *Server) Shutdown(ctx context.Context) error {
+	if s.httpServer == nil {
+		return nil
+	}
+	return s.httpServer.Shutdown(ctx)
 }
