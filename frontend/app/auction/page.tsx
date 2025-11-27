@@ -1,36 +1,40 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useItems, AuctionItem } from '@/hooks/useItems';
 import { useSubmitBid } from '@/hooks/useBids';
 
+interface BidForm {
+    buyerId: string;
+    price: string;
+}
+
 export default function AuctionPage() {
     const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
-    const [buyerId, setBuyerId] = useState('');
-    const [price, setPrice] = useState('');
     const [message, setMessage] = useState('');
 
     const { items, refetch } = useItems({
         status: 'Pending',
         pollingInterval: 5000
     });
-    const { submitBid } = useSubmitBid();
+    const { submitBid, isLoading: isBidLoading } = useSubmitBid();
 
-    const handleBid = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const { register, handleSubmit, reset } = useForm<BidForm>();
+
+    const onSubmitBid = async (data: BidForm) => {
         if (!selectedItem) return;
 
         const success = await submitBid({
             item_id: selectedItem.id,
-            buyer_id: parseInt(buyerId),
-            price: parseInt(price),
+            buyer_id: parseInt(data.buyerId),
+            price: parseInt(data.price),
         });
 
         if (success) {
             setMessage(`Successfully bought ${selectedItem.fish_type}!`);
             setSelectedItem(null);
-            setBuyerId('');
-            setPrice('');
+            reset();
             refetch();
         } else {
             setMessage('Failed to submit bid');
@@ -95,7 +99,7 @@ export default function AuctionPage() {
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-fit sticky top-24">
                     <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-2">入札パネル</h2>
                     {selectedItem ? (
-                        <form onSubmit={handleBid} className="space-y-6">
+                        <form onSubmit={handleSubmit(onSubmitBid)} className="space-y-6">
                             <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
                                 <p className="text-sm text-gray-500 mb-1">選択中の商品</p>
                                 <p className="font-bold text-2xl text-gray-900">{selectedItem.fish_type}</p>
@@ -106,11 +110,9 @@ export default function AuctionPage() {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">中買人ID</label>
                                 <input
                                     type="number"
-                                    value={buyerId}
-                                    onChange={(e) => setBuyerId(e.target.value)}
+                                    {...register('buyerId', { required: true })}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
                                     placeholder="あなたのID"
-                                    required
                                 />
                             </div>
 
@@ -122,20 +124,19 @@ export default function AuctionPage() {
                                     </div>
                                     <input
                                         type="number"
-                                        value={price}
-                                        onChange={(e) => setPrice(e.target.value)}
+                                        {...register('price', { required: true })}
                                         className="block w-full rounded-md border-gray-300 pl-7 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
                                         placeholder="0"
-                                        required
                                     />
                                 </div>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-md text-lg font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors transform hover:scale-[1.02]"
+                                disabled={isBidLoading}
+                                className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-md text-lg font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors transform hover:scale-[1.02] disabled:opacity-50"
                             >
-                                落札する！
+                                {isBidLoading ? '処理中...' : '落札する！'}
                             </button>
                         </form>
                     ) : (

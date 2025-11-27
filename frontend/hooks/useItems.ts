@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export interface AuctionItem {
     id: number;
@@ -16,46 +16,26 @@ interface UseItemsOptions {
 }
 
 export function useItems(options: UseItemsOptions = {}) {
-    const [items, setItems] = useState<AuctionItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchItems = useCallback(async () => {
-        try {
+    const { data: items = [], isLoading, error, refetch } = useQuery({
+        queryKey: ['items', options.status],
+        queryFn: async () => {
             const url = options.status
                 ? `/api/items?status=${options.status}`
                 : '/api/items';
-
             const res = await fetch(url);
-            if (res.ok) {
-                const data = await res.json();
-                setItems(data || []);
-                setError(null);
-            } else {
-                setError('Failed to fetch items');
+            if (!res.ok) {
+                throw new Error('Failed to fetch items');
             }
-        } catch (err) {
-            setError('Error fetching items');
-            console.error('Failed to fetch items', err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [options.status]);
-
-    useEffect(() => {
-        fetchItems();
-
-        if (options.pollingInterval && options.pollingInterval > 0) {
-            const interval = setInterval(fetchItems, options.pollingInterval);
-            return () => clearInterval(interval);
-        }
-    }, [fetchItems, options.pollingInterval]);
+            return res.json() as Promise<AuctionItem[]>;
+        },
+        refetchInterval: options.pollingInterval,
+    });
 
     return {
         items,
         isLoading,
-        error,
-        refetch: fetchItems,
+        error: error ? (error as Error).message : null,
+        refetch,
     };
 }
 
@@ -67,38 +47,35 @@ interface RegisterItemParams {
 }
 
 export function useRegisterItem() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
-    const registerItem = async (params: RegisterItemParams): Promise<boolean> => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
+    const { mutateAsync: registerItem, isPending: isLoading, error } = useMutation({
+        mutationFn: async (params: RegisterItemParams) => {
             const res = await fetch('/api/items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(params),
             });
 
-            if (res.ok) {
-                setIsLoading(false);
-                return true;
-            } else {
-                setError('Failed to register item');
-                setIsLoading(false);
-                return false;
+            if (!res.ok) {
+                throw new Error('Failed to register item');
             }
-        } catch (err) {
-            setError('Error registering item');
-            setIsLoading(false);
-            return false;
-        }
-    };
+            return true;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['items'] });
+        },
+    });
 
     return {
-        registerItem,
+        registerItem: async (params: RegisterItemParams) => {
+            try {
+                return await registerItem(params);
+            } catch (e) {
+                return false;
+            }
+        },
         isLoading,
-        error,
+        error: error ? (error as Error).message : null,
     };
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface SubmitBidParams {
     item_id: number;
@@ -7,38 +7,35 @@ interface SubmitBidParams {
 }
 
 export function useSubmitBid() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
-    const submitBid = async (params: SubmitBidParams): Promise<boolean> => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
+    const { mutateAsync: submitBid, isPending: isLoading, error } = useMutation({
+        mutationFn: async (params: SubmitBidParams) => {
             const res = await fetch('/api/bid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(params),
             });
 
-            if (res.ok) {
-                setIsLoading(false);
-                return true;
-            } else {
-                setError('Failed to submit bid');
-                setIsLoading(false);
-                return false;
+            if (!res.ok) {
+                throw new Error('Failed to submit bid');
             }
-        } catch (err) {
-            setError('Error submitting bid');
-            setIsLoading(false);
-            return false;
-        }
-    };
+            return true;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['items'] });
+        },
+    });
 
     return {
-        submitBid,
+        submitBid: async (params: SubmitBidParams) => {
+            try {
+                return await submitBid(params);
+            } catch (e) {
+                return false;
+            }
+        },
         isLoading,
-        error,
+        error: error ? (error as Error).message : null,
     };
 }

@@ -1,42 +1,34 @@
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 interface RegisterFishermanParams {
     name: string;
 }
 
 export function useRegisterFisherman() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const registerFisherman = async (params: RegisterFishermanParams): Promise<boolean> => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
+    const { mutateAsync: registerFisherman, isPending: isLoading, error } = useMutation({
+        mutationFn: async (params: RegisterFishermanParams) => {
             const res = await fetch('/api/fishermen', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: params.name }),
             });
 
-            if (res.ok) {
-                setIsLoading(false);
-                return true;
-            } else {
-                setError('Failed to register fisherman');
-                setIsLoading(false);
-                return false;
+            if (!res.ok) {
+                throw new Error('Failed to register fisherman');
             }
-        } catch (err) {
-            setError('Error registering fisherman');
-            setIsLoading(false);
-            return false;
-        }
-    };
+            return true;
+        },
+    });
 
     return {
-        registerFisherman,
+        registerFisherman: async (params: RegisterFishermanParams) => {
+            try {
+                return await registerFisherman(params);
+            } catch (e) {
+                return false;
+            }
+        },
         isLoading,
-        error,
+        error: error ? (error as Error).message : null,
     };
 }
