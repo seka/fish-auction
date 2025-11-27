@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRegisterFisherman } from '@/hooks/useFishermen';
-import { useRegisterBuyer } from '@/hooks/useBuyers';
-import { useRegisterItem } from '@/hooks/useItems';
+import { useRegisterFisherman, useRegisterBuyer, useRegisterItem } from '@/src/features/admin/hooks';
 
 interface FishermanForm {
     name: string;

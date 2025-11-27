@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useLogin } from '@/src/features/auth/hooks';
 
 interface LoginForm {
     password: string;
@@ -11,25 +12,17 @@ interface LoginForm {
 export default function LoginPage() {
     const [error, setError] = useState('');
     const router = useRouter();
-    const { register, handleSubmit, formState: { isSubmitting } } = useForm<LoginForm>();
+    const { register, handleSubmit } = useForm<LoginForm>();
+    const { login, isLoading } = useLogin();
 
     const onSubmit = async (data: LoginForm) => {
         setError('');
 
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: data.password }),
-            });
-
-            if (res.ok) {
-                router.push('/admin');
-            } else {
-                setError('パスワードが間違っています');
-            }
-        } catch (err) {
-            setError('ログイン中にエラーが発生しました');
+        const success = await login(data.password);
+        if (success) {
+            router.push('/admin');
+        } else {
+            setError('パスワードが間違っています');
         }
     };
 
@@ -69,10 +62,10 @@ export default function LoginPage() {
                     <div>
                         <button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={isLoading}
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
-                            {isSubmitting ? 'ログイン中...' : 'ログイン'}
+                            {isLoading ? 'ログイン中...' : 'ログイン'}
                         </button>
                     </div>
                 </form>

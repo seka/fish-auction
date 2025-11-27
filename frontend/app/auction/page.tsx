@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useItems, AuctionItem } from '@/hooks/useItems';
-import { useSubmitBid } from '@/hooks/useBids';
+import { useItems, useSubmitBid } from '@/src/features/auction/hooks';
+import { AuctionItem } from '@/src/shared/models';
 
 interface BidForm {
     buyerId: string;
