@@ -3,7 +3,9 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
@@ -66,6 +68,9 @@ func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fish
 		id,
 	).Scan(&e.ID, &e.Name)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.NotFoundError{Resource: "Fisherman", ID: id}
+		}
 		return nil, err
 	}
 
