@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
@@ -20,18 +20,20 @@ func TestServerIntegration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// 1. テスト用 DB 名を生成
+	// 1. テスト設定を読み込む
+	cfg := config.LoadTest()
+
+	// 2. テスト用 DB 名を生成
 	testDBName := fmt.Sprintf("test_fish_auction_%d", time.Now().Unix())
 
-	// 2. 管理用 DB に接続
-	adminConnStr := getAdminConnStr()
-	adminDB, err := sql.Open("postgres", adminConnStr)
+	// 3. 管理用 DB に接続
+	adminDB, err := sql.Open("postgres", cfg.AdminConnStr())
 	if err != nil {
 		t.Fatalf("Failed to connect to admin database: %v", err)
 	}
 	defer adminDB.Close()
 
-	// 3. テスト用 DB を作成
+	// 4. テスト用 DB を作成
 	if err := createTestDatabase(adminDB, testDBName); err != nil {
 		t.Fatalf("Failed to create test database: %v", err)
 	}
@@ -41,11 +43,8 @@ func TestServerIntegration(t *testing.T) {
 		}
 	}()
 
-	// 4. テスト用 DB の接続文字列を構築
-	testConnStr := buildTestConnStr(testDBName)
-
 	// 5. Registry を初期化（DB 接続とマイグレーション）
-	repoReg, db, err := registry.NewRepositoryRegistry(testConnStr)
+	repoReg, db, err := registry.NewRepositoryRegistry(cfg.TestDBConnStr(testDBName))
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
@@ -110,29 +109,6 @@ func TestServerIntegration(t *testing.T) {
 	}
 }
 
-// getAdminConnStr は管理用 DB の接続文字列を取得
-func getAdminConnStr() string {
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "postgres")
-	dbname := getEnv("DB_NAME", "postgres")
-
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-}
-
-// buildTestConnStr はテスト用 DB の接続文字列を構築
-func buildTestConnStr(testDBName string) string {
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "postgres")
-
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, testDBName)
-}
-
 // createTestDatabase はテスト用 DB を作成
 func createTestDatabase(db *sql.DB, dbName string) error {
 	_, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s", dbName))
@@ -173,12 +149,4 @@ func waitForServer(url string) error {
 			}
 		}
 	}
-}
-
-// getEnv は環境変数を取得（デフォルト値あり）
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
