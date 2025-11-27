@@ -105,6 +105,20 @@ func TestServerIntegration(t *testing.T) {
 		}
 	})
 
+	// 11. 404 Not Found エラーをテスト
+	t.Run("NotFoundEndpoint", func(t *testing.T) {
+		// 存在しないID (99999) にアクセス
+		resp, err := http.Get(serverURL + "/api/items/99999")
+		if err != nil {
+			t.Fatalf("Failed to call item endpoint: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("Expected status 404, got %d", resp.StatusCode)
+		}
+	})
+
 	// 11. サーバーをシャットダウン
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
