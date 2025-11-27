@@ -93,13 +93,24 @@ func TestLoadTest(t *testing.T) {
 	}
 
 	// リクエストを送信
+	sendRequests(duration, totalRequests, requestChan, stopChan)
+
+	wg.Wait()
+	elapsed := time.Since(startTime)
+
+	// 結果を表示
+	printMetrics(t, metrics, elapsed)
+}
+
+// sendRequests はリクエストを送信する
+func sendRequests(duration, totalRequests int, requestChan chan<- struct{}, stopChan <-chan struct{}) {
 	if duration > 0 {
 		// 期間指定の場合は無限にリクエストを送る
 		for {
 			select {
 			case <-stopChan:
 				close(requestChan)
-				goto Done
+				return
 			default:
 				requestChan <- struct{}{}
 			}
@@ -111,13 +122,6 @@ func TestLoadTest(t *testing.T) {
 		}
 		close(requestChan)
 	}
-
-Done:
-	wg.Wait()
-	elapsed := time.Since(startTime)
-
-	// 結果を表示
-	printMetrics(t, metrics, elapsed)
 }
 
 // worker は並行してリクエストを送信するワーカー
