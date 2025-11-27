@@ -37,8 +37,7 @@ type Metrics struct {
 // エンドポイント定義（重み付き）
 var endpoints = []Endpoint{
 	{Method: "GET", Path: "/api/health", Weight: 50, Body: nil},
-	{Method: "GET", Path: "/api/items", Weight: 20, Body: nil},
-	{Method: "POST", Path: "/api/items", Weight: 5, Body: generateItemBody},
+	{Method: "GET", Path: "/api/items", Weight: 25, Body: nil},
 	{Method: "GET", Path: "/api/fishermen", Weight: 10, Body: nil},
 	{Method: "POST", Path: "/api/fishermen", Weight: 5, Body: generateFishermanBody},
 	{Method: "GET", Path: "/api/buyers", Weight: 5, Body: nil},
@@ -285,23 +284,10 @@ func percentile(durations []time.Duration, p int) time.Duration {
 	return durations[index]
 }
 
-// generateItemBody はアイテム作成用のリクエストボディを生成
-func generateItemBody() []byte {
-	body := map[string]interface{}{
-		"fisherman_id": rand.Intn(100) + 1,
-		"fish_type":    fmt.Sprintf("Fish-%d", rand.Intn(10)),
-		"quantity":     rand.Intn(100) + 1,
-		"unit":         "kg",
-	}
-	data, _ := json.Marshal(body)
-	return data
-}
-
 // generateFishermanBody は漁師作成用のリクエストボディを生成
 func generateFishermanBody() []byte {
 	body := map[string]interface{}{
-		"name":         fmt.Sprintf("Fisherman-%d", rand.Intn(10000)),
-		"phone_number": fmt.Sprintf("090-%04d-%04d", rand.Intn(10000), rand.Intn(10000)),
+		"name": fmt.Sprintf("Fisherman-%d", rand.Intn(10000)),
 	}
 	data, _ := json.Marshal(body)
 	return data
@@ -310,8 +296,7 @@ func generateFishermanBody() []byte {
 // generateBuyerBody は買い手作成用のリクエストボディを生成
 func generateBuyerBody() []byte {
 	body := map[string]interface{}{
-		"name":         fmt.Sprintf("Buyer-%d", rand.Intn(10000)),
-		"phone_number": fmt.Sprintf("090-%04d-%04d", rand.Intn(10000), rand.Intn(10000)),
+		"name": fmt.Sprintf("Buyer-%d", rand.Intn(10000)),
 	}
 	data, _ := json.Marshal(body)
 	return data
