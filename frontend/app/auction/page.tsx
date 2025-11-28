@@ -2,13 +2,10 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useItems, useSubmitBid } from './_hooks/useAuction';
 import { AuctionItem } from '@/src/models';
-
-interface BidForm {
-    buyerId: string;
-    price: string;
-}
+import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 
 export default function AuctionPage() {
     const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
@@ -20,9 +17,11 @@ export default function AuctionPage() {
     });
     const { submitBid, isLoading: isBidLoading } = useSubmitBid();
 
-    const { register, handleSubmit, reset } = useForm<BidForm>();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<BidFormData>({
+        resolver: zodResolver(bidSchema),
+    });
 
-    const onSubmitBid = async (data: BidForm) => {
+    const onSubmitBid = async (data: BidFormData) => {
         if (!selectedItem) return;
 
         const success = await submitBid({
@@ -110,10 +109,13 @@ export default function AuctionPage() {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">中買人ID</label>
                                 <input
                                     type="number"
-                                    {...register('buyerId', { required: true })}
+                                    {...register('buyerId')}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
                                     placeholder="あなたのID"
                                 />
+                                {errors.buyerId && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.buyerId.message}</p>
+                                )}
                             </div>
 
                             <div>
@@ -124,11 +126,14 @@ export default function AuctionPage() {
                                     </div>
                                     <input
                                         type="number"
-                                        {...register('price', { required: true })}
+                                        {...register('price')}
                                         className="block w-full rounded-md border-gray-300 pl-7 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
                                         placeholder="0"
                                     />
                                 </div>
+                                {errors.price && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+                                )}
                             </div>
 
                             <button

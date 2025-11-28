@@ -2,22 +2,9 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRegisterFisherman, useRegisterBuyer, useRegisterItem } from './_hooks/useAdmin';
-
-interface FishermanForm {
-    name: string;
-}
-
-interface BuyerForm {
-    name: string;
-}
-
-interface ItemForm {
-    fishermanId: string;
-    fishType: string;
-    quantity: string;
-    unit: string;
-}
+import { fishermanSchema, buyerSchema, itemSchema, FishermanFormData, BuyerFormData, ItemFormData } from '@/src/models/schemas/admin';
 
 export default function AdminPage() {
     const [message, setMessage] = useState('');
@@ -26,11 +13,17 @@ export default function AdminPage() {
     const { registerBuyer, isLoading: isBuyerLoading } = useRegisterBuyer();
     const { registerItem, isLoading: isItemLoading } = useRegisterItem();
 
-    const { register: registerFishermanForm, handleSubmit: handleSubmitFisherman, reset: resetFisherman } = useForm<FishermanForm>();
-    const { register: registerBuyerForm, handleSubmit: handleSubmitBuyer, reset: resetBuyer } = useForm<BuyerForm>();
-    const { register: registerItemForm, handleSubmit: handleSubmitItem, reset: resetItem } = useForm<ItemForm>();
+    const { register: registerFishermanForm, handleSubmit: handleSubmitFisherman, reset: resetFisherman, formState: { errors: fishermanErrors } } = useForm<FishermanFormData>({
+        resolver: zodResolver(fishermanSchema),
+    });
+    const { register: registerBuyerForm, handleSubmit: handleSubmitBuyer, reset: resetBuyer, formState: { errors: buyerErrors } } = useForm<BuyerFormData>({
+        resolver: zodResolver(buyerSchema),
+    });
+    const { register: registerItemForm, handleSubmit: handleSubmitItem, reset: resetItem, formState: { errors: itemErrors } } = useForm<ItemFormData>({
+        resolver: zodResolver(itemSchema),
+    });
 
-    const onRegisterFisherman = async (data: FishermanForm) => {
+    const onRegisterFisherman = async (data: FishermanFormData) => {
         const success = await registerFisherman({ name: data.name });
         if (success) {
             setMessage('Fisherman registered!');
@@ -40,7 +33,7 @@ export default function AdminPage() {
         }
     };
 
-    const onRegisterBuyer = async (data: BuyerForm) => {
+    const onRegisterBuyer = async (data: BuyerFormData) => {
         const success = await registerBuyer({ name: data.name });
         if (success) {
             setMessage('Buyer registered!');
@@ -50,7 +43,7 @@ export default function AdminPage() {
         }
     };
 
-    const onRegisterItem = async (data: ItemForm) => {
+    const onRegisterItem = async (data: ItemFormData) => {
         const success = await registerItem({
             fisherman_id: parseInt(data.fishermanId),
             fish_type: data.fishType,
@@ -88,10 +81,13 @@ export default function AdminPage() {
                             <label className="block text-sm font-bold text-gray-700 mb-1">氏名</label>
                             <input
                                 type="text"
-                                {...registerFishermanForm('name', { required: true })}
+                                {...registerFishermanForm('name')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border bg-gray-50"
                                 placeholder="例: 山田 太郎"
                             />
+                            {fishermanErrors.name && (
+                                <p className="text-red-500 text-sm mt-1">{fishermanErrors.name.message}</p>
+                            )}
                         </div>
                         <button
                             type="submit"
@@ -114,10 +110,13 @@ export default function AdminPage() {
                             <label className="block text-sm font-bold text-gray-700 mb-1">屋号・氏名</label>
                             <input
                                 type="text"
-                                {...registerBuyerForm('name', { required: true })}
+                                {...registerBuyerForm('name')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-3 border bg-gray-50"
-                                placeholder="例: すしざんまい"
+                                placeholder="例: 魚市場 花子"
                             />
+                            {buyerErrors.name && (
+                                <p className="text-red-500 text-sm mt-1">{buyerErrors.name.message}</p>
+                            )}
                         </div>
                         <button
                             type="submit"
@@ -140,37 +139,49 @@ export default function AdminPage() {
                             <label className="block text-sm font-bold text-gray-700 mb-1">漁師ID</label>
                             <input
                                 type="number"
-                                {...registerItemForm('fishermanId', { required: true })}
+                                {...registerItemForm('fishermanId')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border bg-gray-50"
                                 placeholder="IDを入力"
                             />
+                            {itemErrors.fishermanId && (
+                                <p className="text-red-500 text-sm mt-1">{itemErrors.fishermanId.message}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">魚種</label>
                             <input
                                 type="text"
-                                {...registerItemForm('fishType', { required: true })}
+                                {...registerItemForm('fishType')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border bg-gray-50"
                                 placeholder="例: マグロ"
                             />
+                            {itemErrors.fishType && (
+                                <p className="text-red-500 text-sm mt-1">{itemErrors.fishType.message}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">数量</label>
                             <input
                                 type="number"
-                                {...registerItemForm('quantity', { required: true })}
+                                {...registerItemForm('quantity')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border bg-gray-50"
                                 placeholder="例: 10"
                             />
+                            {itemErrors.quantity && (
+                                <p className="text-red-500 text-sm mt-1">{itemErrors.quantity.message}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">単位</label>
                             <input
                                 type="text"
-                                {...registerItemForm('unit', { required: true })}
+                                {...registerItemForm('unit')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border bg-gray-50"
                                 placeholder="例: kg, 匹, 箱"
                             />
+                            {itemErrors.unit && (
+                                <p className="text-red-500 text-sm mt-1">{itemErrors.unit.message}</p>
+                            )}
                         </div>
                         <div className="md:col-span-2 pt-4">
                             <button

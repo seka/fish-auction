@@ -3,19 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from './_hooks/useAuth';
-
-interface LoginForm {
-    password: string;
-}
+import { loginSchema, LoginFormData } from '@/src/models/schemas/auth';
 
 export default function LoginPage() {
     const [error, setError] = useState('');
     const router = useRouter();
-    const { register, handleSubmit } = useForm<LoginForm>();
+    const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+    });
     const { login, isLoading } = useLogin();
 
-    const onSubmit = async (data: LoginForm) => {
+    const onSubmit = async (data: LoginFormData) => {
         setError('');
 
         const success = await login(data.password);
@@ -46,10 +46,13 @@ export default function LoginPage() {
                             <input
                                 id="password"
                                 type="password"
-                                {...register('password', { required: true })}
+                                {...register('password')}
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="パスワード"
                             />
+                            {errors.password && (
+                                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                            )}
                         </div>
                     </div>
 
