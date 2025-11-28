@@ -1,7 +1,7 @@
 'use client';
 
-import { useInvoices } from '@/src/features/invoice/hooks';
-import { InvoiceItem } from '@/src/shared/models';
+import { useInvoices } from './_hooks/useInvoice';
+import { InvoiceItem } from '@/src/models';
 
 export default function InvoicePage() {
     const { invoices } = useInvoices();

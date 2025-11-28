@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { registerFisherman, registerBuyer, registerItem } from '../api';
-import { RegisterItemParams } from '@/src/shared/models';
+import { registerFisherman, registerBuyer, registerItem } from '@/src/api/admin';
+import { RegisterItemParams } from '@/src/models';
 
 export const useRegisterFisherman = () => {
     const mutation = useMutation({

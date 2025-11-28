@@ -1,5 +1,5 @@
-import { apiClient } from '@/src/shared/api/client';
-import { RegisterItemParams } from '@/src/shared/models';
+import { apiClient } from '@/src/core/api/client';
+import { RegisterItemParams } from '@/src/models';
 
 export const registerFisherman = async (name: string): Promise<boolean> => {
     try {

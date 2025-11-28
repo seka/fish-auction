@@ -1,4 +1,4 @@
-import { apiClient } from '@/src/shared/api/client';
+import { apiClient } from '@/src/core/api/client';
 
 export const login = async (password: string): Promise<boolean> => {
     try {

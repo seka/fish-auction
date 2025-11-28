@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getItems, submitBid } from '../api';
-import { AuctionItem, Bid } from '@/src/shared/models';
+import { getItems, submitBid } from '@/src/api/auction';
+import { AuctionItem, Bid } from '@/src/models';
 
 interface UseItemsOptions {
     status?: string;

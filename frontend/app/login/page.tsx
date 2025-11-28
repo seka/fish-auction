@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { useLogin } from '@/src/features/auth/hooks';
+import { useLogin } from './_hooks/useAuth';
 
 interface LoginForm {
     password: string;

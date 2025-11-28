@@ -1,5 +1,5 @@
-import { apiClient } from '@/src/shared/api/client';
-import { AuctionItem, Bid } from '@/src/shared/models';
+import { apiClient } from '@/src/core/api/client';
+import { AuctionItem, Bid } from '@/src/models';
 
 export const getItems = async (status?: string): Promise<AuctionItem[]> => {
     const url = status ? `/api/items?status=${status}` : '/api/items';
