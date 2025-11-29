@@ -36,7 +36,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := "admin-session-token" // In a real app, generate a JWT or session ID here
+	token := "authenticated" // Session token value
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin_session",
