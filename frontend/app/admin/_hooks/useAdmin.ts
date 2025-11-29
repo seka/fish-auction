@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { registerFisherman, registerBuyer, registerItem } from '@/src/api/admin';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { registerFisherman, registerBuyer, registerItem, getFishermen, getBuyers } from '@/src/api/admin';
 import { RegisterItemParams } from '@/src/models';
 
 export const useRegisterFisherman = () => {
@@ -40,5 +40,31 @@ export const useRegisterItem = () => {
         registerItem: mutation.mutateAsync,
         isLoading: mutation.isPending,
         error: mutation.error,
+    };
+};
+
+export const useFishermen = () => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['fishermen'],
+        queryFn: getFishermen,
+    });
+
+    return {
+        fishermen: data ?? [],
+        error,
+        isLoading,
+    };
+};
+
+export const useBuyers = () => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['buyers'],
+        queryFn: getBuyers,
+    });
+
+    return {
+        buyers: data ?? [],
+        error,
+        isLoading,
     };
 };

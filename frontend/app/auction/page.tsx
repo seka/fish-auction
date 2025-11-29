@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useItems, useSubmitBid } from './_hooks/useAuction';
+import { useItems, useSubmitBid, useBuyers } from './_hooks/useAuction';
 import { AuctionItem } from '@/src/models';
 import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 
@@ -16,6 +16,7 @@ export default function AuctionPage() {
         pollingInterval: 5000
     });
     const { submitBid, isLoading: isBidLoading } = useSubmitBid();
+    const { buyers } = useBuyers();
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<BidFormData>({
         resolver: zodResolver(bidSchema),
@@ -106,13 +107,18 @@ export default function AuctionPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">中買人ID</label>
-                                <input
-                                    type="number"
+                                <label className="block text-sm font-bold text-gray-700 mb-1">中買人</label>
+                                <select
                                     {...register('buyerId')}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
-                                    placeholder="あなたのID"
-                                />
+                                >
+                                    <option value="">中買人を選択してください</option>
+                                    {buyers.map((buyer) => (
+                                        <option key={buyer.id} value={buyer.id}>
+                                            {buyer.name}
+                                        </option>
+                                    ))}
+                                </select>
                                 {errors.buyerId && (
                                     <p className="text-red-500 text-sm mt-1">{errors.buyerId.message}</p>
                                 )}

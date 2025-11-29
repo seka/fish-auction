@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRegisterFisherman, useRegisterBuyer, useRegisterItem } from './_hooks/useAdmin';
+import { useRegisterFisherman, useRegisterBuyer, useRegisterItem, useFishermen } from './_hooks/useAdmin';
 import { fishermanSchema, buyerSchema, itemSchema, FishermanFormData, BuyerFormData, ItemFormData } from '@/src/models/schemas/admin';
 
 export default function AdminPage() {
@@ -12,6 +12,7 @@ export default function AdminPage() {
     const { registerFisherman, isLoading: isFishermanLoading } = useRegisterFisherman();
     const { registerBuyer, isLoading: isBuyerLoading } = useRegisterBuyer();
     const { registerItem, isLoading: isItemLoading } = useRegisterItem();
+    const { fishermen } = useFishermen();
 
     const { register: registerFishermanForm, handleSubmit: handleSubmitFisherman, reset: resetFisherman, formState: { errors: fishermanErrors } } = useForm<FishermanFormData>({
         resolver: zodResolver(fishermanSchema),
@@ -136,13 +137,18 @@ export default function AdminPage() {
                     </h2>
                     <form onSubmit={handleSubmitItem(onRegisterItem)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">漁師ID</label>
-                            <input
-                                type="number"
+                            <label className="block text-sm font-bold text-gray-700 mb-1">漁師</label>
+                            <select
                                 {...registerItemForm('fishermanId')}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border bg-gray-50"
-                                placeholder="IDを入力"
-                            />
+                            >
+                                <option value="">漁師を選択してください</option>
+                                {fishermen.map((fisherman) => (
+                                    <option key={fisherman.id} value={fisherman.id}>
+                                        {fisherman.name}
+                                    </option>
+                                ))}
+                            </select>
                             {itemErrors.fishermanId && (
                                 <p className="text-red-500 text-sm mt-1">{itemErrors.fishermanId.message}</p>
                             )}
