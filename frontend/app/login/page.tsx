@@ -19,8 +19,9 @@ export default function LoginPage() {
         setError('');
 
         const success = await login(data.password);
+
         if (success) {
-            router.push('/admin');
+            window.location.href = '/admin';
         } else {
             setError('パスワードが間違っています');
         }
