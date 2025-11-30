@@ -79,5 +79,9 @@ func (m *MockRegistry) NewLoginUseCase() auth.LoginUseCase {
 	return m.LoginUC
 }
 
+func (m *MockRegistry) NewLoginBuyerUseCase() buyer.LoginBuyerUseCase {
+	return nil // Or add a field to MockRegistry if needed for tests
+}
+
 // Ensure MockRegistry implements registry.UseCase
 var _ registry.UseCase = &MockRegistry{}

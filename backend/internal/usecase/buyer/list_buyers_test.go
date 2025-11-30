@@ -38,6 +38,12 @@ func TestListBuyersUseCase_Execute(t *testing.T) {
 					}
 					return tt.buyers, nil
 				},
+				FindByIDFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+					return nil, nil
+				},
+				FindByNameFunc: func(ctx context.Context, name string) (*model.Buyer, error) {
+					return nil, nil
+				},
 			}
 
 			uc := buyer.NewListBuyersUseCase(repo)

@@ -31,23 +31,34 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := &mock.MockBuyerRepository{
-				CreateFunc: func(ctx context.Context, name string) (*model.Buyer, error) {
-					if name != tt.input {
-						t.Fatalf("unexpected name %s", name)
+			buyerRepo := &mock.MockBuyerRepository{
+				CreateFunc: func(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
+					if buyer.Name != tt.input {
+						t.Fatalf("unexpected name %s", buyer.Name)
 					}
 					if tt.wantErr != nil {
 						return nil, tt.wantErr
 					}
 					return &model.Buyer{
-						ID:   tt.wantID,
-						Name: name,
+						ID:           tt.wantID,
+						Name:         buyer.Name,
+						Organization: buyer.Organization,
+						ContactInfo:  buyer.ContactInfo,
 					}, nil
 				},
 			}
 
-			uc := buyer.NewCreateBuyerUseCase(repo)
-			got, err := uc.Execute(context.Background(), tt.input)
+			authRepo := &mock.MockAuthenticationRepository{
+				CreateFunc: func(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
+					if tt.wantErr != nil {
+						return nil, tt.wantErr
+					}
+					return auth, nil
+				},
+			}
+
+			uc := buyer.NewCreateBuyerUseCase(buyerRepo, authRepo)
+			got, err := uc.Execute(context.Background(), tt.input, "test@example.com", "password", "org", "contact")
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) {

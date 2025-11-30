@@ -31,9 +31,15 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	buyerID, ok := r.Context().Value("buyer_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	bid := &model.Bid{
 		ItemID:  req.ItemID,
-		BuyerID: req.BuyerID,
+		BuyerID: buyerID,
 		Price:   req.Price,
 	}
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/server/handler"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 )
 
 type Server struct {
@@ -23,6 +24,7 @@ type Server struct {
 	bidHandler       *handler.BidHandler
 	invoiceHandler   *handler.InvoiceHandler
 	authHandler      *handler.AuthHandler
+	buyerAuth        *middleware.BuyerAuthMiddleware
 }
 
 func NewServer(
@@ -43,6 +45,7 @@ func NewServer(
 		bidHandler:       bidHandler,
 		invoiceHandler:   invoiceHandler,
 		authHandler:      authHandler,
+		buyerAuth:        middleware.NewBuyerAuthMiddleware(),
 	}
 	s.routes()
 	return s
@@ -53,7 +56,12 @@ func (s *Server) routes() {
 	s.fishermanHandler.RegisterRoutes(s.router)
 	s.buyerHandler.RegisterRoutes(s.router)
 	s.itemHandler.RegisterRoutes(s.router)
-	s.bidHandler.RegisterRoutes(s.router)
+
+	// Protect bid routes with BuyerAuthMiddleware
+	bidMux := http.NewServeMux()
+	s.bidHandler.RegisterRoutes(bidMux)
+	s.router.Handle("/api/bids", s.buyerAuth.Handle(bidMux))
+
 	s.invoiceHandler.RegisterRoutes(s.router)
 	s.authHandler.RegisterRoutes(s.router)
 }

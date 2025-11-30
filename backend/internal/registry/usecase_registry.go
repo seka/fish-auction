@@ -16,6 +16,7 @@ type UseCase interface {
 	NewCreateBidUseCase() bid.CreateBidUseCase
 	NewCreateBuyerUseCase() buyer.CreateBuyerUseCase
 	NewListBuyersUseCase() buyer.ListBuyersUseCase
+	NewLoginBuyerUseCase() buyer.LoginBuyerUseCase
 	NewCreateFishermanUseCase() fisherman.CreateFishermanUseCase
 	NewListFishermenUseCase() fisherman.ListFishermenUseCase
 	NewListInvoicesUseCase() invoice.ListInvoicesUseCase
@@ -49,11 +50,15 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 }
 
 func (u *useCaseRegistry) NewCreateBuyerUseCase() buyer.CreateBuyerUseCase {
-	return buyer.NewCreateBuyerUseCase(u.repo.NewBuyerRepository())
+	return buyer.NewCreateBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository())
 }
 
 func (u *useCaseRegistry) NewListBuyersUseCase() buyer.ListBuyersUseCase {
 	return buyer.NewListBuyersUseCase(u.repo.NewBuyerRepository())
+}
+
+func (u *useCaseRegistry) NewLoginBuyerUseCase() buyer.LoginBuyerUseCase {
+	return buyer.NewLoginBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository())
 }
 
 func (u *useCaseRegistry) NewCreateFishermanUseCase() fisherman.CreateFishermanUseCase {
