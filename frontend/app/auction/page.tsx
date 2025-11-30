@@ -27,7 +27,7 @@ export default function AuctionPage() {
 
         const success = await submitBid({
             item_id: selectedItem.id,
-            buyer_id: parseInt(data.buyerId),
+            buyer_id: 0, // Backend handles this from context
             price: parseInt(data.price),
         });
 
@@ -106,23 +106,7 @@ export default function AuctionPage() {
                                 <p className="text-lg text-gray-700">{selectedItem.quantity} {selectedItem.unit}</p>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">中買人</label>
-                                <select
-                                    {...register('buyerId')}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
-                                >
-                                    <option value="">中買人を選択してください</option>
-                                    {buyers.map((buyer) => (
-                                        <option key={buyer.id} value={buyer.id}>
-                                            {buyer.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.buyerId && (
-                                    <p className="text-red-500 text-sm mt-1">{errors.buyerId.message}</p>
-                                )}
-                            </div>
+                            {/* Buyer selection removed */}
 
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">入札価格 (円)</label>

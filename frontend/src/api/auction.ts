@@ -8,7 +8,7 @@ export const getItems = async (status?: string): Promise<AuctionItem[]> => {
 
 export const submitBid = async (bid: Bid): Promise<boolean> => {
     try {
-        await apiClient.post('/api/bid', bid);
+        await apiClient.post('/api/bids', bid);
         return true;
     } catch (e) {
         console.error(e);
