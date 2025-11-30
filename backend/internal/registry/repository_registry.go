@@ -19,6 +19,7 @@ type Repository interface {
 	NewItemRepository() repository.ItemRepository
 	NewBidRepository() repository.BidRepository
 	NewBuyerRepository() repository.BuyerRepository
+	NewAuthenticationRepository() repository.AuthenticationRepository
 	NewFishermanRepository() repository.FishermanRepository
 	NewTransactionManager() repository.TransactionManager
 }
@@ -66,14 +67,37 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 		return nil, nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
+	// Run second migration for authentication separation
+	migration2SQL, err := migrations.FS.ReadFile("002_auth_separation.sql")
+	if err != nil {
+		db.Close()
+		return nil, nil, fmt.Errorf("failed to read migration file 002: %w", err)
+	}
+
+	_, err = db.Exec(string(migration2SQL))
+	if err != nil {
+		db.Close()
+		return nil, nil, fmt.Errorf("failed to run migration 002: %w", err)
+	}
+
 	// Connect to Redis
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
 	})
 
-	if err := redisClient.Ping(context.Background()).Err(); err != nil {
+	var redisErr error
+	for i := 0; i < 10; i++ {
+		redisErr = redisClient.Ping(context.Background()).Err()
+		if redisErr == nil {
+			break
+		}
+		log.Printf("Failed to connect to Redis: %v. Retrying in 2s...", redisErr)
+		time.Sleep(2 * time.Second)
+	}
+
+	if redisErr != nil {
 		db.Close()
-		return nil, nil, fmt.Errorf("failed to connect to redis: %w", err)
+		return nil, nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
 	}
 
 	return &repositoryRegistry{
@@ -95,6 +119,10 @@ func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
 func (r *repositoryRegistry) NewBuyerRepository() repository.BuyerRepository {
 	buyerCache := cache.NewBuyerCache(r.cache, r.cacheTTL)
 	return postgres.NewBuyerRepository(r.db, buyerCache)
+}
+
+func (r *repositoryRegistry) NewAuthenticationRepository() repository.AuthenticationRepository {
+	return postgres.NewAuthenticationRepository(r.db)
 }
 
 func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanRepository {
