@@ -31,6 +31,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := &model.AuctionItem{
+		AuctionID:   req.AuctionID,
 		FishermanID: req.FishermanID,
 		FishType:    req.FishType,
 		Quantity:    req.Quantity,
@@ -45,6 +46,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	resp := dto.ItemResponse{
 		ID:          created.ID,
+		AuctionID:   created.AuctionID,
 		FishermanID: created.FishermanID,
 		FishType:    created.FishType,
 		Quantity:    created.Quantity,

@@ -40,6 +40,8 @@ func main() {
 		handlers.bid,
 		handlers.invoice,
 		handlers.auth,
+		handlers.venue,
+		handlers.auction,
 	)
 
 	// Start Server
@@ -56,6 +58,8 @@ type handlers struct {
 	bid       *handler.BidHandler
 	invoice   *handler.InvoiceHandler
 	auth      *handler.AuthHandler
+	venue     *handler.VenueHandler
+	auction   *handler.AuctionHandler
 }
 
 func buildHandlers(reg registry.UseCase) *handlers {
@@ -67,5 +71,7 @@ func buildHandlers(reg registry.UseCase) *handlers {
 		bid:       handler.NewBidHandler(reg),
 		invoice:   handler.NewInvoiceHandler(reg),
 		auth:      handler.NewAuthHandler(reg),
+		venue:     handler.NewVenueHandler(reg),
+		auction:   handler.NewAuctionHandler(reg),
 	}
 }
