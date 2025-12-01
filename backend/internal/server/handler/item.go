@@ -52,6 +52,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Quantity:    created.Quantity,
 		Unit:        created.Unit,
 		Status:      created.Status.String(),
+		HighestBid:  created.HighestBid,
 		CreatedAt:   created.CreatedAt,
 	}
 
@@ -71,11 +72,13 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 	for i, item := range items {
 		resp[i] = dto.ItemResponse{
 			ID:          item.ID,
+			AuctionID:   item.AuctionID,
 			FishermanID: item.FishermanID,
 			FishType:    item.FishType,
 			Quantity:    item.Quantity,
 			Unit:        item.Unit,
 			Status:      item.Status.String(),
+			HighestBid:  item.HighestBid,
 			CreatedAt:   item.CreatedAt,
 		}
 	}

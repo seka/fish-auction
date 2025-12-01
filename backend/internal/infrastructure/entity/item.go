@@ -16,6 +16,7 @@ type AuctionItem struct {
 	Quantity    int              `db:"quantity"`
 	Unit        string           `db:"unit"`
 	Status      model.ItemStatus `db:"status"`
+	HighestBid  *int             `db:"highest_bid"`
 	CreatedAt   time.Time        `db:"created_at"`
 }
 
@@ -62,6 +63,7 @@ func (e *AuctionItem) ToModel() *model.AuctionItem {
 		Quantity:    e.Quantity,
 		Unit:        e.Unit,
 		Status:      e.Status,
+		HighestBid:  e.HighestBid,
 		CreatedAt:   e.CreatedAt,
 	}
 }

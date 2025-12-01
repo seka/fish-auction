@@ -48,6 +48,7 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 		FishType:    item.FishType,
 		Quantity:    item.Quantity,
 		Unit:        item.Unit,
+		Status:      model.ItemStatusPending,
 	}
 	if err := e.Validate(); err != nil {
 		return nil, err
@@ -92,7 +93,17 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 
 func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	db := r.getDB(ctx)
-	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items WHERE auction_id = $1 ORDER BY created_at DESC"
+	query := `
+		SELECT 
+			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
+			ai.quantity, ai.unit, ai.status, ai.created_at,
+			MAX(t.price) as highest_bid
+		FROM auction_items ai
+		LEFT JOIN transactions t ON ai.id = t.item_id
+		WHERE ai.auction_id = $1
+		GROUP BY ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, ai.quantity, ai.unit, ai.status, ai.created_at
+		ORDER BY ai.created_at DESC
+	`
 
 	rows, err := db.QueryContext(ctx, query, auctionID)
 	if err != nil {
@@ -103,8 +114,13 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 	var items []model.AuctionItem
 	for rows.Next() {
 		var e entity.AuctionItem
-		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt); err != nil {
+		var highestBid sql.NullInt64
+		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt, &highestBid); err != nil {
 			return nil, err
+		}
+		if highestBid.Valid {
+			bid := int(highestBid.Int64)
+			e.HighestBid = &bid
 		}
 		items = append(items, *e.ToModel())
 	}

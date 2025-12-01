@@ -214,6 +214,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 			Quantity:    item.Quantity,
 			Unit:        item.Unit,
 			Status:      item.Status.String(),
+			HighestBid:  item.HighestBid,
 			CreatedAt:   item.CreatedAt,
 		}
 	}

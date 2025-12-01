@@ -25,6 +25,7 @@ export interface AuctionItem {
     quantity: number;
     unit: string;
     status: string;
+    highest_bid?: number;
     created_at: string;
 }
 

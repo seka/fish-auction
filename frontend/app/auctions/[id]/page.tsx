@@ -114,8 +114,8 @@ export default function AuctionRoomPage() {
                                 &larr; 一覧へ
                             </Link>
                             <span className={`px-3 py-1 rounded-full text-sm font-bold ${auction.status === 'in_progress'
-                                    ? 'bg-orange-100 text-orange-700 animate-pulse'
-                                    : 'bg-blue-100 text-blue-700'
+                                ? 'bg-orange-100 text-orange-700 animate-pulse'
+                                : 'bg-blue-100 text-blue-700'
                                 }`}>
                                 {auction.status === 'in_progress' ? '🔥 開催中' : auction.status}
                             </span>
@@ -167,11 +167,16 @@ export default function AuctionRoomPage() {
                                                     <span className="font-bold text-lg">{item.quantity}</span> {item.unit}
                                                     <span className="text-sm ml-2 text-gray-400">(漁師ID: {item.fisherman_id})</span>
                                                 </p>
+                                                {item.highest_bid && (
+                                                    <p className="text-sm mt-1 text-orange-600 font-semibold">
+                                                        現在の最高額: ¥{item.highest_bid.toLocaleString()}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <span className={`px-4 py-2 rounded-full text-sm font-bold shadow-sm ${item.status === 'Pending'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-gray-100 text-gray-600'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-600'
                                             }`}>
                                             {item.status === 'Pending' ? '入札受付中' : item.status}
                                         </span>
@@ -192,6 +197,11 @@ export default function AuctionRoomPage() {
                                         <p className="font-bold text-2xl text-gray-900">{selectedItem.fish_type}</p>
                                         <p className="text-lg text-gray-700">{selectedItem.quantity} {selectedItem.unit}</p>
                                         <p className="text-sm text-gray-500 mt-2">ステータス: {selectedItem.status}</p>
+                                        {selectedItem.highest_bid && (
+                                            <p className="text-sm mt-2 text-orange-600 font-bold">
+                                                現在の最高額: ¥{selectedItem.highest_bid.toLocaleString()}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {selectedItem.status === 'Pending' ? (

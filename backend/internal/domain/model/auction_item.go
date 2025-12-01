@@ -10,5 +10,6 @@ type AuctionItem struct {
 	Quantity    int
 	Unit        string
 	Status      ItemStatus
+	HighestBid  *int
 	CreatedAt   time.Time
 }
