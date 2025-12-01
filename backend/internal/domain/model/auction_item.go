@@ -4,6 +4,7 @@ import "time"
 
 type AuctionItem struct {
 	ID          int
+	AuctionID   int
 	FishermanID int
 	FishType    string
 	Quantity    int

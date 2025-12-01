@@ -8,9 +8,10 @@ import (
 
 // MockItemRepository is a mock implementation of ItemRepository
 type MockItemRepository struct {
-	CreateFunc       func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
-	ListFunc         func(ctx context.Context, status string) ([]model.AuctionItem, error)
-	UpdateStatusFunc func(ctx context.Context, id int, status model.ItemStatus) error
+	CreateFunc        func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
+	ListFunc          func(ctx context.Context, status string) ([]model.AuctionItem, error)
+	ListByAuctionFunc func(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
+	UpdateStatusFunc  func(ctx context.Context, id int, status model.ItemStatus) error
 }
 
 func (m *MockItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
@@ -19,6 +20,10 @@ func (m *MockItemRepository) Create(ctx context.Context, item *model.AuctionItem
 
 func (m *MockItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	return m.ListFunc(ctx, status)
+}
+
+func (m *MockItemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+	return m.ListByAuctionFunc(ctx, auctionID)
 }
 
 func (m *MockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {

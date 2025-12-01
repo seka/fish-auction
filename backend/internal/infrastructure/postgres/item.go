@@ -43,6 +43,7 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 	db := r.getDB(ctx)
 
 	e := entity.AuctionItem{
+		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
 		FishType:    item.FishType,
 		Quantity:    item.Quantity,
@@ -53,9 +54,9 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 	}
 
 	err := db.QueryRowContext(ctx,
-		"INSERT INTO auction_items (fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, 'Pending') RETURNING id, fisherman_id, fish_type, quantity, unit, status, created_at",
-		item.FishermanID, item.FishType, item.Quantity, item.Unit,
-	).Scan(&e.ID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
+		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at",
+		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
+	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 
 func (r *itemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	db := r.getDB(ctx)
-	query := "SELECT id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items"
+	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items"
 	var args []interface{}
 	if status != "" {
 		query += " WHERE status = $1"
@@ -81,7 +82,28 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	var items []model.AuctionItem
 	for rows.Next() {
 		var e entity.AuctionItem
-		if err := rows.Scan(&e.ID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt); err != nil {
+		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, *e.ToModel())
+	}
+	return items, nil
+}
+
+func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+	db := r.getDB(ctx)
+	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items WHERE auction_id = $1 ORDER BY created_at DESC"
+
+	rows, err := db.QueryContext(ctx, query, auctionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []model.AuctionItem
+	for rows.Next() {
+		var e entity.AuctionItem
+		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, *e.ToModel())
@@ -99,9 +121,9 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	db := r.getDB(ctx)
 	var e entity.AuctionItem
 	err := db.QueryRowContext(ctx,
-		"SELECT id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items WHERE id = $1",
+		"SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items WHERE id = $1",
 		id,
-	).Scan(&e.ID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
+	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &apperrors.NotFoundError{Resource: "Item", ID: id}

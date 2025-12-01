@@ -10,6 +10,7 @@ import (
 
 type AuctionItem struct {
 	ID          int              `db:"id"`
+	AuctionID   int              `db:"auction_id"`
 	FishermanID int              `db:"fisherman_id"`
 	FishType    string           `db:"fish_type"`
 	Quantity    int              `db:"quantity"`
@@ -55,6 +56,7 @@ func (e *AuctionItem) Validate() error {
 func (e *AuctionItem) ToModel() *model.AuctionItem {
 	return &model.AuctionItem{
 		ID:          e.ID,
+		AuctionID:   e.AuctionID,
 		FishermanID: e.FishermanID,
 		FishType:    e.FishType,
 		Quantity:    e.Quantity,
