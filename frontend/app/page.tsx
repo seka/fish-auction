@@ -36,7 +36,7 @@ export default function Home() {
         </Link>
 
         {/* Auction Floor */}
-        <Link href="/auction" className="group block p-10 bg-white border border-gray-100 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+        <Link href="/auctions" className="group block p-10 bg-white border border-gray-100 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
           <div className="flex flex-col items-center text-center space-y-6 relative z-10">
             <div className="p-5 bg-orange-100 rounded-2xl group-hover:bg-orange-600 transition-colors duration-300 shadow-sm">

@@ -21,6 +21,41 @@ export class ApiClient {
         const text = await res.text();
         return text ? JSON.parse(text) : ({} as T);
     }
+
+    async put<T>(url: string, body: any): Promise<T> {
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+            throw new Error(`PUT ${url} failed: ${res.statusText}`);
+        }
+        const text = await res.text();
+        return text ? JSON.parse(text) : ({} as T);
+    }
+
+    async delete(url: string): Promise<void> {
+        const res = await fetch(url, {
+            method: 'DELETE',
+        });
+        if (!res.ok) {
+            throw new Error(`DELETE ${url} failed: ${res.statusText}`);
+        }
+    }
+
+    async patch<T>(url: string, body: any): Promise<T> {
+        const res = await fetch(url, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+            throw new Error(`PATCH ${url} failed: ${res.statusText}`);
+        }
+        const text = await res.text();
+        return text ? JSON.parse(text) : ({} as T);
+    }
 }
 
 export const apiClient = new ApiClient();
