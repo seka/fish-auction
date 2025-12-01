@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRegisterFisherman, useRegisterBuyer, useRegisterItem, useFishermen } from './_hooks/useAdmin';
+import { useAuctions } from './auctions/_hooks/useAuction';
 import { fishermanSchema, buyerSchema, itemSchema, FishermanFormData, BuyerFormData, ItemFormData } from '@/src/models/schemas/admin';
 
 export default function AdminPage() {
@@ -13,6 +14,7 @@ export default function AdminPage() {
     const { registerBuyer, isLoading: isBuyerLoading } = useRegisterBuyer();
     const { registerItem, isLoading: isItemLoading } = useRegisterItem();
     const { fishermen } = useFishermen();
+    const { auctions } = useAuctions({ status: 'scheduled' }); // Only show scheduled auctions
 
     const { register: registerFishermanForm, handleSubmit: handleSubmitFisherman, reset: resetFisherman, formState: { errors: fishermanErrors } } = useForm<FishermanFormData>({
         resolver: zodResolver(fishermanSchema),
@@ -46,6 +48,7 @@ export default function AdminPage() {
 
     const onRegisterItem = async (data: ItemFormData) => {
         const success = await registerItem({
+            auction_id: parseInt(data.auctionId),
             fisherman_id: parseInt(data.fishermanId),
             fish_type: data.fishType,
             quantity: parseInt(data.quantity),
@@ -136,6 +139,23 @@ export default function AdminPage() {
                         出品登録 (セリ対象)
                     </h2>
                     <form onSubmit={handleSubmitItem(onRegisterItem)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-1">セリ (開催予定)</label>
+                            <select
+                                {...registerItemForm('auctionId')}
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border bg-gray-50"
+                            >
+                                <option value="">セリを選択してください</option>
+                                {auctions.map((auction) => (
+                                    <option key={auction.id} value={auction.id}>
+                                        {auction.auction_date} {auction.start_time?.substring(0, 5)} - {auction.end_time?.substring(0, 5)} (ID: {auction.id})
+                                    </option>
+                                ))}
+                            </select>
+                            {itemErrors.auctionId && (
+                                <p className="text-red-500 text-sm mt-1">{itemErrors.auctionId.message}</p>
+                            )}
+                        </div>
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-1">漁師</label>
                             <select

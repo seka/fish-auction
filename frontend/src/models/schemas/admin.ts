@@ -9,6 +9,7 @@ export const buyerSchema = z.object({
 });
 
 export const itemSchema = z.object({
+    auctionId: z.string().min(1, 'セリを選択してください'),
     fishermanId: z.string().min(1, '漁師を選択してください'),
     fishType: z.string().min(1, '魚種を入力してください'),
     quantity: z.string()
