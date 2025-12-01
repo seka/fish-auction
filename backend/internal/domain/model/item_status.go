@@ -4,6 +4,7 @@ package model
 type ItemStatus string
 
 const (
+	ItemStatusPending   ItemStatus = "Pending"
 	ItemStatusAvailable ItemStatus = "Available"
 	ItemStatusSold      ItemStatus = "Sold"
 )
@@ -11,7 +12,7 @@ const (
 // IsValid checks if the status is valid
 func (s ItemStatus) IsValid() bool {
 	switch s {
-	case ItemStatusAvailable, ItemStatusSold:
+	case ItemStatusPending, ItemStatusAvailable, ItemStatusSold:
 		return true
 	}
 	return false
