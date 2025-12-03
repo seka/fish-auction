@@ -155,6 +155,11 @@ func (r *auctionRepository) UpdateStatus(ctx context.Context, id int, status mod
 	return nil
 }
 
+// Delete はセリをデータベースから削除します。
+// CASCADE削除: この操作により以下のデータも自動的に削除されます:
+//   - このセリに関連付けられたすべての出品
+//
+// 注意: 出品に入札（transactions）が存在する場合、入札履歴を保護するため削除は失敗します。
 func (r *auctionRepository) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM auctions WHERE id = $1`
 

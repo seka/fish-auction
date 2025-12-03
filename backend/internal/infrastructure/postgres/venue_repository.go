@@ -84,6 +84,12 @@ func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error 
 	return nil
 }
 
+// Delete は会場をデータベースから削除します。
+// CASCADE削除: この操作により以下のデータも自動的に削除されます:
+//   - この会場に関連付けられたすべてのセリ
+//   - それらのセリに関連付けられたすべての出品
+//
+// 注意: 出品に入札（transactions）が存在する場合、入札履歴を保護するため削除は失敗します。
 func (r *venueRepository) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM venues WHERE id = $1`
 
