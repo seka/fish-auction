@@ -14,10 +14,6 @@
 
 - コミュニケーションは **日本語** で行う。
 - 指示・状況が曖昧な場合は、早い段階で質問し、前提を揃える。
-- 作業の開始・完了は `terminal-notifier` を利用してユーザーへ知らせる。
-    ```bash
-    terminal-notifier -title '{Agent名}' -message '{TASK名}' -group `{TASKのID}`
-    ```
 
 ## ⚙️ ワークフロー共通原則
 
