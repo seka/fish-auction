@@ -45,15 +45,17 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := dto.ItemResponse{
-		ID:          created.ID,
-		AuctionID:   created.AuctionID,
-		FishermanID: created.FishermanID,
-		FishType:    created.FishType,
-		Quantity:    created.Quantity,
-		Unit:        created.Unit,
-		Status:      created.Status.String(),
-		HighestBid:  created.HighestBid,
-		CreatedAt:   created.CreatedAt,
+		ID:                created.ID,
+		AuctionID:         created.AuctionID,
+		FishermanID:       created.FishermanID,
+		FishType:          created.FishType,
+		Quantity:          created.Quantity,
+		Unit:              created.Unit,
+		Status:            created.Status.String(),
+		HighestBid:        created.HighestBid,
+		HighestBidderID:   created.HighestBidderID,
+		HighestBidderName: created.HighestBidderName,
+		CreatedAt:         created.CreatedAt,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -71,15 +73,17 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 	resp := make([]dto.ItemResponse, len(items))
 	for i, item := range items {
 		resp[i] = dto.ItemResponse{
-			ID:          item.ID,
-			AuctionID:   item.AuctionID,
-			FishermanID: item.FishermanID,
-			FishType:    item.FishType,
-			Quantity:    item.Quantity,
-			Unit:        item.Unit,
-			Status:      item.Status.String(),
-			HighestBid:  item.HighestBid,
-			CreatedAt:   item.CreatedAt,
+			ID:                item.ID,
+			AuctionID:         item.AuctionID,
+			FishermanID:       item.FishermanID,
+			FishType:          item.FishType,
+			Quantity:          item.Quantity,
+			Unit:              item.Unit,
+			Status:            item.Status.String(),
+			HighestBid:        item.HighestBid,
+			HighestBidderID:   item.HighestBidderID,
+			HighestBidderName: item.HighestBidderName,
+			CreatedAt:         item.CreatedAt,
 		}
 	}
 

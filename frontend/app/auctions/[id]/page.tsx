@@ -2,44 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 
-import { getAuction, getAuctionItems } from '@/src/api/auction';
-import { submitBid } from '@/src/api/bid';
+import { loginBuyer } from '@/src/api/buyer_auth';
 import { AuctionItem } from '@/src/models';
 import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
-
-// Custom hook for this page
-const useAuctionData = (auctionId: number) => {
-    const { data: auction, isLoading: isAuctionLoading } = useQuery({
-        queryKey: ['auction', auctionId],
-        queryFn: () => getAuction(auctionId),
-    });
-
-    const { data: items, isLoading: isItemsLoading, refetch: refetchItems } = useQuery({
-        queryKey: ['auction_items', auctionId],
-        queryFn: () => getAuctionItems(auctionId),
-        refetchInterval: 5000, // Poll every 5 seconds
-    });
-
-    return { auction, items: items || [], isLoading: isAuctionLoading || isItemsLoading, refetchItems };
-};
-
-const useBidMutation = () => {
-    const queryClient = useQueryClient();
-    const mutation = useMutation({
-        mutationFn: submitBid,
-        onSuccess: () => {
-            // Invalidate items to update status/price if needed
-            // But actually submitBid returns boolean, and we refetch items manually or via interval
-            // Ideally we should invalidate query keys
-        },
-    });
-    return { submitBid: mutation.mutateAsync, isLoading: mutation.isPending };
-};
+import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
+import { useAuctionData } from './_hooks/useAuctionData';
+import { useBidMutation } from './_hooks/useBidMutation';
+import { useAuth } from './_hooks/useAuth';
+import { isAuctionActive, formatTime } from '@/src/utils/auction';
 
 export default function AuctionRoomPage() {
     const params = useParams();
@@ -48,12 +22,21 @@ export default function AuctionRoomPage() {
 
     const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
     const [message, setMessage] = useState('');
+    const [loginError, setLoginError] = useState('');
 
     const { auction, items, isLoading, refetchItems } = useAuctionData(auctionId);
     const { submitBid, isLoading: isBidLoading } = useBidMutation();
+    const { isLoggedIn, isChecking } = useAuth();
+
+    // Check if auction is active (within bidding hours)
+    const auctionActive = auction ? isAuctionActive(auction) : false;
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<BidFormData>({
         resolver: zodResolver(bidSchema),
+    });
+
+    const { register: registerLogin, handleSubmit: handleSubmitLogin, formState: { errors: loginErrors, isSubmitting: isLoggingIn } } = useForm<BuyerLoginFormData>({
+        resolver: zodResolver(buyerLoginSchema),
     });
 
     // Reset selected item if it disappears from list or status changes (optional)
@@ -70,6 +53,14 @@ export default function AuctionRoomPage() {
         return <div>Invalid Auction ID</div>;
     }
 
+    if (isChecking) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-xl text-gray-600">読み込み中...</div>
+            </div>
+        );
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -81,6 +72,17 @@ export default function AuctionRoomPage() {
     if (!auction) {
         return <div>Auction not found</div>;
     }
+
+    const onSubmitLogin = async (data: BuyerLoginFormData) => {
+        setLoginError('');
+        const buyer = await loginBuyer(data);
+        if (buyer) {
+            // Reload page to update auth state and stay on current page
+            window.location.reload();
+        } else {
+            setLoginError('メールアドレスまたはパスワードが間違っています');
+        }
+    };
 
     const onSubmitBid = async (data: BidFormData) => {
         if (!selectedItem) return;
@@ -102,6 +104,67 @@ export default function AuctionRoomPage() {
             setMessage('入札に失敗しました');
         }
     };
+
+    // Show login form if not logged in
+    if (!isLoggedIn) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-md w-full space-y-8">
+                    <div>
+                        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                            セリ会場へのログイン
+                        </h2>
+                        <p className="mt-2 text-center text-sm text-gray-600">
+                            入札するにはログインが必要です
+                        </p>
+                    </div>
+                    <form className="mt-8 space-y-6" onSubmit={handleSubmitLogin(onSubmitLogin)}>
+                        <div className="rounded-md shadow-sm -space-y-px">
+                            <div>
+                                <label htmlFor="email" className="sr-only">メールアドレス</label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    {...registerLogin('email')}
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                    placeholder="メールアドレス"
+                                />
+                                {loginErrors.email && <p className="text-red-500 text-xs mt-1">{loginErrors.email.message}</p>}
+                            </div>
+                            <div>
+                                <label htmlFor="password" className="sr-only">パスワード</label>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    {...registerLogin('password')}
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                    placeholder="パスワード"
+                                />
+                                {loginErrors.password && <p className="text-red-500 text-xs mt-1">{loginErrors.password.message}</p>}
+                            </div>
+                        </div>
+
+                        {loginError && <div className="text-red-500 text-sm text-center">{loginError}</div>}
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={isLoggingIn}
+                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                            >
+                                ログイン
+                            </button>
+                        </div>
+                        <div className="text-center">
+                            <Link href="/signup" className="text-sm text-indigo-600 hover:text-indigo-500">
+                                アカウントをお持ちでない方はこちら
+                            </Link>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -170,6 +233,9 @@ export default function AuctionRoomPage() {
                                                 {item.highest_bid && (
                                                     <p className="text-sm mt-1 text-orange-600 font-semibold">
                                                         現在の最高額: ¥{item.highest_bid.toLocaleString()}
+                                                        {item.highest_bidder_name && (
+                                                            <span className="ml-2 text-gray-600">({item.highest_bidder_name} さん)</span>
+                                                        )}
                                                     </p>
                                                 )}
                                             </div>
@@ -200,38 +266,54 @@ export default function AuctionRoomPage() {
                                         {selectedItem.highest_bid && (
                                             <p className="text-sm mt-2 text-orange-600 font-bold">
                                                 現在の最高額: ¥{selectedItem.highest_bid.toLocaleString()}
+                                                {selectedItem.highest_bidder_name && (
+                                                    <span className="ml-2 text-gray-600">({selectedItem.highest_bidder_name} さん)</span>
+                                                )}
                                             </p>
                                         )}
                                     </div>
 
                                     {selectedItem.status === 'Pending' ? (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm font-bold text-gray-700 mb-1">入札価格 (円)</label>
-                                                <div className="relative rounded-md shadow-sm">
-                                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                                        <span className="text-gray-500 sm:text-sm">¥</span>
-                                                    </div>
-                                                    <input
-                                                        type="number"
-                                                        {...register('price')}
-                                                        className="block w-full rounded-md border-gray-300 pl-7 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
-                                                        placeholder="0"
-                                                    />
+                                        !auctionActive ? (
+                                            <div className="space-y-4">
+                                                <div className="text-center py-6 bg-yellow-50 rounded-lg border border-yellow-200">
+                                                    <p className="text-yellow-800 font-bold mb-2">⏰ 入札受付時間外</p>
+                                                    {auction.start_time && auction.end_time && (
+                                                        <p className="text-sm text-yellow-700">
+                                                            受付時間: {formatTime(auction.start_time)} ~ {formatTime(auction.end_time)}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                {errors.price && (
-                                                    <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
-                                                )}
                                             </div>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-bold text-gray-700 mb-1">入札価格 (円)</label>
+                                                    <div className="relative rounded-md shadow-sm">
+                                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                                            <span className="text-gray-500 sm:text-sm">¥</span>
+                                                        </div>
+                                                        <input
+                                                            type="number"
+                                                            {...register('price')}
+                                                            className="block w-full rounded-md border-gray-300 pl-7 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-3 border"
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                    {errors.price && (
+                                                        <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+                                                    )}
+                                                </div>
 
-                                            <button
-                                                type="submit"
-                                                disabled={isBidLoading}
-                                                className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-md text-lg font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors transform hover:scale-[1.02] disabled:opacity-50"
-                                            >
-                                                {isBidLoading ? '処理中...' : '落札する！'}
-                                            </button>
-                                        </>
+                                                <button
+                                                    type="submit"
+                                                    disabled={isBidLoading}
+                                                    className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-md text-lg font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors transform hover:scale-[1.02] disabled:opacity-50"
+                                                >
+                                                    {isBidLoading ? '処理中...' : '落札する！'}
+                                                </button>
+                                            </>
+                                        )
                                     ) : (
                                         <div className="text-center py-4 bg-gray-100 rounded text-gray-500">
                                             この商品は既に入札が終了しています

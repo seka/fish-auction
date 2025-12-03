@@ -97,11 +97,23 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 		SELECT 
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
 			ai.quantity, ai.unit, ai.status, ai.created_at,
-			MAX(t.price) as highest_bid
+			t_max.max_price as highest_bid,
+			t_max.buyer_id as highest_bidder_id,
+			b.name as highest_bidder_name
 		FROM auction_items ai
-		LEFT JOIN transactions t ON ai.id = t.item_id
+		LEFT JOIN (
+			SELECT 
+				t1.item_id, 
+				MAX(t1.price) as max_price,
+				(SELECT t2.buyer_id FROM transactions t2 
+				 WHERE t2.item_id = t1.item_id 
+				 ORDER BY t2.price DESC, t2.created_at ASC 
+				 LIMIT 1) as buyer_id
+			FROM transactions t1
+			GROUP BY t1.item_id
+		) t_max ON ai.id = t_max.item_id
+		LEFT JOIN buyers b ON t_max.buyer_id = b.id
 		WHERE ai.auction_id = $1
-		GROUP BY ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, ai.quantity, ai.unit, ai.status, ai.created_at
 		ORDER BY ai.created_at DESC
 	`
 
@@ -115,13 +127,29 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 	for rows.Next() {
 		var e entity.AuctionItem
 		var highestBid sql.NullInt64
-		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt, &highestBid); err != nil {
+		var highestBidderID sql.NullInt64
+		var highestBidderName sql.NullString
+
+		if err := rows.Scan(
+			&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
+			&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+			&highestBid, &highestBidderID, &highestBidderName,
+		); err != nil {
 			return nil, err
 		}
+
 		if highestBid.Valid {
 			bid := int(highestBid.Int64)
 			e.HighestBid = &bid
 		}
+		if highestBidderID.Valid {
+			bidderID := int(highestBidderID.Int64)
+			e.HighestBidderID = &bidderID
+		}
+		if highestBidderName.Valid {
+			e.HighestBidderName = &highestBidderName.String
+		}
+
 		items = append(items, *e.ToModel())
 	}
 	return items, nil

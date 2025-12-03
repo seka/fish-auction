@@ -207,15 +207,17 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	resp := make([]dto.ItemResponse, len(items))
 	for i, item := range items {
 		resp[i] = dto.ItemResponse{
-			ID:          item.ID,
-			AuctionID:   item.AuctionID,
-			FishermanID: item.FishermanID,
-			FishType:    item.FishType,
-			Quantity:    item.Quantity,
-			Unit:        item.Unit,
-			Status:      item.Status.String(),
-			HighestBid:  item.HighestBid,
-			CreatedAt:   item.CreatedAt,
+			ID:                item.ID,
+			AuctionID:         item.AuctionID,
+			FishermanID:       item.FishermanID,
+			FishType:          item.FishType,
+			Quantity:          item.Quantity,
+			Unit:              item.Unit,
+			Status:            item.Status.String(),
+			HighestBid:        item.HighestBid,
+			HighestBidderID:   item.HighestBidderID,
+			HighestBidderName: item.HighestBidderName,
+			CreatedAt:         item.CreatedAt,
 		}
 	}
 

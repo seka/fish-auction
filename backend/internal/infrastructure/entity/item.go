@@ -9,15 +9,17 @@ import (
 )
 
 type AuctionItem struct {
-	ID          int              `db:"id"`
-	AuctionID   int              `db:"auction_id"`
-	FishermanID int              `db:"fisherman_id"`
-	FishType    string           `db:"fish_type"`
-	Quantity    int              `db:"quantity"`
-	Unit        string           `db:"unit"`
-	Status      model.ItemStatus `db:"status"`
-	HighestBid  *int             `db:"highest_bid"`
-	CreatedAt   time.Time        `db:"created_at"`
+	ID                int              `db:"id"`
+	AuctionID         int              `db:"auction_id"`
+	FishermanID       int              `db:"fisherman_id"`
+	FishType          string           `db:"fish_type"`
+	Quantity          int              `db:"quantity"`
+	Unit              string           `db:"unit"`
+	Status            model.ItemStatus `db:"status"`
+	HighestBid        *int             `db:"highest_bid"`
+	HighestBidderID   *int             `db:"highest_bidder_id"`
+	HighestBidderName *string          `db:"highest_bidder_name"`
+	CreatedAt         time.Time        `db:"created_at"`
 }
 
 func (e *AuctionItem) Validate() error {
@@ -56,14 +58,16 @@ func (e *AuctionItem) Validate() error {
 
 func (e *AuctionItem) ToModel() *model.AuctionItem {
 	return &model.AuctionItem{
-		ID:          e.ID,
-		AuctionID:   e.AuctionID,
-		FishermanID: e.FishermanID,
-		FishType:    e.FishType,
-		Quantity:    e.Quantity,
-		Unit:        e.Unit,
-		Status:      e.Status,
-		HighestBid:  e.HighestBid,
-		CreatedAt:   e.CreatedAt,
+		ID:                e.ID,
+		AuctionID:         e.AuctionID,
+		FishermanID:       e.FishermanID,
+		FishType:          e.FishType,
+		Quantity:          e.Quantity,
+		Unit:              e.Unit,
+		Status:            e.Status,
+		HighestBid:        e.HighestBid,
+		HighestBidderID:   e.HighestBidderID,
+		HighestBidderName: e.HighestBidderName,
+		CreatedAt:         e.CreatedAt,
 	}
 }
