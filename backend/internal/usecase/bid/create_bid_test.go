@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
+	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/bid"
 	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
@@ -16,16 +18,16 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	txErr := errors.New("tx error")
 
 	tests := []struct {
-		name              string
-		input             *model.Bid
-		updateStatusErr   error
-		createErr         error
-		txErr             error
-		wantID            int
-		wantErr           error
-		wantUpdateCalled  bool
-		wantCreateCalled  bool
-		wantTxCalled      bool
+		name             string
+		input            *model.Bid
+		updateStatusErr  error
+		createErr        error
+		txErr            error
+		wantID           int
+		wantErr          error
+		wantCreateCalled bool
+		wantTxCalled     bool
+		mockAuction      *model.Auction
 	}{
 		{
 			name: "Success",
@@ -35,9 +37,16 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				Price:   1000,
 			},
 			wantID:           1,
-			wantUpdateCalled: true,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
+			mockAuction: &model.Auction{
+				ID:          1,
+				VenueID:     1,
+				AuctionDate: time.Now(),
+				StartTime:   nil,
+				EndTime:     nil,
+				Status:      model.AuctionStatusInProgress,
+			},
 		},
 		{
 			name: "Error_UpdateStatusFails",
@@ -47,9 +56,18 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				Price:   1000,
 			},
 			updateStatusErr:  updateStatusErr,
-			wantErr:          updateStatusErr,
-			wantUpdateCalled: true,
+			wantErr:          nil, // UpdateStatus is no longer called, so no error expected from it
 			wantTxCalled:     true,
+			wantCreateCalled: true, // Should proceed to create
+			wantID:           1,    // Should succeed
+			mockAuction: &model.Auction{
+				ID:          1,
+				VenueID:     1,
+				AuctionDate: time.Now(),
+				StartTime:   nil,
+				EndTime:     nil,
+				Status:      model.AuctionStatusInProgress,
+			},
 		},
 		{
 			name: "Error_CreateBidFails",
@@ -60,9 +78,16 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			createErr:        createBidErr,
 			wantErr:          createBidErr,
-			wantUpdateCalled: true,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
+			mockAuction: &model.Auction{
+				ID:          1,
+				VenueID:     1,
+				AuctionDate: time.Now(),
+				StartTime:   nil,
+				EndTime:     nil,
+				Status:      model.AuctionStatusInProgress,
+			},
 		},
 		{
 			name: "Error_TransactionManagerFails",
@@ -71,9 +96,39 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   1000,
 			},
-			txErr:      txErr,
-			wantErr:    txErr,
+			txErr:        txErr,
+			wantErr:      txErr,
 			wantTxCalled: true,
+			mockAuction: &model.Auction{
+				ID:          1,
+				VenueID:     1,
+				AuctionDate: time.Now(),
+				StartTime:   nil,
+				EndTime:     nil,
+				Status:      model.AuctionStatusInProgress,
+			},
+		},
+		{
+			name: "Error_AuctionPeriodInvalid",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   1000,
+			},
+			wantErr: &domainErrors.ValidationError{Field: "auction_time"},
+			mockAuction: func() *model.Auction {
+				now := time.Now()
+				startTime := now.Add(-2 * time.Hour)
+				endTime := now.Add(-1 * time.Hour)
+				return &model.Auction{
+					ID:          1,
+					VenueID:     1,
+					AuctionDate: now,
+					StartTime:   &startTime,
+					EndTime:     &endTime,
+					Status:      model.AuctionStatusInProgress,
+				}
+			}(),
 		},
 	}
 
@@ -84,16 +139,12 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			txCalled := false
 
 			mockItemRepo := &mock.MockItemRepository{
-				UpdateStatusFunc: func(ctx context.Context, id int, status model.ItemStatus) error {
-					updateCalled = true
-					if status != model.ItemStatusSold {
-						t.Fatalf("unexpected status passed: %v", status)
-					}
-					if id != tt.input.ItemID {
-						t.Fatalf("unexpected item id: %d", id)
-					}
-					return tt.updateStatusErr
+				ListFunc: func(ctx context.Context, status string) ([]model.AuctionItem, error) {
+					return []model.AuctionItem{
+						{ID: tt.input.ItemID, AuctionID: 1},
+					}, nil
 				},
+				// UpdateStatusFunc is not expected to be called
 			}
 
 			mockBidRepo := &mock.MockBidRepository{
@@ -111,6 +162,12 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				},
 			}
 
+			mockAuctionRepo := &mock.MockAuctionRepository{
+				GetByIDFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+					return tt.mockAuction, nil
+				},
+			}
+
 			mockTxMgr := &mock.MockTransactionManager{
 				WithTransactionFunc: func(ctx context.Context, fn func(ctx context.Context) error) error {
 					txCalled = true
@@ -121,12 +178,23 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBidRepo, mockTxMgr)
+			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBidRepo, mockAuctionRepo, mockTxMgr)
 			created, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr != nil {
-				if !errors.Is(err, tt.wantErr) {
-					t.Fatalf("expected error %v, got %v", tt.wantErr, err)
+				var wantValErr *domainErrors.ValidationError
+				if errors.As(tt.wantErr, &wantValErr) {
+					var gotValErr *domainErrors.ValidationError
+					if !errors.As(err, &gotValErr) {
+						t.Fatalf("expected ValidationError, got %T: %v", err, err)
+					}
+					if wantValErr.Field != "" && gotValErr.Field != wantValErr.Field {
+						t.Fatalf("expected field %s, got %s", wantValErr.Field, gotValErr.Field)
+					}
+				} else {
+					if !errors.Is(err, tt.wantErr) {
+						t.Fatalf("expected error %v, got %v", tt.wantErr, err)
+					}
 				}
 				if created != nil {
 					t.Fatalf("expected nil result, got %+v", created)
@@ -140,8 +208,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			if updateCalled != tt.wantUpdateCalled {
-				t.Fatalf("UpdateStatus called = %v, want %v", updateCalled, tt.wantUpdateCalled)
+			if updateCalled {
+				t.Fatalf("UpdateStatus called = %v, want %v", updateCalled, false)
 			}
 			if createCalled != tt.wantCreateCalled {
 				t.Fatalf("Create called = %v, want %v", createCalled, tt.wantCreateCalled)

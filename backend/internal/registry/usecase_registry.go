@@ -59,6 +59,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 	return bid.NewCreateBidUseCase(
 		u.repo.NewItemRepository(),
 		u.repo.NewBidRepository(),
+		u.repo.NewAuctionRepository(),
 		u.repo.NewTransactionManager(),
 	)
 }
