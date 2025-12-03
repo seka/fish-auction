@@ -24,5 +24,17 @@ func NewGetAuctionUseCase(repo repository.AuctionRepository) GetAuctionUseCase {
 
 // Execute gets an auction by ID
 func (uc *getAuctionUseCase) Execute(ctx context.Context, id int) (*model.Auction, error) {
-	return uc.repo.GetByID(ctx, id)
+	auction, err := uc.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if auction.ShouldBeCompleted() {
+		if err := uc.repo.UpdateStatus(ctx, auction.ID, model.AuctionStatusCompleted); err != nil {
+			return nil, err
+		}
+		auction.Status = model.AuctionStatusCompleted
+	}
+
+	return auction, nil
 }

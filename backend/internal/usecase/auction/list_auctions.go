@@ -24,5 +24,18 @@ func NewListAuctionsUseCase(repo repository.AuctionRepository) ListAuctionsUseCa
 
 // Execute lists auctions with optional filters
 func (uc *listAuctionsUseCase) Execute(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
-	return uc.repo.List(ctx, filters)
+	auctions, err := uc.repo.List(ctx, filters)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range auctions {
+		if auctions[i].ShouldBeCompleted() {
+			if err := uc.repo.UpdateStatus(ctx, auctions[i].ID, model.AuctionStatusCompleted); err == nil {
+				auctions[i].Status = model.AuctionStatusCompleted
+			}
+		}
+	}
+
+	return auctions, nil
 }
