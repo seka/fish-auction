@@ -121,6 +121,28 @@ func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"})
 }
 
+func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
+	// Check for buyer_session cookie
+	cookie, err := r.Cookie("buyer_session")
+	if err != nil || cookie.Value != "authenticated" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Get buyer ID from cookie
+	idCookie, err := r.Cookie("buyer_id")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"authenticated": true,
+		"buyer_id":      idCookie.Value,
+	})
+}
+
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -144,6 +166,14 @@ func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers/logout", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			h.Logout(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/api/buyers/me", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.GetCurrentBuyer(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

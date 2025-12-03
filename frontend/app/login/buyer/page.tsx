@@ -19,7 +19,7 @@ export default function BuyerLoginPage() {
         setError('');
         const buyer = await loginBuyer(data);
         if (buyer) {
-            window.location.href = '/auction';
+            window.location.href = '/auctions';
         } else {
             setError('名前またはパスワードが間違っています');
         }

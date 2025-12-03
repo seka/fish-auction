@@ -19,10 +19,27 @@ export default function AdminLayout({
                     </Link>
                     <div className="border-t border-indigo-800 my-4 mx-2"></div>
                     <Link href="/admin" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
-                        マスタ・出品登録
+                        📊 ダッシュボード
                     </Link>
+                    <div className="border-t border-indigo-800 my-4 mx-2"></div>
+                    <Link href="/admin/fishermen" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                        👨‍🌾 漁師管理
+                    </Link>
+                    <Link href="/admin/buyers" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                        👔 中買人管理
+                    </Link>
+                    <Link href="/admin/venues" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                        🏢 会場管理
+                    </Link>
+                    <Link href="/admin/auctions" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                        📅 セリ管理
+                    </Link>
+                    <Link href="/admin/items" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                        🐟 出品管理
+                    </Link>
+                    <div className="border-t border-indigo-800 my-4 mx-2"></div>
                     <Link href="/invoice" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
-                        請求書発行
+                        💰 請求書発行
                     </Link>
                 </nav>
             </aside>
