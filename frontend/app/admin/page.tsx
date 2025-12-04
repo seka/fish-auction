@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { css } from 'styled-system/css';
+import { Box, HStack, Text, Card } from '@/src/core/ui';
 
 export default function AdminDashboard() {
     const menuItems = [
@@ -48,51 +50,65 @@ export default function AdminDashboard() {
         },
     ];
 
-    const getColorClasses = (color: string) => {
-        const colors: Record<string, { bg: string; hover: string; iconBg: string; iconText: string }> = {
-            indigo: { bg: 'bg-indigo-50', hover: 'hover:bg-indigo-100', iconBg: 'bg-indigo-100', iconText: 'text-indigo-600' },
-            green: { bg: 'bg-green-50', hover: 'hover:bg-green-100', iconBg: 'bg-green-100', iconText: 'text-green-600' },
-            orange: { bg: 'bg-orange-50', hover: 'hover:bg-orange-100', iconBg: 'bg-orange-100', iconText: 'text-orange-600' },
-            blue: { bg: 'bg-blue-50', hover: 'hover:bg-blue-100', iconBg: 'bg-blue-100', iconText: 'text-blue-600' },
-            purple: { bg: 'bg-purple-50', hover: 'hover:bg-purple-100', iconBg: 'bg-purple-100', iconText: 'text-purple-600' },
-            yellow: { bg: 'bg-yellow-50', hover: 'hover:bg-yellow-100', iconBg: 'bg-yellow-100', iconText: 'text-yellow-600' },
-        };
-        return colors[color] || colors.indigo;
+    const colorStyles: Record<string, { bg: string; hover: string; iconBg: string; iconText: string }> = {
+        indigo: { bg: 'indigo.50', hover: 'indigo.100', iconBg: 'indigo.100', iconText: 'indigo.600' },
+        green: { bg: 'green.50', hover: 'green.100', iconBg: 'green.100', iconText: 'green.600' },
+        orange: { bg: 'orange.50', hover: 'orange.100', iconBg: 'orange.100', iconText: 'orange.600' },
+        blue: { bg: 'blue.50', hover: 'blue.100', iconBg: 'blue.100', iconText: 'blue.600' },
+        purple: { bg: 'purple.50', hover: 'purple.100', iconBg: 'purple.100', iconText: 'purple.600' },
+        yellow: { bg: 'yellow.50', hover: 'yellow.100', iconBg: 'yellow.100', iconText: 'yellow.600' },
     };
 
-    return (
-        <div className="max-w-7xl mx-auto p-6">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">管理ダッシュボード</h1>
-                <p className="text-gray-600 mt-2">各管理メニューを選択してください</p>
-            </div>
+    const getStyles = (color: string) => colorStyles[color] || colorStyles.indigo;
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    return (
+        <Box className={css({ maxW: '7xl', mx: 'auto', p: '6' })}>
+            <Box className={css({ mb: '8' })}>
+                <Text variant="h1" className={css({ fontSize: '3xl', fontWeight: 'bold', color: 'gray.800' })}>管理ダッシュボード</Text>
+                <Text className={css({ color: 'gray.600', mt: '2' })}>各管理メニューを選択してください</Text>
+            </Box>
+
+            <div className={css({ display: 'grid', gridTemplateColumns: { base: '1', md: '2', lg: '3' }, gap: '6' })}>
                 {menuItems.map((item) => {
-                    const colors = getColorClasses(item.color);
+                    const styles = getStyles(item.color);
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`block p-6 rounded-xl border-2 border-transparent ${colors.bg} ${colors.hover} transition-all duration-200 hover:shadow-lg hover:scale-105`}
+                            className={css({ textDecoration: 'none' })}
                         >
-                            <div className="flex items-start space-x-4">
-                                <div className={`p-3 rounded-lg ${colors.iconBg}`}>
-                                    <span className="text-3xl">{item.icon}</span>
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-1">{item.title}</h3>
-                                    <p className="text-sm text-gray-600">{item.description}</p>
-                                </div>
-                            </div>
+                            <Card
+                                className={css({
+                                    p: '6',
+                                    borderWidth: '2px',
+                                    borderColor: 'transparent',
+                                    bg: styles.bg,
+                                    transition: 'all 0.2s',
+                                    _hover: {
+                                        bg: styles.hover,
+                                        shadow: 'lg',
+                                        transform: 'scale(1.05)',
+                                    }
+                                })}
+                            >
+                                <HStack spacing="4" align="start">
+                                    <Box className={css({ p: '3', borderRadius: 'lg', bg: styles.iconBg })}>
+                                        <span className={css({ fontSize: '3xl' })}>{item.icon}</span>
+                                    </Box>
+                                    <Box className={css({ flex: '1' })}>
+                                        <Text variant="h3" className={css({ fontSize: 'lg', fontWeight: 'bold', color: 'gray.900', mb: '1' })}>{item.title}</Text>
+                                        <Text variant="small" className={css({ color: 'gray.600' })}>{item.description}</Text>
+                                    </Box>
+                                </HStack>
+                            </Card>
                         </Link>
                     );
                 })}
             </div>
 
-            <div className="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                <h2 className="text-lg font-bold text-blue-900 mb-2">📌 使い方</h2>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+            <Box className={css({ mt: '12', p: '6', bg: 'blue.50', border: '1px solid', borderColor: 'blue.200', borderRadius: 'xl' })}>
+                <Text variant="h2" className={css({ fontSize: 'lg', fontWeight: 'bold', color: 'blue.900', mb: '2' })}>📌 使い方</Text>
+                <ol className={css({ listStyleType: 'decimal', listStylePosition: 'inside', spaceY: '1', fontSize: 'sm', color: 'blue.800' })}>
                     <li>まず「会場管理」でセリを行う会場を登録します</li>
                     <li>「セリ管理」で開催日時を設定してセリを作成します</li>
                     <li>「漁師管理」「中買人管理」で参加者を登録します</li>
@@ -100,7 +116,7 @@ export default function AdminDashboard() {
                     <li>セリ会場で入札が行われます</li>
                     <li>「請求書発行」で落札後の請求書を発行します</li>
                 </ol>
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 }
