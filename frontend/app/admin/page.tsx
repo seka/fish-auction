@@ -68,22 +68,25 @@ export default function AdminDashboard() {
                 <Text className={css({ color: 'gray.600', mt: '2' })}>各管理メニューを選択してください</Text>
             </Box>
 
-            <div className={css({ display: 'grid', gridTemplateColumns: { base: '1', md: '2', lg: '3' }, gap: '6' })}>
+            <div className={css({ display: 'grid', gridTemplateColumns: { base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: '6' })}>
                 {menuItems.map((item) => {
                     const styles = getStyles(item.color);
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={css({ textDecoration: 'none' })}
+                            className={css({ textDecoration: 'none', display: 'block', h: 'full' })}
                         >
                             <Card
                                 className={css({
                                     p: '6',
+                                    h: 'full',
                                     borderWidth: '2px',
                                     borderColor: 'transparent',
                                     bg: styles.bg,
                                     transition: 'all 0.2s',
+                                    display: 'flex',
+                                    flexDirection: 'column',
                                     _hover: {
                                         bg: styles.hover,
                                         shadow: 'lg',
@@ -91,7 +94,7 @@ export default function AdminDashboard() {
                                     }
                                 })}
                             >
-                                <HStack spacing="4" align="start">
+                                <HStack spacing="4" align="start" className={css({ flex: '1' })}>
                                     <Box className={css({ p: '3', borderRadius: 'lg', bg: styles.iconBg })}>
                                         <span className={css({ fontSize: '3xl' })}>{item.icon}</span>
                                     </Box>

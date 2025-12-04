@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Box, Stack, Text, HStack } from '@/src/core/ui';
+import { css } from 'styled-system/css';
 
 export default function AdminLayout({
     children,
@@ -6,48 +8,48 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <Box display="flex" minH="screen" bg="gray.100">
             {/* Sidebar */}
-            <aside className="w-64 bg-indigo-900 text-white flex-shrink-0 shadow-xl">
-                <div className="p-6 bg-indigo-950">
-                    <h2 className="text-xl font-bold tracking-wider">管理画面</h2>
-                    <p className="text-xs text-indigo-300 mt-1">Fish Auction Admin</p>
-                </div>
-                <nav className="mt-6 px-2 space-y-1">
-                    <Link href="/" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+            <Box w="64" bg="indigo.900" color="white" flexShrink={0} shadow="xl" display="flex" flexDirection="column">
+                <Box p="6" bg="indigo.950">
+                    <Text as="h2" fontSize="xl" fontWeight="bold" letterSpacing="wider" color="white">管理画面</Text>
+                    <Text fontSize="xs" color="indigo.300" mt="1">Fish Auction Admin</Text>
+                </Box>
+                <Stack as="nav" mt="6" px="2" spacing="1">
+                    <Link href="/" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         &larr; トップに戻る
                     </Link>
-                    <div className="border-t border-indigo-800 my-4 mx-2"></div>
-                    <Link href="/admin" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
+                    <Link href="/admin" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         📊 ダッシュボード
                     </Link>
-                    <div className="border-t border-indigo-800 my-4 mx-2"></div>
-                    <Link href="/admin/fishermen" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
+                    <Link href="/admin/fishermen" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         👨‍🌾 漁師管理
                     </Link>
-                    <Link href="/admin/buyers" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Link href="/admin/buyers" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         👔 中買人管理
                     </Link>
-                    <Link href="/admin/venues" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Link href="/admin/venues" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         🏢 会場管理
                     </Link>
-                    <Link href="/admin/auctions" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Link href="/admin/auctions" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         📅 セリ管理
                     </Link>
-                    <Link href="/admin/items" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Link href="/admin/items" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         🐟 出品管理
                     </Link>
-                    <div className="border-t border-indigo-800 my-4 mx-2"></div>
-                    <Link href="/invoice" className="block py-3 px-4 rounded hover:bg-indigo-800 transition-colors text-sm font-medium">
+                    <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
+                    <Link href="/admin/invoice" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>
                         💰 請求書発行
                     </Link>
-                </nav>
-            </aside>
+                </Stack>
+            </Box>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
+            <Box as="main" flex="1" p="8" overflowY="auto">
                 {children}
-            </main>
-        </div>
+            </Box>
+        </Box>
     );
 }
