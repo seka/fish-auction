@@ -79,3 +79,91 @@ func (r *bidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, 
 	}
 	return invoices, nil
 }
+
+func (r *bidRepository) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT 
+			t.id,
+			t.item_id,
+			ai.fish_type,
+			ai.quantity,
+			ai.unit,
+			t.price,
+			t.buyer_id,
+			ai.auction_id,
+			a.auction_date,
+			t.created_at
+		FROM transactions t
+		JOIN auction_items ai ON t.item_id = ai.id
+		JOIN auctions a ON ai.auction_id = a.id
+		WHERE t.buyer_id = $1
+		ORDER BY t.created_at DESC
+	`, buyerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var purchases []model.Purchase
+	for rows.Next() {
+		var p model.Purchase
+		if err := rows.Scan(
+			&p.ID,
+			&p.ItemID,
+			&p.FishType,
+			&p.Quantity,
+			&p.Unit,
+			&p.Price,
+			&p.BuyerID,
+			&p.AuctionID,
+			&p.AuctionDate,
+			&p.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		purchases = append(purchases, p)
+	}
+	return purchases, rows.Err()
+}
+
+func (r *bidRepository) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT DISTINCT
+			a.id,
+			a.venue_id,
+			a.auction_date,
+			a.start_time,
+			a.end_time,
+			a.status,
+			a.created_at,
+			a.updated_at
+		FROM auctions a
+		JOIN auction_items ai ON a.id = ai.auction_id
+		JOIN transactions t ON ai.id = t.item_id
+		WHERE t.buyer_id = $1
+		ORDER BY a.auction_date DESC, a.created_at DESC
+	`, buyerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var auctions []model.Auction
+	for rows.Next() {
+		var a model.Auction
+		if err := rows.Scan(
+			&a.ID,
+			&a.VenueID,
+			&a.AuctionDate,
+			&a.StartTime,
+			&a.EndTime,
+			&a.Status,
+			&a.CreatedAt,
+			&a.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		auctions = append(auctions, a)
+	}
+	return auctions, rows.Err()
+}
