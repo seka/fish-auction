@@ -27,12 +27,12 @@ export default function Home() {
         </Text>
       </Box>
 
-      <div className={css({ display: 'grid', gridTemplateColumns: { base: '1', md: '2' }, gap: '8', w: 'full', maxW: '5xl' })}>
+      <div className={css({ display: 'grid', gridTemplateColumns: { base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }, gap: '8', w: 'full', maxW: '5xl' })}>
         {/* Admin Portal */}
-        <Link href="/admin" className={`group ${css({ textDecoration: 'none' })}`}>
-          <Card variant="interactive" className={css({ position: 'relative', overflow: 'hidden', p: '10', h: 'full' })}>
+        <Link href="/admin" className={`group ${css({ textDecoration: 'none', display: 'block', h: 'full' })}`}>
+          <Card variant="interactive" className={css({ position: 'relative', overflow: 'hidden', p: '10', h: 'full', display: 'flex', flexDirection: 'column' })}>
             <Box className={css({ position: 'absolute', top: '0', right: '0', w: '32', h: '32', bg: 'primary.50', borderBottomLeftRadius: 'full', mr: '-8', mt: '-8', transition: 'transform 0.3s', _groupHover: { transform: 'scale(1.1)' } })} />
-            <Stack spacing="6" align="center" className={css({ position: 'relative', zIndex: '10', textAlign: 'center' })}>
+            <Stack spacing="6" align="center" className={css({ position: 'relative', zIndex: '10', textAlign: 'center', flex: '1' })}>
               {/* Icon */}
               <Box className={css({ p: '5', bg: 'primary.100', borderRadius: '2xl', color: 'primary.600', transition: 'colors 0.3s', _groupHover: { bg: 'primary.600', color: 'white' } })}>
                 <svg className={css({ w: '14', h: '14' })} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,10 +54,10 @@ export default function Home() {
         </Link>
 
         {/* Auction Floor */}
-        <Link href="/auctions" className={`group ${css({ textDecoration: 'none' })}`}>
-          <Card variant="interactive" className={css({ position: 'relative', overflow: 'hidden', p: '10', h: 'full' })}>
+        <Link href="/auctions" className={`group ${css({ textDecoration: 'none', display: 'block', h: 'full' })}`}>
+          <Card variant="interactive" className={css({ position: 'relative', overflow: 'hidden', p: '10', h: 'full', display: 'flex', flexDirection: 'column' })}>
             <Box className={css({ position: 'absolute', top: '0', right: '0', w: '32', h: '32', bg: 'secondary.50', borderBottomLeftRadius: 'full', mr: '-8', mt: '-8', transition: 'transform 0.3s', _groupHover: { transform: 'scale(1.1)' } })} />
-            <Stack spacing="6" align="center" className={css({ position: 'relative', zIndex: '10', textAlign: 'center' })}>
+            <Stack spacing="6" align="center" className={css({ position: 'relative', zIndex: '10', textAlign: 'center', flex: '1' })}>
               {/* Icon */}
               <Box className={css({ p: '5', bg: 'secondary.100', borderRadius: '2xl', color: 'secondary.600', transition: 'colors 0.3s', _groupHover: { bg: 'secondary.600', color: 'white' } })}>
                 <svg className={css({ w: '14', h: '14' })} fill="none" stroke="currentColor" viewBox="0 0 24 24">
