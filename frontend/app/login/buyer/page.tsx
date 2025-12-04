@@ -7,6 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
 import { loginBuyer } from '@/src/api/buyer_auth';
 import Link from 'next/link';
+import { Box, Text, Button, Input, Stack } from '@/src/core/ui';
+import { css } from 'styled-system/css';
 
 export default function BuyerLoginPage() {
     const [error, setError] = useState('');
@@ -26,60 +28,63 @@ export default function BuyerLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        中買人ログイン
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        セリに参加するにはログインしてください
-                    </p>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <label htmlFor="email" className="sr-only">メールアドレス</label>
-                            <input
-                                id="email"
-                                type="email"
-                                {...register('email')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="メールアドレス"
-                            />
-                            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">パスワード</label>
-                            <input
-                                id="password"
-                                type="password"
-                                {...register('password')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="パスワード"
-                            />
-                            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-                        </div>
-                    </div>
+        <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50" py="12" px="4">
+            <Box maxW="md" w="full">
+                <Stack spacing="8">
+                    <Box textAlign="center">
+                        <Text as="h2" fontSize="3xl" fontWeight="extrabold" color="gray.900">
+                            中買人ログイン
+                        </Text>
+                        <Text mt="2" fontSize="sm" color="gray.600">
+                            セリに参加するにはログインしてください
+                        </Text>
+                    </Box>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Stack spacing="6">
+                            <Stack spacing="0">
+                                <Box>
+                                    <label htmlFor="email" className={css({ srOnly: true })}>メールアドレス</label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        {...register('email')}
+                                        placeholder="メールアドレス"
+                                        className={css({ borderBottomLeftRadius: '0', borderBottomRightRadius: '0' })}
+                                    />
+                                    {errors.email && <Text color="red.500" fontSize="xs" mt="1">{errors.email.message}</Text>}
+                                </Box>
+                                <Box>
+                                    <label htmlFor="password" className={css({ srOnly: true })}>パスワード</label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        {...register('password')}
+                                        placeholder="パスワード"
+                                        className={css({ borderTopLeftRadius: '0', borderTopRightRadius: '0', borderTop: 'none' })}
+                                    />
+                                    {errors.password && <Text color="red.500" fontSize="xs" mt="1">{errors.password.message}</Text>}
+                                </Box>
+                            </Stack>
 
-                    {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                            {error && <Text color="red.500" fontSize="sm" textAlign="center">{error}</Text>}
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                        >
-                            ログイン
-                        </button>
-                    </div>
-                    <div className="text-center">
-                        <Link href="/signup" className="text-sm text-indigo-600 hover:text-indigo-500">
-                            アカウントをお持ちでない方はこちら
-                        </Link>
-                    </div>
-                </form>
-            </div>
-        </div>
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                w="full"
+                                className={css({ bg: 'indigo.600', _hover: { bg: 'indigo.700' }, color: 'white' })}
+                            >
+                                ログイン
+                            </Button>
+                            <Box textAlign="center">
+                                <Link href="/signup" className={css({ fontSize: 'sm', color: 'indigo.600', _hover: { color: 'indigo.500' } })}>
+                                    アカウントをお持ちでない方はこちら
+                                </Link>
+                            </Box>
+                        </Stack>
+                    </form>
+                </Stack>
+            </Box>
+        </Box>
     );
 }
