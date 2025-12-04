@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getAuctions } from '@/src/api/auction';
 import { getVenues } from '@/src/api/venue';
+import { Box, Stack, HStack, Text, Card } from '@/src/core/ui';
+import { css } from 'styled-system/css';
 
 const usePublicVenues = () => {
     const { data: venues } = useQuery({
@@ -24,9 +26,9 @@ export default function AuctionsListPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-xl text-gray-600">読み込み中...</div>
-            </div>
+            <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
+                <Text fontSize="xl" color="muted">読み込み中...</Text>
+            </Box>
         );
     }
 
@@ -43,67 +45,85 @@ export default function AuctionsListPage() {
     const getVenueName = (id: number) => venues?.find(v => v.id === id)?.name || `会場ID: ${id}`;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-5xl mx-auto">
-                <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">開催中のセリ一覧</h1>
-                    <Link href="/" className="text-indigo-600 hover:text-indigo-800 font-medium">
+        <Box minH="screen" bg="gray.50" p="8">
+            <Box maxW="5xl" mx="auto">
+                <HStack justify="between" mb="8">
+                    <Text as="h1" variant="h2" color="default">開催中のセリ一覧</Text>
+                    <Link href="/" className={css({ color: 'indigo.600', _hover: { color: 'indigo.800' }, fontWeight: 'medium' })}>
                         &larr; トップに戻る
                     </Link>
-                </div>
+                </HStack>
 
                 {activeAuctions.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                        <p className="text-xl text-gray-500">現在開催予定のセリはありません</p>
-                    </div>
+                    <Card padding="lg" className={css({ textAlign: 'center' })}>
+                        <Text fontSize="xl" className={css({ color: 'gray.500' })}>現在開催予定のセリはありません</Text>
+                    </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap="6">
                         {activeAuctions.map((auction) => (
                             <Link
                                 key={auction.id}
                                 href={`/auctions/${auction.id}`}
-                                className="block group"
+                                className={css({ display: 'block', _hover: { textDecoration: 'none' } })}
                             >
-                                <div className={`bg-white rounded-xl shadow-sm border-2 transition-all duration-200 p-6 hover:shadow-md ${auction.status === 'in_progress'
-                                    ? 'border-orange-400 ring-4 ring-orange-50'
-                                    : 'border-transparent hover:border-indigo-200'
-                                    }`}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold mb-2 ${auction.status === 'in_progress'
-                                                ? 'bg-orange-100 text-orange-700 animate-pulse'
-                                                : 'bg-blue-100 text-blue-700'
-                                                }`}>
+                                <Card
+                                    variant="interactive"
+                                    className={css({
+                                        height: 'full',
+                                        transition: 'all 0.2s',
+                                        borderColor: auction.status === 'in_progress' ? 'orange.400' : 'transparent',
+                                        borderWidth: auction.status === 'in_progress' ? '2px' : '1px',
+                                        ring: auction.status === 'in_progress' ? '4px' : '0',
+                                        ringColor: auction.status === 'in_progress' ? 'orange.50' : 'transparent',
+                                        _hover: {
+                                            borderColor: auction.status === 'in_progress' ? 'orange.500' : 'indigo.200',
+                                        }
+                                    })}
+                                >
+                                    <HStack justify="between" align="start" mb="4">
+                                        <Box>
+                                            <Box
+                                                display="inline-block"
+                                                px="3"
+                                                py="1"
+                                                borderRadius="full"
+                                                fontSize="sm"
+                                                fontWeight="bold"
+                                                mb="2"
+                                                bg={auction.status === 'in_progress' ? 'orange.100' : 'blue.100'}
+                                                color={auction.status === 'in_progress' ? 'orange.700' : 'blue.700'}
+                                                animation={auction.status === 'in_progress' ? 'pulse 2s infinite' : 'none'}
+                                            >
                                                 {auction.status === 'in_progress' ? '🔥 開催中' : '📅 開催予定'}
-                                            </span>
-                                            <h2 className="text-xl font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">
+                                            </Box>
+                                            <Text variant="h3" color="default" className={css({ _groupHover: { color: 'indigo.700' }, transition: 'colors' })}>
                                                 {getVenueName(auction.venue_id)}
-                                            </h2>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-2xl font-bold text-gray-900">
+                                            </Text>
+                                        </Box>
+                                        <Box textAlign="right">
+                                            <Text fontSize="2xl" fontWeight="bold" color="default">
                                                 {auction.start_time?.substring(0, 5)}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
+                                            </Text>
+                                            <Text fontSize="sm" className={css({ color: 'gray.500' })}>
                                                 {auction.auction_date}
-                                            </div>
-                                        </div>
-                                    </div>
+                                            </Text>
+                                        </Box>
+                                    </HStack>
 
-                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                                        <span className="text-gray-600 text-sm">
+                                    <HStack justify="between" mt="4" pt="4" borderTop="1px solid" borderColor="gray.100">
+                                        <Text fontSize="sm" color="muted">
                                             終了予定: {auction.end_time?.substring(0, 5)}
-                                        </span>
-                                        <span className="text-indigo-600 font-bold group-hover:translate-x-1 transition-transform flex items-center">
-                                            会場へ入る <span className="ml-1">&rarr;</span>
-                                        </span>
-                                    </div>
-                                </div>
+                                        </Text>
+                                        <Text className={css({ color: 'indigo.600', fontWeight: 'bold', display: 'flex', alignItems: 'center', _groupHover: { transform: 'translateX(4px)' }, transition: 'transform' })}>
+                                            会場へ入る <span className={css({ ml: '1' })}>&rarr;</span>
+                                        </Text>
+                                    </HStack>
+                                </Card>
                             </Link>
                         ))}
-                    </div>
+                    </Box>
                 )}
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 }
