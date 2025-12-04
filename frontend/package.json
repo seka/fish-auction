@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "prepare": "panda codegen",
+    "dev": "panda codegen && next dev",
+    "build": "panda codegen && next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -18,6 +19,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@pandacss/dev": "^1.6.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
