@@ -46,17 +46,17 @@ const buttonRecipe = cva({
             sm: {
                 px: '3',
                 py: '1.5',
-                fontSize: '0.875rem',
+                fontSize: '0.75rem', // 12px
             },
             md: {
                 px: '4',
                 py: '2',
-                fontSize: '1rem',
+                fontSize: '0.875rem', // 14px
             },
             lg: {
                 px: '6',
                 py: '3',
-                fontSize: '1.125rem',
+                fontSize: '1rem', // 16px
             },
         },
     },
