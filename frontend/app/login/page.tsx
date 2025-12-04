@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from './_hooks/useAuth';
 import { loginSchema, LoginFormData } from '@/src/models/schemas/auth';
+import { css } from 'styled-system/css';
+import { Box, Text, Button, Input } from '@/src/core/ui';
 
 export default function LoginPage() {
     const [error, setError] = useState('');
@@ -28,52 +30,52 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <Box className={css({ minH: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bg: 'gray.50', py: '12', px: { base: '4', sm: '6', lg: '8' } })}>
+            <Box className={css({ maxW: 'md', w: 'full', spaceY: '8' })}>
+                <Box>
+                    <Text variant="h2" className={css({ textAlign: 'center', fontSize: '3xl', fontWeight: 'extrabold', color: 'gray.900', mt: '6' })}>
                         管理者ログイン
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    </Text>
+                    <Text className={css({ mt: '2', textAlign: 'center', fontSize: 'sm', color: 'gray.600' })}>
                         管理画面へアクセスするにはパスワードを入力してください
-                    </p>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <label htmlFor="password" className="sr-only">
+                    </Text>
+                </Box>
+                <form className={css({ mt: '8', spaceY: '6' })} onSubmit={handleSubmit(onSubmit)}>
+                    <Box className={css({ rounded: 'md', shadow: 'sm' })}>
+                        <Box>
+                            <label htmlFor="password" className={css({ srOnly: true })}>
                                 パスワード
                             </label>
-                            <input
+                            <Input
                                 id="password"
                                 type="password"
                                 {...register('password')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="パスワード"
+                                error={!!errors.password}
                             />
                             {errors.password && (
-                                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                                <Text className={css({ color: 'red.500', fontSize: 'sm', mt: '1' })}>{errors.password.message}</Text>
                             )}
-                        </div>
-                    </div>
+                        </Box>
+                    </Box>
 
                     {error && (
-                        <div className="text-red-500 text-sm text-center font-bold">
+                        <Box className={css({ color: 'red.500', fontSize: 'sm', textAlign: 'center', fontWeight: 'bold' })}>
                             {error}
-                        </div>
+                        </Box>
                     )}
 
-                    <div>
-                        <button
+                    <Box>
+                        <Button
                             type="submit"
                             disabled={isLoading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                            className={css({ w: 'full' })}
                         >
                             {isLoading ? 'ログイン中...' : 'ログイン'}
-                        </button>
-                    </div>
+                        </Button>
+                    </Box>
                 </form>
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 }

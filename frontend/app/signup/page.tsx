@@ -7,6 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { buyerSignupSchema, BuyerSignupFormData } from '@/src/models/schemas/buyer_auth';
 import { signupBuyer } from '@/src/api/buyer_auth';
 import Link from 'next/link';
+import { css } from 'styled-system/css';
+import { Box, Text, Button, Input, Stack } from '@/src/core/ui';
 
 export default function SignupPage() {
     const [error, setError] = useState('');
@@ -32,93 +34,100 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <Box className={css({ minH: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bg: 'gray.50', py: '12', px: { base: '4', sm: '6', lg: '8' } })}>
+            <Box className={css({ maxW: 'md', w: 'full', spaceY: '8' })}>
+                <Box>
+                    <Text variant="h2" className={css({ textAlign: 'center', fontSize: '3xl', fontWeight: 'extrabold', color: 'gray.900', mt: '6' })}>
                         中買人登録
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    </Text>
+                    <Text className={css({ mt: '2', textAlign: 'center', fontSize: 'sm', color: 'gray.600' })}>
                         セリに参加するにはアカウントを作成してください
-                    </p>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <label htmlFor="name" className="sr-only">名前</label>
-                            <input
-                                id="name"
-                                type="text"
-                                {...register('name')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="名前"
-                            />
-                            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="email" className="sr-only">メールアドレス</label>
-                            <input
-                                id="email"
-                                type="email"
-                                {...register('email')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="メールアドレス"
-                            />
-                            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="organization" className="sr-only">所属組織</label>
-                            <input
-                                id="organization"
-                                type="text"
-                                {...register('organization')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="所属組織"
-                            />
-                            {errors.organization && <p className="text-red-500 text-xs mt-1">{errors.organization.message}</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="contact_info" className="sr-only">連絡先</label>
-                            <input
-                                id="contact_info"
-                                type="text"
-                                {...register('contact_info')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="連絡先"
-                            />
-                            {errors.contact_info && <p className="text-red-500 text-xs mt-1">{errors.contact_info.message}</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">パスワード</label>
-                            <input
-                                id="password"
-                                type="password"
-                                {...register('password')}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="パスワード"
-                            />
-                            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-                        </div>
-                    </div>
+                    </Text>
+                </Box>
+                <form className={css({ mt: '8', spaceY: '6' })} onSubmit={handleSubmit(onSubmit)}>
+                    <Box className={css({ rounded: 'md', shadow: 'sm' })}>
+                        <Stack spacing="0" className={css({ '& > *': { position: 'relative', _focusWithin: { zIndex: 10 } } })}>
+                            <Box>
+                                <label htmlFor="name" className={css({ srOnly: true })}>名前</label>
+                                <Input
+                                    id="name"
+                                    type="text"
+                                    {...register('name')}
+                                    className={css({ borderBottomLeftRadius: '0', borderBottomRightRadius: '0' })}
+                                    placeholder="名前"
+                                    error={!!errors.name}
+                                />
+                                {errors.name && <Text className={css({ color: 'red.500', fontSize: 'xs', mt: '1' })}>{errors.name.message}</Text>}
+                            </Box>
+                            <Box>
+                                <label htmlFor="email" className={css({ srOnly: true })}>メールアドレス</label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    {...register('email')}
+                                    className={css({ borderRadius: '0', mt: '-1px' })}
+                                    placeholder="メールアドレス"
+                                    error={!!errors.email}
+                                />
+                                {errors.email && <Text className={css({ color: 'red.500', fontSize: 'xs', mt: '1' })}>{errors.email.message}</Text>}
+                            </Box>
+                            <Box>
+                                <label htmlFor="organization" className={css({ srOnly: true })}>所属組織</label>
+                                <Input
+                                    id="organization"
+                                    type="text"
+                                    {...register('organization')}
+                                    className={css({ borderRadius: '0', mt: '-1px' })}
+                                    placeholder="所属組織"
+                                    error={!!errors.organization}
+                                />
+                                {errors.organization && <Text className={css({ color: 'red.500', fontSize: 'xs', mt: '1' })}>{errors.organization.message}</Text>}
+                            </Box>
+                            <Box>
+                                <label htmlFor="contact_info" className={css({ srOnly: true })}>連絡先</label>
+                                <Input
+                                    id="contact_info"
+                                    type="text"
+                                    {...register('contact_info')}
+                                    className={css({ borderRadius: '0', mt: '-1px' })}
+                                    placeholder="連絡先"
+                                    error={!!errors.contact_info}
+                                />
+                                {errors.contact_info && <Text className={css({ color: 'red.500', fontSize: 'xs', mt: '1' })}>{errors.contact_info.message}</Text>}
+                            </Box>
+                            <Box>
+                                <label htmlFor="password" className={css({ srOnly: true })}>パスワード</label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    {...register('password')}
+                                    className={css({ borderTopLeftRadius: '0', borderTopRightRadius: '0', mt: '-1px' })}
+                                    placeholder="パスワード"
+                                    error={!!errors.password}
+                                />
+                                {errors.password && <Text className={css({ color: 'red.500', fontSize: 'xs', mt: '1' })}>{errors.password.message}</Text>}
+                            </Box>
+                        </Stack>
+                    </Box>
 
-                    {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                    {error && <Box className={css({ color: 'red.500', fontSize: 'sm', textAlign: 'center' })}>{error}</Box>}
 
-                    <div>
-                        <button
+                    <Box>
+                        <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                            className={css({ w: 'full' })}
                         >
                             登録
-                        </button>
-                    </div>
-                    <div className="text-center">
-                        <Link href="/login/buyer" className="text-sm text-indigo-600 hover:text-indigo-500">
+                        </Button>
+                    </Box>
+                    <Box className={css({ textAlign: 'center' })}>
+                        <Link href="/login/buyer" className={css({ fontSize: 'sm', color: 'primary.600', _hover: { color: 'primary.500' } })}>
                             すでにアカウントをお持ちの方はこちら
                         </Link>
-                    </div>
+                    </Box>
                 </form>
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 }
