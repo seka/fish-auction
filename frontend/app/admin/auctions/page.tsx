@@ -7,6 +7,48 @@ import { auctionSchema, AuctionFormData } from '@/src/models/schemas/auction';
 import { useAuctions, useAuctionMutations } from './_hooks/useAuction';
 import { useVenues } from '../venues/_hooks/useVenue';
 import { Auction } from '@/src/models/auction';
+import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { css } from 'styled-system/css';
+import { styled } from 'styled-system/jsx';
+
+// Select component with similar styling to Input
+const Select = styled('select', {
+    base: {
+        display: 'block',
+        width: 'full',
+        px: '3',
+        py: '2',
+        bg: 'white',
+        border: '1px solid',
+        borderColor: 'gray.300',
+        borderRadius: 'md',
+        fontSize: 'sm',
+        outline: 'none',
+        transition: 'border-color 0.2s',
+        appearance: 'none',
+        backgroundImage: 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")',
+        backgroundPosition: 'right 0.5rem center',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: '1.5em 1.5em',
+        paddingRight: '2.5rem',
+        _focus: {
+            borderColor: 'indigo.500',
+            ring: '1px',
+            ringColor: 'indigo.500',
+        },
+        _disabled: {
+            bg: 'gray.50',
+            cursor: 'not-allowed',
+        },
+    }
+});
+
+const Table = styled('table', { base: { minW: 'full', divideY: '1px', divideColor: 'gray.200' } });
+const Thead = styled('thead', { base: { bg: 'gray.50' } });
+const Tbody = styled('tbody', { base: { bg: 'white', divideY: '1px', divideColor: 'gray.200' } });
+const Tr = styled('tr', { base: { _hover: { bg: 'gray.50' } } });
+const Th = styled('th', { base: { px: '6', py: '3', textAlign: 'left', fontSize: 'xs', fontWeight: 'medium', color: 'gray.500', textTransform: 'uppercase', letterSpacing: 'wider' } });
+const Td = styled('td', { base: { px: '6', py: '4', whiteSpace: 'nowrap' } });
 
 export default function AuctionsPage() {
     const [message, setMessage] = useState('');
@@ -23,8 +65,6 @@ export default function AuctionsPage() {
 
     const onSubmit = async (data: AuctionFormData) => {
         try {
-            // Convert strings to appropriate types if needed (though schema handles validation)
-            // The API expects venue_id as number
             const payload = {
                 ...data,
                 venue_id: Number(data.venue_id),
@@ -82,120 +122,133 @@ export default function AuctionsPage() {
     };
 
     const getStatusBadge = (status: string) => {
+        const baseStyle = css({ fontSize: 'xs', fontWeight: 'medium', px: '2.5', py: '0.5', borderRadius: 'md' });
         switch (status) {
             case 'scheduled':
-                return <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">予定</span>;
+                return <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>予定</span>;
             case 'in_progress':
-                return <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded animate-pulse">開催中</span>;
+                return <span className={css(baseStyle, { bg: 'green.100', color: 'green.800', animation: 'pulse 2s infinite' })}>開催中</span>;
             case 'completed':
-                return <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">終了</span>;
+                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>終了</span>;
             case 'cancelled':
-                return <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">中止</span>;
+                return <span className={css(baseStyle, { bg: 'red.100', color: 'red.800' })}>中止</span>;
             default:
-                return <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">{status}</span>;
+                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>{status}</span>;
         }
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-8 text-gray-800 border-b pb-4">セリ管理</h1>
+        <Box maxW="6xl" mx="auto" p="6">
+            <Text as="h1" variant="h2" color="gray.800" mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
+                セリ管理
+            </Text>
 
             {message && (
-                <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-8 rounded shadow-sm" role="alert">
-                    <p className="font-bold">通知</p>
-                    <p>{message}</p>
-                </div>
+                <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" color="blue.700" p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
+                    <Text fontWeight="bold">通知</Text>
+                    <Text>{message}</Text>
+                </Box>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Box display="grid" gridTemplateColumns={{ base: '1fr', lg: '1fr 2fr' }} gap="8">
                 {/* Form Section */}
-                <div className="lg:col-span-1">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 sticky top-6">
-                        <h2 className="text-xl font-bold mb-6 text-indigo-900 flex items-center">
-                            <span className="w-2 h-6 bg-indigo-500 mr-3 rounded-full"></span>
-                            {editingAuction ? 'セリ編集' : '新規セリ登録'}
-                        </h2>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">会場</label>
-                                <select
-                                    {...register('venue_id', { valueAsNumber: true })}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border bg-gray-50"
-                                >
-                                    <option value="">会場を選択してください</option>
-                                    {venues.map((venue) => (
-                                        <option key={venue.id} value={venue.id}>
-                                            {venue.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.venue_id && (
-                                    <p className="text-red-500 text-sm mt-1">{errors.venue_id.message}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">開催日</label>
-                                <input
-                                    type="date"
-                                    {...register('auction_date')}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border bg-gray-50"
-                                />
-                                {errors.auction_date && (
-                                    <p className="text-red-500 text-sm mt-1">{errors.auction_date.message}</p>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">開始時間</label>
-                                    <input
-                                        type="time"
-                                        {...register('start_time')}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border bg-gray-50"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">終了時間</label>
-                                    <input
-                                        type="time"
-                                        {...register('end_time')}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border bg-gray-50"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex gap-2 pt-4">
-                                <button
-                                    type="submit"
-                                    disabled={isCreating || isUpdating}
-                                    className="flex-1 flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
-                                >
-                                    {editingAuction ? (isUpdating ? '更新中...' : '更新する') : (isCreating ? '登録中...' : '登録する')}
-                                </button>
-                                {editingAuction && (
-                                    <button
-                                        type="button"
-                                        onClick={onCancelEdit}
-                                        className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                <Box>
+                    <Card p="md" className={css({ position: 'sticky', top: '6' })}>
+                        <HStack mb="6">
+                            <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
+                            <Text as="h2" variant="h4" color="indigo.900" fontWeight="bold">
+                                {editingAuction ? 'セリ編集' : '新規セリ登録'}
+                            </Text>
+                        </HStack>
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <Stack spacing="4">
+                                <Box>
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                        会場
+                                    </Text>
+                                    <Select
+                                        {...register('venue_id', { valueAsNumber: true })}
                                     >
-                                        キャンセル
-                                    </button>
-                                )}
-                            </div>
+                                        <option value="">会場を選択してください</option>
+                                        {venues.map((venue) => (
+                                            <option key={venue.id} value={venue.id}>
+                                                {venue.name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                    {errors.venue_id && (
+                                        <Text color="red.500" fontSize="sm" mt="1">{errors.venue_id.message}</Text>
+                                    )}
+                                </Box>
+                                <Box>
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                        開催日
+                                    </Text>
+                                    <Input
+                                        type="date"
+                                        {...register('auction_date')}
+                                    />
+                                    {errors.auction_date && (
+                                        <Text color="red.500" fontSize="sm" mt="1">{errors.auction_date.message}</Text>
+                                    )}
+                                </Box>
+                                <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="4">
+                                    <Box>
+                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                            開始時間
+                                        </Text>
+                                        <Input
+                                            type="time"
+                                            {...register('start_time')}
+                                        />
+                                    </Box>
+                                    <Box>
+                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                            終了時間
+                                        </Text>
+                                        <Input
+                                            type="time"
+                                            {...register('end_time')}
+                                        />
+                                    </Box>
+                                </Box>
+
+                                <HStack spacing="2" pt="4">
+                                    <Button
+                                        type="submit"
+                                        disabled={isCreating || isUpdating}
+                                        width="full"
+                                        className={css({ flex: '1' })}
+                                        variant="primary"
+                                    >
+                                        {editingAuction ? (isUpdating ? '更新中...' : '更新する') : (isCreating ? '登録中...' : '登録する')}
+                                    </Button>
+                                    {editingAuction && (
+                                        <Button
+                                            type="button"
+                                            onClick={onCancelEdit}
+                                            variant="outline"
+                                        >
+                                            キャンセル
+                                        </Button>
+                                    )}
+                                </HStack>
+                            </Stack>
                         </form>
-                    </div>
-                </div>
+                    </Card>
+                </Box>
 
                 {/* List Section */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="p-6 border-b border-gray-200 flex justify-between items-center flex-wrap gap-4">
-                            <h2 className="text-xl font-bold text-gray-800">セリ一覧</h2>
-                            <div className="flex items-center gap-2">
-                                <label className="text-sm text-gray-600">会場絞り込み:</label>
-                                <select
+                <Box>
+                    <Card padding="none" overflow="hidden">
+                        <Box p="6" borderBottom="1px solid" borderColor="gray.200" display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="4">
+                            <Text as="h2" variant="h4" color="gray.800" fontWeight="bold">セリ一覧</Text>
+                            <HStack spacing="2">
+                                <Text as="label" fontSize="sm" color="gray.600">会場絞り込み:</Text>
+                                <Select
                                     value={filterVenueId || ''}
                                     onChange={(e) => setFilterVenueId(e.target.value ? Number(e.target.value) : undefined)}
-                                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                    className={css({ width: 'auto', py: '1' })}
                                 >
                                     <option value="">すべて</option>
                                     {venues.map((venue) => (
@@ -203,86 +256,90 @@ export default function AuctionsPage() {
                                             {venue.name}
                                         </option>
                                     ))}
-                                </select>
-                            </div>
-                        </div>
+                                </Select>
+                            </HStack>
+                        </Box>
                         {isLoading ? (
-                            <div className="p-6 text-center text-gray-500">読み込み中...</div>
+                            <Box p="6" textAlign="center" color="gray.500">読み込み中...</Box>
                         ) : auctions.length === 0 ? (
-                            <div className="p-6 text-center text-gray-500">セリが登録されていません</div>
+                            <Box p="6" textAlign="center" color="gray.500">セリが登録されていません</Box>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">開催日 / 時間</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">会場</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                            <Box overflowX="auto">
+                                <Table>
+                                    <Thead>
+                                        <Tr>
+                                            <Th>開催日 / 時間</Th>
+                                            <Th>会場</Th>
+                                            <Th>ステータス</Th>
+                                            <Th className={css({ textAlign: 'right' })}>操作</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
                                         {auctions.map((auction) => {
                                             const venue = venues.find(v => v.id === auction.venue_id);
                                             return (
-                                                <tr key={auction.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-gray-900">{auction.auction_date}</div>
-                                                        <div className="text-sm text-gray-500">
+                                                <Tr key={auction.id}>
+                                                    <Td>
+                                                        <Text fontSize="sm" fontWeight="medium" color="gray.900">{auction.auction_date}</Text>
+                                                        <Text fontSize="sm" color="gray.500">
                                                             {auction.start_time ? auction.start_time.substring(0, 5) : '--:--'} - {auction.end_time ? auction.end_time.substring(0, 5) : '--:--'}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-900">{venue?.name || `ID: ${auction.venue_id}`}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        </Text>
+                                                    </Td>
+                                                    <Td>
+                                                        <Text fontSize="sm" color="gray.900">{venue?.name || `ID: ${auction.venue_id}`}</Text>
+                                                    </Td>
+                                                    <Td>
                                                         {getStatusBadge(auction.status)}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <div className="flex justify-end gap-2">
+                                                    </Td>
+                                                    <Td className={css({ textAlign: 'right' })}>
+                                                        <HStack justify="end" spacing="2">
                                                             {auction.status === 'scheduled' && (
-                                                                <button
+                                                                <Button
+                                                                    size="sm"
                                                                     onClick={() => onStatusChange(auction.id, 'in_progress')}
                                                                     disabled={isUpdatingStatus}
-                                                                    className="text-green-600 hover:text-green-900 bg-green-50 px-2 py-1 rounded"
+                                                                    className={css({ color: 'green.600', bg: 'green.50', borderColor: 'transparent', _hover: { bg: 'green.100', color: 'green.900' } })}
                                                                 >
                                                                     開始
-                                                                </button>
+                                                                </Button>
                                                             )}
                                                             {auction.status === 'in_progress' && (
-                                                                <button
+                                                                <Button
+                                                                    size="sm"
                                                                     onClick={() => onStatusChange(auction.id, 'completed')}
                                                                     disabled={isUpdatingStatus}
-                                                                    className="text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded"
+                                                                    className={css({ color: 'blue.600', bg: 'blue.50', borderColor: 'transparent', _hover: { bg: 'blue.100', color: 'blue.900' } })}
                                                                 >
                                                                     終了
-                                                                </button>
+                                                                </Button>
                                                             )}
-                                                            <button
+                                                            <Button
+                                                                size="sm"
                                                                 onClick={() => onEdit(auction)}
-                                                                className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded"
+                                                                className={css({ color: 'indigo.600', bg: 'indigo.50', borderColor: 'transparent', _hover: { bg: 'indigo.100', color: 'indigo.900' } })}
                                                             >
                                                                 編集
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
                                                                 onClick={() => onDelete(auction.id)}
                                                                 disabled={isDeleting}
-                                                                className="text-red-600 hover:text-red-900 bg-red-50 px-2 py-1 rounded disabled:opacity-50"
+                                                                className={css({ color: 'red.600', bg: 'red.50', borderColor: 'transparent', _hover: { bg: 'red.100', color: 'red.900' } })}
                                                             >
                                                                 削除
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                            </Button>
+                                                        </HStack>
+                                                    </Td>
+                                                </Tr>
                                             );
                                         })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    </Tbody>
+                                </Table>
+                            </Box>
                         )}
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </Card>
+                </Box>
+            </Box>
+        </Box>
     );
 }
