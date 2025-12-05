@@ -49,9 +49,14 @@ export default function AuctionsListPage() {
             <Box maxW="5xl" mx="auto">
                 <HStack justify="between" mb="8">
                     <Text as="h1" variant="h2" color="default">開催中のセリ一覧</Text>
-                    <Link href="/" className={css({ color: 'indigo.600', _hover: { color: 'indigo.800' }, fontWeight: 'medium' })}>
-                        &larr; トップに戻る
-                    </Link>
+                    <HStack gap="4">
+                        <Link href="/mypage" className={css({ color: 'indigo.600', _hover: { color: 'indigo.800' }, fontWeight: 'medium' })}>
+                            マイページ
+                        </Link>
+                        <Link href="/" className={css({ color: 'indigo.600', _hover: { color: 'indigo.800' }, fontWeight: 'medium' })}>
+                            &larr; トップに戻る
+                        </Link>
+                    </HStack>
                 </HStack>
 
                 {activeAuctions.length === 0 ? (
