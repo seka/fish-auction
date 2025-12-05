@@ -19,6 +19,8 @@ type UseCase interface {
 	NewCreateBuyerUseCase() buyer.CreateBuyerUseCase
 	NewListBuyersUseCase() buyer.ListBuyersUseCase
 	NewLoginBuyerUseCase() buyer.LoginBuyerUseCase
+	NewGetBuyerPurchasesUseCase() buyer.GetBuyerPurchasesUseCase
+	NewGetBuyerAuctionsUseCase() buyer.GetBuyerAuctionsUseCase
 	NewCreateFishermanUseCase() fisherman.CreateFishermanUseCase
 	NewListFishermenUseCase() fisherman.ListFishermenUseCase
 	NewListInvoicesUseCase() invoice.ListInvoicesUseCase
@@ -74,6 +76,14 @@ func (u *useCaseRegistry) NewListBuyersUseCase() buyer.ListBuyersUseCase {
 
 func (u *useCaseRegistry) NewLoginBuyerUseCase() buyer.LoginBuyerUseCase {
 	return buyer.NewLoginBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository())
+}
+
+func (u *useCaseRegistry) NewGetBuyerPurchasesUseCase() buyer.GetBuyerPurchasesUseCase {
+	return buyer.NewGetBuyerPurchasesUseCase(u.repo.NewBidRepository())
+}
+
+func (u *useCaseRegistry) NewGetBuyerAuctionsUseCase() buyer.GetBuyerAuctionsUseCase {
+	return buyer.NewGetBuyerAuctionsUseCase(u.repo.NewBidRepository())
 }
 
 func (u *useCaseRegistry) NewCreateFishermanUseCase() fisherman.CreateFishermanUseCase {

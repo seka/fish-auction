@@ -12,16 +12,20 @@ import (
 )
 
 type BuyerHandler struct {
-	createUseCase buyer.CreateBuyerUseCase
-	listUseCase   buyer.ListBuyersUseCase
-	loginUseCase  buyer.LoginBuyerUseCase
+	createUseCase       buyer.CreateBuyerUseCase
+	listUseCase         buyer.ListBuyersUseCase
+	loginUseCase        buyer.LoginBuyerUseCase
+	getPurchasesUseCase buyer.GetBuyerPurchasesUseCase
+	getAuctionsUseCase  buyer.GetBuyerAuctionsUseCase
 }
 
 func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 	return &BuyerHandler{
-		createUseCase: r.NewCreateBuyerUseCase(),
-		listUseCase:   r.NewListBuyersUseCase(),
-		loginUseCase:  r.NewLoginBuyerUseCase(),
+		createUseCase:       r.NewCreateBuyerUseCase(),
+		listUseCase:         r.NewListBuyersUseCase(),
+		loginUseCase:        r.NewLoginBuyerUseCase(),
+		getPurchasesUseCase: r.NewGetBuyerPurchasesUseCase(),
+		getAuctionsUseCase:  r.NewGetBuyerAuctionsUseCase(),
 	}
 }
 
@@ -143,6 +147,112 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
+	// Check for buyer_session cookie
+	cookie, err := r.Cookie("buyer_session")
+	if err != nil || cookie.Value != "authenticated" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Get buyer ID from cookie
+	idCookie, err := r.Cookie("buyer_id")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Convert buyer_id to int
+	var buyerID int
+	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
+		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
+		return
+	}
+
+	purchases, err := h.getPurchasesUseCase.Execute(r.Context(), buyerID)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	// Convert to DTOs
+	resp := make([]dto.PurchaseResponse, len(purchases))
+	for i, p := range purchases {
+		resp[i] = dto.PurchaseResponse{
+			ID:          p.ID,
+			ItemID:      p.ItemID,
+			FishType:    p.FishType,
+			Quantity:    p.Quantity,
+			Unit:        p.Unit,
+			Price:       p.Price,
+			BuyerID:     p.BuyerID,
+			AuctionID:   p.AuctionID,
+			AuctionDate: p.AuctionDate,
+			CreatedAt:   p.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
+	// Check for buyer_session cookie
+	cookie, err := r.Cookie("buyer_session")
+	if err != nil || cookie.Value != "authenticated" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Get buyer ID from cookie
+	idCookie, err := r.Cookie("buyer_id")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Convert buyer_id to int
+	var buyerID int
+	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
+		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
+		return
+	}
+
+	auctions, err := h.getAuctionsUseCase.Execute(r.Context(), buyerID)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	// Convert to DTOs
+	resp := make([]dto.AuctionResponse, len(auctions))
+	for i, a := range auctions {
+		var startTime, endTime *string
+		if a.StartTime != nil {
+			s := a.StartTime.Format("15:04:05")
+			startTime = &s
+		}
+		if a.EndTime != nil {
+			e := a.EndTime.Format("15:04:05")
+			endTime = &e
+		}
+
+		resp[i] = dto.AuctionResponse{
+			ID:          a.ID,
+			VenueID:     a.VenueID,
+			AuctionDate: a.AuctionDate.Format("2006-01-02"),
+			StartTime:   startTime,
+			EndTime:     endTime,
+			Status:      string(a.Status),
+			CreatedAt:   a.CreatedAt,
+			UpdatedAt:   a.UpdatedAt,
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -174,6 +284,22 @@ func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers/me", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			h.GetCurrentBuyer(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/api/buyers/me/purchases", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.GetMyPurchases(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/api/buyers/me/auctions", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.GetMyAuctions(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
