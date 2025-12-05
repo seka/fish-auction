@@ -97,6 +97,14 @@ func (m *MockRegistry) NewLoginBuyerUseCase() buyer.LoginBuyerUseCase {
 	return nil // Or add a field to MockRegistry if needed for tests
 }
 
+func (m *MockRegistry) NewGetBuyerPurchasesUseCase() buyer.GetBuyerPurchasesUseCase {
+	return nil
+}
+
+func (m *MockRegistry) NewGetBuyerAuctionsUseCase() buyer.GetBuyerAuctionsUseCase {
+	return nil
+}
+
 func (m *MockRegistry) NewCreateVenueUseCase() venue.CreateVenueUseCase {
 	return m.CreateVenueUC
 }
