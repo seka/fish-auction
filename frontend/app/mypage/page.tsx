@@ -1,34 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { getMyPurchases, getMyAuctions, type Purchase, type AuctionSummary } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
 import Link from 'next/link';
 import { Box, Text, Button, Card, Stack, HStack } from '@/src/core/ui';
 import { css } from 'styled-system/css';
+import { useState } from 'react';
 
 export default function MyPage() {
-    const [purchases, setPurchases] = useState<Purchase[]>([]);
-    const [auctions, setAuctions] = useState<AuctionSummary[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'purchases' | 'auctions'>('purchases');
     const router = useRouter();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-            const [purchasesData, auctionsData] = await Promise.all([
-                getMyPurchases(),
-                getMyAuctions()
-            ]);
-            setPurchases(purchasesData);
-            setAuctions(auctionsData);
-            setIsLoading(false);
-        };
+    // 購入履歴を取得
+    const { data: purchases = [], isLoading: isPurchasesLoading } = useQuery({
+        queryKey: ['purchases'],
+        queryFn: getMyPurchases,
+    });
 
-        fetchData();
-    }, []);
+    // 参加中のセリを取得
+    const { data: auctions = [], isLoading: isAuctionsLoading } = useQuery({
+        queryKey: ['auctions', 'my'],
+        queryFn: getMyAuctions,
+    });
+
+    // どちらかのデータがロード中の場合はローディング表示
+    const isLoading = isPurchasesLoading || isAuctionsLoading;
 
     const handleLogout = async () => {
         const success = await logoutBuyer();

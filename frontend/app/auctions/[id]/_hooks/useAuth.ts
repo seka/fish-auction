@@ -1,29 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getCurrentBuyer } from '@/src/api/buyer_auth';
 
 // Check if user is logged in by calling the backend
-export const useAuth = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isChecking, setIsChecking] = useState(true);
+const checkAuth = async (): Promise<boolean> => {
+    const buyer = await getCurrentBuyer();
+    return buyer !== null;
+};
 
-    useEffect(() => {
-        // Check authentication status via API
-        fetch('/api/buyers/me', {
-            credentials: 'include', // Include cookies
-        })
-            .then(response => {
-                if (response.ok) {
-                    setIsLoggedIn(true);
-                } else {
-                    setIsLoggedIn(false);
-                }
-            })
-            .catch(() => {
-                setIsLoggedIn(false);
-            })
-            .finally(() => {
-                setIsChecking(false);
-            });
-    }, []);
+export const useAuth = () => {
+    const { data: isLoggedIn = false, isLoading: isChecking } = useQuery({
+        queryKey: ['auth', 'me'],
+        queryFn: checkAuth,
+        staleTime: 5 * 60 * 1000, // 5 minutes - auth状態は頻繁に変わらない
+        retry: 1, // 認証チェックは1回だけリトライ
+    });
 
     return { isLoggedIn, isChecking };
 };
