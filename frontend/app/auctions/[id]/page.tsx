@@ -58,7 +58,7 @@ export default function AuctionRoomPage() {
     if (isChecking) {
         return (
             <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-                <Text fontSize="xl" color="gray.600">読み込み中...</Text>
+                <Text fontSize="xl" className={css({ color: 'gray.700' })}>読み込み中...</Text>
             </Box>
         );
     }
@@ -66,7 +66,7 @@ export default function AuctionRoomPage() {
     if (isLoading) {
         return (
             <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-                <Text fontSize="xl" color="gray.600">読み込み中...</Text>
+                <Text fontSize="xl" className={css({ color: 'gray.700' })}>読み込み中...</Text>
             </Box>
         );
     }
@@ -114,10 +114,10 @@ export default function AuctionRoomPage() {
                 <Box maxW="md" w="full">
                     <Stack spacing="8">
                         <Box textAlign="center">
-                            <Text as="h2" fontSize="3xl" fontWeight="extrabold" color="gray.900">
+                            <Text as="h2" fontSize="3xl" fontWeight="extrabold" className={css({ color: 'gray.900' })}>
                                 セリ会場へのログイン
                             </Text>
-                            <Text mt="2" fontSize="sm" color="gray.600">
+                            <Text mt="2" fontSize="sm" className={css({ color: 'gray.700' })}>
                                 入札するにはログインが必要です
                             </Text>
                         </Box>
@@ -133,7 +133,7 @@ export default function AuctionRoomPage() {
                                             placeholder="メールアドレス"
                                             className={css({ borderBottomLeftRadius: '0', borderBottomRightRadius: '0' })}
                                         />
-                                        {loginErrors.email && <Text color="red.500" fontSize="xs" mt="1">{loginErrors.email.message}</Text>}
+                                        {loginErrors.email && <Text className={css({ color: 'red.500' })} fontSize="xs" mt="1">{loginErrors.email.message}</Text>}
                                     </Box>
                                     <Box>
                                         <label htmlFor="password" className={css({ srOnly: true })}>パスワード</label>
@@ -144,11 +144,11 @@ export default function AuctionRoomPage() {
                                             placeholder="パスワード"
                                             className={css({ borderTopLeftRadius: '0', borderTopRightRadius: '0', borderTop: 'none' })}
                                         />
-                                        {loginErrors.password && <Text color="red.500" fontSize="xs" mt="1">{loginErrors.password.message}</Text>}
+                                        {loginErrors.password && <Text className={css({ color: 'red.500' })} fontSize="xs" mt="1">{loginErrors.password.message}</Text>}
                                     </Box>
                                 </Stack>
 
-                                {loginError && <Text color="red.500" fontSize="sm" textAlign="center">{loginError}</Text>}
+                                {loginError && <Text className={css({ color: 'red.500' })} fontSize="sm" textAlign="center">{loginError}</Text>}
 
                                 <Button
                                     type="submit"
@@ -194,15 +194,15 @@ export default function AuctionRoomPage() {
                                 {auction.status === 'in_progress' ? '🔥 開催中' : auction.status}
                             </Box>
                         </HStack>
-                        <Text as="h1" fontSize="3xl" fontWeight="bold" color="gray.900">
+                        <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
                             セリ会場 #{auction.id}
                         </Text>
-                        <Text color="gray.500">
+                        <Text className={css({ color: 'gray.600' })}>
                             {auction.auction_date} {auction.start_time?.substring(0, 5)} - {auction.end_time?.substring(0, 5)}
                         </Text>
                     </Box>
                     <Box textAlign="right" display={{ base: 'none', md: 'block' }}>
-                        <Text fontSize="sm" color="gray.500">自動更新中 (5秒)</Text>
+                        <Text fontSize="sm" className={css({ color: 'gray.600' })}>自動更新中 (5秒)</Text>
                     </Box>
                 </Box>
 
@@ -215,7 +215,7 @@ export default function AuctionRoomPage() {
                         bg="green.50"
                         className={css({ animation: 'bounce 1s infinite' })}
                     >
-                        <Text fontWeight="bold" color="green.700">{message}</Text>
+                        <Text fontWeight="bold" className={css({ color: 'green.700' })}>{message}</Text>
                     </Card>
                 )}
 
@@ -223,12 +223,12 @@ export default function AuctionRoomPage() {
                     {/* Item List */}
                     <Box gridColumn={{ base: '1', lg: 'span 2' }}>
                         <Stack spacing="4">
-                            <Text fontSize="xl" fontWeight="bold" color="gray.800" borderBottom="1px solid" borderColor="gray.200" pb="2">
+                            <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })} borderBottom="1px solid" borderColor="gray.200" pb="2">
                                 出品リスト
                             </Text>
                             {items.length === 0 ? (
                                 <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                    <Text color="gray.500">現在、出品されている商品はありません。</Text>
+                                    <Text className={css({ color: 'gray.600' })}>現在、出品されている商品はありません。</Text>
                                 </Box>
                             ) : (
                                 items.map((item) => (
@@ -249,16 +249,16 @@ export default function AuctionRoomPage() {
                                                     ID: {item.id}
                                                 </Box>
                                                 <Box>
-                                                    <Text fontSize="xl" fontWeight="bold" color="gray.900">{item.fish_type}</Text>
-                                                    <Text color="gray.600" mt="1">
+                                                    <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })}>{item.fish_type}</Text>
+                                                    <Text className={css({ color: 'gray.700' })} mt="1">
                                                         <Text as="span" fontWeight="bold" fontSize="lg">{item.quantity}</Text> {item.unit}
-                                                        <Text as="span" fontSize="sm" ml="2" color="gray.400">(漁師ID: {item.fisherman_id})</Text>
+                                                        <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>(漁師ID: {item.fisherman_id})</Text>
                                                     </Text>
                                                     {item.highest_bid && (
-                                                        <Text fontSize="sm" mt="1" color="orange.600" fontWeight="semibold">
+                                                        <Text fontSize="sm" mt="1" className={css({ color: 'orange.600' })} fontWeight="semibold">
                                                             現在の最高額: ¥{item.highest_bid.toLocaleString()}
                                                             {item.highest_bidder_name && (
-                                                                <Text as="span" ml="2" color="gray.600">({item.highest_bidder_name} さん)</Text>
+                                                                <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({item.highest_bidder_name} さん)</Text>
                                                             )}
                                                         </Text>
                                                     )}
@@ -286,22 +286,22 @@ export default function AuctionRoomPage() {
                     {/* Bidding Panel */}
                     <Box gridColumn={{ base: '1', lg: 'span 1' }}>
                         <Card p="6" shadow="lg" borderWidth="1px" borderColor="gray.200" position={{ lg: 'sticky' }} top="6">
-                            <Text fontSize="xl" fontWeight="bold" color="gray.800" borderBottom="1px solid" borderColor="gray.200" pb="2" mb="6">
+                            <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })} borderBottom="1px solid" borderColor="gray.200" pb="2" mb="6">
                                 入札パネル
                             </Text>
                             {selectedItem ? (
                                 <form onSubmit={handleSubmit(onSubmitBid)}>
                                     <Stack spacing="6">
                                         <Box p="5" bg="gray.50" borderRadius="lg" borderWidth="1px" borderColor="gray.200">
-                                            <Text fontSize="sm" color="gray.500" mb="1">選択中の商品</Text>
-                                            <Text fontWeight="bold" fontSize="2xl" color="gray.900">{selectedItem.fish_type}</Text>
-                                            <Text fontSize="lg" color="gray.700">{selectedItem.quantity} {selectedItem.unit}</Text>
-                                            <Text fontSize="sm" color="gray.500" mt="2">ステータス: {selectedItem.status}</Text>
+                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mb="1">選択中の商品</Text>
+                                            <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'gray.900' })}>{selectedItem.fish_type}</Text>
+                                            <Text fontSize="lg" className={css({ color: 'gray.700' })}>{selectedItem.quantity} {selectedItem.unit}</Text>
+                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">ステータス: {selectedItem.status}</Text>
                                             {selectedItem.highest_bid && (
-                                                <Text fontSize="sm" mt="2" color="orange.600" fontWeight="bold">
+                                                <Text fontSize="sm" mt="2" className={css({ color: 'orange.600' })} fontWeight="bold">
                                                     現在の最高額: ¥{selectedItem.highest_bid.toLocaleString()}
                                                     {selectedItem.highest_bidder_name && (
-                                                        <Text as="span" ml="2" color="gray.600">({selectedItem.highest_bidder_name} さん)</Text>
+                                                        <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({selectedItem.highest_bidder_name} さん)</Text>
                                                     )}
                                                 </Text>
                                             )}
@@ -310,9 +310,9 @@ export default function AuctionRoomPage() {
                                         {selectedItem.status === 'Pending' ? (
                                             !auctionActive ? (
                                                 <Box textAlign="center" py="6" bg="yellow.50" borderRadius="lg" borderWidth="1px" borderColor="yellow.200">
-                                                    <Text color="yellow.800" fontWeight="bold" mb="2">⏰ 入札受付時間外</Text>
+                                                    <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">⏰ 入札受付時間外</Text>
                                                     {auction.start_time && auction.end_time && (
-                                                        <Text fontSize="sm" color="yellow.700">
+                                                        <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
                                                             受付時間: {formatTime(auction.start_time)} ~ {formatTime(auction.end_time)}
                                                         </Text>
                                                     )}
@@ -320,12 +320,12 @@ export default function AuctionRoomPage() {
                                             ) : (
                                                 <>
                                                     <Box>
-                                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                                             入札価格 (円)
                                                         </Text>
                                                         <Box position="relative">
                                                             <Box position="absolute" top="50%" left="3" transform="translateY(-50%)" pointerEvents="none">
-                                                                <Text fontSize="sm" color="gray.500">¥</Text>
+                                                                <Text fontSize="sm" className={css({ color: 'gray.600' })}>¥</Text>
                                                             </Box>
                                                             <Input
                                                                 type="number"
@@ -335,7 +335,7 @@ export default function AuctionRoomPage() {
                                                             />
                                                         </Box>
                                                         {errors.price && (
-                                                            <Text color="red.500" fontSize="sm" mt="1">{errors.price.message}</Text>
+                                                            <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.price.message}</Text>
                                                         )}
                                                     </Box>
 

@@ -19,6 +19,7 @@ const Select = styled('select', {
         px: '3',
         py: '2',
         bg: 'white',
+        color: 'gray.900',
         border: '1px solid',
         borderColor: 'gray.300',
         borderRadius: 'md',
@@ -73,12 +74,12 @@ export default function ItemsPage() {
 
     return (
         <Box maxW="6xl" mx="auto" p="6">
-            <Text as="h1" variant="h2" color="gray.800" mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
+            <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
                 出品管理
             </Text>
 
             {message && (
-                <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" color="blue.700" p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
+                <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
                     <Text fontWeight="bold">通知</Text>
                     <Text>{message}</Text>
                 </Box>
@@ -87,14 +88,14 @@ export default function ItemsPage() {
             <Card p="8">
                 <HStack mb="6">
                     <Box w="2" h="6" bg="orange.500" mr="3" borderRadius="full" />
-                    <Text as="h2" variant="h4" color="orange.900" fontWeight="bold">
+                    <Text as="h2" variant="h4" className={css({ color: 'orange.900' })} fontWeight="bold">
                         新規出品登録
                     </Text>
                 </HStack>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap="6">
                         <Box className={css({ md: { gridColumn: 'span 2' } })}>
-                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                 セリ
                             </Text>
                             <Select
@@ -108,11 +109,11 @@ export default function ItemsPage() {
                                 ))}
                             </Select>
                             {errors.auctionId && (
-                                <Text color="red.500" fontSize="sm" mt="1">{errors.auctionId.message}</Text>
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.auctionId.message}</Text>
                             )}
                         </Box>
                         <Box>
-                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                 漁師
                             </Text>
                             <Select
@@ -126,11 +127,11 @@ export default function ItemsPage() {
                                 ))}
                             </Select>
                             {errors.fishermanId && (
-                                <Text color="red.500" fontSize="sm" mt="1">{errors.fishermanId.message}</Text>
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.fishermanId.message}</Text>
                             )}
                         </Box>
                         <Box>
-                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                 魚種
                             </Text>
                             <Input
@@ -141,11 +142,11 @@ export default function ItemsPage() {
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
                             {errors.fishType && (
-                                <Text color="red.500" fontSize="sm" mt="1">{errors.fishType.message}</Text>
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.fishType.message}</Text>
                             )}
                         </Box>
                         <Box>
-                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                 数量
                             </Text>
                             <Input
@@ -156,11 +157,11 @@ export default function ItemsPage() {
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
                             {errors.quantity && (
-                                <Text color="red.500" fontSize="sm" mt="1">{errors.quantity.message}</Text>
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.quantity.message}</Text>
                             )}
                         </Box>
                         <Box>
-                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                            <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                 単位
                             </Text>
                             <Input
@@ -171,7 +172,7 @@ export default function ItemsPage() {
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
                             {errors.unit && (
-                                <Text color="red.500" fontSize="sm" mt="1">{errors.unit.message}</Text>
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.unit.message}</Text>
                             )}
                         </Box>
                         <Box className={css({ md: { gridColumn: 'span 2' }, pt: '4' })}>

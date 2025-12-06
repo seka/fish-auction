@@ -19,6 +19,7 @@ const Select = styled('select', {
         px: '3',
         py: '2',
         bg: 'white',
+        color: 'gray.900',
         border: '1px solid',
         borderColor: 'gray.300',
         borderRadius: 'md',
@@ -122,7 +123,7 @@ export default function AuctionsPage() {
     };
 
     const getStatusBadge = (status: string) => {
-        const baseStyle = css({ fontSize: 'xs', fontWeight: 'medium', px: '2.5', py: '0.5', borderRadius: 'md' });
+        const baseStyle = { fontSize: 'xs', fontWeight: 'medium', px: '2.5', py: '0.5', borderRadius: 'md' };
         switch (status) {
             case 'scheduled':
                 return <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>予定</span>;
@@ -139,12 +140,12 @@ export default function AuctionsPage() {
 
     return (
         <Box maxW="6xl" mx="auto" p="6">
-            <Text as="h1" variant="h2" color="gray.800" mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
+            <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
                 セリ管理
             </Text>
 
             {message && (
-                <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" color="blue.700" p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
+                <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
                     <Text fontWeight="bold">通知</Text>
                     <Text>{message}</Text>
                 </Box>
@@ -156,14 +157,14 @@ export default function AuctionsPage() {
                     <Card p="md" className={css({ position: 'sticky', top: '6' })}>
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
-                            <Text as="h2" variant="h4" color="indigo.900" fontWeight="bold">
+                            <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
                                 {editingAuction ? 'セリ編集' : '新規セリ登録'}
                             </Text>
                         </HStack>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <Stack spacing="4">
                                 <Box>
-                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         会場
                                     </Text>
                                     <Select
@@ -177,11 +178,11 @@ export default function AuctionsPage() {
                                         ))}
                                     </Select>
                                     {errors.venue_id && (
-                                        <Text color="red.500" fontSize="sm" mt="1">{errors.venue_id.message}</Text>
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.venue_id.message}</Text>
                                     )}
                                 </Box>
                                 <Box>
-                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         開催日
                                     </Text>
                                     <Input
@@ -189,12 +190,12 @@ export default function AuctionsPage() {
                                         {...register('auction_date')}
                                     />
                                     {errors.auction_date && (
-                                        <Text color="red.500" fontSize="sm" mt="1">{errors.auction_date.message}</Text>
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.auction_date.message}</Text>
                                     )}
                                 </Box>
                                 <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="4">
                                     <Box>
-                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                             開始時間
                                         </Text>
                                         <Input
@@ -203,7 +204,7 @@ export default function AuctionsPage() {
                                         />
                                     </Box>
                                     <Box>
-                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                        <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                             終了時間
                                         </Text>
                                         <Input
@@ -242,9 +243,9 @@ export default function AuctionsPage() {
                 <Box>
                     <Card padding="none" overflow="hidden">
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200" display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="4">
-                            <Text as="h2" variant="h4" color="gray.800" fontWeight="bold">セリ一覧</Text>
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">セリ一覧</Text>
                             <HStack spacing="2">
-                                <Text as="label" fontSize="sm" color="gray.600">会場絞り込み:</Text>
+                                <Text as="label" fontSize="sm" className={css({ color: 'gray.600' })}>会場絞り込み:</Text>
                                 <Select
                                     value={filterVenueId || ''}
                                     onChange={(e) => setFilterVenueId(e.target.value ? Number(e.target.value) : undefined)}
@@ -260,9 +261,9 @@ export default function AuctionsPage() {
                             </HStack>
                         </Box>
                         {isLoading ? (
-                            <Box p="6" textAlign="center" color="gray.500">読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
                         ) : auctions.length === 0 ? (
-                            <Box p="6" textAlign="center" color="gray.500">セリが登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>セリが登録されていません</Box>
                         ) : (
                             <Box overflowX="auto">
                                 <Table>
@@ -280,13 +281,13 @@ export default function AuctionsPage() {
                                             return (
                                                 <Tr key={auction.id}>
                                                     <Td>
-                                                        <Text fontSize="sm" fontWeight="medium" color="gray.900">{auction.auction_date}</Text>
-                                                        <Text fontSize="sm" color="gray.500">
+                                                        <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>{auction.auction_date}</Text>
+                                                        <Text fontSize="sm" className={css({ color: 'gray.500' })}>
                                                             {auction.start_time ? auction.start_time.substring(0, 5) : '--:--'} - {auction.end_time ? auction.end_time.substring(0, 5) : '--:--'}
                                                         </Text>
                                                     </Td>
                                                     <Td>
-                                                        <Text fontSize="sm" color="gray.900">{venue?.name || `ID: ${auction.venue_id}`}</Text>
+                                                        <Text fontSize="sm" className={css({ color: 'gray.900' })}>{venue?.name || `ID: ${auction.venue_id}`}</Text>
                                                     </Td>
                                                     <Td>
                                                         {getStatusBadge(auction.status)}

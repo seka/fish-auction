@@ -18,6 +18,7 @@ const Textarea = styled('textarea', {
         px: '3',
         py: '2',
         bg: 'white',
+        color: 'gray.900',
         border: '1px solid',
         borderColor: 'gray.300',
         borderRadius: 'md',
@@ -91,7 +92,7 @@ export default function VenuesPage() {
 
     return (
         <Box maxW="5xl" mx="auto" p="6">
-            <Text as="h1" variant="h2" color="gray.800" mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
+            <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
                 会場管理
             </Text>
 
@@ -108,14 +109,14 @@ export default function VenuesPage() {
                     <Card p="md" className={css({ position: 'sticky', top: '6' })}>
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
-                            <Text as="h2" variant="h4" color="indigo.900" fontWeight="bold">
+                            <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
                                 {editingVenue ? '会場編集' : '新規会場登録'}
                             </Text>
                         </HStack>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <Stack spacing="4">
                                 <Box>
-                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         会場名
                                     </Text>
                                     <Input
@@ -125,11 +126,11 @@ export default function VenuesPage() {
                                         error={!!errors.name}
                                     />
                                     {errors.name && (
-                                        <Text color="red.500" fontSize="sm" mt="1">{errors.name.message}</Text>
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.name.message}</Text>
                                     )}
                                 </Box>
                                 <Box>
-                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         所在地
                                     </Text>
                                     <Input
@@ -139,7 +140,7 @@ export default function VenuesPage() {
                                     />
                                 </Box>
                                 <Box>
-                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         説明
                                     </Text>
                                     <Textarea
@@ -178,27 +179,27 @@ export default function VenuesPage() {
                 <Box className={css({ md: { gridColumn: '2 / 3' } })}>
                     <Card padding="none" overflow="hidden">
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
-                            <Text as="h2" variant="h4" color="gray.800" fontWeight="bold">会場一覧</Text>
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">会場一覧</Text>
                         </Box>
                         {isLoading ? (
-                            <Box p="6" textAlign="center" color="gray.500">読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
                         ) : venues.length === 0 ? (
-                            <Box p="6" textAlign="center" color="gray.500">会場が登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>会場が登録されていません</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {venues.map((venue) => (
                                     <Box as="li" key={venue.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
                                         <HStack justify="between" align="start">
                                             <Box>
-                                                <Text as="h3" fontSize="lg" fontWeight="bold" color="indigo.900">{venue.name}</Text>
+                                                <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })}>{venue.name}</Text>
                                                 {venue.location && (
-                                                    <Text fontSize="sm" color="gray.600" mt="1" display="flex" alignItems="center">
+                                                    <Text fontSize="sm" className={css({ color: 'gray.700' })} mt="1" display="flex" alignItems="center">
                                                         <span className={css({ mr: '2' })}>📍</span>
                                                         {venue.location}
                                                     </Text>
                                                 )}
                                                 {venue.description && (
-                                                    <Text fontSize="sm" color="gray.500" mt="2">{venue.description}</Text>
+                                                    <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">{venue.description}</Text>
                                                 )}
                                             </Box>
                                             <HStack spacing="2">

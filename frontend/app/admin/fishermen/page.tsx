@@ -31,7 +31,7 @@ export default function FishermenPage() {
 
     return (
         <Box maxW="5xl" mx="auto" p="6">
-            <Text as="h1" variant="h2" color="gray.800" mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
+            <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
                 漁師管理
             </Text>
 
@@ -48,14 +48,14 @@ export default function FishermenPage() {
                     <Card p="md" className={css({ position: 'sticky', top: '6' })}>
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
-                            <Text as="h2" variant="h4" color="indigo.900" fontWeight="bold">
+                            <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
                                 新規漁師登録
                             </Text>
                         </HStack>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <Stack spacing="4">
                                 <Box>
-                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" color="gray.700" mb="1">
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         氏名
                                     </Text>
                                     <Input
@@ -65,7 +65,7 @@ export default function FishermenPage() {
                                         error={!!errors.name}
                                     />
                                     {errors.name && (
-                                        <Text color="red.500" fontSize="sm" mt="1">{errors.name.message}</Text>
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.name.message}</Text>
                                     )}
                                 </Box>
 
@@ -86,20 +86,20 @@ export default function FishermenPage() {
                 <Box className={css({ md: { gridColumn: '2 / 3' } })}>
                     <Card padding="none" overflow="hidden">
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
-                            <Text as="h2" variant="h4" color="gray.800" fontWeight="bold">漁師一覧</Text>
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">漁師一覧</Text>
                         </Box>
                         {isLoading ? (
-                            <Box p="6" textAlign="center" color="gray.500">読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
                         ) : fishermen.length === 0 ? (
-                            <Box p="6" textAlign="center" color="gray.500">漁師が登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>漁師が登録されていません</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {fishermen.map((fisherman) => (
                                     <Box as="li" key={fisherman.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
                                         <HStack justify="between" align="center">
                                             <Box>
-                                                <Text as="h3" fontSize="lg" fontWeight="bold" color="indigo.900">{fisherman.name}</Text>
-                                                <Text fontSize="sm" color="gray.500" mt="1">ID: {fisherman.id}</Text>
+                                                <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })}>{fisherman.name}</Text>
+                                                <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="1">ID: {fisherman.id}</Text>
                                             </Box>
                                         </HStack>
                                     </Box>

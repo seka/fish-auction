@@ -46,7 +46,7 @@ export default function InvoicePage() {
 
     return (
         <Box maxW="5xl" mx="auto" p="6">
-            <Text as="h1" variant="h2" color="gray.800" mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
+            <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
                 請求書発行
             </Text>
 
@@ -75,7 +75,7 @@ export default function InvoicePage() {
                                     <Td className={css({ fontSize: 'sm', fontWeight: 'bold', color: 'gray.900' })}>
                                         {invoice.buyer_name}
                                     </Td>
-                                    <Td className={css({ fontSize: 'sm', textAlign: 'right', fontWeight: 'bold', color: 'indigo.700', fontSize: 'lg' })}>
+                                    <Td className={css({ textAlign: 'right', fontWeight: 'bold', color: 'indigo.700', fontSize: 'lg' })}>
                                         ¥{invoice.total_amount.toLocaleString()}
                                     </Td>
                                 </Tr>
@@ -90,20 +90,20 @@ export default function InvoicePage() {
                 <ModalBackdrop onClick={() => setSelectedInvoice(null)}>
                     <ModalContent onClick={(e) => e.stopPropagation()}>
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
-                            <Text variant="h3" fontWeight="bold" color="gray.900">請求書詳細</Text>
+                            <Text variant="h3" fontWeight="bold" className={css({ color: 'gray.900' })}>請求書詳細</Text>
                         </Box>
                         <Box p="6">
                             <Box mb="6">
-                                <Text fontSize="sm" color="gray.600" mb="1">中買人ID</Text>
+                                <Text fontSize="sm" className={css({ color: 'gray.700' })} mb="1">中買人ID</Text>
                                 <Text fontWeight="bold" fontFamily="mono">{selectedInvoice.buyer_id}</Text>
                             </Box>
                             <Box mb="6">
-                                <Text fontSize="sm" color="gray.600" mb="1">屋号・氏名</Text>
+                                <Text fontSize="sm" className={css({ color: 'gray.700' })} mb="1">屋号・氏名</Text>
                                 <Text fontWeight="bold" fontSize="lg">{selectedInvoice.buyer_name}</Text>
                             </Box>
                             <Box mb="6">
-                                <Text fontSize="sm" color="gray.600" mb="1">請求総額 (税込)</Text>
-                                <Text fontWeight="bold" fontSize="2xl" color="indigo.700">
+                                <Text fontSize="sm" className={css({ color: 'gray.700' })} mb="1">請求総額 (税込)</Text>
+                                <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'indigo.700' })}>
                                     ¥{selectedInvoice.total_amount.toLocaleString()}
                                 </Text>
                             </Box>

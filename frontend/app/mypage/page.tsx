@@ -38,7 +38,7 @@ export default function MyPage() {
     if (isLoading) {
         return (
             <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-                <Text fontSize="xl" color="gray.600">読み込み中...</Text>
+                <Text fontSize="xl" className={css({ color: 'gray.700' })}>読み込み中...</Text>
             </Box>
         );
     }
@@ -49,10 +49,10 @@ export default function MyPage() {
                 {/* Header */}
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb="8">
                     <Box>
-                        <Text as="h1" fontSize="3xl" fontWeight="bold" color="gray.900">
+                        <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
                             マイページ
                         </Text>
-                        <Text color="gray.500" mt="1">
+                        <Text className={css({ color: 'gray.500' })} mt="1">
                             購入履歴と参加したセリを確認できます
                         </Text>
                     </Box>
@@ -104,12 +104,12 @@ export default function MyPage() {
                 {/* Content */}
                 {activeTab === 'purchases' ? (
                     <Stack spacing="4">
-                        <Text fontSize="xl" fontWeight="bold" color="gray.800">
+                        <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
                             購入履歴
                         </Text>
                         {purchases.length === 0 ? (
                             <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text color="gray.500">購入履歴がありません</Text>
+                                <Text className={css({ color: 'gray.500' })}>購入履歴がありません</Text>
                             </Box>
                         ) : (
                             purchases.map((purchase) => (
@@ -127,22 +127,22 @@ export default function MyPage() {
                                                 <Box bg="blue.100" color="blue.800" fontWeight="bold" px="3" py="1" borderRadius="md" fontSize="xs">
                                                     ID: {purchase.item_id}
                                                 </Box>
-                                                <Text fontSize="xs" color="gray.500">
+                                                <Text fontSize="xs" className={css({ color: 'gray.500' })}>
                                                     {new Date(purchase.created_at).toLocaleDateString('ja-JP')} {new Date(purchase.created_at).toLocaleTimeString('ja-JP')}
                                                 </Text>
                                             </HStack>
-                                            <Text fontSize="xl" fontWeight="bold" color="gray.900" mb="1">
+                                            <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
                                                 {purchase.fish_type}
                                             </Text>
-                                            <Text color="gray.600" mb="2">
+                                            <Text className={css({ color: 'gray.700' })} mb="2">
                                                 数量: <Text as="span" fontWeight="bold">{purchase.quantity}</Text> {purchase.unit}
                                             </Text>
-                                            <Text fontSize="sm" color="gray.500">
+                                            <Text fontSize="sm" className={css({ color: 'gray.500' })}>
                                                 セリID: {purchase.auction_id} | 開催日: {purchase.auction_date}
                                             </Text>
                                         </Box>
                                         <Box textAlign="right">
-                                            <Text fontSize="2xl" fontWeight="bold" color="green.600">
+                                            <Text fontSize="2xl" fontWeight="bold" className={css({ color: 'green.600' })}>
                                                 ¥{purchase.price.toLocaleString()}
                                             </Text>
                                         </Box>
@@ -153,12 +153,12 @@ export default function MyPage() {
                     </Stack>
                 ) : (
                     <Stack spacing="4">
-                        <Text fontSize="xl" fontWeight="bold" color="gray.800">
+                        <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
                             参加中のセリ
                         </Text>
                         {auctions.length === 0 ? (
                             <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text color="gray.500">参加中のセリがありません</Text>
+                                <Text className={css({ color: 'gray.500' })}>参加中のセリがありません</Text>
                             </Box>
                         ) : (
                             auctions.map((auction) => (
@@ -190,11 +190,11 @@ export default function MyPage() {
                                                             auction.status === 'scheduled' ? '予定' : auction.status}
                                                 </Box>
                                             </HStack>
-                                            <Text fontSize="lg" fontWeight="bold" color="gray.900" mb="1">
+                                            <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
                                                 {auction.auction_date}
                                             </Text>
                                             {auction.start_time && auction.end_time && (
-                                                <Text fontSize="sm" color="gray.600">
+                                                <Text fontSize="sm" className={css({ color: 'gray.700' })}>
                                                     {auction.start_time.substring(0, 5)} - {auction.end_time.substring(0, 5)}
                                                 </Text>
                                             )}

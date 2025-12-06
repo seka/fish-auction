@@ -32,10 +32,10 @@ export default function BuyerLoginPage() {
             <Box maxW="md" w="full">
                 <Stack spacing="8">
                     <Box textAlign="center">
-                        <Text as="h2" fontSize="3xl" fontWeight="extrabold" color="gray.900">
+                        <Text as="h2" fontSize="3xl" fontWeight="extrabold" className={css({ color: 'gray.900' })}>
                             中買人ログイン
                         </Text>
-                        <Text mt="2" fontSize="sm" color="gray.600">
+                        <Text mt="2" fontSize="sm" className={css({ color: 'gray.600' })}>
                             セリに参加するにはログインしてください
                         </Text>
                     </Box>
@@ -51,7 +51,7 @@ export default function BuyerLoginPage() {
                                         placeholder="メールアドレス"
                                         className={css({ borderBottomLeftRadius: '0', borderBottomRightRadius: '0' })}
                                     />
-                                    {errors.email && <Text color="red.500" fontSize="xs" mt="1">{errors.email.message}</Text>}
+                                    {errors.email && <Text className={css({ color: 'red.500' })} fontSize="xs" mt="1">{errors.email.message}</Text>}
                                 </Box>
                                 <Box>
                                     <label htmlFor="password" className={css({ srOnly: true })}>パスワード</label>
@@ -62,11 +62,11 @@ export default function BuyerLoginPage() {
                                         placeholder="パスワード"
                                         className={css({ borderTopLeftRadius: '0', borderTopRightRadius: '0', borderTop: 'none' })}
                                     />
-                                    {errors.password && <Text color="red.500" fontSize="xs" mt="1">{errors.password.message}</Text>}
+                                    {errors.password && <Text className={css({ color: 'red.500' })} fontSize="xs" mt="1">{errors.password.message}</Text>}
                                 </Box>
                             </Stack>
 
-                            {error && <Text color="red.500" fontSize="sm" textAlign="center">{error}</Text>}
+                            {error && <Text className={css({ color: 'red.500' })} fontSize="sm" textAlign="center">{error}</Text>}
 
                             <Button
                                 type="submit"

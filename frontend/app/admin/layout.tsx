@@ -12,8 +12,8 @@ export default function AdminLayout({
             {/* Sidebar */}
             <Box w="64" bg="indigo.900" color="white" flexShrink={0} shadow="xl" display="flex" flexDirection="column">
                 <Box p="6" bg="indigo.950">
-                    <Text as="h2" fontSize="xl" fontWeight="bold" letterSpacing="wider" color="white">管理画面</Text>
-                    <Text fontSize="xs" color="indigo.300" mt="1">Fish Auction Admin</Text>
+                    <Text as="h2" fontSize="xl" fontWeight="bold" letterSpacing="wider" className={css({ color: 'white' })}>管理画面</Text>
+                    <Text fontSize="xs" className={css({ color: 'indigo.300' })} mt="1">Fish Auction Admin</Text>
                 </Box>
                 <Stack as="nav" mt="6" px="2" spacing="1">
                     <Link href="/" className={css({ display: 'block', py: '3', px: '4', borderRadius: 'md', _hover: { bg: 'indigo.800' }, transition: 'colors', fontSize: 'sm', fontWeight: 'medium', color: 'white' })}>

@@ -8,6 +8,7 @@ const inputRecipe = cva({
         px: '3',
         py: '2',
         bg: 'white',
+        color: 'gray.900',
         border: '1px solid',
         borderColor: 'gray.300',
         borderRadius: 'md',
