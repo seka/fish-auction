@@ -4,6 +4,8 @@ import "./globals.css";
 import Providers from "./providers";
 import { css } from "styled-system/css";
 
+import { PublicNavbar } from "./_components/PublicNavbar";
+
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
   variable: "--font-noto-sans-jp",
@@ -24,7 +26,10 @@ export default function RootLayout({
       <body
         className={`${notoSansJP.variable} ${css({ fontFamily: 'sans', bg: 'gray.50', color: 'gray.900' })}`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <PublicNavbar />
+          {children}
+        </Providers>
       </body>
     </html>
   );
