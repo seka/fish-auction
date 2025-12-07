@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAuctions, createAuction, updateAuction, updateAuctionStatus, deleteAuction } from '@/src/api/auction';
 import { AuctionFormData } from '@/src/models/schemas/auction';
 
-export const useAuctions = (filters?: { venue_id?: number; date?: string; status?: string }) => {
+export const useAuctions = (filters?: { venueId?: number; date?: string; status?: string }) => {
     const { data: auctions, isLoading, error } = useQuery({
         queryKey: ['auctions', filters],
         queryFn: () => getAuctions(filters),

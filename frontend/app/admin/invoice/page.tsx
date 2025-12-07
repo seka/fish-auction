@@ -68,15 +68,15 @@ export default function InvoicePage() {
                             </Tr>
                         ) : (
                             invoices.map((invoice) => (
-                                <Tr key={invoice.buyer_id} onClick={() => setSelectedInvoice(invoice)}>
+                                <Tr key={invoice.buyerId} onClick={() => setSelectedInvoice(invoice)}>
                                     <Td className={css({ fontSize: 'sm', color: 'gray.500', fontFamily: 'mono' })}>
-                                        {invoice.buyer_id}
+                                        {invoice.buyerId}
                                     </Td>
                                     <Td className={css({ fontSize: 'sm', fontWeight: 'bold', color: 'gray.900' })}>
-                                        {invoice.buyer_name}
+                                        {invoice.buyerName}
                                     </Td>
                                     <Td className={css({ textAlign: 'right', fontWeight: 'bold', color: 'indigo.700', fontSize: 'lg' })}>
-                                        ¥{invoice.total_amount.toLocaleString()}
+                                        ¥{invoice.totalAmount.toLocaleString()}
                                     </Td>
                                 </Tr>
                             ))
@@ -95,16 +95,16 @@ export default function InvoicePage() {
                         <Box p="6">
                             <Box mb="6">
                                 <Text fontSize="sm" className={css({ color: 'gray.700' })} mb="1">中買人ID</Text>
-                                <Text fontWeight="bold" fontFamily="mono">{selectedInvoice.buyer_id}</Text>
+                                <Text fontWeight="bold" fontFamily="mono">{selectedInvoice.buyerId}</Text>
                             </Box>
                             <Box mb="6">
                                 <Text fontSize="sm" className={css({ color: 'gray.700' })} mb="1">屋号・氏名</Text>
-                                <Text fontWeight="bold" fontSize="lg">{selectedInvoice.buyer_name}</Text>
+                                <Text fontWeight="bold" fontSize="lg">{selectedInvoice.buyerName}</Text>
                             </Box>
                             <Box mb="6">
                                 <Text fontSize="sm" className={css({ color: 'gray.700' })} mb="1">請求総額 (税込)</Text>
                                 <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'indigo.700' })}>
-                                    ¥{selectedInvoice.total_amount.toLocaleString()}
+                                    ¥{selectedInvoice.totalAmount.toLocaleString()}
                                 </Text>
                             </Box>
                         </Box>

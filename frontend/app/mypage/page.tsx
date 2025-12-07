@@ -125,20 +125,20 @@ export default function MyPage() {
                                         <Box>
                                             <HStack spacing="3" mb="2">
                                                 <Box bg="blue.100" color="blue.800" fontWeight="bold" px="3" py="1" borderRadius="md" fontSize="xs">
-                                                    ID: {purchase.item_id}
+                                                    ID: {purchase.itemId}
                                                 </Box>
                                                 <Text fontSize="xs" className={css({ color: 'gray.500' })}>
-                                                    {new Date(purchase.created_at).toLocaleDateString('ja-JP')} {new Date(purchase.created_at).toLocaleTimeString('ja-JP')}
+                                                    {new Date(purchase.createdAt).toLocaleDateString('ja-JP')} {new Date(purchase.createdAt).toLocaleTimeString('ja-JP')}
                                                 </Text>
                                             </HStack>
                                             <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
-                                                {purchase.fish_type}
+                                                {purchase.fishType}
                                             </Text>
                                             <Text className={css({ color: 'gray.700' })} mb="2">
                                                 数量: <Text as="span" fontWeight="bold">{purchase.quantity}</Text> {purchase.unit}
                                             </Text>
                                             <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-                                                セリID: {purchase.auction_id} | 開催日: {purchase.auction_date}
+                                                セリID: {purchase.auctionId} | 開催日: {purchase.auctionDate}
                                             </Text>
                                         </Box>
                                         <Box textAlign="right">
@@ -191,11 +191,11 @@ export default function MyPage() {
                                                 </Box>
                                             </HStack>
                                             <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
-                                                {auction.auction_date}
+                                                {auction.auctionDate}
                                             </Text>
-                                            {auction.start_time && auction.end_time && (
+                                            {auction.startTime && auction.endTime && (
                                                 <Text fontSize="sm" className={css({ color: 'gray.700' })}>
-                                                    {auction.start_time.substring(0, 5)} - {auction.end_time.substring(0, 5)}
+                                                    {auction.startTime.substring(0, 5)} - {auction.endTime.substring(0, 5)}
                                                 </Text>
                                             )}
                                         </Box>

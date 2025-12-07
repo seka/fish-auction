@@ -2,26 +2,26 @@ import { apiClient } from '@/src/core/api/client';
 
 export interface Purchase {
     id: number;
-    item_id: number;
-    fish_type: string;
+    itemId: number;
+    fishType: string;
     quantity: number;
     unit: string;
     price: number;
-    buyer_id: number;
-    auction_id: number;
-    auction_date: string;
-    created_at: string;
+    buyerId: number;
+    auctionId: number;
+    auctionDate: string;
+    createdAt: string;
 }
 
 export interface AuctionSummary {
     id: number;
-    venue_id: number;
-    auction_date: string;
-    start_time: string | null;
-    end_time: string | null;
+    venueId: number;
+    auctionDate: string;
+    startTime: string | null;
+    endTime: string | null;
     status: string;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export const getMyPurchases = async (): Promise<Purchase[]> => {

@@ -58,9 +58,9 @@ export default function ItemsPage() {
     const onSubmit = async (data: ItemFormData) => {
         try {
             await createItem({
-                auction_id: parseInt(data.auctionId),
-                fisherman_id: parseInt(data.fishermanId),
-                fish_type: data.fishType,
+                auctionId: parseInt(data.auctionId),
+                fishermanId: parseInt(data.fishermanId),
+                fishType: data.fishType,
                 quantity: parseInt(data.quantity),
                 unit: data.unit,
             });
@@ -104,7 +104,7 @@ export default function ItemsPage() {
                                 <option value="">セリを選択してください</option>
                                 {auctions.map((auction) => (
                                     <option key={auction.id} value={auction.id}>
-                                        {auction.auction_date} {auction.start_time?.substring(0, 5)} - {auction.end_time?.substring(0, 5)} (ID: {auction.id})
+                                        {auction.auctionDate} {auction.startTime?.substring(0, 5)} - {auction.endTime?.substring(0, 5)} (ID: {auction.id})
                                     </option>
                                 ))}
                             </Select>

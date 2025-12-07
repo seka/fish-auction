@@ -6,9 +6,9 @@ export const createAuction = async (data: AuctionFormData): Promise<Auction> => 
     return apiClient.post<Auction>('/api/auctions', data);
 };
 
-export const getAuctions = async (params?: { venue_id?: number; date?: string; status?: string }): Promise<Auction[]> => {
+export const getAuctions = async (params?: { venueId?: number; date?: string; status?: string }): Promise<Auction[]> => {
     const query = new URLSearchParams();
-    if (params?.venue_id) query.append('venue_id', params.venue_id.toString());
+    if (params?.venueId) query.append('venue_id', params.venueId.toString());
     if (params?.date) query.append('date', params.date);
     if (params?.status) query.append('status', params.status);
 

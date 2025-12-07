@@ -3,5 +3,5 @@ export interface Venue {
     name: string;
     location?: string;
     description?: string;
-    created_at: string;
+    createdAt: string;
 }

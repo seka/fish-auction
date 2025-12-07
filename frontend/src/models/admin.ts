@@ -9,9 +9,9 @@ export interface Buyer {
 }
 
 export interface RegisterItemParams {
-    auction_id: number;
-    fisherman_id: number;
-    fish_type: string;
+    auctionId: number;
+    fishermanId: number;
+    fishType: string;
     quantity: number;
     unit: string;
 }

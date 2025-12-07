@@ -39,7 +39,7 @@ export default function AuctionsListPage() {
         // Sort: In Progress first, then by date/time
         if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;
         if (a.status !== 'in_progress' && b.status === 'in_progress') return 1;
-        return new Date(`${a.auction_date}T${a.start_time}`).getTime() - new Date(`${b.auction_date}T${b.start_time}`).getTime();
+        return new Date(`${a.auctionDate}T${a.startTime}`).getTime() - new Date(`${b.auctionDate}T${b.startTime}`).getTime();
     }) || [];
 
     const getVenueName = (id: number) => venues?.find(v => v.id === id)?.name || `会場ID: ${id}`;
@@ -102,22 +102,22 @@ export default function AuctionsListPage() {
                                                 {auction.status === 'in_progress' ? '🔥 開催中' : '📅 開催予定'}
                                             </Box>
                                             <Text variant="h3" color="default" className={css({ _groupHover: { color: 'indigo.700' }, transition: 'colors' })}>
-                                                {getVenueName(auction.venue_id)}
+                                                {getVenueName(auction.venueId)}
                                             </Text>
                                         </Box>
                                         <Box textAlign="right">
                                             <Text fontSize="2xl" fontWeight="bold" color="default">
-                                                {auction.start_time?.substring(0, 5)}
+                                                {auction.startTime?.substring(0, 5)}
                                             </Text>
                                             <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-                                                {auction.auction_date}
+                                                {auction.auctionDate}
                                             </Text>
                                         </Box>
                                     </HStack>
 
                                     <HStack justify="between" mt="4" pt="4" borderTop="1px solid" borderColor="gray.100">
                                         <Text fontSize="sm" color="muted">
-                                            終了予定: {auction.end_time?.substring(0, 5)}
+                                            終了予定: {auction.endTime?.substring(0, 5)}
                                         </Text>
                                         <Text className={css({ color: 'indigo.600', fontWeight: 'bold', display: 'flex', alignItems: 'center', _groupHover: { transform: 'translateX(4px)' }, transition: 'transform' })}>
                                             会場へ入る <span className={css({ ml: '1' })}>&rarr;</span>

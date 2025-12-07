@@ -57,7 +57,7 @@ export default function AuctionsPage() {
     const [filterVenueId, setFilterVenueId] = useState<number | undefined>(undefined);
 
     const { venues } = useVenues();
-    const { auctions, isLoading } = useAuctions({ venue_id: filterVenueId });
+    const { auctions, isLoading } = useAuctions({ venueId: filterVenueId });
     const { createAuction, updateAuction, updateStatus, deleteAuction, isCreating, isUpdating, isUpdatingStatus, isDeleting } = useAuctionMutations();
 
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<AuctionFormData>({
@@ -68,7 +68,7 @@ export default function AuctionsPage() {
         try {
             const payload = {
                 ...data,
-                venue_id: Number(data.venue_id),
+                venueId: Number(data.venueId),
             };
 
             if (editingAuction) {
@@ -88,10 +88,10 @@ export default function AuctionsPage() {
 
     const onEdit = (auction: Auction) => {
         setEditingAuction(auction);
-        setValue('venue_id', auction.venue_id);
-        setValue('auction_date', auction.auction_date);
-        setValue('start_time', auction.start_time || '');
-        setValue('end_time', auction.end_time || '');
+        setValue('venueId', auction.venueId);
+        setValue('auctionDate', auction.auctionDate);
+        setValue('startTime', auction.startTime || '');
+        setValue('endTime', auction.endTime || '');
         setValue('status', auction.status);
     };
 
@@ -168,7 +168,7 @@ export default function AuctionsPage() {
                                         会場
                                     </Text>
                                     <Select
-                                        {...register('venue_id', { valueAsNumber: true })}
+                                        {...register('venueId', { valueAsNumber: true })}
                                     >
                                         <option value="">会場を選択してください</option>
                                         {venues.map((venue) => (
@@ -177,8 +177,8 @@ export default function AuctionsPage() {
                                             </option>
                                         ))}
                                     </Select>
-                                    {errors.venue_id && (
-                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.venue_id.message}</Text>
+                                    {errors.venueId && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.venueId.message}</Text>
                                     )}
                                 </Box>
                                 <Box>
@@ -187,10 +187,10 @@ export default function AuctionsPage() {
                                     </Text>
                                     <Input
                                         type="date"
-                                        {...register('auction_date')}
+                                        {...register('auctionDate')}
                                     />
-                                    {errors.auction_date && (
-                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.auction_date.message}</Text>
+                                    {errors.auctionDate && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.auctionDate.message}</Text>
                                     )}
                                 </Box>
                                 <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="4">
@@ -200,7 +200,7 @@ export default function AuctionsPage() {
                                         </Text>
                                         <Input
                                             type="time"
-                                            {...register('start_time')}
+                                            {...register('startTime')}
                                         />
                                     </Box>
                                     <Box>
@@ -209,7 +209,7 @@ export default function AuctionsPage() {
                                         </Text>
                                         <Input
                                             type="time"
-                                            {...register('end_time')}
+                                            {...register('endTime')}
                                         />
                                     </Box>
                                 </Box>
@@ -277,17 +277,17 @@ export default function AuctionsPage() {
                                     </Thead>
                                     <Tbody>
                                         {auctions.map((auction) => {
-                                            const venue = venues.find(v => v.id === auction.venue_id);
+                                            const venue = venues.find(v => v.id === auction.venueId);
                                             return (
                                                 <Tr key={auction.id}>
                                                     <Td>
-                                                        <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>{auction.auction_date}</Text>
+                                                        <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>{auction.auctionDate}</Text>
                                                         <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-                                                            {auction.start_time ? auction.start_time.substring(0, 5) : '--:--'} - {auction.end_time ? auction.end_time.substring(0, 5) : '--:--'}
+                                                            {auction.startTime ? auction.startTime.substring(0, 5) : '--:--'} - {auction.endTime ? auction.endTime.substring(0, 5) : '--:--'}
                                                         </Text>
                                                     </Td>
                                                     <Td>
-                                                        <Text fontSize="sm" className={css({ color: 'gray.900' })}>{venue?.name || `ID: ${auction.venue_id}`}</Text>
+                                                        <Text fontSize="sm" className={css({ color: 'gray.900' })}>{venue?.name || `ID: ${auction.venueId}`}</Text>
                                                     </Td>
                                                     <Td>
                                                         {getStatusBadge(auction.status)}

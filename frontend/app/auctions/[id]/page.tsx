@@ -90,13 +90,13 @@ export default function AuctionRoomPage() {
         if (!selectedItem) return;
 
         const success = await submitBid({
-            item_id: selectedItem.id,
-            buyer_id: 0, // Backend handles this from context
+            itemId: selectedItem.id,
+            buyerId: 0, // Backend handles this from context
             price: parseInt(data.price),
         });
 
         if (success) {
-            setMessage(`落札成功！ (${selectedItem.fish_type})`);
+            setMessage(`落札成功！ (${selectedItem.fishType})`);
             setSelectedItem(null);
             reset();
             refetchItems();
@@ -198,7 +198,7 @@ export default function AuctionRoomPage() {
                             セリ会場 #{auction.id}
                         </Text>
                         <Text className={css({ color: 'gray.600' })}>
-                            {auction.auction_date} {auction.start_time?.substring(0, 5)} - {auction.end_time?.substring(0, 5)}
+                            {auction.auctionDate} {auction.startTime?.substring(0, 5)} - {auction.endTime?.substring(0, 5)}
                         </Text>
                     </Box>
                     <Box textAlign="right" display={{ base: 'none', md: 'block' }}>
@@ -249,16 +249,16 @@ export default function AuctionRoomPage() {
                                                     ID: {item.id}
                                                 </Box>
                                                 <Box>
-                                                    <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })}>{item.fish_type}</Text>
+                                                    <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })}>{item.fishType}</Text>
                                                     <Text className={css({ color: 'gray.700' })} mt="1">
                                                         <Text as="span" fontWeight="bold" fontSize="lg">{item.quantity}</Text> {item.unit}
-                                                        <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>(漁師ID: {item.fisherman_id})</Text>
+                                                        <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>(漁師ID: {item.fishermanId})</Text>
                                                     </Text>
-                                                    {item.highest_bid && (
+                                                    {item.highestBid && (
                                                         <Text fontSize="sm" mt="1" className={css({ color: 'orange.600' })} fontWeight="semibold">
-                                                            現在の最高額: ¥{item.highest_bid.toLocaleString()}
-                                                            {item.highest_bidder_name && (
-                                                                <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({item.highest_bidder_name} さん)</Text>
+                                                            現在の最高額: ¥{item.highestBid.toLocaleString()}
+                                                            {item.highestBidderName && (
+                                                                <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({item.highestBidderName} さん)</Text>
                                                             )}
                                                         </Text>
                                                     )}
@@ -294,14 +294,14 @@ export default function AuctionRoomPage() {
                                     <Stack spacing="6">
                                         <Box p="5" bg="gray.50" borderRadius="lg" borderWidth="1px" borderColor="gray.200">
                                             <Text fontSize="sm" className={css({ color: 'gray.600' })} mb="1">選択中の商品</Text>
-                                            <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'gray.900' })}>{selectedItem.fish_type}</Text>
+                                            <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'gray.900' })}>{selectedItem.fishType}</Text>
                                             <Text fontSize="lg" className={css({ color: 'gray.700' })}>{selectedItem.quantity} {selectedItem.unit}</Text>
                                             <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">ステータス: {selectedItem.status}</Text>
-                                            {selectedItem.highest_bid && (
+                                            {selectedItem.highestBid && (
                                                 <Text fontSize="sm" mt="2" className={css({ color: 'orange.600' })} fontWeight="bold">
-                                                    現在の最高額: ¥{selectedItem.highest_bid.toLocaleString()}
-                                                    {selectedItem.highest_bidder_name && (
-                                                        <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({selectedItem.highest_bidder_name} さん)</Text>
+                                                    現在の最高額: ¥{selectedItem.highestBid.toLocaleString()}
+                                                    {selectedItem.highestBidderName && (
+                                                        <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({selectedItem.highestBidderName} さん)</Text>
                                                     )}
                                                 </Text>
                                             )}
@@ -311,9 +311,9 @@ export default function AuctionRoomPage() {
                                             !auctionActive ? (
                                                 <Box textAlign="center" py="6" bg="yellow.50" borderRadius="lg" borderWidth="1px" borderColor="yellow.200">
                                                     <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">⏰ 入札受付時間外</Text>
-                                                    {auction.start_time && auction.end_time && (
+                                                    {auction.startTime && auction.endTime && (
                                                         <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
-                                                            受付時間: {formatTime(auction.start_time)} ~ {formatTime(auction.end_time)}
+                                                            受付時間: {formatTime(auction.startTime)} ~ {formatTime(auction.endTime)}
                                                         </Text>
                                                     )}
                                                 </Box>

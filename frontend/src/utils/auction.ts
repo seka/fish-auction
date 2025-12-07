@@ -4,17 +4,17 @@ import { Auction } from '@/src/models/auction';
  * Check if an auction is currently active (within bidding hours)
  */
 export const isAuctionActive = (auction: Auction): boolean => {
-    if (!auction.start_time || !auction.end_time) {
+    if (!auction.startTime || !auction.endTime) {
         // If no time is set, consider it always active
         return true;
     }
 
     const now = new Date();
-    const auctionDate = new Date(auction.auction_date);
+    const auctionDate = new Date(auction.auctionDate);
 
     // Parse start and end times
-    const [startHour, startMin] = auction.start_time.split(':').map(Number);
-    const [endHour, endMin] = auction.end_time.split(':').map(Number);
+    const [startHour, startMin] = auction.startTime.split(':').map(Number);
+    const [endHour, endMin] = auction.endTime.split(':').map(Number);
 
     // Create start and end datetime objects
     const startDateTime = new Date(auctionDate);

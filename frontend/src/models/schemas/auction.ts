@@ -5,18 +5,18 @@ export const venueSchema = z.object({
     name: z.string().min(1, '会場名を入力してください'),
     location: z.string().optional(),
     description: z.string().optional(),
-    created_at: z.string().optional(),
+    createdAt: z.string().optional(),
 });
 
 export const auctionSchema = z.object({
     id: z.number().optional(),
-    venue_id: z.number().min(1, '会場を選択してください'),
-    auction_date: z.string().min(1, '開催日を入力してください'),
-    start_time: z.string().optional(),
-    end_time: z.string().optional(),
+    venueId: z.number().min(1, '会場を選択してください'),
+    auctionDate: z.string().min(1, '開催日を入力してください'),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
     status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
-    created_at: z.string().optional(),
-    updated_at: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
 });
 
 export const bidSchema = z.object({
