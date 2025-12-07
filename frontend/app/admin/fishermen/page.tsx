@@ -45,7 +45,7 @@ export default function FishermenPage() {
             <Box display="grid" gridTemplateColumns={{ base: '1fr', md: '3fr 1fr' }} gap="8" className={css({ md: { gridTemplateColumns: '1fr 2fr' } })}>
                 {/* Form Section */}
                 <Box className={css({ md: { gridColumn: '1 / 2' } })}>
-                    <Card p="md" className={css({ position: 'sticky', top: '6' })}>
+                    <Card padding="lg" className={css({ position: 'sticky', top: '6' })}>
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">

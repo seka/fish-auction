@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { css } from 'styled-system/css';
 import { Box, Stack, Text, Card } from '@/src/core/ui';
 
@@ -19,6 +20,7 @@ export default function Home() {
       })}
     >
       <Box className={css({ textAlign: 'center', mb: '16' })}>
+        <Image src="/logo.png" alt="Fish Auction Logo" width={100} height={100} className={css({ mx: 'auto', mb: '6' })} />
         <Text variant="h1" className={css({ color: 'primary.900', mb: '6', letterSpacing: 'tight' })}>
           漁港のせりシステム
         </Text>

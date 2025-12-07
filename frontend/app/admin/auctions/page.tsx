@@ -154,7 +154,7 @@ export default function AuctionsPage() {
             <Box display="grid" gridTemplateColumns={{ base: '1fr', lg: '1fr 2fr' }} gap="8">
                 {/* Form Section */}
                 <Box>
-                    <Card p="md" className={css({ position: 'sticky', top: '6' })}>
+                    <Card padding="lg" className={css({ position: 'sticky', top: '6' })}>
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">

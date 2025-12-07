@@ -85,7 +85,7 @@ export default function ItemsPage() {
                 </Box>
             )}
 
-            <Card p="8">
+            <Card padding="lg">
                 <HStack mb="6">
                     <Box w="2" h="6" bg="orange.500" mr="3" borderRadius="full" />
                     <Text as="h2" variant="h4" className={css({ color: 'orange.900' })} fontWeight="bold">
