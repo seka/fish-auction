@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getAuctions } from '@/src/api/auction';
 import { getVenues } from '@/src/api/venue';
+import { translateAuctionStatus } from '@/src/utils/status';
 import { Box, Stack, HStack, Text, Card } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 
@@ -99,7 +100,7 @@ export default function AuctionsListPage() {
                                                 color={auction.status === 'in_progress' ? 'orange.700' : 'blue.700'}
                                                 animation={auction.status === 'in_progress' ? 'pulse 2s infinite' : 'none'}
                                             >
-                                                {auction.status === 'in_progress' ? '🔥 開催中' : '📅 開催予定'}
+                                                {auction.status === 'in_progress' ? '🔥 開催中' : translateAuctionStatus(auction.status)}
                                             </Box>
                                             <Text variant="h3" color="default" className={css({ _groupHover: { color: 'indigo.700' }, transition: 'colors' })}>
                                                 {getVenueName(auction.venueId)}

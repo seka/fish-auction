@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getMyPurchases, getMyAuctions, type Purchase, type AuctionSummary } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
+import { translateAuctionStatus } from '@/src/utils/status';
 import Link from 'next/link';
 import { Box, Text, Button, Card, Stack, HStack } from '@/src/core/ui';
 import { css } from 'styled-system/css';
@@ -185,9 +186,7 @@ export default function MyPage() {
                                                     bg={auction.status === 'in_progress' ? 'orange.100' : auction.status === 'completed' ? 'gray.100' : 'blue.100'}
                                                     color={auction.status === 'in_progress' ? 'orange.700' : auction.status === 'completed' ? 'gray.700' : 'blue.700'}
                                                 >
-                                                    {auction.status === 'in_progress' ? '開催中' :
-                                                        auction.status === 'completed' ? '終了' :
-                                                            auction.status === 'scheduled' ? '予定' : auction.status}
+                                                    {auction.status === 'in_progress' ? '開催中' : translateAuctionStatus(auction.status)}
                                                 </Box>
                                             </HStack>
                                             <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">

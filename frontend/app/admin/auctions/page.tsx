@@ -7,6 +7,8 @@ import { auctionSchema, AuctionFormData } from '@/src/models/schemas/auction';
 import { useAuctions, useAuctionMutations } from './_hooks/useAuction';
 import { useVenues } from '../venues/_hooks/useVenue';
 import { Auction } from '@/src/models/auction';
+import { Auction as AuctionModel } from '@/src/models'; // Renamed to avoid conflict
+import { translateAuctionStatus } from '@/src/utils/status';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
@@ -126,15 +128,15 @@ export default function AuctionsPage() {
         const baseStyle = { fontSize: 'xs', fontWeight: 'medium', px: '2.5', py: '0.5', borderRadius: 'md' };
         switch (status) {
             case 'scheduled':
-                return <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>予定</span>;
+                return <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>{translateAuctionStatus('scheduled')}</span>;
             case 'in_progress':
-                return <span className={css(baseStyle, { bg: 'green.100', color: 'green.800', animation: 'pulse 2s infinite' })}>開催中</span>;
+                return <span className={css(baseStyle, { bg: 'orange.100', color: 'orange.800', animation: 'pulse 2s infinite' })}>🔥 {translateAuctionStatus('in_progress')}</span>;
             case 'completed':
-                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>終了</span>;
+                return <span className={css(baseStyle, { bg: 'green.100', color: 'green.800' })}>{translateAuctionStatus('completed')}</span>;
             case 'cancelled':
-                return <span className={css(baseStyle, { bg: 'red.100', color: 'red.800' })}>中止</span>;
+                return <span className={css(baseStyle, { bg: 'red.100', color: 'red.800' })}>{translateAuctionStatus('cancelled')}</span>;
             default:
-                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>{status}</span>;
+                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>{translateAuctionStatus(status)}</span>;
         }
     };
 
