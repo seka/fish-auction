@@ -1,0 +1,32 @@
+
+// 共通のUIテキストキー
+export const COMMON_TEXT_KEYS = {
+    save: 'Common.save',
+    cancel: 'Common.cancel',
+    edit: 'Common.edit',
+    delete: 'Common.delete',
+    register: 'Common.register',
+    update: 'Common.update',
+    back: 'Common.back',
+    login: 'Common.login',
+    logout: 'Common.logout',
+    signup: 'Common.signup',
+    list: 'Common.list',
+    dashboard: 'Common.dashboard',
+    home: 'Common.home',
+    mypage: 'Common.mypage',
+    mypage_description: 'Common.mypage_description',
+    auction_list: 'Common.auction_list',
+    purchase_history: 'Common.purchase_history',
+    participating_auctions: 'Common.participating_auctions',
+    auction_venue: 'Common.auction_venue', // セリ会場
+    admin_panel: 'Common.admin_panel',
+    loading: 'Common.loading',
+    no_data: 'Common.no_data',
+    home_title: 'Common.home_title',
+    home_subtitle: 'Common.home_subtitle',
+    admin_panel_description: 'Common.admin_panel_description',
+    auction_venue_description: 'Common.auction_venue_description',
+    go_to_admin: 'Common.go_to_admin',
+    enter_venue: 'Common.enter_venue',
+} as const;

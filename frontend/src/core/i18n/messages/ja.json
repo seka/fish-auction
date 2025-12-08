@@ -1,0 +1,44 @@
+{
+    "AuctionStatus": {
+        "scheduled": "開催予定",
+        "in_progress": "開催中",
+        "completed": "終了",
+        "cancelled": "中止"
+    },
+    "ItemStatus": {
+        "Pending": "入札受付中",
+        "Sold": "落札済",
+        "Unsold": "不落",
+        "Bidding": "入札中"
+    },
+    "Common": {
+        "save": "保存",
+        "cancel": "キャンセル",
+        "edit": "編集",
+        "delete": "削除",
+        "register": "登録",
+        "update": "更新",
+        "back": "戻る",
+        "login": "ログイン",
+        "logout": "ログアウト",
+        "signup": "登録する",
+        "list": "一覧",
+        "dashboard": "ダッシュボード",
+        "home": "ホーム",
+        "mypage": "マイページ",
+        "mypage_description": "購入履歴と参加したセリを確認できます",
+        "auction_list": "セリ一覧へ",
+        "purchase_history": "購入履歴",
+        "participating_auctions": "参加中のセリ",
+        "auction_venue": "セリ会場",
+        "admin_panel": "管理画面",
+        "loading": "読み込み中...",
+        "no_data": "データがありません",
+        "home_title": "漁港のせりシステム",
+        "home_subtitle": "役割を選択してログインしてください",
+        "admin_panel_description": "漁師・中買人の登録、<br />出品登録、請求書の管理を行います。",
+        "auction_venue_description": "出品されている魚の確認、<br />リアルタイムでの入札を行います。",
+        "go_to_admin": "管理画面へ移動",
+        "enter_venue": "会場へ入場"
+    }
+}

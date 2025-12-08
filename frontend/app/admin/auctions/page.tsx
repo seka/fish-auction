@@ -8,7 +8,9 @@ import { useAuctions, useAuctionMutations } from './_hooks/useAuction';
 import { useVenues } from '../venues/_hooks/useVenue';
 import { Auction } from '@/src/models/auction';
 import { Auction as AuctionModel } from '@/src/models'; // Renamed to avoid conflict
-import { translateAuctionStatus } from '@/src/utils/status';
+import { AUCTION_STATUS_KEYS, AuctionStatus, ITEM_STATUS_KEYS } from '@/src/core/assets/status';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
@@ -59,6 +61,7 @@ export default function AuctionsPage() {
     const [filterVenueId, setFilterVenueId] = useState<number | undefined>(undefined);
 
     const { venues } = useVenues();
+    const t = useTranslations();
     const { auctions, isLoading } = useAuctions({ venueId: filterVenueId });
     const { createAuction, updateAuction, updateStatus, deleteAuction, isCreating, isUpdating, isUpdatingStatus, isDeleting } = useAuctionMutations();
 
@@ -126,17 +129,21 @@ export default function AuctionsPage() {
 
     const getStatusBadge = (status: string) => {
         const baseStyle = { fontSize: 'xs', fontWeight: 'medium', px: '2.5', py: '0.5', borderRadius: 'md' };
+        // 型キャストを行い、Recordのキーとして安全かどうかを確認（不明な値はそのまま表示するフォールバックも考慮）
+        const statusKey = status as AuctionStatus;
+        const label = AUCTION_STATUS_KEYS[statusKey] ? t(AUCTION_STATUS_KEYS[statusKey]) : status;
+
         switch (status) {
             case 'scheduled':
-                return <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>{translateAuctionStatus('scheduled')}</span>;
+                return <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>{label}</span>;
             case 'in_progress':
-                return <span className={css(baseStyle, { bg: 'orange.100', color: 'orange.800', animation: 'pulse 2s infinite' })}>🔥 {translateAuctionStatus('in_progress')}</span>;
+                return <span className={css(baseStyle, { bg: 'orange.100', color: 'orange.800', animation: 'pulse 2s infinite' })}>🔥 {label}</span>;
             case 'completed':
-                return <span className={css(baseStyle, { bg: 'green.100', color: 'green.800' })}>{translateAuctionStatus('completed')}</span>;
+                return <span className={css(baseStyle, { bg: 'green.100', color: 'green.800' })}>{label}</span>;
             case 'cancelled':
-                return <span className={css(baseStyle, { bg: 'red.100', color: 'red.800' })}>{translateAuctionStatus('cancelled')}</span>;
+                return <span className={css(baseStyle, { bg: 'red.100', color: 'red.800' })}>{label}</span>;
             default:
-                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>{translateAuctionStatus(status)}</span>;
+                return <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>{label}</span>;
         }
     };
 
@@ -217,6 +224,17 @@ export default function AuctionsPage() {
                                 </Box>
 
                                 <HStack spacing="2" pt="4">
+                                    {editingAuction && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={onCancelEdit}
+                                            disabled={isCreating || isUpdating}
+                                            className={css({ flex: '1' })}
+                                        >
+                                            {t(COMMON_TEXT_KEYS.cancel)}
+                                        </Button>
+                                    )}
                                     <Button
                                         type="submit"
                                         disabled={isCreating || isUpdating}
@@ -224,17 +242,8 @@ export default function AuctionsPage() {
                                         className={css({ flex: '1' })}
                                         variant="primary"
                                     >
-                                        {editingAuction ? (isUpdating ? '更新中...' : '更新する') : (isCreating ? '登録中...' : '登録する')}
+                                        {editingAuction ? (isUpdating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.update)) : (isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register))}
                                     </Button>
-                                    {editingAuction && (
-                                        <Button
-                                            type="button"
-                                            onClick={onCancelEdit}
-                                            variant="outline"
-                                        >
-                                            キャンセル
-                                        </Button>
-                                    )}
                                 </HStack>
                             </Stack>
                         </form>
@@ -263,9 +272,9 @@ export default function AuctionsPage() {
                             </HStack>
                         </Box>
                         {isLoading ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : auctions.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>セリが登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Box overflowX="auto">
                                 <Table>
@@ -316,20 +325,11 @@ export default function AuctionsPage() {
                                                                     終了
                                                                 </Button>
                                                             )}
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => onEdit(auction)}
-                                                                className={css({ color: 'indigo.600', bg: 'indigo.50', borderColor: 'transparent', _hover: { bg: 'indigo.100', color: 'indigo.900' } })}
-                                                            >
-                                                                編集
+                                                            <Button size="sm" variant="outline" onClick={() => onEdit(auction)}>
+                                                                {t(COMMON_TEXT_KEYS.edit)}
                                                             </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => onDelete(auction.id)}
-                                                                disabled={isDeleting}
-                                                                className={css({ color: 'red.600', bg: 'red.50', borderColor: 'transparent', _hover: { bg: 'red.100', color: 'red.900' } })}
-                                                            >
-                                                                削除
+                                                            <Button size="sm" className={css({ bg: 'red.50', color: 'red.600', _hover: { bg: 'red.100' } })} onClick={() => onDelete(auction.id)}>
+                                                                {t(COMMON_TEXT_KEYS.delete)}
                                                             </Button>
                                                         </HStack>
                                                     </Td>

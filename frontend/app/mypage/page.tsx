@@ -4,13 +4,16 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getMyPurchases, getMyAuctions, type Purchase, type AuctionSummary } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
-import { translateAuctionStatus } from '@/src/utils/status';
+import { AUCTION_STATUS_KEYS, AuctionStatus, ITEM_STATUS_KEYS } from '@/src/core/assets/status';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Box, Text, Button, Card, Stack, HStack } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { useState } from 'react';
 
 export default function MyPage() {
+    const t = useTranslations();
     const [activeTab, setActiveTab] = useState<'purchases' | 'auctions'>('purchases');
     const router = useRouter();
 
@@ -48,27 +51,27 @@ export default function MyPage() {
         <Box minH="screen" bg="gray.50" py="8" px="4">
             <Box maxW="7xl" mx="auto">
                 {/* Header */}
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb="8">
+                <HStack justify="between" alignItems="center" mb="8">
                     <Box>
                         <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
-                            マイページ
+                            {t(COMMON_TEXT_KEYS.mypage)}
                         </Text>
                         <Text className={css({ color: 'gray.500' })} mt="1">
-                            購入履歴と参加したセリを確認できます
+                            {t(COMMON_TEXT_KEYS.mypage_description)}
                         </Text>
                     </Box>
                     <HStack spacing="4">
                         <Link href="/auctions" className={css({ color: 'blue.600', _hover: { color: 'blue.700' }, fontWeight: 'medium' })}>
-                            セリ一覧へ
+                            {t(COMMON_TEXT_KEYS.auction_list)}
                         </Link>
                         <Button
                             onClick={handleLogout}
                             className={css({ bg: 'gray.600', _hover: { bg: 'gray.700' }, color: 'white' })}
                         >
-                            ログアウト
+                            {t(COMMON_TEXT_KEYS.logout)}
                         </Button>
                     </HStack>
-                </Box>
+                </HStack>
 
                 {/* Tabs */}
                 <Box borderBottom="1px solid" borderColor="gray.200" mb="6">
@@ -84,7 +87,13 @@ export default function MyPage() {
                             onClick={() => setActiveTab('purchases')}
                             className={css({ transition: 'all 0.2s', _hover: { color: 'blue.600' } })}
                         >
-                            購入履歴
+                            {/* 購入履歴 -> Purchase History? No, better use Common.purchase_history if widely used, or keep specific for now? 
+                               Actually user asked for "common" text. "Purchase History" might be common.
+                               For now, let's stick to simple "list" or specific tabs.
+                               Let's assume "purchase_history" and "participating_auctions" are common enough or I should add them.
+                               I will add them to text.ts.
+                            */}
+                            {t(COMMON_TEXT_KEYS.purchase_history)}
                         </Box>
                         <Box
                             px="6"
@@ -97,7 +106,7 @@ export default function MyPage() {
                             onClick={() => setActiveTab('auctions')}
                             className={css({ transition: 'all 0.2s', _hover: { color: 'blue.600' } })}
                         >
-                            参加中のセリ
+                            {t(COMMON_TEXT_KEYS.participating_auctions)}
                         </Box>
                     </HStack>
                 </Box>
@@ -106,11 +115,11 @@ export default function MyPage() {
                 {activeTab === 'purchases' ? (
                     <Stack spacing="4">
                         <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
-                            購入履歴
+                            {t(COMMON_TEXT_KEYS.purchase_history)}
                         </Text>
                         {purchases.length === 0 ? (
                             <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text className={css({ color: 'gray.500' })}>購入履歴がありません</Text>
+                                <Text className={css({ color: 'gray.500' })}>{t(COMMON_TEXT_KEYS.no_data)}</Text>
                             </Box>
                         ) : (
                             purchases.map((purchase) => (
@@ -155,11 +164,11 @@ export default function MyPage() {
                 ) : (
                     <Stack spacing="4">
                         <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
-                            参加中のセリ
+                            {t(COMMON_TEXT_KEYS.participating_auctions)}
                         </Text>
                         {auctions.length === 0 ? (
                             <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text className={css({ color: 'gray.500' })}>参加中のセリがありません</Text>
+                                <Text className={css({ color: 'gray.500' })}>{t(COMMON_TEXT_KEYS.no_data)}</Text>
                             </Box>
                         ) : (
                             auctions.map((auction) => (
@@ -186,7 +195,7 @@ export default function MyPage() {
                                                     bg={auction.status === 'in_progress' ? 'orange.100' : auction.status === 'completed' ? 'gray.100' : 'blue.100'}
                                                     color={auction.status === 'in_progress' ? 'orange.700' : auction.status === 'completed' ? 'gray.700' : 'blue.700'}
                                                 >
-                                                    {auction.status === 'in_progress' ? '開催中' : translateAuctionStatus(auction.status)}
+                                                    {auction.status === 'in_progress' ? t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus])}
                                                 </Box>
                                             </HStack>
                                             <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">

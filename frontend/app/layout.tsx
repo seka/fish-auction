@@ -16,20 +16,28 @@ export const metadata: Metadata = {
   description: "Fish Auction System",
 };
 
-export default function RootLayout({
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="ja">
+    <html lang={locale}>
       <body
         className={`${notoSansJP.variable} ${css({ fontFamily: 'sans', bg: 'gray.50', color: 'gray.900' })}`}
       >
-        <Providers>
-          <PublicNavbar />
-          {children}
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            <PublicNavbar />
+            {children}
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

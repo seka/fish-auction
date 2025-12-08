@@ -5,13 +5,18 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { buyerSignupSchema, BuyerSignupFormData } from '@/src/models/schemas/buyer_auth';
+import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
 import { signupBuyer } from '@/src/api/buyer_auth';
 import Link from 'next/link';
 import { css } from 'styled-system/css';
-import { Box, Text, Button, Input, Stack } from '@/src/core/ui';
+import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 
 export default function SignupPage() {
+    const t = useTranslations();
     const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
     const router = useRouter();
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<BuyerSignupFormData>({
         resolver: zodResolver(buyerSignupSchema),
@@ -118,7 +123,7 @@ export default function SignupPage() {
                             disabled={isSubmitting}
                             className={css({ w: 'full' })}
                         >
-                            登録
+                            {isSubmitting ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
                         </Button>
                     </Box>
                     <Box className={css({ textAlign: 'center' })}>

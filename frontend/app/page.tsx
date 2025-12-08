@@ -2,8 +2,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { css } from 'styled-system/css';
 import { Box, Stack, Text, Card } from '@/src/core/ui';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
+  const t = useTranslations();
   return (
     <Box
       className={css({
@@ -22,10 +25,10 @@ export default function Home() {
       <Box className={css({ textAlign: 'center', mb: '16' })}>
         <Image src="/logo.png" alt="Fish Auction Logo" width={100} height={100} className={css({ mx: 'auto', mb: '6' })} />
         <Text variant="h1" className={css({ color: 'primary.900', mb: '6', letterSpacing: 'tight' })}>
-          漁港のせりシステム
+          {t(COMMON_TEXT_KEYS.home_title)}
         </Text>
         <Text variant="h3" className={css({ color: 'gray.600', fontSize: 'xl' })}>
-          役割を選択してログインしてください
+          {t(COMMON_TEXT_KEYS.home_subtitle)}
         </Text>
       </Box>
 
@@ -43,13 +46,13 @@ export default function Home() {
                 </svg>
               </Box>
               <Box>
-                <Text variant="h2" className={css({ mb: '2' })}>管理画面</Text>
+                <Text variant="h2" className={css({ mb: '2' })}>{t(COMMON_TEXT_KEYS.admin_panel)}</Text>
                 <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
-                  漁師・中買人の登録、<br />出品登録、請求書の管理を行います。
+                  <div dangerouslySetInnerHTML={{ __html: t.raw(COMMON_TEXT_KEYS.admin_panel_description) }} />
                 </Text>
               </Box>
               <Box className={css({ display: 'inline-flex', alignItems: 'center', color: 'primary.600', fontWeight: 'bold', transition: 'transform 0.3s', _groupHover: { transform: 'translateX(4px)' } })}>
-                管理画面へ移動 <span className={css({ ml: '2' })}>&rarr;</span>
+                {t(COMMON_TEXT_KEYS.go_to_admin)} <span className={css({ ml: '2' })}>&rarr;</span>
               </Box>
             </Stack>
           </Card>
@@ -67,13 +70,13 @@ export default function Home() {
                 </svg>
               </Box>
               <Box>
-                <Text variant="h2" className={css({ mb: '2' })}>セリ会場</Text>
+                <Text variant="h2" className={css({ mb: '2' })}>{t(COMMON_TEXT_KEYS.auction_venue)}</Text>
                 <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
-                  出品されている魚の確認、<br />リアルタイムでの入札を行います。
+                  <div dangerouslySetInnerHTML={{ __html: t.raw(COMMON_TEXT_KEYS.auction_venue_description) }} />
                 </Text>
               </Box>
               <Box className={css({ display: 'inline-flex', alignItems: 'center', color: 'secondary.600', fontWeight: 'bold', transition: 'transform 0.3s', _groupHover: { transform: 'translateX(4px)' } })}>
-                会場へ入場 <span className={css({ ml: '2' })}>&rarr;</span>
+                {t(COMMON_TEXT_KEYS.enter_venue)} <span className={css({ ml: '2' })}>&rarr;</span>
               </Box>
             </Stack>
           </Card>

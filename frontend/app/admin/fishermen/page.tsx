@@ -7,8 +7,12 @@ import { fishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
 import { useFishermen, useFishermanMutations } from './_hooks/useFisherman';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
+import { styled } from 'styled-system/jsx';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 
-export default function FishermenPage() {
+export default function AdminFishermenPage() {
+    const t = useTranslations();
     const [message, setMessage] = useState('');
 
     const { fishermen, isLoading } = useFishermen();
@@ -73,9 +77,10 @@ export default function FishermenPage() {
                                     type="submit"
                                     disabled={isCreating}
                                     width="full"
+                                    className={css({ flex: '1' })}
                                     variant="primary"
                                 >
-                                    {isCreating ? '登録中...' : '登録する'}
+                                    {isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
                                 </Button>
                             </Stack>
                         </form>
@@ -89,9 +94,9 @@ export default function FishermenPage() {
                             <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">漁師一覧</Text>
                         </Box>
                         {isLoading ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : fishermen.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>漁師が登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {fishermen.map((fisherman) => (

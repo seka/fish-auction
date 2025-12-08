@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getAuctions } from '@/src/api/auction';
 import { getVenues } from '@/src/api/venue';
-import { translateAuctionStatus } from '@/src/utils/status';
+import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
+import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 
@@ -17,6 +18,7 @@ const usePublicVenues = () => {
 };
 
 export default function AuctionsListPage() {
+    const t = useTranslations();
     // Fetch all auctions
     const { data: allAuctions, isLoading } = useQuery({
         queryKey: ['public_auctions_list'],
@@ -100,7 +102,7 @@ export default function AuctionsListPage() {
                                                 color={auction.status === 'in_progress' ? 'orange.700' : 'blue.700'}
                                                 animation={auction.status === 'in_progress' ? 'pulse 2s infinite' : 'none'}
                                             >
-                                                {auction.status === 'in_progress' ? '🔥 開催中' : translateAuctionStatus(auction.status)}
+                                                {auction.status === 'in_progress' ? '🔥 ' + t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus] || 'scheduled')}
                                             </Box>
                                             <Text variant="h3" color="default" className={css({ _groupHover: { color: 'indigo.700' }, transition: 'colors' })}>
                                                 {getVenueName(auction.venueId)}

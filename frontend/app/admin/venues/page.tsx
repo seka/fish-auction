@@ -7,6 +7,8 @@ import { venueSchema, VenueFormData } from '@/src/models/schemas/auction';
 import { useVenues, useVenueMutations } from './_hooks/useVenue';
 import { Venue } from '@/src/models/venue';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
@@ -38,7 +40,8 @@ const Textarea = styled('textarea', {
     }
 });
 
-export default function VenuesPage() {
+export default function AdminVenuesPage() {
+    const t = useTranslations();
     const [message, setMessage] = useState('');
     const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
@@ -154,11 +157,11 @@ export default function VenuesPage() {
                                     <Button
                                         type="submit"
                                         disabled={isCreating || isUpdating}
-                                        width="full" // flex-1 behavior via width="full" inside flex container? No, flex="1" is better.
+                                        width="full"
                                         className={css({ flex: '1' })}
                                         variant="primary"
                                     >
-                                        {editingVenue ? (isUpdating ? '更新中...' : '更新する') : (isCreating ? '登録中...' : '登録する')}
+                                        {editingVenue ? (isUpdating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.update)) : (isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register))}
                                     </Button>
                                     {editingVenue && (
                                         <Button
@@ -166,7 +169,7 @@ export default function VenuesPage() {
                                             onClick={onCancelEdit}
                                             variant="outline"
                                         >
-                                            キャンセル
+                                            {t(COMMON_TEXT_KEYS.cancel)}
                                         </Button>
                                     )}
                                 </HStack>
@@ -184,7 +187,7 @@ export default function VenuesPage() {
                         {isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
                         ) : venues.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>会場が登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {venues.map((venue) => (
@@ -203,22 +206,11 @@ export default function VenuesPage() {
                                                 )}
                                             </Box>
                                             <HStack spacing="2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => onEdit(venue)}
-                                                    className={css({ color: 'indigo.600', borderColor: 'transparent', _hover: { bg: 'indigo.50', color: 'indigo.900' } })}
-                                                >
-                                                    編集
+                                                <Button size="sm" variant="outline" onClick={() => onEdit(venue)}>
+                                                    {t(COMMON_TEXT_KEYS.edit)}
                                                 </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => onDelete(venue.id)}
-                                                    disabled={isDeleting}
-                                                    className={css({ color: 'red.600', borderColor: 'transparent', _hover: { bg: 'red.50', color: 'red.900' } })}
-                                                >
-                                                    削除
+                                                <Button size="sm" className={css({ bg: 'red.50', color: 'red.600', _hover: { bg: 'red.100' } })} onClick={() => onDelete(venue.id)}>
+                                                    {t(COMMON_TEXT_KEYS.delete)}
                                                 </Button>
                                             </HStack>
                                         </HStack>

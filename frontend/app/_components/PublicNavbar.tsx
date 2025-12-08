@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, HStack, Button, Text } from '@/src/core/ui'; // Button, Text等は src/core/ui からインポート
+import { useTranslations } from 'next-intl';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { css } from 'styled-system/css';
 
 export const PublicNavbar = () => {
+    const t = useTranslations();
     const pathname = usePathname();
 
     // 管理画面では表示しない
@@ -46,9 +49,9 @@ export const PublicNavbar = () => {
 
                 {/* Navigation Links */}
                 <HStack spacing="1" display={{ base: 'none', md: 'flex' }}>
-                    <NavLink href="/">ホーム</NavLink>
-                    <NavLink href="/auctions">セリ会場</NavLink>
-                    <NavLink href="/mypage">マイページ</NavLink>
+                    <NavLink href="/">{t(COMMON_TEXT_KEYS.home)}</NavLink>
+                    <NavLink href="/auctions">{t(COMMON_TEXT_KEYS.auction_venue)}</NavLink>
+                    <NavLink href="/mypage">{t(COMMON_TEXT_KEYS.mypage)}</NavLink>
                 </HStack>
 
                 {/* Mobile Menu Button (Future work if needed) */}
@@ -62,12 +65,12 @@ export const PublicNavbar = () => {
                     {/* 必要に応じて useAuth フックなどで状態監視して出し分ける */}
                     <Link href="/login/buyer">
                         <Button size="sm" className={css({ bg: 'gray.600', _hover: { bg: 'gray.700' }, color: 'white', fontWeight: 'medium' })}>
-                            ログイン
+                            {t(COMMON_TEXT_KEYS.login)}
                         </Button>
                     </Link>
                     <Link href="/signup">
                         <Button size="sm" className={css({ bg: 'indigo.600', color: 'white', _hover: { bg: 'indigo.700' }, fontWeight: 'bold', px: '6' })}>
-                            登録する
+                            {t(COMMON_TEXT_KEYS.signup)}
                         </Button>
                     </Link>
                 </HStack>

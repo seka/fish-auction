@@ -14,12 +14,13 @@ import { useAuctionData } from './_hooks/useAuctionData';
 import { useBidMutation } from './_hooks/useBidMutation';
 import { useAuth } from './_hooks/useAuth';
 import { isAuctionActive, formatTime } from '@/src/utils/auction';
-import { translateAuctionStatus, translateItemStatus } from '@/src/utils/status';
+import { AUCTION_STATUS_KEYS, ITEM_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
+import { useTranslations } from 'next-intl';
 import { Box, Text, Button, Input, Card, Stack, HStack } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 
-export default function AuctionRoomPage() {
-    const params = useParams();
+export default function AuctionDetailPage({ params }: { params: { id: string } }) {
+    const t = useTranslations();
     const router = useRouter();
     const auctionId = Number(params.id);
 
@@ -192,7 +193,7 @@ export default function AuctionRoomPage() {
                                 color={auction.status === 'in_progress' ? 'orange.700' : 'blue.700'}
                                 className={auction.status === 'in_progress' ? css({ animation: 'pulse 2s infinite' }) : ''}
                             >
-                                {auction.status === 'in_progress' ? '🔥 開催中' : translateAuctionStatus(auction.status)}
+                                {auction.status === 'in_progress' ? '🔥 ' + t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus])}
                             </Box>
                         </HStack>
                         <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
@@ -275,7 +276,7 @@ export default function AuctionRoomPage() {
                                                 color={item.status === 'Pending' ? 'green.800' : 'gray.600'}
                                                 shadow="sm"
                                             >
-                                                {item.status === 'Pending' ? '入札受付中' : translateItemStatus(item.status)}
+                                                {item.status === 'Pending' ? t(ITEM_STATUS_KEYS['Pending']) : (ITEM_STATUS_KEYS[item.status] ? t(ITEM_STATUS_KEYS[item.status]) : item.status)}
                                             </Box>
                                         </Box>
                                     </Card>
@@ -297,7 +298,7 @@ export default function AuctionRoomPage() {
                                             <Text fontSize="sm" className={css({ color: 'gray.600' })} mb="1">選択中の商品</Text>
                                             <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'gray.900' })}>{selectedItem.fishType}</Text>
                                             <Text fontSize="lg" className={css({ color: 'gray.700' })}>{selectedItem.quantity} {selectedItem.unit}</Text>
-                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">ステータス: {translateItemStatus(selectedItem.status)}</Text>
+                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">ステータス: {ITEM_STATUS_KEYS[selectedItem.status] ? t(ITEM_STATUS_KEYS[selectedItem.status]) : selectedItem.status}</Text>
                                             {selectedItem.highestBid && (
                                                 <Text fontSize="sm" mt="2" className={css({ color: 'orange.600' })} fontWeight="bold">
                                                     現在の最高額: ¥{selectedItem.highestBid.toLocaleString()}

@@ -6,9 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
 import { useBuyers, useBuyerMutations } from './_hooks/useBuyer';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 import { css } from 'styled-system/css';
 
-export default function BuyersPage() {
+export default function AdminBuyersPage() {
+    const t = useTranslations();
     const [message, setMessage] = useState('');
 
     const { buyers, isLoading } = useBuyers();
@@ -74,13 +77,10 @@ export default function BuyersPage() {
                                     type="submit"
                                     disabled={isCreating}
                                     width="full"
-                                    className={css({
-                                        bg: 'green.600',
-                                        _hover: { bg: 'green.700' },
-                                        _focus: { ringColor: 'green.500' }
-                                    })}
+                                    className={css({ flex: '1' })}
+                                    variant="primary"
                                 >
-                                    {isCreating ? '登録中...' : '登録する'}
+                                    {isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
                                 </Button>
                             </Stack>
                         </form>
@@ -94,9 +94,9 @@ export default function BuyersPage() {
                             <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">中買人一覧</Text>
                         </Box>
                         {isLoading ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : buyers.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>中買人が登録されていません</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {buyers.map((buyer) => (

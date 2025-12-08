@@ -8,10 +8,11 @@ import { useItemMutations } from './_hooks/useItem';
 import { useFishermen } from '../fishermen/_hooks/useFisherman';
 import { useAuctions } from '../auctions/_hooks/useAuction';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { useTranslations } from 'next-intl';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
-// Select component with similar styling to Input
 const Select = styled('select', {
     base: {
         display: 'block',
@@ -44,7 +45,8 @@ const Select = styled('select', {
     }
 });
 
-export default function ItemsPage() {
+export default function AdminItemsPage() {
+    const t = useTranslations();
     const [message, setMessage] = useState('');
 
     const { fishermen } = useFishermen();
@@ -176,18 +178,17 @@ export default function ItemsPage() {
                             )}
                         </Box>
                         <Box className={css({ md: { gridColumn: 'span 2' }, pt: '4' })}>
-                            <Button
-                                type="submit"
-                                disabled={isCreating}
-                                width="full"
-                                className={css({
-                                    bg: 'orange.600',
-                                    _hover: { bg: 'orange.700' },
-                                    _focus: { ringColor: 'orange.500' }
-                                })}
-                            >
-                                {isCreating ? '出品中...' : '出品する'}
-                            </Button>
+                            <HStack spacing="2">
+                                <Button
+                                    type="submit"
+                                    disabled={isCreating}
+                                    width="full"
+                                    className={css({ flex: '1' })}
+                                    variant="primary"
+                                >
+                                    {isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
+                                </Button>
+                            </HStack>
                         </Box>
                     </Box>
                 </form>
