@@ -3,19 +3,12 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getAuctions } from '@/src/api/auction';
-import { getVenues } from '@/src/api/venue';
 import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 
-const usePublicVenues = () => {
-    const { data: venues } = useQuery({
-        queryKey: ['public_venues'],
-        queryFn: getVenues,
-    });
-    return { venues };
-};
+import { usePublicVenues } from './_hooks/usePublicVenues';
 
 export default function AuctionsListPage() {
     const t = useTranslations();
