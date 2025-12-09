@@ -4,7 +4,8 @@ import "./globals.css";
 import Providers from "./providers";
 import { css } from "styled-system/css";
 
-import { PublicNavbar } from "./_components/PublicNavbar";
+import { PublicNavbar } from './_components/organisms/PublicNavbar';
+import { MainLayoutTemplate } from './_components/templates/MainLayoutTemplate';
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -12,7 +13,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "漁港のせりシステム",
+  title: "Fish Auction",
   description: "Fish Auction System",
 };
 
@@ -30,12 +31,13 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${notoSansJP.variable} ${css({ fontFamily: 'sans', bg: 'gray.50', color: 'gray.900' })}`}
+        className={notoSansJP.className}
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>
-            <PublicNavbar />
-            {children}
+            <MainLayoutTemplate navbar={<PublicNavbar />}>
+              {children}
+            </MainLayoutTemplate>
           </Providers>
         </NextIntlClientProvider>
       </body>
