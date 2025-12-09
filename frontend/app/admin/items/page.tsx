@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
 import { useItemMutations } from './_hooks/useItem';
 import { useFishermen } from '../fishermen/_hooks/useFisherman';
-import { useAuctions } from '../auctions/_hooks/useAuction';
+import { useAuctionQuery } from '@/src/repositories/auction';
 import { Box, Stack, HStack, Text, Card, Button, Input, Select } from '@/src/core/ui';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { useTranslations } from 'next-intl';
@@ -19,7 +19,7 @@ export default function AdminItemsPage() {
     const [message, setMessage] = useState('');
 
     const { fishermen } = useFishermen();
-    const { auctions } = useAuctions({});
+    const { auctions } = useAuctionQuery({});
     const { createItem, isCreating } = useItemMutations();
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<ItemFormData>({

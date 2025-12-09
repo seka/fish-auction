@@ -2,16 +2,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAuctions, createAuction, updateAuction, updateAuctionStatus, deleteAuction } from '@/src/api/auction';
 import { AuctionFormData } from '@/src/models/schemas/auction';
 
-export const useAuctions = (filters?: { venueId?: number; date?: string; status?: string }) => {
+export const auctionKeys = {
+    all: ['auctions'] as const,
+    lists: () => [...auctionKeys.all, 'list'] as const,
+    list: (filters: string) => [...auctionKeys.lists(), { filters }] as const,
+    details: () => [...auctionKeys.all, 'detail'] as const,
+    detail: (id: number) => [...auctionKeys.details(), id] as const,
+};
+
+export const useAuctionQuery = (filters?: { venueId?: number; date?: string; status?: string }) => {
     const { data: auctions, isLoading, error } = useQuery({
-        queryKey: ['auctions', filters],
+        queryKey: ['auctions', filters], // TODO: Migrate to auctionKeys later if needed, keeping simple for now to match strict equality
         queryFn: () => getAuctions(filters),
     });
 
     return { auctions: auctions || [], isLoading, error };
 };
 
-export const useAuctionMutations = () => {
+export const useAuctionMutation = () => {
     const queryClient = useQueryClient();
 
     const createMutation = useMutation({

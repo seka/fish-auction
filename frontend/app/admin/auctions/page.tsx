@@ -1,96 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { auctionSchema, AuctionFormData } from '@/src/models/schemas/auction';
-import { useAuctions, useAuctionMutations } from './_hooks/useAuction';
-import { useVenues } from '../venues/_hooks/useVenue';
-import { Auction } from '@/src/models/auction';
-import { Auction as AuctionModel } from '@/src/models'; // Renamed to avoid conflict
-import { AUCTION_STATUS_KEYS, AuctionStatus, ITEM_STATUS_KEYS } from '@/src/core/assets/status';
+import { useAuctionPage } from './_hooks/useAuctionPage';
+import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card, Button, Input, Select, Table, Thead, Tbody, Tr, Th, Td } from '@/src/core/ui';
 import { css } from 'styled-system/css';
-import { styled } from 'styled-system/jsx';
-
 
 export default function AuctionsPage() {
-    const [message, setMessage] = useState('');
-    const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
-    const [filterVenueId, setFilterVenueId] = useState<number | undefined>(undefined);
-
-    const { venues } = useVenues();
-    const t = useTranslations();
-    const { auctions, isLoading } = useAuctions({ venueId: filterVenueId });
-    const { createAuction, updateAuction, updateStatus, deleteAuction, isCreating, isUpdating, isUpdatingStatus, isDeleting } = useAuctionMutations();
-
-    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<AuctionFormData>({
-        resolver: zodResolver(auctionSchema),
-    });
-
-    const onSubmit = async (data: AuctionFormData) => {
-        try {
-            const payload = {
-                ...data,
-                venueId: Number(data.venueId),
-            };
-
-            if (editingAuction) {
-                await updateAuction({ id: editingAuction.id, data: payload });
-                setMessage('セリ情報を更新しました');
-                setEditingAuction(null);
-            } else {
-                await createAuction(payload);
-                setMessage('セリを作成しました');
-            }
-            reset();
-        } catch (e) {
-            console.error(e);
-            setMessage('エラーが発生しました');
-        }
-    };
-
-    const onEdit = (auction: Auction) => {
-        setEditingAuction(auction);
-        setValue('venueId', auction.venueId);
-        setValue('auctionDate', auction.auctionDate);
-        setValue('startTime', auction.startTime || '');
-        setValue('endTime', auction.endTime || '');
-        setValue('status', auction.status);
-    };
-
-    const onCancelEdit = () => {
-        setEditingAuction(null);
-        reset();
-    };
-
-    const onDelete = async (id: number) => {
-        if (confirm('本当に削除しますか？')) {
-            try {
-                await deleteAuction(id);
-                setMessage('セリを削除しました');
-            } catch (e) {
-                console.error(e);
-                setMessage('削除に失敗しました');
-            }
-        }
-    };
-
-    const onStatusChange = async (id: number, status: string) => {
-        try {
-            await updateStatus({ id, status });
-            setMessage(`ステータスを ${status} に更新しました`);
-        } catch (e) {
-            console.error(e);
-            setMessage('ステータス更新に失敗しました');
-        }
-    };
+    const { state, actions, form, t } = useAuctionPage();
 
     const getStatusBadge = (status: string) => {
         const baseStyle = { fontSize: 'xs', fontWeight: 'medium', px: '2.5', py: '0.5', borderRadius: 'md' };
-        // 型キャストを行い、Recordのキーとして安全かどうかを確認（不明な値はそのまま表示するフォールバックも考慮）
         const statusKey = status as AuctionStatus;
         const label = AUCTION_STATUS_KEYS[statusKey] ? t(AUCTION_STATUS_KEYS[statusKey]) : status;
 
@@ -114,10 +34,10 @@ export default function AuctionsPage() {
                 セリ管理
             </Text>
 
-            {message && (
+            {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
                     <Text fontWeight="bold">通知</Text>
-                    <Text>{message}</Text>
+                    <Text>{state.message}</Text>
                 </Box>
             )}
 
@@ -128,27 +48,27 @@ export default function AuctionsPage() {
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
-                                {editingAuction ? 'セリ編集' : '新規セリ登録'}
+                                {state.editingAuction ? 'セリ編集' : '新規セリ登録'}
                             </Text>
                         </HStack>
-                        <form onSubmit={handleSubmit(onSubmit)}>
+                        <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                         会場
                                     </Text>
                                     <Select
-                                        {...register('venueId', { valueAsNumber: true })}
+                                        {...form.register('venueId', { valueAsNumber: true })}
                                     >
                                         <option value="">会場を選択してください</option>
-                                        {venues.map((venue) => (
+                                        {state.venues.map((venue) => (
                                             <option key={venue.id} value={venue.id}>
                                                 {venue.name}
                                             </option>
                                         ))}
                                     </Select>
-                                    {errors.venueId && (
-                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.venueId.message}</Text>
+                                    {form.errors.venueId && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.venueId.message}</Text>
                                     )}
                                 </Box>
                                 <Box>
@@ -157,10 +77,10 @@ export default function AuctionsPage() {
                                     </Text>
                                     <Input
                                         type="date"
-                                        {...register('auctionDate')}
+                                        {...form.register('auctionDate')}
                                     />
-                                    {errors.auctionDate && (
-                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.auctionDate.message}</Text>
+                                    {form.errors.auctionDate && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.auctionDate.message}</Text>
                                     )}
                                 </Box>
                                 <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="4">
@@ -170,7 +90,7 @@ export default function AuctionsPage() {
                                         </Text>
                                         <Input
                                             type="time"
-                                            {...register('startTime')}
+                                            {...form.register('startTime')}
                                         />
                                     </Box>
                                     <Box>
@@ -179,18 +99,18 @@ export default function AuctionsPage() {
                                         </Text>
                                         <Input
                                             type="time"
-                                            {...register('endTime')}
+                                            {...form.register('endTime')}
                                         />
                                     </Box>
                                 </Box>
 
                                 <HStack spacing="2" pt="4">
-                                    {editingAuction && (
+                                    {state.editingAuction && (
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={onCancelEdit}
-                                            disabled={isCreating || isUpdating}
+                                            onClick={actions.onCancelEdit}
+                                            disabled={state.isCreating || state.isUpdating}
                                             className={css({ flex: '1' })}
                                         >
                                             {t(COMMON_TEXT_KEYS.cancel)}
@@ -198,12 +118,12 @@ export default function AuctionsPage() {
                                     )}
                                     <Button
                                         type="submit"
-                                        disabled={isCreating || isUpdating}
+                                        disabled={state.isCreating || state.isUpdating}
                                         width="full"
                                         className={css({ flex: '1' })}
                                         variant="primary"
                                     >
-                                        {editingAuction ? (isUpdating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.update)) : (isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register))}
+                                        {state.editingAuction ? (state.isUpdating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.update)) : (state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register))}
                                     </Button>
                                 </HStack>
                             </Stack>
@@ -219,12 +139,12 @@ export default function AuctionsPage() {
                             <HStack spacing="2">
                                 <Text as="label" fontSize="sm" className={css({ color: 'gray.600' })}>会場絞り込み:</Text>
                                 <Select
-                                    value={filterVenueId || ''}
-                                    onChange={(e) => setFilterVenueId(e.target.value ? Number(e.target.value) : undefined)}
+                                    value={state.filterVenueId || ''}
+                                    onChange={(e) => actions.setFilterVenueId(e.target.value ? Number(e.target.value) : undefined)}
                                     className={css({ width: 'auto', py: '1' })}
                                 >
                                     <option value="">すべて</option>
-                                    {venues.map((venue) => (
+                                    {state.venues.map((venue) => (
                                         <option key={venue.id} value={venue.id}>
                                             {venue.name}
                                         </option>
@@ -232,9 +152,9 @@ export default function AuctionsPage() {
                                 </Select>
                             </HStack>
                         </Box>
-                        {isLoading ? (
+                        {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
-                        ) : auctions.length === 0 ? (
+                        ) : state.auctions.length === 0 ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Box overflowX="auto">
@@ -248,8 +168,8 @@ export default function AuctionsPage() {
                                         </Tr>
                                     </Thead>
                                     <Tbody>
-                                        {auctions.map((auction) => {
-                                            const venue = venues.find(v => v.id === auction.venueId);
+                                        {state.auctions.map((auction) => {
+                                            const venue = state.venues.find(v => v.id === auction.venueId);
                                             return (
                                                 <Tr key={auction.id}>
                                                     <Td>
@@ -269,8 +189,8 @@ export default function AuctionsPage() {
                                                             {auction.status === 'scheduled' && (
                                                                 <Button
                                                                     size="sm"
-                                                                    onClick={() => onStatusChange(auction.id, 'in_progress')}
-                                                                    disabled={isUpdatingStatus}
+                                                                    onClick={() => actions.onStatusChange(auction.id, 'in_progress')}
+                                                                    disabled={state.isUpdatingStatus}
                                                                     className={css({ color: 'green.600', bg: 'green.50', borderColor: 'transparent', _hover: { bg: 'green.100', color: 'green.900' } })}
                                                                 >
                                                                     開始
@@ -279,17 +199,17 @@ export default function AuctionsPage() {
                                                             {auction.status === 'in_progress' && (
                                                                 <Button
                                                                     size="sm"
-                                                                    onClick={() => onStatusChange(auction.id, 'completed')}
-                                                                    disabled={isUpdatingStatus}
+                                                                    onClick={() => actions.onStatusChange(auction.id, 'completed')}
+                                                                    disabled={state.isUpdatingStatus}
                                                                     className={css({ color: 'blue.600', bg: 'blue.50', borderColor: 'transparent', _hover: { bg: 'blue.100', color: 'blue.900' } })}
                                                                 >
                                                                     終了
                                                                 </Button>
                                                             )}
-                                                            <Button size="sm" variant="outline" onClick={() => onEdit(auction)}>
+                                                            <Button size="sm" variant="outline" onClick={() => actions.onEdit(auction)}>
                                                                 {t(COMMON_TEXT_KEYS.edit)}
                                                             </Button>
-                                                            <Button size="sm" className={css({ bg: 'red.50', color: 'red.600', _hover: { bg: 'red.100' } })} onClick={() => onDelete(auction.id)}>
+                                                            <Button size="sm" className={css({ bg: 'red.50', color: 'red.600', _hover: { bg: 'red.100' } })} onClick={() => actions.onDelete(auction.id)}>
                                                                 {t(COMMON_TEXT_KEYS.delete)}
                                                             </Button>
                                                         </HStack>
