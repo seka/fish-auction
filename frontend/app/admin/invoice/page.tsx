@@ -3,42 +3,15 @@
 import { useState } from 'react';
 import { useInvoices } from './_hooks/useInvoice';
 import { InvoiceItem } from '@/src/models';
-import { Box, Text, Card, Button } from '@/src/core/ui';
+import { Box, Text, Card, Button, ModalBackdrop, ModalContent, Table, Thead, Tbody, Tr, Th, Td } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
-const Table = styled('table', { base: { minW: 'full', divideY: '1px', divideColor: 'gray.200' } });
-const Thead = styled('thead', { base: { bg: 'gray.50' } });
-const Tbody = styled('tbody', { base: { bg: 'white', divideY: '1px', divideColor: 'gray.200' } });
-const Tr = styled('tr', { base: { cursor: 'pointer', _hover: { bg: 'gray.50', transition: 'colors' } } });
-const Th = styled('th', { base: { px: '6', py: '4', textAlign: 'left', fontSize: 'xs', fontWeight: 'bold', color: 'gray.500', textTransform: 'uppercase', letterSpacing: 'wider' } });
-const Td = styled('td', { base: { px: '6', py: '4', whiteSpace: 'nowrap' } });
 
-// Modal backdrop and container
-const ModalBackdrop = styled('div', {
-    base: {
-        position: 'fixed',
-        inset: '0',
-        bg: 'blackAlpha.600',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: '50',
-        p: '4',
-    }
-});
 
-const ModalContent = styled('div', {
-    base: {
-        bg: 'white',
-        borderRadius: 'xl',
-        shadow: '2xl',
-        maxW: '2xl',
-        w: 'full',
-        maxH: '90vh',
-        overflowY: 'auto',
-    }
-});
+
+
+
 
 export default function InvoicePage() {
     const { invoices } = useInvoices();

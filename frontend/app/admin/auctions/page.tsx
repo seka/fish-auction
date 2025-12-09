@@ -11,49 +11,10 @@ import { Auction as AuctionModel } from '@/src/models'; // Renamed to avoid conf
 import { AUCTION_STATUS_KEYS, AuctionStatus, ITEM_STATUS_KEYS } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { useTranslations } from 'next-intl';
-import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { Box, Stack, HStack, Text, Card, Button, Input, Select, Table, Thead, Tbody, Tr, Th, Td } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
-// Select component with similar styling to Input
-const Select = styled('select', {
-    base: {
-        display: 'block',
-        width: 'full',
-        px: '3',
-        py: '2',
-        bg: 'white',
-        color: 'gray.900',
-        border: '1px solid',
-        borderColor: 'gray.300',
-        borderRadius: 'md',
-        fontSize: 'sm',
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        appearance: 'none',
-        backgroundImage: 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")',
-        backgroundPosition: 'right 0.5rem center',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: '1.5em 1.5em',
-        paddingRight: '2.5rem',
-        _focus: {
-            borderColor: 'indigo.500',
-            ring: '1px',
-            ringColor: 'indigo.500',
-        },
-        _disabled: {
-            bg: 'gray.50',
-            cursor: 'not-allowed',
-        },
-    }
-});
-
-const Table = styled('table', { base: { minW: 'full', divideY: '1px', divideColor: 'gray.200' } });
-const Thead = styled('thead', { base: { bg: 'gray.50' } });
-const Tbody = styled('tbody', { base: { bg: 'white', divideY: '1px', divideColor: 'gray.200' } });
-const Tr = styled('tr', { base: { _hover: { bg: 'gray.50' } } });
-const Th = styled('th', { base: { px: '6', py: '3', textAlign: 'left', fontSize: 'xs', fontWeight: 'medium', color: 'gray.500', textTransform: 'uppercase', letterSpacing: 'wider' } });
-const Td = styled('td', { base: { px: '6', py: '4', whiteSpace: 'nowrap' } });
 
 export default function AuctionsPage() {
     const [message, setMessage] = useState('');

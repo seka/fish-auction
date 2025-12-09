@@ -7,43 +7,12 @@ import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
 import { useItemMutations } from './_hooks/useItem';
 import { useFishermen } from '../fishermen/_hooks/useFisherman';
 import { useAuctions } from '../auctions/_hooks/useAuction';
-import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { Box, Stack, HStack, Text, Card, Button, Input, Select } from '@/src/core/ui';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { useTranslations } from 'next-intl';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
-const Select = styled('select', {
-    base: {
-        display: 'block',
-        width: 'full',
-        px: '3',
-        py: '2',
-        bg: 'white',
-        color: 'gray.900',
-        border: '1px solid',
-        borderColor: 'gray.300',
-        borderRadius: 'md',
-        fontSize: 'sm',
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        appearance: 'none', // Remove default arrow
-        backgroundImage: 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")',
-        backgroundPosition: 'right 0.5rem center',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: '1.5em 1.5em',
-        paddingRight: '2.5rem',
-        _focus: {
-            borderColor: 'orange.500',
-            ring: '1px',
-            ringColor: 'orange.500',
-        },
-        _disabled: {
-            bg: 'gray.50',
-            cursor: 'not-allowed',
-        },
-    }
-});
 
 export default function AdminItemsPage() {
     const t = useTranslations();
