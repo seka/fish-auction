@@ -1,47 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
-import { useItemMutations } from './_hooks/useItem';
-import { useFishermen } from '../fishermen/_hooks/useFisherman';
-import { useAuctionQuery } from '@/src/repositories/auction';
+import { useItemPage } from './_hooks/useItemPage';
 import { Box, Stack, HStack, Text, Card, Button, Input, Select } from '@/src/core/ui';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import { useTranslations } from 'next-intl';
 import { css } from 'styled-system/css';
-import { styled } from 'styled-system/jsx';
-
+import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 
 export default function AdminItemsPage() {
-    const t = useTranslations();
-    const [message, setMessage] = useState('');
-
-    const { fishermen } = useFishermen();
-    const { auctions } = useAuctionQuery({});
-    const { createItem, isCreating } = useItemMutations();
-
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<ItemFormData>({
-        resolver: zodResolver(itemSchema),
-    });
-
-    const onSubmit = async (data: ItemFormData) => {
-        try {
-            await createItem({
-                auctionId: parseInt(data.auctionId),
-                fishermanId: parseInt(data.fishermanId),
-                fishType: data.fishType,
-                quantity: parseInt(data.quantity),
-                unit: data.unit,
-            });
-            setMessage('出品を登録しました');
-            reset();
-        } catch (e) {
-            console.error(e);
-            setMessage('登録に失敗しました');
-        }
-    };
+    const { state, form, actions, t } = useItemPage();
 
     return (
         <Box maxW="6xl" mx="auto" p="6">
@@ -49,10 +14,10 @@ export default function AdminItemsPage() {
                 出品管理
             </Text>
 
-            {message && (
+            {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
                     <Text fontWeight="bold">通知</Text>
-                    <Text>{message}</Text>
+                    <Text>{state.message}</Text>
                 </Box>
             )}
 
@@ -63,24 +28,24 @@ export default function AdminItemsPage() {
                         新規出品登録
                     </Text>
                 </HStack>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={actions.onSubmit}>
                     <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap="6">
                         <Box className={css({ md: { gridColumn: 'span 2' } })}>
                             <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                 セリ
                             </Text>
                             <Select
-                                {...register('auctionId')}
+                                {...form.register('auctionId')}
                             >
                                 <option value="">セリを選択してください</option>
-                                {auctions.map((auction) => (
+                                {state.auctions.map((auction) => (
                                     <option key={auction.id} value={auction.id}>
                                         {auction.auctionDate} {auction.startTime?.substring(0, 5)} - {auction.endTime?.substring(0, 5)} (ID: {auction.id})
                                     </option>
                                 ))}
                             </Select>
-                            {errors.auctionId && (
-                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.auctionId.message}</Text>
+                            {form.errors.auctionId && (
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.auctionId.message}</Text>
                             )}
                         </Box>
                         <Box>
@@ -88,17 +53,17 @@ export default function AdminItemsPage() {
                                 漁師
                             </Text>
                             <Select
-                                {...register('fishermanId')}
+                                {...form.register('fishermanId')}
                             >
                                 <option value="">漁師を選択してください</option>
-                                {fishermen.map((fisherman) => (
+                                {state.fishermen.map((fisherman) => (
                                     <option key={fisherman.id} value={fisherman.id}>
                                         {fisherman.name}
                                     </option>
                                 ))}
                             </Select>
-                            {errors.fishermanId && (
-                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.fishermanId.message}</Text>
+                            {form.errors.fishermanId && (
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.fishermanId.message}</Text>
                             )}
                         </Box>
                         <Box>
@@ -107,13 +72,13 @@ export default function AdminItemsPage() {
                             </Text>
                             <Input
                                 type="text"
-                                {...register('fishType')}
+                                {...form.register('fishType')}
                                 placeholder="例: マグロ"
-                                error={!!errors.fishType}
+                                error={!!form.errors.fishType}
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
-                            {errors.fishType && (
-                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.fishType.message}</Text>
+                            {form.errors.fishType && (
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.fishType.message}</Text>
                             )}
                         </Box>
                         <Box>
@@ -122,13 +87,13 @@ export default function AdminItemsPage() {
                             </Text>
                             <Input
                                 type="number"
-                                {...register('quantity')}
+                                {...form.register('quantity')}
                                 placeholder="例: 10"
-                                error={!!errors.quantity}
+                                error={!!form.errors.quantity}
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
-                            {errors.quantity && (
-                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.quantity.message}</Text>
+                            {form.errors.quantity && (
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.quantity.message}</Text>
                             )}
                         </Box>
                         <Box>
@@ -137,25 +102,25 @@ export default function AdminItemsPage() {
                             </Text>
                             <Input
                                 type="text"
-                                {...register('unit')}
+                                {...form.register('unit')}
                                 placeholder="例: kg, 匹, 箱"
-                                error={!!errors.unit}
+                                error={!!form.errors.unit}
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
-                            {errors.unit && (
-                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.unit.message}</Text>
+                            {form.errors.unit && (
+                                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.unit.message}</Text>
                             )}
                         </Box>
                         <Box className={css({ md: { gridColumn: 'span 2' }, pt: '4' })}>
                             <HStack spacing="2">
                                 <Button
                                     type="submit"
-                                    disabled={isCreating}
+                                    disabled={state.isCreating}
                                     width="full"
                                     className={css({ flex: '1' })}
                                     variant="primary"
                                 >
-                                    {isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
+                                    {state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
                                 </Button>
                             </HStack>
                         </Box>

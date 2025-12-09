@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { registerFisherman, getFishermen } from '@/src/api/admin';
 
-export const useFishermen = () => {
+export const fishermanKeys = {
+    all: ['fishermen'] as const,
+};
+
+export const useFishermanQuery = () => {
     const { data, error, isLoading } = useQuery({
-        queryKey: ['fishermen'],
+        queryKey: fishermanKeys.all,
         queryFn: getFishermen,
     });
 
@@ -14,13 +18,13 @@ export const useFishermen = () => {
     };
 };
 
-export const useFishermanMutations = () => {
+export const useFishermanMutation = () => {
     const queryClient = useQueryClient();
 
     const createMutation = useMutation({
         mutationFn: (data: { name: string }) => registerFisherman(data.name),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['fishermen'] });
+            queryClient.invalidateQueries({ queryKey: fishermanKeys.all });
         },
     });
 

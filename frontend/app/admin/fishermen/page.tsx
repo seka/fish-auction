@@ -1,37 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { fishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
-import { useFishermen, useFishermanMutations } from './_hooks/useFisherman';
+import { useFishermanPage } from './_hooks/useFishermanPage';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
-import { styled } from 'styled-system/jsx';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import { useTranslations } from 'next-intl';
 
 export default function AdminFishermenPage() {
-    const t = useTranslations();
-    const [message, setMessage] = useState('');
-
-    const { fishermen, isLoading } = useFishermen();
-    const { createFisherman, isCreating } = useFishermanMutations();
-
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<FishermanFormData>({
-        resolver: zodResolver(fishermanSchema),
-    });
-
-    const onSubmit = async (data: FishermanFormData) => {
-        try {
-            await createFisherman({ name: data.name });
-            setMessage('漁師を登録しました');
-            reset();
-        } catch (e) {
-            console.error(e);
-            setMessage('登録に失敗しました');
-        }
-    };
+    const { state, form, actions, t } = useFishermanPage();
 
     return (
         <Box maxW="5xl" mx="auto" p="6">
@@ -39,10 +14,10 @@ export default function AdminFishermenPage() {
                 漁師管理
             </Text>
 
-            {message && (
+            {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" color="blue.700" p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
                     <Text fontWeight="bold">通知</Text>
-                    <Text>{message}</Text>
+                    <Text>{state.message}</Text>
                 </Box>
             )}
 
@@ -56,7 +31,7 @@ export default function AdminFishermenPage() {
                                 新規漁師登録
                             </Text>
                         </HStack>
-                        <form onSubmit={handleSubmit(onSubmit)}>
+                        <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
@@ -64,23 +39,23 @@ export default function AdminFishermenPage() {
                                     </Text>
                                     <Input
                                         type="text"
-                                        {...register('name')}
+                                        {...form.register('name')}
                                         placeholder="例: 山田 太郎"
-                                        error={!!errors.name}
+                                        error={!!form.errors.name}
                                     />
-                                    {errors.name && (
-                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.name.message}</Text>
+                                    {form.errors.name && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.name.message}</Text>
                                     )}
                                 </Box>
 
                                 <Button
                                     type="submit"
-                                    disabled={isCreating}
+                                    disabled={state.isCreating}
                                     width="full"
                                     className={css({ flex: '1' })}
                                     variant="primary"
                                 >
-                                    {isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
+                                    {state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
                                 </Button>
                             </Stack>
                         </form>
@@ -93,13 +68,13 @@ export default function AdminFishermenPage() {
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
                             <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">漁師一覧</Text>
                         </Box>
-                        {isLoading ? (
+                        {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
-                        ) : fishermen.length === 0 ? (
+                        ) : state.fishermen.length === 0 ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
-                                {fishermen.map((fisherman) => (
+                                {state.fishermen.map((fisherman) => (
                                     <Box as="li" key={fisherman.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
                                         <HStack justify="between" align="center">
                                             <Box>

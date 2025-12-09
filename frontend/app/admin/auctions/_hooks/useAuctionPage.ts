@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { auctionSchema, AuctionFormData } from '@/src/models/schemas/auction';
 import { useAuctionQuery, useAuctionMutation } from '@/src/repositories/auction';
-import { useVenues } from '../../venues/_hooks/useVenue';
+import { useVenueQuery } from '@/src/repositories/venue';
 import { Auction } from '@/src/models/auction';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 
@@ -14,7 +14,7 @@ export const useAuctionPage = () => {
     const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
     const [filterVenueId, setFilterVenueId] = useState<number | undefined>(undefined);
 
-    const { venues } = useVenues();
+    const { venues } = useVenueQuery();
     const { auctions, isLoading } = useAuctionQuery({ venueId: filterVenueId });
     const { createAuction, updateAuction, updateStatus, deleteAuction, isCreating, isUpdating, isUpdatingStatus, isDeleting } = useAuctionMutation();
 

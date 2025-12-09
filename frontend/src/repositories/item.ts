@@ -2,13 +2,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerItem } from '@/src/api/admin';
 import { RegisterItemParams } from '@/src/models';
 
-export const useItemMutations = () => {
+export const itemKeys = {
+    all: ['items'] as const,
+};
+
+export const useItemMutation = () => {
     const queryClient = useQueryClient();
 
     const createMutation = useMutation({
         mutationFn: (item: RegisterItemParams) => registerItem(item),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['items'] });
+            queryClient.invalidateQueries({ queryKey: itemKeys.all });
         },
     });
 

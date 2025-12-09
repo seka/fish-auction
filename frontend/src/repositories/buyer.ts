@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { registerBuyer, getBuyers } from '@/src/api/admin';
 
-export const useBuyers = () => {
+export const buyerKeys = {
+    all: ['buyers'] as const,
+};
+
+export const useBuyerQuery = () => {
     const { data, error, isLoading } = useQuery({
-        queryKey: ['buyers'],
+        queryKey: buyerKeys.all,
         queryFn: getBuyers,
     });
 
@@ -14,13 +18,13 @@ export const useBuyers = () => {
     };
 };
 
-export const useBuyerMutations = () => {
+export const useBuyerMutation = () => {
     const queryClient = useQueryClient();
 
     const createMutation = useMutation({
         mutationFn: (data: { name: string }) => registerBuyer(data.name),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['buyers'] });
+            queryClient.invalidateQueries({ queryKey: buyerKeys.all });
         },
     });
 

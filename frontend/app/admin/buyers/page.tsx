@@ -1,36 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
-import { useBuyers, useBuyerMutations } from './_hooks/useBuyer';
+import { useBuyerPage } from './_hooks/useBuyerPage';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import { useTranslations } from 'next-intl';
 import { css } from 'styled-system/css';
 
 export default function AdminBuyersPage() {
-    const t = useTranslations();
-    const [message, setMessage] = useState('');
-
-    const { buyers, isLoading } = useBuyers();
-    const { createBuyer, isCreating } = useBuyerMutations();
-
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<BuyerFormData>({
-        resolver: zodResolver(buyerSchema),
-    });
-
-    const onSubmit = async (data: BuyerFormData) => {
-        try {
-            await createBuyer({ name: data.name });
-            setMessage('中買人を登録しました');
-            reset();
-        } catch (e) {
-            console.error(e);
-            setMessage('登録に失敗しました');
-        }
-    };
+    const { state, form, actions, t } = useBuyerPage();
 
     return (
         <Box maxW="5xl" mx="auto" p="6">
@@ -38,10 +14,10 @@ export default function AdminBuyersPage() {
                 中買人管理
             </Text>
 
-            {message && (
+            {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
                     <Text fontWeight="bold">通知</Text>
-                    <Text>{message}</Text>
+                    <Text>{state.message}</Text>
                 </Box>
             )}
 
@@ -55,7 +31,7 @@ export default function AdminBuyersPage() {
                                 新規中買人登録
                             </Text>
                         </HStack>
-                        <form onSubmit={handleSubmit(onSubmit)}>
+                        <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
@@ -63,24 +39,24 @@ export default function AdminBuyersPage() {
                                     </Text>
                                     <Input
                                         type="text"
-                                        {...register('name')}
+                                        {...form.register('name')}
                                         placeholder="例: 鈴木 花子"
-                                        error={!!errors.name}
+                                        error={!!form.errors.name}
                                         className={css({ _focus: { borderColor: 'green.500', ringColor: 'green.500' } })}
                                     />
-                                    {errors.name && (
-                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{errors.name.message}</Text>
+                                    {form.errors.name && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.name.message}</Text>
                                     )}
                                 </Box>
 
                                 <Button
                                     type="submit"
-                                    disabled={isCreating}
+                                    disabled={state.isCreating}
                                     width="full"
                                     className={css({ flex: '1' })}
                                     variant="primary"
                                 >
-                                    {isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
+                                    {state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
                                 </Button>
                             </Stack>
                         </form>
@@ -93,13 +69,13 @@ export default function AdminBuyersPage() {
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
                             <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">中買人一覧</Text>
                         </Box>
-                        {isLoading ? (
+                        {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
-                        ) : buyers.length === 0 ? (
+                        ) : state.buyers.length === 0 ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
-                                {buyers.map((buyer) => (
+                                {state.buyers.map((buyer) => (
                                     <Box as="li" key={buyer.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
                                         <HStack justify="between" align="center">
                                             <Box>
