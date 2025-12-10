@@ -7,11 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from './_hooks/useAuth';
 import { loginSchema, LoginFormData } from '@/src/models/schemas/auth';
 import { css } from 'styled-system/css';
-import { Box, Text, Button, Input } from '@/src/core/ui';
+import { Box, Text, Button, Input, Card, Stack } from '@/src/core/ui';
+import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {
     const [error, setError] = useState('');
     const router = useRouter();
+    const t = useTranslations();
     const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
     });
@@ -23,59 +25,57 @@ export default function LoginPage() {
         const success = await login(data.password);
 
         if (success) {
-            window.location.href = '/admin';
+            router.push('/admin');
         } else {
-            setError('パスワードが間違っています');
+            setError(t('Admin.Login.error_invalid_password'));
         }
     };
 
     return (
-        <Box className={css({ minH: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bg: 'gray.50', py: '12', px: { base: '4', sm: '6', lg: '8' } })}>
-            <Box className={css({ maxW: 'md', w: 'full', spaceY: '8' })}>
-                <Box>
-                    <Text variant="h2" className={css({ textAlign: 'center', fontSize: '3xl', fontWeight: 'extrabold', color: 'gray.900', mt: '6' })}>
-                        管理者ログイン
-                    </Text>
-                    <Text className={css({ mt: '2', textAlign: 'center', fontSize: 'sm', color: 'gray.600' })}>
-                        管理画面へアクセスするにはパスワードを入力してください
-                    </Text>
+        <Box display="flex" minH="screen" alignItems="center" justifyContent="center" bg="gray.100">
+            <Card width="full" maxW="md" padding="lg" shadow="lg">
+                <Box textAlign="center" mb="8">
+                    <Stack spacing="4">
+                        <Text as="h1" variant="h3" fontWeight="bold" className={css({ color: 'indigo.700' })}>
+                            {t('Admin.Login.title')}
+                        </Text>
+                        <Text className={css({ color: 'gray.600' })}>
+                            {t('Admin.Login.description')}
+                        </Text>
+                    </Stack>
                 </Box>
-                <form className={css({ mt: '8', spaceY: '6' })} onSubmit={handleSubmit(onSubmit)}>
-                    <Box className={css({ rounded: 'md', shadow: 'sm' })}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <Stack spacing="6">
                         <Box>
-                            <label htmlFor="password" className={css({ srOnly: true })}>
-                                パスワード
-                            </label>
+                            <label htmlFor="password" className={css({ srOnly: true })}>{t('Common.password')}</label>
                             <Input
                                 id="password"
                                 type="password"
                                 {...register('password')}
-                                placeholder="パスワード"
-                                error={!!errors.password}
+                                placeholder={t('Common.password')}
+                                bg="white"
                             />
                             {errors.password && (
                                 <Text className={css({ color: 'red.500', fontSize: 'sm', mt: '1' })}>{errors.password.message}</Text>
                             )}
                         </Box>
-                    </Box>
-
-                    {error && (
-                        <Box className={css({ color: 'red.500', fontSize: 'sm', textAlign: 'center', fontWeight: 'bold' })}>
-                            {error}
-                        </Box>
-                    )}
-
-                    <Box>
+                        {error && (
+                            <Box bg="red.50" p="3" borderRadius="md">
+                                <Text className={css({ color: 'red.600', fontSize: 'sm', textAlign: 'center' })}>{error}</Text>
+                            </Box>
+                        )}
                         <Button
                             type="submit"
+                            width="full"
+                            size="lg"
                             disabled={isLoading}
-                            className={css({ w: 'full' })}
+                            variant="primary"
                         >
-                            {isLoading ? 'ログイン中...' : 'ログイン'}
+                            {isLoading ? t('Admin.Login.logging_in') : t('Common.submit')}
                         </Button>
-                    </Box>
+                    </Stack>
                 </form>
-            </Box>
+            </Card>
         </Box>
     );
 }

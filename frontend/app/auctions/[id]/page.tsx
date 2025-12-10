@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
@@ -21,7 +20,7 @@ import { css } from 'styled-system/css';
 
 export default function AuctionDetailPage({ params }: { params: { id: string } }) {
     const t = useTranslations();
-    const router = useRouter();
+    // const router = useRouter(); // Unused
     const auctionId = Number(params.id);
 
     const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
@@ -48,6 +47,7 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
         if (selectedItem) {
             const current = items.find(i => i.id === selectedItem.id);
             if (current && current.status !== selectedItem.status) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSelectedItem(current);
             }
         }
@@ -60,7 +60,7 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
     if (isChecking) {
         return (
             <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-                <Text fontSize="xl" className={css({ color: 'gray.700' })}>読み込み中...</Text>
+                <Text fontSize="xl" className={css({ color: 'gray.700' })}>{t('Common.loading')}</Text>
             </Box>
         );
     }
@@ -68,13 +68,13 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
     if (isLoading) {
         return (
             <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-                <Text fontSize="xl" className={css({ color: 'gray.700' })}>読み込み中...</Text>
+                <Text fontSize="xl" className={css({ color: 'gray.700' })}>{t('Common.loading')}</Text>
             </Box>
         );
     }
 
     if (!auction) {
-        return <Box>Auction not found</Box>;
+        return <Box>{t('Common.no_data')}</Box>;
     }
 
     const onSubmitLogin = async (data: BuyerLoginFormData) => {
@@ -84,7 +84,7 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
             // Reload page to update auth state and stay on current page
             window.location.reload();
         } else {
-            setLoginError('メールアドレスまたはパスワードが間違っています');
+            setLoginError(t('Public.Login.error_credentials'));
         }
     };
 
@@ -98,14 +98,14 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
         });
 
         if (success) {
-            setMessage(`落札成功！ (${selectedItem.fishType})`);
+            setMessage(t('Public.AuctionDetail.success_bid', { item: selectedItem.fishType }));
             setSelectedItem(null);
             reset();
             refetchItems();
             // Clear message after 3 seconds
             setTimeout(() => setMessage(''), 3000);
         } else {
-            setMessage('入札に失敗しました');
+            setMessage(t('Public.AuctionDetail.fail_bid'));
         }
     };
 
@@ -117,33 +117,33 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                     <Stack spacing="8">
                         <Box textAlign="center">
                             <Text as="h2" fontSize="3xl" fontWeight="extrabold" className={css({ color: 'gray.900' })}>
-                                セリ会場へのログイン
+                                {t('Public.AuctionDetail.login_title')}
                             </Text>
                             <Text mt="2" fontSize="sm" className={css({ color: 'gray.700' })}>
-                                入札するにはログインが必要です
+                                {t('Public.AuctionDetail.login_description')}
                             </Text>
                         </Box>
                         <form onSubmit={handleSubmitLogin(onSubmitLogin)}>
                             <Stack spacing="6">
                                 <Stack spacing="0">
                                     <Box>
-                                        <label htmlFor="email" className={css({ srOnly: true })}>メールアドレス</label>
+                                        <label htmlFor="email" className={css({ srOnly: true })}>{t('Common.email')}</label>
                                         <Input
                                             id="email"
                                             type="email"
                                             {...registerLogin('email')}
-                                            placeholder="メールアドレス"
+                                            placeholder={t('Common.email')}
                                             className={css({ borderBottomLeftRadius: '0', borderBottomRightRadius: '0' })}
                                         />
                                         {loginErrors.email && <Text className={css({ color: 'red.500' })} fontSize="xs" mt="1">{loginErrors.email.message}</Text>}
                                     </Box>
                                     <Box>
-                                        <label htmlFor="password" className={css({ srOnly: true })}>パスワード</label>
+                                        <label htmlFor="password" className={css({ srOnly: true })}>{t('Common.password')}</label>
                                         <Input
                                             id="password"
                                             type="password"
                                             {...registerLogin('password')}
-                                            placeholder="パスワード"
+                                            placeholder={t('Common.password')}
                                             className={css({ borderTopLeftRadius: '0', borderTopRightRadius: '0', borderTop: 'none' })}
                                         />
                                         {loginErrors.password && <Text className={css({ color: 'red.500' })} fontSize="xs" mt="1">{loginErrors.password.message}</Text>}
@@ -155,14 +155,14 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                                 <Button
                                     type="submit"
                                     disabled={isLoggingIn}
-                                    w="full"
+                                    width="full"
                                     className={css({ bg: 'indigo.600', _hover: { bg: 'indigo.700' }, color: 'white' })}
                                 >
-                                    ログイン
+                                    {t('Public.Login.submit')}
                                 </Button>
                                 <Box textAlign="center">
                                     <Link href="/signup" className={css({ fontSize: 'sm', color: 'indigo.600', _hover: { color: 'indigo.500' } })}>
-                                        アカウントをお持ちでない方はこちら
+                                        {t('Public.Login.no_account')}
                                     </Link>
                                 </Box>
                             </Stack>
@@ -181,7 +181,7 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                     <Box>
                         <HStack spacing="3" mb="1">
                             <Link href="/auctions" className={css({ color: 'gray.500', _hover: { color: 'gray.700' } })}>
-                                &larr; 一覧へ
+                                &larr; {t('Public.AuctionDetail.back_to_list')}
                             </Link>
                             <Box
                                 px="3"
@@ -197,25 +197,27 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                             </Box>
                         </HStack>
                         <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
-                            セリ会場 #{auction.id}
+                            {t('Public.AuctionDetail.auction_venue_title', { id: auction.id })}
                         </Text>
                         <Text className={css({ color: 'gray.600' })}>
                             {auction.auctionDate} {auction.startTime?.substring(0, 5)} - {auction.endTime?.substring(0, 5)}
                         </Text>
                     </Box>
                     <Box textAlign="right" display={{ base: 'none', md: 'block' }}>
-                        <Text fontSize="sm" className={css({ color: 'gray.600' })}>自動更新中 (5秒)</Text>
+                        <Text fontSize="sm" className={css({ color: 'gray.600' })}>{t('Public.AuctionDetail.auto_refresh')}</Text>
                     </Box>
                 </Box>
 
                 {message && (
                     <Card
                         mb="6"
-                        p="4"
-                        borderLeft="4px solid"
-                        borderColor="green.500"
-                        bg="green.50"
-                        className={css({ animation: 'bounce 1s infinite' })}
+                        padding="md"
+                        className={css({
+                            borderLeft: '4px solid',
+                            borderColor: 'green.500',
+                            bg: 'green.50',
+                            animation: 'bounce 1s infinite'
+                        })}
                     >
                         <Text fontWeight="bold" className={css({ color: 'green.700' })}>{message}</Text>
                     </Card>
@@ -226,23 +228,27 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                     <Box gridColumn={{ base: '1', lg: 'span 2' }}>
                         <Stack spacing="4">
                             <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })} borderBottom="1px solid" borderColor="gray.200" pb="2">
-                                出品リスト
+                                {t('Public.AuctionDetail.item_list')}
                             </Text>
                             {items.length === 0 ? (
                                 <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                    <Text className={css({ color: 'gray.600' })}>現在、出品されている商品はありません。</Text>
+                                    <Text className={css({ color: 'gray.600' })}>{t('Public.AuctionDetail.no_items')}</Text>
                                 </Box>
                             ) : (
                                 items.map((item) => (
                                     <Card
                                         key={item.id}
-                                        p="6"
-                                        borderWidth="2px"
-                                        borderColor={selectedItem?.id === item.id ? 'orange.500' : 'gray.200'}
-                                        bg={selectedItem?.id === item.id ? 'orange.50' : 'white'}
-                                        cursor="pointer"
-                                        transition="all 0.2s"
-                                        className={selectedItem?.id === item.id ? css({ shadow: 'md', transform: 'scale(1.01)' }) : css({ _hover: { shadow: 'md' } })}
+                                        padding="lg"
+                                        className={css({
+                                            borderWidth: '2px',
+                                            borderColor: selectedItem?.id === item.id ? 'orange.500' : 'gray.200',
+                                            bg: selectedItem?.id === item.id ? 'orange.50' : 'white',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            shadow: selectedItem?.id === item.id ? 'md' : 'none',
+                                            transform: selectedItem?.id === item.id ? 'scale(1.01)' : 'none',
+                                            _hover: { shadow: 'md' }
+                                        })}
                                         onClick={() => setSelectedItem(item)}
                                     >
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -254,13 +260,13 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                                                     <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })}>{item.fishType}</Text>
                                                     <Text className={css({ color: 'gray.700' })} mt="1">
                                                         <Text as="span" fontWeight="bold" fontSize="lg">{item.quantity}</Text> {item.unit}
-                                                        <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>(漁師ID: {item.fishermanId})</Text>
+                                                        <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>({t('Public.AuctionDetail.fisherman_id', { id: item.fishermanId })})</Text>
                                                     </Text>
                                                     {item.highestBid && (
                                                         <Text fontSize="sm" mt="1" className={css({ color: 'orange.600' })} fontWeight="semibold">
-                                                            現在の最高額: ¥{item.highestBid.toLocaleString()}
+                                                            {t('Public.AuctionDetail.current_max_bid', { price: item.highestBid.toLocaleString() })}
                                                             {item.highestBidderName && (
-                                                                <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({item.highestBidderName} さん)</Text>
+                                                                <Text as="span" ml="2" className={css({ color: 'gray.700' })}>{t('Public.AuctionDetail.bidder_name', { name: item.highestBidderName })}</Text>
                                                             )}
                                                         </Text>
                                                     )}
@@ -287,23 +293,23 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
 
                     {/* Bidding Panel */}
                     <Box gridColumn={{ base: '1', lg: 'span 1' }}>
-                        <Card p="6" shadow="lg" borderWidth="1px" borderColor="gray.200" position={{ lg: 'sticky' }} top="6">
+                        <Card padding="lg" shadow="lg" className={css({ borderWidth: '1px', borderColor: 'gray.200', position: { lg: 'sticky' }, top: '6' })}>
                             <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })} borderBottom="1px solid" borderColor="gray.200" pb="2" mb="6">
-                                入札パネル
+                                {t('Public.AuctionDetail.bidding_panel')}
                             </Text>
                             {selectedItem ? (
                                 <form onSubmit={handleSubmit(onSubmitBid)}>
                                     <Stack spacing="6">
                                         <Box p="5" bg="gray.50" borderRadius="lg" borderWidth="1px" borderColor="gray.200">
-                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mb="1">選択中の商品</Text>
+                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mb="1">{t('Public.AuctionDetail.selected_item')}</Text>
                                             <Text fontWeight="bold" fontSize="2xl" className={css({ color: 'gray.900' })}>{selectedItem.fishType}</Text>
                                             <Text fontSize="lg" className={css({ color: 'gray.700' })}>{selectedItem.quantity} {selectedItem.unit}</Text>
-                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">ステータス: {ITEM_STATUS_KEYS[selectedItem.status] ? t(ITEM_STATUS_KEYS[selectedItem.status]) : selectedItem.status}</Text>
+                                            <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">{t('Public.AuctionDetail.status', { status: ITEM_STATUS_KEYS[selectedItem.status] ? t(ITEM_STATUS_KEYS[selectedItem.status]) : selectedItem.status })}</Text>
                                             {selectedItem.highestBid && (
                                                 <Text fontSize="sm" mt="2" className={css({ color: 'orange.600' })} fontWeight="bold">
-                                                    現在の最高額: ¥{selectedItem.highestBid.toLocaleString()}
+                                                    {t('Public.AuctionDetail.current_max_bid', { price: selectedItem.highestBid.toLocaleString() })}
                                                     {selectedItem.highestBidderName && (
-                                                        <Text as="span" ml="2" className={css({ color: 'gray.700' })}>({selectedItem.highestBidderName} さん)</Text>
+                                                        <Text as="span" ml="2" className={css({ color: 'gray.700' })}>{t('Public.AuctionDetail.bidder_name', { name: selectedItem.highestBidderName })}</Text>
                                                     )}
                                                 </Text>
                                             )}
@@ -312,10 +318,10 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                                         {selectedItem.status === 'Pending' ? (
                                             !auctionActive ? (
                                                 <Box textAlign="center" py="6" bg="yellow.50" borderRadius="lg" borderWidth="1px" borderColor="yellow.200">
-                                                    <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">⏰ 入札受付時間外</Text>
+                                                    <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">{t('Public.AuctionDetail.out_of_hours_title')}</Text>
                                                     {auction.startTime && auction.endTime && (
                                                         <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
-                                                            受付時間: {formatTime(auction.startTime)} ~ {formatTime(auction.endTime)}
+                                                            {t('Public.AuctionDetail.out_of_hours_msg', { start: formatTime(auction.startTime), end: formatTime(auction.endTime) })}
                                                         </Text>
                                                     )}
                                                 </Box>
@@ -323,7 +329,7 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                                                 <>
                                                     <Box>
                                                         <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                                            入札価格 (円)
+                                                            {t('Public.AuctionDetail.bid_amount_label')}
                                                         </Text>
                                                         <Box position="relative">
                                                             <Box position="absolute" top="50%" left="3" transform="translateY(-50%)" pointerEvents="none">
@@ -344,7 +350,7 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                                                     <Button
                                                         type="submit"
                                                         disabled={isBidLoading}
-                                                        w="full"
+                                                        width="full"
                                                         size="lg"
                                                         className={css({
                                                             bg: 'red.600',
@@ -354,20 +360,20 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                                                             transition: 'all 0.2s'
                                                         })}
                                                     >
-                                                        {isBidLoading ? '処理中...' : '落札する！'}
+                                                        {isBidLoading ? t('Public.AuctionDetail.bidding_process') : t('Public.AuctionDetail.bid_button')}
                                                     </Button>
                                                 </>
                                             )
                                         ) : (
                                             <Box textAlign="center" py="4" bg="gray.100" borderRadius="md" color="gray.500">
-                                                この商品は既に入札が終了しています
+                                                {t('Public.AuctionDetail.item_ended')}
                                             </Box>
                                         )}
                                     </Stack>
                                 </form>
                             ) : (
                                 <Box textAlign="center" py="12" color="gray.400">
-                                    <Text>左のリストから<br />商品を選択してください</Text>
+                                    <Text dangerouslySetInnerHTML={{ __html: t.raw('Public.AuctionDetail.select_instruction') }} />
                                 </Box>
                             )}
                         </Card>

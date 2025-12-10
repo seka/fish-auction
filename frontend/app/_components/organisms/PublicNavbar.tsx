@@ -4,12 +4,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, HStack, Button, Text } from '@/src/core/ui'; // Button, Text等は src/core/ui からインポート
 import { useTranslations } from 'next-intl';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { css } from 'styled-system/css';
 
 export const PublicNavbar = () => {
-    const t = useTranslations();
     const pathname = usePathname();
+    const t = useTranslations();
+
+    // Placeholder for auth state - to be implemented properly later
+    const isLoggedIn = false;
+    const handleLogout = () => {
+        // Implement logout logic
+        console.log('Logout');
+    };
 
     // 管理画面では表示しない
     if (pathname?.startsWith('/admin')) {
@@ -34,45 +40,45 @@ export const PublicNavbar = () => {
             borderColor="gray.100"
         >
             <Box maxW="7xl" mx="auto" px={{ base: '4', md: '8' }} h="16" display="flex" alignItems="center" justifyContent="space-between">
-                {/* Logo / Brand */}
-                <Link href="/" className={css({ textDecoration: 'none', _hover: { opacity: 0.8 }, transition: 'opacity 0.2s' })}>
-                    <HStack spacing="3">
+                <Link href="/" className={css({ textDecoration: 'none', _hover: { opacity: 0.8 } })}>
+                    <HStack spacing="2">
                         {/* 簡易的なロゴ表示 (画像があればImageコンポーネントに差し替え) */}
-                        <Box bg="gradient-to-br from-blue.500 to-indigo.600" w="8" h="8" borderRadius="md" display="flex" alignItems="center" justifyContent="center" color="white" fontWeight="bold">
+                        <Box fontSize="2xl" role="img" aria-label="Logo">
                             🐟
                         </Box>
-                        <Text fontWeight="bold" fontSize="lg" className={css({ color: 'gray.900', letterSpacing: 'tight' })}>
-                            漁港のせりシステム
+                        <Text fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })} display={{ base: 'none', sm: 'block' }}>
+                            {t('Common.app_name')}
                         </Text>
                     </HStack>
                 </Link>
 
-                {/* Navigation Links */}
-                <HStack spacing="1" display={{ base: 'none', md: 'flex' }}>
-                    <NavLink href="/">{t(COMMON_TEXT_KEYS.home)}</NavLink>
-                    <NavLink href="/auctions">{t(COMMON_TEXT_KEYS.auction_venue)}</NavLink>
-                    <NavLink href="/mypage">{t(COMMON_TEXT_KEYS.mypage)}</NavLink>
-                </HStack>
+                <HStack spacing="6">
+                    {/* デスクトップナビゲーション */}
+                    <Box display={{ base: 'none', md: 'block' }}>
+                        <HStack spacing="6">
+                            <NavLink href="/auctions">{t('Navbar.active_auctions')}</NavLink>
+                            {isLoggedIn && (
+                                <NavLink href="/mypage">{t('Navbar.mypage')}</NavLink>
+                            )}
+                        </HStack>
+                    </Box>
 
-                {/* Mobile Menu Button (Future work if needed) */}
-                {/* <Box display={{ base: 'block', md: 'none' }}>
-                    <Button variant="ghost" size="sm">Menu</Button>
-                </Box> */}
-
-                {/* Action Buttons */}
-                <HStack spacing="4">
+                    {/* 認証ボタン */}
                     {/* ログイン状態に応じた出し分けが必要だが、ここはいったんリンクベースで配置 */}
                     {/* 必要に応じて useAuth フックなどで状態監視して出し分ける */}
-                    <Link href="/login/buyer">
-                        <Button size="sm" className={css({ bg: 'gray.600', _hover: { bg: 'gray.700' }, color: 'white', fontWeight: 'medium' })}>
-                            {t(COMMON_TEXT_KEYS.login)}
-                        </Button>
-                    </Link>
-                    <Link href="/signup">
-                        <Button size="sm" className={css({ bg: 'indigo.600', color: 'white', _hover: { bg: 'indigo.700' }, fontWeight: 'bold', px: '6' })}>
-                            {t(COMMON_TEXT_KEYS.signup)}
-                        </Button>
-                    </Link>
+                    <HStack spacing="3">
+                        {isLoggedIn ? (
+                            <Button size="sm" variant="outline" onClick={handleLogout}>
+                                {t('Navbar.logout')}
+                            </Button>
+                        ) : (
+                            <Link href="/login/buyer">
+                                <Button size="sm" variant="primary">
+                                    {t('Navbar.login')}
+                                </Button>
+                            </Link>
+                        )}
+                    </HStack>
                 </HStack>
             </Box>
         </Box>

@@ -29,8 +29,8 @@ export default function AuctionsListPage() {
     }
 
     // Filter for active auctions (Scheduled or In Progress)
-    const activeAuctions = allAuctions?.filter(a =>
-        a.status === 'scheduled' || a.status === 'in_progress'
+    const auctions = allAuctions?.filter(a =>
+        a.status === 'scheduled' || a.status === 'in_progress' || a.status === 'completed' // Show completed too for public view? Or just active? Let's show all for now or stick to active. Previous code had active.
     ).sort((a, b) => {
         // Sort: In Progress first, then by date/time
         if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;
@@ -38,93 +38,121 @@ export default function AuctionsListPage() {
         return new Date(`${a.auctionDate}T${a.startTime}`).getTime() - new Date(`${b.auctionDate}T${b.startTime}`).getTime();
     }) || [];
 
-    const getVenueName = (id: number) => venues?.find(v => v.id === id)?.name || `会場ID: ${id}`;
+    const getVenueName = (id: number) => venues?.find(v => v.id === id)?.name || `ID: ${id}`;
+
+    // Helper functions for status styles
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'in_progress': return 'orange.500';
+            case 'scheduled': return 'blue.500';
+            case 'completed': return 'gray.500';
+            case 'cancelled': return 'red.500';
+            default: return 'gray.200';
+        }
+    };
+
+    const getStatusBg = (status: string) => {
+        switch (status) {
+            case 'in_progress': return 'orange.100';
+            case 'scheduled': return 'blue.100';
+            case 'completed': return 'gray.100';
+            case 'cancelled': return 'red.100';
+            default: return 'gray.100';
+        }
+    };
+
+    const getStatusTextColor = (status: string) => {
+        switch (status) {
+            case 'in_progress': return 'orange.800';
+            case 'scheduled': return 'blue.800';
+            case 'completed': return 'gray.800';
+            case 'cancelled': return 'red.800';
+            default: return 'gray.800';
+        }
+    };
 
     return (
-        <Box minH="screen" bg="gray.50" p="8">
-            <Box maxW="5xl" mx="auto">
-                <HStack justify="between" mb="8">
-                    <Text as="h1" variant="h2" color="default">開催中のセリ一覧</Text>
-                    <HStack gap="4">
-                        <Link href="/mypage" className={css({ color: 'indigo.600', _hover: { color: 'indigo.800' }, fontWeight: 'medium' })}>
-                            マイページ
-                        </Link>
-                        <Link href="/" className={css({ color: 'indigo.600', _hover: { color: 'indigo.800' }, fontWeight: 'medium' })}>
-                            &larr; トップに戻る
-                        </Link>
+        <Box maxW="7xl" mx="auto" px={{ base: '4', md: '8' }} py="8">
+            <Stack spacing="8">
+                {/* Header */}
+                <Box>
+                    <Text as="h1" variant="h2" color="default">{t('Public.Auctions.title')}</Text>
+                    <HStack mt="2" className={css({ fontSize: 'sm', color: 'gray.500' })}>
+                        <Link href="/" className={css({ _hover: { color: 'indigo.600', textDecoration: 'underline' } })}>{t('Common.home_title')}</Link>
+                        <Text color="gray.300" mx="2">/</Text>
+                        <Text>{t('Public.Auctions.title')}</Text>
                     </HStack>
-                </HStack>
+                </Box>
 
-                {activeAuctions.length === 0 ? (
-                    <Card padding="lg" className={css({ textAlign: 'center' })}>
-                        <Text fontSize="xl" className={css({ color: 'gray.500' })}>現在開催予定のセリはありません</Text>
+                {/* Back to Top */}
+                <Box>
+                    <Link href="/" className={css({ display: 'inline-flex', alignItems: 'center', color: 'indigo.600', fontWeight: 'medium', _hover: { textDecoration: 'underline' } })}>
+                        &larr; {t('Common.back_to_top')}
+                    </Link>
+                </Box>
+
+                {/* Auctions Grid */}
+                {(!auctions || auctions.length === 0) ? (
+                    <Card padding="md">
+                        <Box py="12" textAlign="center">
+                            <Text fontSize="xl" className={css({ color: 'gray.500' })}>{t('Public.Auctions.no_auctions')}</Text>
+                        </Box>
                     </Card>
                 ) : (
-                    <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap="6">
-                        {activeAuctions.map((auction) => (
-                            <Link
-                                key={auction.id}
-                                href={`/auctions/${auction.id}`}
-                                className={css({ display: 'block', _hover: { textDecoration: 'none' } })}
-                            >
-                                <Card
-                                    variant="interactive"
-                                    className={css({
-                                        height: 'full',
-                                        transition: 'all 0.2s',
-                                        borderColor: auction.status === 'in_progress' ? 'orange.400' : 'transparent',
-                                        borderWidth: auction.status === 'in_progress' ? '2px' : '1px',
-                                        ring: auction.status === 'in_progress' ? '4px' : '0',
-                                        ringColor: auction.status === 'in_progress' ? 'orange.50' : 'transparent',
-                                        _hover: {
-                                            borderColor: auction.status === 'in_progress' ? 'orange.500' : 'indigo.200',
-                                        }
-                                    })}
-                                >
-                                    <HStack justify="between" align="start" mb="4">
-                                        <Box>
-                                            <Box
-                                                display="inline-block"
-                                                px="3"
-                                                py="1"
-                                                borderRadius="full"
-                                                fontSize="sm"
-                                                fontWeight="bold"
-                                                mb="2"
-                                                bg={auction.status === 'in_progress' ? 'orange.100' : 'blue.100'}
-                                                color={auction.status === 'in_progress' ? 'orange.700' : 'blue.700'}
-                                                animation={auction.status === 'in_progress' ? 'pulse 2s infinite' : 'none'}
-                                            >
-                                                {auction.status === 'in_progress' ? '🔥 ' + t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus] || 'scheduled')}
-                                            </Box>
-                                            <Text variant="h3" color="default" className={css({ _groupHover: { color: 'indigo.700' }, transition: 'colors' })}>
-                                                {getVenueName(auction.venueId)}
-                                            </Text>
-                                        </Box>
-                                        <Box textAlign="right">
-                                            <Text fontSize="2xl" fontWeight="bold" color="default">
-                                                {auction.startTime?.substring(0, 5)}
-                                            </Text>
-                                            <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-                                                {auction.auctionDate}
-                                            </Text>
-                                        </Box>
-                                    </HStack>
+                    <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap="6">
+                        {auctions.map((auction) => (
+                            <Link key={auction.id} href={`/auctions/${auction.id}`} className={css({ textDecoration: 'none', display: 'block', transition: 'transform 0.2s', _hover: { transform: 'translateY(-4px)' } })}>
+                                <Card padding="none" overflow="hidden" className={css({ h: 'full', border: '1px solid', borderColor: 'gray.200', _hover: { shadow: 'md', borderColor: 'indigo.200' } })}>
+                                    {/* Status Badge Strip */}
+                                    <Box bg={getStatusColor(auction.status)} h="2" w="full" />
 
-                                    <HStack justify="between" mt="4" pt="4" borderTop="1px solid" borderColor="gray.100">
-                                        <Text fontSize="sm" color="muted">
-                                            終了予定: {auction.endTime?.substring(0, 5)}
+                                    <Box p="6">
+                                        <HStack justify="between" mb="4">
+                                            <span className={css({
+                                                fontSize: 'xs',
+                                                fontWeight: 'bold',
+                                                px: '2.5',
+                                                py: '1',
+                                                borderRadius: 'full',
+                                                bg: getStatusBg(auction.status),
+                                                color: getStatusTextColor(auction.status)
+                                            })}>
+                                                {auction.status === 'in_progress' ? '🔥 ' + t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus] || 'scheduled')}
+                                            </span>
+                                            <Text fontSize="sm" className={css({ color: 'gray.500' })}>{auction.auctionDate}</Text>
+                                        </HStack>
+
+                                        <Text as="h3" fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900', mb: '2', lineClamp: 1 })}>
+                                            {getVenueName(auction.venueId)}
                                         </Text>
-                                        <Text className={css({ color: 'indigo.600', fontWeight: 'bold', display: 'flex', alignItems: 'center', _groupHover: { transform: 'translateX(4px)' }, transition: 'transform' })}>
-                                            会場へ入る <span className={css({ ml: '1' })}>&rarr;</span>
+
+                                        <Stack spacing="2" mt="4">
+                                            <HStack className={css({ fontSize: 'sm', color: 'gray.600' })}>
+                                                <span className={css({ w: '5', textAlign: 'center' })}>⏰</span>
+                                                <Text>
+                                                    {auction.startTime ? auction.startTime.substring(0, 5) : '--:--'} - {auction.endTime ? auction.endTime.substring(0, 5) : '--:--'}
+                                                </Text>
+                                            </HStack>
+                                            {auction.endTime && (
+                                                <HStack className={css({ fontSize: 'sm', color: 'gray.600' })}>
+                                                    <span className={css({ w: '5', textAlign: 'center' })}>🏁</span>
+                                                    <Text>{t('Public.Auctions.end_time_prefix')} {auction.endTime?.substring(0, 5)}</Text>
+                                                </HStack>
+                                            )}
+                                        </Stack>
+                                    </Box>
+
+                                    <Box px="6" py="4" bg="gray.50" borderTop="1px solid" borderColor="gray.100" display="flex" justifyContent="flex-end">
+                                        <Text className={css({ color: 'indigo.600', fontWeight: 'bold', fontSize: 'sm', display: 'flex', alignItems: 'center' })}>
+                                            {t('Public.Auctions.enter_venue')} <span className={css({ ml: '1' })}>&rarr;</span>
                                         </Text>
-                                    </HStack>
+                                    </Box>
                                 </Card>
                             </Link>
                         ))}
                     </Box>
                 )}
-            </Box>
+            </Stack>
         </Box>
     );
 }

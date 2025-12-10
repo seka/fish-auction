@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { getMyPurchases, getMyAuctions, type Purchase, type AuctionSummary } from '@/src/api/buyer_mypage';
+import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
-import { AUCTION_STATUS_KEYS, AuctionStatus, ITEM_STATUS_KEYS } from '@/src/core/assets/status';
+import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -18,7 +18,11 @@ export default function MyPage() {
     const router = useRouter();
 
     // 購入履歴を取得
-    const { data: purchases = [], isLoading: isPurchasesLoading } = useQuery({
+    // Fetch purchase history using the query hook
+    const {
+        data: purchases = [],
+        isLoading: isPurchasesLoading
+    } = useQuery({
         queryKey: ['purchases'],
         queryFn: getMyPurchases,
     });
@@ -87,26 +91,20 @@ export default function MyPage() {
                             onClick={() => setActiveTab('purchases')}
                             className={css({ transition: 'all 0.2s', _hover: { color: 'blue.600' } })}
                         >
-                            {/* 購入履歴 -> Purchase History? No, better use Common.purchase_history if widely used, or keep specific for now? 
-                               Actually user asked for "common" text. "Purchase History" might be common.
-                               For now, let's stick to simple "list" or specific tabs.
-                               Let's assume "purchase_history" and "participating_auctions" are common enough or I should add them.
-                               I will add them to text.ts.
-                            */}
-                            {t(COMMON_TEXT_KEYS.purchase_history)}
+                            {t('Public.MyPage.purchase_history')}
                         </Box>
                         <Box
-                            px="6"
-                            py="3"
-                            cursor="pointer"
-                            borderBottom="2px solid"
-                            borderColor={activeTab === 'auctions' ? 'blue.600' : 'transparent'}
-                            color={activeTab === 'auctions' ? 'blue.600' : 'gray.500'}
-                            fontWeight={activeTab === 'auctions' ? 'bold' : 'normal'}
+                            as="button"
+                            px="4"
+                            py="2"
+                            fontWeight={activeTab === 'auctions' ? 'bold' : 'medium'}
+                            color={activeTab === 'auctions' ? 'indigo.600' : 'gray.500'}
+                            borderBottom={activeTab === 'auctions' ? '2px solid' : 'none'}
+                            borderColor="indigo.600"
                             onClick={() => setActiveTab('auctions')}
-                            className={css({ transition: 'all 0.2s', _hover: { color: 'blue.600' } })}
+                            className={css({ transition: 'all 0.2s', _hover: { color: 'indigo.600' } })}
                         >
-                            {t(COMMON_TEXT_KEYS.participating_auctions)}
+                            {t('Public.MyPage.participating_auctions')}
                         </Box>
                     </HStack>
                 </Box>
@@ -115,21 +113,18 @@ export default function MyPage() {
                 {activeTab === 'purchases' ? (
                     <Stack spacing="4">
                         <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
-                            {t(COMMON_TEXT_KEYS.purchase_history)}
+                            {t('Public.MyPage.purchase_history')}
                         </Text>
                         {purchases.length === 0 ? (
                             <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text className={css({ color: 'gray.500' })}>{t(COMMON_TEXT_KEYS.no_data)}</Text>
+                                <Text className={css({ color: 'gray.500' })}>{t('Public.MyPage.no_history')}</Text>
                             </Box>
                         ) : (
                             purchases.map((purchase) => (
                                 <Card
                                     key={purchase.id}
-                                    p="6"
-                                    borderWidth="1px"
-                                    borderColor="gray.200"
-                                    bg="white"
-                                    className={css({ _hover: { shadow: 'md' }, transition: 'all 0.2s' })}
+                                    padding="lg"
+                                    className={css({ _hover: { shadow: 'md' }, transition: 'all 0.2s', borderWidth: '1px', borderColor: 'gray.200', bg: 'white' })}
                                 >
                                     <Box display="flex" justifyContent="space-between" alignItems="start">
                                         <Box>
@@ -145,10 +140,10 @@ export default function MyPage() {
                                                 {purchase.fishType}
                                             </Text>
                                             <Text className={css({ color: 'gray.700' })} mb="2">
-                                                数量: <Text as="span" fontWeight="bold">{purchase.quantity}</Text> {purchase.unit}
+                                                {t('Public.MyPage.quantity')}: <Text as="span" fontWeight="bold">{purchase.quantity}</Text> {purchase.unit}
                                             </Text>
                                             <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-                                                セリID: {purchase.auctionId} | 開催日: {purchase.auctionDate}
+                                                {t('Public.MyPage.auction_id')}: {purchase.auctionId} | {t('Public.MyPage.date')}: {purchase.auctionDate}
                                             </Text>
                                         </Box>
                                         <Box textAlign="right">
@@ -164,63 +159,61 @@ export default function MyPage() {
                 ) : (
                     <Stack spacing="4">
                         <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
-                            {t(COMMON_TEXT_KEYS.participating_auctions)}
+                            {t('Public.MyPage.participating_auctions')}
                         </Text>
                         {auctions.length === 0 ? (
                             <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text className={css({ color: 'gray.500' })}>{t(COMMON_TEXT_KEYS.no_data)}</Text>
+                                <Text className={css({ color: 'gray.500' })}>{t('Public.MyPage.no_participating')}</Text>
                             </Box>
                         ) : (
                             auctions.map((auction) => (
-                                <Card
-                                    key={auction.id}
-                                    p="6"
-                                    borderWidth="1px"
-                                    borderColor="gray.200"
-                                    bg="white"
-                                    className={css({ _hover: { shadow: 'md' }, transition: 'all 0.2s' })}
-                                >
-                                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                                        <Box>
-                                            <HStack spacing="3" mb="2">
-                                                <Box bg="blue.100" color="blue.800" fontWeight="bold" px="3" py="1" borderRadius="md" fontSize="xs">
-                                                    セリ #{auction.id}
-                                                </Box>
-                                                <Box
-                                                    px="3"
-                                                    py="1"
-                                                    borderRadius="full"
-                                                    fontSize="xs"
-                                                    fontWeight="bold"
-                                                    bg={auction.status === 'in_progress' ? 'orange.100' : auction.status === 'completed' ? 'gray.100' : 'blue.100'}
-                                                    color={auction.status === 'in_progress' ? 'orange.700' : auction.status === 'completed' ? 'gray.700' : 'blue.700'}
-                                                >
-                                                    {auction.status === 'in_progress' ? t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus])}
-                                                </Box>
-                                            </HStack>
-                                            <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
-                                                {auction.auctionDate}
-                                            </Text>
-                                            {auction.startTime && auction.endTime && (
-                                                <Text fontSize="sm" className={css({ color: 'gray.700' })}>
-                                                    {auction.startTime.substring(0, 5)} - {auction.endTime.substring(0, 5)}
+                                <Link key={auction.id} href={`/auctions/${auction.id}`}>
+                                    <Card
+                                        padding="lg"
+                                        className={css({ _hover: { shadow: 'md' }, transition: 'all 0.2s', borderWidth: '1px', borderColor: 'gray.200', bg: 'white', display: 'block' })}
+                                    >
+                                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                                            <Box>
+                                                <HStack spacing="3" mb="2">
+                                                    <Box bg="blue.100" color="blue.800" fontWeight="bold" px="3" py="1" borderRadius="md" fontSize="xs">
+                                                        {t('Public.MyPage.auction_id')} #{auction.id}
+                                                    </Box>
+                                                    <Box
+                                                        px="3"
+                                                        py="1"
+                                                        borderRadius="full"
+                                                        fontSize="xs"
+                                                        fontWeight="bold"
+                                                        bg={auction.status === 'in_progress' ? 'orange.100' : auction.status === 'completed' ? 'gray.100' : 'blue.100'}
+                                                        color={auction.status === 'in_progress' ? 'orange.700' : auction.status === 'completed' ? 'gray.700' : 'blue.700'}
+                                                    >
+                                                        {auction.status === 'in_progress' ? t(AUCTION_STATUS_KEYS['in_progress']) : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus])}
+                                                    </Box>
+                                                </HStack>
+                                                <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
+                                                    {auction.auctionDate}
                                                 </Text>
-                                            )}
-                                        </Box>
-                                        <Link href={`/auctions/${auction.id}`}>
+                                                {auction.startTime && auction.endTime && (
+                                                    <Text fontSize="sm" className={css({ color: 'gray.700' })}>
+                                                        {auction.startTime.substring(0, 5)} - {auction.endTime.substring(0, 5)}
+                                                    </Text>
+                                                )}
+                                            </Box>
                                             <Button
-                                                className={css({ bg: 'blue.600', _hover: { bg: 'blue.700' }, color: 'white' })}
+                                                variant="primary"
+                                                size="sm"
                                             >
-                                                詳細を見る
+                                                {t('Public.MyPage.view_detail')}
                                             </Button>
-                                        </Link>
-                                    </Box>
-                                </Card>
+                                        </Box>
+                                    </Card>
+                                </Link>
                             ))
                         )}
                     </Stack>
                 )}
-            </Box>
-        </Box>
+
+            </Box >
+        </Box >
     );
 }
