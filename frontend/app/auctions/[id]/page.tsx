@@ -223,6 +223,17 @@ export default function AuctionDetailPage({ params }: { params: { id: string } }
                     </Card>
                 )}
 
+                <Box className={css({ mb: '8', p: '6', bg: 'blue.50', border: '1px solid', borderColor: 'blue.200', borderRadius: 'xl' })}>
+                    <Text variant="h2" className={css({ fontSize: 'lg', fontWeight: 'bold', color: 'blue.900', mb: '2' })}>{t('Public.AuctionDetail.Usage.title')}</Text>
+                    <ol className={css({ listStyleType: 'decimal', listStylePosition: 'inside', spaceY: '1', fontSize: 'sm', color: 'blue.800' })}>
+                        <li>{t('Public.AuctionDetail.Usage.step1')}</li>
+                        <li>{t('Public.AuctionDetail.Usage.step2')}</li>
+                        <li>{t('Public.AuctionDetail.Usage.step3')}</li>
+                        <li>{t('Public.AuctionDetail.Usage.step4')}</li>
+                        <li>{t('Public.AuctionDetail.Usage.step5')}</li>
+                    </ol>
+                </Box>
+
                 <Box display="grid" gridTemplateColumns={{ base: 'repeat(1, 1fr)', lg: 'repeat(3, 1fr)' }} gap="8">
                     {/* Item List */}
                     <Box gridColumn={{ base: '1', lg: 'span 2' }}>
