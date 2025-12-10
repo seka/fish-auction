@@ -3,47 +3,50 @@
 import Link from 'next/link';
 import { css } from 'styled-system/css';
 import { Box, HStack, Text, Card } from '@/src/core/ui';
+import { useTranslations } from 'next-intl';
 
 export default function AdminDashboard() {
+    const t = useTranslations();
+
     const menuItems = [
         {
-            title: '漁師管理',
-            description: '漁師の登録・一覧表示',
+            title: t('Admin.Dashboard.fishermen_title'),
+            description: t('Admin.Dashboard.fishermen_desc'),
             href: '/admin/fishermen',
-            icon: '👨‍🌾',
-            color: 'indigo',
-        },
-        {
-            title: '中買人管理',
-            description: '中買人の登録・一覧表示',
-            href: '/admin/buyers',
-            icon: '👔',
-            color: 'green',
-        },
-        {
-            title: '出品管理',
-            description: 'セリへの出品登録',
-            href: '/admin/items',
-            icon: '🐟',
-            color: 'orange',
-        },
-        {
-            title: '会場管理',
-            description: 'セリ会場の登録・管理',
-            href: '/admin/venues',
-            icon: '🏢',
+            icon: '🎣',
             color: 'blue',
         },
         {
-            title: 'セリ管理',
-            description: 'セリの作成・スケジュール管理',
-            href: '/admin/auctions',
-            icon: '📅',
+            title: t('Admin.Dashboard.buyers_title'),
+            description: t('Admin.Dashboard.buyers_desc'),
+            href: '/admin/buyers',
+            icon: '🛒',
+            color: 'green',
+        },
+        {
+            title: t('Admin.Dashboard.items_title'),
+            description: t('Admin.Dashboard.items_desc'),
+            href: '/admin/items',
+            icon: '🐟',
+            color: 'indigo',
+        },
+        {
+            title: t('Admin.Dashboard.venues_title'),
+            description: t('Admin.Dashboard.venues_desc'),
+            href: '/admin/venues',
+            icon: '📍',
             color: 'purple',
         },
         {
-            title: '請求書発行',
-            description: '落札後の請求書発行',
+            title: t('Admin.Dashboard.auctions_title'),
+            description: t('Admin.Dashboard.auctions_desc'),
+            href: '/admin/auctions',
+            icon: '🔨',
+            color: 'orange',
+        },
+        {
+            title: t('Admin.Dashboard.invoice_title'),
+            description: t('Admin.Dashboard.invoice_desc'),
             href: '/invoice',
             icon: '💰',
             color: 'yellow',

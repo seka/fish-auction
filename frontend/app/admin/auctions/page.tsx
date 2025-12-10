@@ -29,38 +29,38 @@ export default function AuctionsPage() {
     };
 
     return (
-        <Box maxW="6xl" mx="auto" p="6">
+        <Box maxW="5xl" mx="auto" p="6">
             <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
-                セリ管理
+                {t('Admin.Auctions.title')}
             </Text>
 
             {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
-                    <Text fontWeight="bold">通知</Text>
+                    <Text fontWeight="bold">{t('Common.notification')}</Text>
                     <Text>{state.message}</Text>
                 </Box>
             )}
 
-            <Box display="grid" gridTemplateColumns={{ base: '1fr', lg: '1fr 2fr' }} gap="8">
+            <Box display="grid" gridTemplateColumns={{ base: '1fr', md: '3fr 1fr' }} gap="8" className={css({ md: { gridTemplateColumns: '1fr 2fr' } })}>
                 {/* Form Section */}
-                <Box>
+                <Box className={css({ md: { gridColumn: '1 / 2' } })}>
                     <Card padding="lg" className={css({ position: 'sticky', top: '6' })}>
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
-                                {state.editingAuction ? 'セリ編集' : '新規セリ登録'}
+                                {state.editingAuction ? t('Admin.Auctions.edit_title') : t('Admin.Auctions.register_title')}
                             </Text>
                         </HStack>
                         <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        会場
+                                        {t('Admin.Auctions.venue')}
                                     </Text>
                                     <Select
-                                        {...form.register('venueId', { valueAsNumber: true })}
+                                        {...form.register('venueId')}
                                     >
-                                        <option value="">会場を選択してください</option>
+                                        <option value="">{t('Admin.Auctions.placeholder_select_venue')}</option>
                                         {state.venues.map((venue) => (
                                             <option key={venue.id} value={venue.id}>
                                                 {venue.name}
@@ -73,49 +73,41 @@ export default function AuctionsPage() {
                                 </Box>
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        開催日
+                                        {t('Admin.Auctions.date')}
                                     </Text>
                                     <Input
                                         type="date"
                                         {...form.register('auctionDate')}
+                                        error={!!form.errors.auctionDate}
                                     />
                                     {form.errors.auctionDate && (
                                         <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.auctionDate.message}</Text>
                                     )}
                                 </Box>
-                                <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="4">
-                                    <Box>
+                                <HStack spacing="4">
+                                    <Box flex="1">
                                         <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                            開始時間
+                                            {t('Admin.Auctions.start_time')}
                                         </Text>
                                         <Input
                                             type="time"
                                             {...form.register('startTime')}
+                                            error={!!form.errors.startTime}
                                         />
                                     </Box>
-                                    <Box>
+                                    <Box flex="1">
                                         <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                            終了時間
+                                            {t('Admin.Auctions.end_time')}
                                         </Text>
                                         <Input
                                             type="time"
                                             {...form.register('endTime')}
+                                            error={!!form.errors.endTime}
                                         />
                                     </Box>
-                                </Box>
+                                </HStack>
 
                                 <HStack spacing="2" pt="4">
-                                    {state.editingAuction && (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={actions.onCancelEdit}
-                                            disabled={state.isCreating || state.isUpdating}
-                                            className={css({ flex: '1' })}
-                                        >
-                                            {t(COMMON_TEXT_KEYS.cancel)}
-                                        </Button>
-                                    )}
                                     <Button
                                         type="submit"
                                         disabled={state.isCreating || state.isUpdating}
@@ -125,6 +117,15 @@ export default function AuctionsPage() {
                                     >
                                         {state.editingAuction ? (state.isUpdating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.update)) : (state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register))}
                                     </Button>
+                                    {state.editingAuction && (
+                                        <Button
+                                            type="button"
+                                            onClick={actions.onCancelEdit}
+                                            variant="outline"
+                                        >
+                                            {t(COMMON_TEXT_KEYS.cancel)}
+                                        </Button>
+                                    )}
                                 </HStack>
                             </Stack>
                         </form>
@@ -132,18 +133,18 @@ export default function AuctionsPage() {
                 </Box>
 
                 {/* List Section */}
-                <Box>
+                <Box className={css({ md: { gridColumn: '2 / 3' } })}>
                     <Card padding="none" overflow="hidden">
-                        <Box p="6" borderBottom="1px solid" borderColor="gray.200" display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="4">
-                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">セリ一覧</Text>
+                        <Box p="6" borderBottom="1px solid" borderColor="gray.200" bg="white" display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="4">
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">{t('Admin.Auctions.list_title')}</Text>
                             <HStack spacing="2">
-                                <Text as="label" fontSize="sm" className={css({ color: 'gray.600' })}>会場絞り込み:</Text>
+                                <Text as="label" fontSize="sm" className={css({ color: 'gray.600' })}>{t('Admin.Auctions.filter_venue')}</Text>
                                 <Select
                                     value={state.filterVenueId || ''}
                                     onChange={(e) => actions.setFilterVenueId(e.target.value ? Number(e.target.value) : undefined)}
                                     className={css({ width: 'auto', py: '1' })}
                                 >
-                                    <option value="">すべて</option>
+                                    <option value="">{t('Admin.Auctions.filter_all')}</option>
                                     {state.venues.map((venue) => (
                                         <option key={venue.id} value={venue.id}>
                                             {venue.name}
@@ -161,10 +162,10 @@ export default function AuctionsPage() {
                                 <Table>
                                     <Thead>
                                         <Tr>
-                                            <Th>開催日 / 時間</Th>
-                                            <Th>会場</Th>
-                                            <Th>ステータス</Th>
-                                            <Th className={css({ textAlign: 'right' })}>操作</Th>
+                                            <Th>{t('Admin.Auctions.date_time')}</Th>
+                                            <Th>{t('Admin.Auctions.venue')}</Th>
+                                            <Th>{t('Admin.Auctions.status')}</Th>
+                                            <Th className={css({ textAlign: 'right' })}>{t('Admin.Auctions.action')}</Th>
                                         </Tr>
                                     </Thead>
                                     <Tbody>
@@ -193,7 +194,7 @@ export default function AuctionsPage() {
                                                                     disabled={state.isUpdatingStatus}
                                                                     className={css({ color: 'green.600', bg: 'green.50', borderColor: 'transparent', _hover: { bg: 'green.100', color: 'green.900' } })}
                                                                 >
-                                                                    開始
+                                                                    {t('Admin.Auctions.start')}
                                                                 </Button>
                                                             )}
                                                             {auction.status === 'in_progress' && (
@@ -203,7 +204,7 @@ export default function AuctionsPage() {
                                                                     disabled={state.isUpdatingStatus}
                                                                     className={css({ color: 'blue.600', bg: 'blue.50', borderColor: 'transparent', _hover: { bg: 'blue.100', color: 'blue.900' } })}
                                                                 >
-                                                                    終了
+                                                                    {t('Admin.Auctions.finish')}
                                                                 </Button>
                                                             )}
                                                             <Button size="sm" variant="outline" onClick={() => actions.onEdit(auction)}>

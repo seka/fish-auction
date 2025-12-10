@@ -11,12 +11,12 @@ export default function AdminFishermenPage() {
     return (
         <Box maxW="5xl" mx="auto" p="6">
             <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
-                漁師管理
+                {t('Admin.Fishermen.title')}
             </Text>
 
             {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" color="blue.700" p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
-                    <Text fontWeight="bold">通知</Text>
+                    <Text fontWeight="bold">{t('Common.notification')}</Text>
                     <Text>{state.message}</Text>
                 </Box>
             )}
@@ -28,19 +28,19 @@ export default function AdminFishermenPage() {
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
-                                新規漁師登録
+                                {t('Admin.Fishermen.register_title')}
                             </Text>
                         </HStack>
                         <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        氏名
+                                        {t('Admin.Fishermen.name')}
                                     </Text>
                                     <Input
                                         type="text"
                                         {...form.register('name')}
-                                        placeholder="例: 山田 太郎"
+                                        placeholder={t('Admin.Fishermen.placeholder_name')}
                                         error={!!form.errors.name}
                                     />
                                     {form.errors.name && (
@@ -66,7 +66,7 @@ export default function AdminFishermenPage() {
                 <Box className={css({ md: { gridColumn: '2 / 3' } })}>
                     <Card padding="none" overflow="hidden">
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
-                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">漁師一覧</Text>
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">{t('Admin.Fishermen.list_title')}</Text>
                         </Box>
                         {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>

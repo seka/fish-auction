@@ -11,12 +11,12 @@ export default function AdminItemsPage() {
     return (
         <Box maxW="6xl" mx="auto" p="6">
             <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
-                出品管理
+                {t('Admin.Items.title')}
             </Text>
 
             {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
-                    <Text fontWeight="bold">通知</Text>
+                    <Text fontWeight="bold">{t('Common.notification')}</Text>
                     <Text>{state.message}</Text>
                 </Box>
             )}
@@ -25,19 +25,19 @@ export default function AdminItemsPage() {
                 <HStack mb="6">
                     <Box w="2" h="6" bg="orange.500" mr="3" borderRadius="full" />
                     <Text as="h2" variant="h4" className={css({ color: 'orange.900' })} fontWeight="bold">
-                        新規出品登録
+                        {t('Admin.Items.register_title')}
                     </Text>
                 </HStack>
                 <form onSubmit={actions.onSubmit}>
                     <Box display="grid" gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap="6">
                         <Box className={css({ md: { gridColumn: 'span 2' } })}>
                             <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                セリ
+                                {t('Admin.Items.auction')}
                             </Text>
                             <Select
                                 {...form.register('auctionId')}
                             >
-                                <option value="">セリを選択してください</option>
+                                <option value="">{t('Admin.Items.placeholder_select_auction')}</option>
                                 {state.auctions.map((auction) => (
                                     <option key={auction.id} value={auction.id}>
                                         {auction.auctionDate} {auction.startTime?.substring(0, 5)} - {auction.endTime?.substring(0, 5)} (ID: {auction.id})
@@ -50,12 +50,12 @@ export default function AdminItemsPage() {
                         </Box>
                         <Box>
                             <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                漁師
+                                {t('Admin.Items.fisherman')}
                             </Text>
                             <Select
                                 {...form.register('fishermanId')}
                             >
-                                <option value="">漁師を選択してください</option>
+                                <option value="">{t('Admin.Items.placeholder_select_fisherman')}</option>
                                 {state.fishermen.map((fisherman) => (
                                     <option key={fisherman.id} value={fisherman.id}>
                                         {fisherman.name}
@@ -68,12 +68,12 @@ export default function AdminItemsPage() {
                         </Box>
                         <Box>
                             <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                魚種
+                                {t('Admin.Items.fish_type')}
                             </Text>
                             <Input
                                 type="text"
                                 {...form.register('fishType')}
-                                placeholder="例: マグロ"
+                                placeholder={t('Admin.Items.placeholder_fish_type')}
                                 error={!!form.errors.fishType}
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
@@ -83,12 +83,12 @@ export default function AdminItemsPage() {
                         </Box>
                         <Box>
                             <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                数量
+                                {t('Admin.Items.quantity')}
                             </Text>
                             <Input
                                 type="number"
                                 {...form.register('quantity')}
-                                placeholder="例: 10"
+                                placeholder={t('Admin.Items.placeholder_quantity')}
                                 error={!!form.errors.quantity}
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />
@@ -98,12 +98,12 @@ export default function AdminItemsPage() {
                         </Box>
                         <Box>
                             <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                単位
+                                {t('Admin.Items.unit')}
                             </Text>
                             <Input
                                 type="text"
                                 {...form.register('unit')}
-                                placeholder="例: kg, 匹, 箱"
+                                placeholder={t('Admin.Items.placeholder_unit')}
                                 error={!!form.errors.unit}
                                 className={css({ _focus: { borderColor: 'orange.500', ringColor: 'orange.500' } })}
                             />

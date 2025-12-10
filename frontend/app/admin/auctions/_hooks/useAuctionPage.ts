@@ -31,16 +31,16 @@ export const useAuctionPage = () => {
 
             if (editingAuction) {
                 await updateAuction({ id: editingAuction.id, data: payload });
-                setMessage('セリ情報を更新しました');
+                setMessage(t('Admin.Auctions.success_update'));
                 setEditingAuction(null);
             } else {
                 await createAuction(payload);
-                setMessage('セリを作成しました');
+                setMessage(t('Admin.Auctions.success_create'));
             }
             reset();
         } catch (e) {
             console.error(e);
-            setMessage('エラーが発生しました');
+            setMessage(t('Common.error_occurred'));
         }
     };
 
@@ -59,13 +59,13 @@ export const useAuctionPage = () => {
     };
 
     const onDelete = async (id: number) => {
-        if (confirm('本当に削除しますか？')) {
+        if (confirm(t('Common.confirm_delete'))) {
             try {
                 await deleteAuction(id);
-                setMessage('セリを削除しました');
+                setMessage(t('Admin.Auctions.success_delete'));
             } catch (e) {
                 console.error(e);
-                setMessage('削除に失敗しました');
+                setMessage(t('Admin.Auctions.fail_delete'));
             }
         }
     };
@@ -73,10 +73,10 @@ export const useAuctionPage = () => {
     const onStatusChange = async (id: number, status: string) => {
         try {
             await updateStatus({ id, status });
-            setMessage(`ステータスを ${status} に更新しました`);
+            setMessage(t('Admin.Auctions.success_status_update'));
         } catch (e) {
             console.error(e);
-            setMessage('ステータス更新に失敗しました');
+            setMessage(t('Admin.Auctions.fail_status_update'));
         }
     };
 

@@ -11,12 +11,12 @@ export default function AdminBuyersPage() {
     return (
         <Box maxW="5xl" mx="auto" p="6">
             <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
-                中買人管理
+                {t('Admin.Buyers.title')}
             </Text>
 
             {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" className={css({ color: 'blue.700' })} p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
-                    <Text fontWeight="bold">通知</Text>
+                    <Text fontWeight="bold">{t('Common.notification')}</Text>
                     <Text>{state.message}</Text>
                 </Box>
             )}
@@ -28,19 +28,19 @@ export default function AdminBuyersPage() {
                         <HStack mb="6">
                             <Box w="2" h="6" bg="green.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'green.900' })} fontWeight="bold">
-                                新規中買人登録
+                                {t('Admin.Buyers.register_title')}
                             </Text>
                         </HStack>
                         <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        氏名
+                                        {t('Admin.Buyers.name')}
                                     </Text>
                                     <Input
                                         type="text"
                                         {...form.register('name')}
-                                        placeholder="例: 鈴木 花子"
+                                        placeholder={t('Admin.Buyers.placeholder_name')}
                                         error={!!form.errors.name}
                                         className={css({ _focus: { borderColor: 'green.500', ringColor: 'green.500' } })}
                                     />
@@ -67,7 +67,7 @@ export default function AdminBuyersPage() {
                 <Box className={css({ md: { gridColumn: '2 / 3' } })}>
                     <Card padding="none" overflow="hidden">
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
-                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">中買人一覧</Text>
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">{t('Admin.Buyers.list_title')}</Text>
                         </Box>
                         {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>

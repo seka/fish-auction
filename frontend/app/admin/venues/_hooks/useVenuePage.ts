@@ -22,16 +22,16 @@ export const useVenuePage = () => {
         try {
             if (editingVenue) {
                 await updateVenue({ id: editingVenue.id, data });
-                setMessage('会場を更新しました');
+                setMessage(t('Admin.Venues.success_update'));
                 setEditingVenue(null);
             } else {
                 await createVenue(data);
-                setMessage('会場を作成しました');
+                setMessage(t('Admin.Venues.success_create'));
             }
             reset();
         } catch (e) {
             console.error(e);
-            setMessage('エラーが発生しました');
+            setMessage(t('Common.error_occurred'));
         }
     };
 
@@ -48,13 +48,13 @@ export const useVenuePage = () => {
     };
 
     const onDelete = async (id: number) => {
-        if (confirm('本当に削除しますか？')) {
+        if (confirm(t('Common.confirm_delete'))) {
             try {
                 await deleteVenue(id);
-                setMessage('会場を削除しました');
+                setMessage(t('Admin.Venues.success_delete'));
             } catch (e) {
                 console.error(e);
-                setMessage('削除に失敗しました');
+                setMessage(t('Admin.Venues.fail_delete'));
             }
         }
     };

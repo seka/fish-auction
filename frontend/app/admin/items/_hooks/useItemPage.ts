@@ -28,11 +28,11 @@ export const useItemPage = () => {
                 quantity: parseInt(data.quantity),
                 unit: data.unit,
             });
-            setMessage('出品を登録しました');
+            setMessage(t('Admin.Items.success_register'));
             reset();
         } catch (e) {
             console.error(e);
-            setMessage('登録に失敗しました');
+            setMessage(t('Admin.Items.fail_register'));
         }
     };
 

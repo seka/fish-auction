@@ -19,11 +19,11 @@ export const useFishermanPage = () => {
     const onSubmit = async (data: FishermanFormData) => {
         try {
             await createFisherman({ name: data.name });
-            setMessage('漁師を登録しました');
+            setMessage(t('Admin.Fishermen.success_register'));
             reset();
         } catch (e) {
             console.error(e);
-            setMessage('登録に失敗しました');
+            setMessage(t('Admin.Fishermen.fail_register'));
         }
     };
 

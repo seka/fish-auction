@@ -19,11 +19,11 @@ export const useBuyerPage = () => {
     const onSubmit = async (data: BuyerFormData) => {
         try {
             await createBuyer({ name: data.name });
-            setMessage('中買人を登録しました');
+            setMessage(t('Admin.Buyers.success_register'));
             reset();
         } catch (e) {
             console.error(e);
-            setMessage('登録に失敗しました');
+            setMessage(t('Admin.Buyers.fail_register'));
         }
     };
 

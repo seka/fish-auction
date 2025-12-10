@@ -40,12 +40,12 @@ export default function AdminVenuesPage() {
     return (
         <Box maxW="5xl" mx="auto" p="6">
             <Text as="h1" variant="h2" className={css({ color: 'gray.800' })} mb="8" pb="4" borderBottom="1px solid" borderColor="gray.200">
-                会場管理
+                {t('Admin.Venues.title')}
             </Text>
 
             {state.message && (
                 <Box bg="blue.50" borderLeft="4px solid" borderColor="blue.500" color="blue.700" p="4" mb="8" borderRadius="sm" shadow="sm" role="alert">
-                    <Text fontWeight="bold">通知</Text>
+                    <Text fontWeight="bold">{t('Common.notification')}</Text>
                     <Text>{state.message}</Text>
                 </Box>
             )}
@@ -57,19 +57,19 @@ export default function AdminVenuesPage() {
                         <HStack mb="6">
                             <Box w="2" h="6" bg="indigo.500" mr="3" borderRadius="full" />
                             <Text as="h2" variant="h4" className={css({ color: 'indigo.900' })} fontWeight="bold">
-                                {state.editingVenue ? '会場編集' : '新規会場登録'}
+                                {state.editingVenue ? t('Admin.Venues.edit_title') : t('Admin.Venues.register_title')}
                             </Text>
                         </HStack>
                         <form onSubmit={actions.onSubmit}>
                             <Stack spacing="4">
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        会場名
+                                        {t('Admin.Venues.name')}
                                     </Text>
                                     <Input
                                         type="text"
                                         {...form.register('name')}
-                                        placeholder="例: 豊洲市場"
+                                        placeholder={t('Admin.Venues.placeholder_name')}
                                         error={!!form.errors.name}
                                     />
                                     {form.errors.name && (
@@ -78,22 +78,22 @@ export default function AdminVenuesPage() {
                                 </Box>
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        所在地
+                                        {t('Admin.Venues.location')}
                                     </Text>
                                     <Input
                                         type="text"
                                         {...form.register('location')}
-                                        placeholder="例: 東京都江東区..."
+                                        placeholder={t('Admin.Venues.placeholder_location')}
                                     />
                                 </Box>
                                 <Box>
                                     <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
-                                        説明
+                                        {t('Admin.Venues.description')}
                                     </Text>
                                     <Textarea
                                         {...form.register('description')}
                                         rows={3}
-                                        placeholder="会場の説明..."
+                                        placeholder={t('Admin.Venues.placeholder_description')}
                                     />
                                 </Box>
 
@@ -126,10 +126,10 @@ export default function AdminVenuesPage() {
                 <Box className={css({ md: { gridColumn: '2 / 3' } })}>
                     <Card padding="none" overflow="hidden">
                         <Box p="6" borderBottom="1px solid" borderColor="gray.200">
-                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">会場一覧</Text>
+                            <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">{t('Admin.Venues.list_title')}</Text>
                         </Box>
                         {state.isLoading ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>読み込み中...</Box>
+                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : state.venues.length === 0 ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
                         ) : (
