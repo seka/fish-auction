@@ -67,8 +67,8 @@ export default function AdminDashboard() {
     return (
         <Box className={css({ maxW: '7xl', mx: 'auto', p: '6' })}>
             <Box className={css({ mb: '8' })}>
-                <Text variant="h1" className={css({ fontSize: '3xl', fontWeight: 'bold', color: 'gray.800' })}>管理ダッシュボード</Text>
-                <Text className={css({ color: 'gray.600', mt: '2' })}>各管理メニューを選択してください</Text>
+                <Text variant="h1" className={css({ fontSize: '3xl', fontWeight: 'bold', color: 'gray.800' })}>{t('Admin.Dashboard.title')}</Text>
+                <Text className={css({ color: 'gray.600', mt: '2' })}>{t('Admin.Dashboard.subtitle')}</Text>
             </Box>
 
             <div className={css({ display: 'grid', gridTemplateColumns: { base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: '6' })}>
@@ -113,14 +113,14 @@ export default function AdminDashboard() {
             </div>
 
             <Box className={css({ mt: '12', p: '6', bg: 'blue.50', border: '1px solid', borderColor: 'blue.200', borderRadius: 'xl' })}>
-                <Text variant="h2" className={css({ fontSize: 'lg', fontWeight: 'bold', color: 'blue.900', mb: '2' })}>📌 使い方</Text>
+                <Text variant="h2" className={css({ fontSize: 'lg', fontWeight: 'bold', color: 'blue.900', mb: '2' })}>{t('Admin.Dashboard.usage_title')}</Text>
                 <ol className={css({ listStyleType: 'decimal', listStylePosition: 'inside', spaceY: '1', fontSize: 'sm', color: 'blue.800' })}>
-                    <li>まず「会場管理」でセリを行う会場を登録します</li>
-                    <li>「セリ管理」で開催日時を設定してセリを作成します</li>
-                    <li>「漁師管理」「中買人管理」で参加者を登録します</li>
-                    <li>「出品管理」で魚を登録してセリに出品します</li>
-                    <li>セリ会場で入札が行われます</li>
-                    <li>「請求書発行」で落札後の請求書を発行します</li>
+                    <li>{t('Admin.Dashboard.usage_step1')}</li>
+                    <li>{t('Admin.Dashboard.usage_step2')}</li>
+                    <li>{t('Admin.Dashboard.usage_step3')}</li>
+                    <li>{t('Admin.Dashboard.usage_step4')}</li>
+                    <li>{t('Admin.Dashboard.usage_step5')}</li>
+                    <li>{t('Admin.Dashboard.usage_step6')}</li>
                 </ol>
             </Box>
         </Box>
