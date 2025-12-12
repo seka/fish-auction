@@ -31,9 +31,9 @@ func (uc *listAuctionsUseCase) Execute(ctx context.Context, filters *repository.
 
 	for i := range auctions {
 		if auctions[i].ShouldBeCompleted() {
-			if err := uc.repo.UpdateStatus(ctx, auctions[i].ID, model.AuctionStatusCompleted); err == nil {
-				auctions[i].Status = model.AuctionStatusCompleted
-			}
+			// Update status in-memory only for display purposes
+			// This prevents N+1 UPDATE queries on every list request
+			auctions[i].Status = model.AuctionStatusCompleted
 		}
 	}
 
