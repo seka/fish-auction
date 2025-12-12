@@ -2,10 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   rewrites: async () => {
+    // Default to localhost for local development (yarn dev)
+    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080';
     return [
       {
         source: '/api/:path*',
-        destination: 'http://backend:8080/api/:path*',
+        destination: `${apiBaseUrl}/api/:path*`,
       },
     ];
   },

@@ -30,6 +30,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - API_BASE_URL=http://backend:8080
     volumes:
       - ./frontend:/app
       - /app/node_modules
