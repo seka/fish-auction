@@ -56,12 +56,9 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 		return nil, nil, fmt.Errorf("could not connect to database after retries: %w", err)
 	}
 
-	// Reset Database (As requested for dev environment: initialize every time)
-	_, err = db.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
-	if err != nil {
-		db.Close()
-		return nil, nil, fmt.Errorf("failed to reset database schema: %w", err)
-	}
+	// Run all migrations dynamically
+	// Note: We assume migration files are idempotent (e.g. using IF NOT EXISTS).
+	// This allows us to run them on every startup to ensure the DB schema is up to date without wiping data.
 
 	// Run all migrations dynamically
 	entries, err := migrations.FS.ReadDir(".")
