@@ -16,6 +16,7 @@ type Config struct {
 	ServerAddress string
 	RedisAddr     string
 	CacheTTL      time.Duration
+	AppEnv        string
 }
 
 func Load() (*Config, error) {
@@ -30,6 +31,7 @@ func Load() (*Config, error) {
 		ServerAddress: os.Getenv("SERVER_ADDRESS"),
 		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		CacheTTL:      time.Duration(cacheTTL) * time.Second,
+		AppEnv:        getEnv("APP_ENV", "production"),
 	}
 
 	if cfg.ServerAddress == "" {
