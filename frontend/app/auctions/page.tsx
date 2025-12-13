@@ -79,7 +79,7 @@ export default function AuctionsListPage() {
                     <Text as="h1" variant="h2" color="default">{t('Public.Auctions.title')}</Text>
                     <HStack mt="2" className={css({ fontSize: 'sm', color: 'gray.500' })}>
                         <Link href="/" className={css({ _hover: { color: 'indigo.600', textDecoration: 'underline' } })}>{t('Common.home_title')}</Link>
-                        <Text color="gray.300" mx="2">/</Text>
+                        <Text className={css({ color: 'gray.300' })} mx="2">/</Text>
                         <Text>{t('Public.Auctions.title')}</Text>
                     </HStack>
                 </Box>
