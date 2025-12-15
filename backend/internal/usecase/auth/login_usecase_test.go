@@ -14,6 +14,16 @@ type mockAdminRepository struct {
 	err   error
 }
 
+func (m *mockAdminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	if m.admin != nil && m.admin.ID == id {
+		return m.admin, nil
+	}
+	return nil, nil
+}
+
 func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
@@ -31,6 +41,10 @@ func (m *mockAdminRepository) Create(ctx context.Context, admin *entity.Admin) e
 
 func (m *mockAdminRepository) Count(ctx context.Context) (int, error) {
 	return 0, nil
+}
+
+func (m *mockAdminRepository) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
+	return nil
 }
 
 func TestLoginUseCase_Execute(t *testing.T) {
