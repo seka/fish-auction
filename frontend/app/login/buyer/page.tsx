@@ -10,12 +10,14 @@ import Link from 'next/link';
 import { Box, Text, Button, Input, Stack, Card } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function BuyerLoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [loginError, setLoginError] = useState('');
     const router = useRouter();
     const t = useTranslations();
+    const queryClient = useQueryClient();
     const { register, handleSubmit, formState: { errors } } = useForm<BuyerLoginFormData>({
         resolver: zodResolver(buyerLoginSchema),
     });
@@ -27,6 +29,7 @@ export default function BuyerLoginPage() {
         try {
             const buyer = await loginBuyer(data);
             if (buyer) {
+                await queryClient.invalidateQueries({ queryKey: ['currentBuyer'] });
                 router.push('/auctions');
             } else {
                 setLoginError(t('Public.Login.error_credentials'));

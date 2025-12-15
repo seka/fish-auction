@@ -1,20 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Box, HStack, Button, Text } from '@/src/core/ui'; // Button, Text等は src/core/ui からインポート
 import { useTranslations } from 'next-intl';
+import { getCurrentBuyer, logoutBuyer } from '@/src/api/buyer_auth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { css } from 'styled-system/css';
 
 export const PublicNavbar = () => {
     const pathname = usePathname();
+    const router = useRouter();
     const t = useTranslations();
 
-    // Placeholder for auth state - to be implemented properly later
-    const isLoggedIn = false;
-    const handleLogout = () => {
-        // Implement logout logic
-        console.log('Logout');
+    // Auth check
+    const { data: buyer } = useQuery({
+        queryKey: ['currentBuyer'],
+        queryFn: getCurrentBuyer,
+        retry: false,
+    });
+    const isLoggedIn = !!buyer;
+
+    const queryClient = useQueryClient();
+
+    const handleLogout = async () => {
+        await logoutBuyer();
+        queryClient.setQueryData(['currentBuyer'], null);
+        router.push('/login/buyer');
     };
 
     // 管理画面では表示しない
