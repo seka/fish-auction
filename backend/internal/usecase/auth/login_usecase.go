@@ -2,25 +2,40 @@ package auth
 
 import (
 	"context"
+
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginUseCase defines the interface for user authentication
 type LoginUseCase interface {
-	Execute(ctx context.Context, password string) (bool, error)
+	Execute(ctx context.Context, email, password string) (bool, error)
 }
 
 // loginUseCase handles user authentication
-type loginUseCase struct{}
+type loginUseCase struct {
+	adminRepo repository.AdminRepository
+}
 
 // NewLoginUseCase creates a new instance of LoginUseCase
-func NewLoginUseCase() LoginUseCase {
-	return &loginUseCase{}
+func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
+	return &loginUseCase{adminRepo: adminRepo}
 }
 
 // Execute authenticates a user with the provided password
-func (uc *loginUseCase) Execute(ctx context.Context, password string) (bool, error) {
-	if password == "admin-password" {
-		return true, nil
+func (uc *loginUseCase) Execute(ctx context.Context, email, password string) (bool, error) {
+	admin, err := uc.adminRepo.FindOneByEmail(ctx, email)
+	if err != nil {
+		return false, err
 	}
-	return false, nil
+	if admin == nil {
+		return false, nil // Not found
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(password))
+	if err != nil {
+		return false, nil // Invalid password
+	}
+
+	return true, nil
 }
