@@ -17,7 +17,9 @@ func TestBuyer_Validate(t *testing.T) {
 		{
 			name: "Valid",
 			buyer: &entity.Buyer{
-				Name: "John Doe",
+				Name:         "John Doe",
+				Organization: "Fish Corp",
+				ContactInfo:  "john@example.com",
 			},
 		},
 		{
