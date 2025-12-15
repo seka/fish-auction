@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS buyers (
     contact_info TEXT NOT NULL DEFAULT ''
 );
 
--- Authentications
+-- Authentications (Buyer Auth)
 CREATE TABLE IF NOT EXISTS authentications (
     id SERIAL PRIMARY KEY,
     buyer_id INT NOT NULL REFERENCES buyers(id) ON DELETE CASCADE,
@@ -29,6 +29,14 @@ CREATE TABLE IF NOT EXISTS authentications (
 CREATE INDEX IF NOT EXISTS idx_authentications_email ON authentications(email);
 CREATE INDEX IF NOT EXISTS idx_authentications_buyer_id ON authentications(buyer_id);
 
+-- Admins
+CREATE TABLE IF NOT EXISTS admins (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL CHECK (TRIM(email) <> ''),
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Venues
 CREATE TABLE IF NOT EXISTS venues (
     id SERIAL PRIMARY KEY,
@@ -39,9 +47,10 @@ CREATE TABLE IF NOT EXISTS venues (
 );
 
 -- Auctions
+-- Changed venue_id constraint to ON DELETE CASCADE (from 002)
 CREATE TABLE IF NOT EXISTS auctions (
     id SERIAL PRIMARY KEY,
-    venue_id INTEGER NOT NULL REFERENCES venues(id) ON DELETE RESTRICT,
+    venue_id INTEGER NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
     auction_date DATE NOT NULL,
     start_time TIME,
     end_time TIME,
@@ -56,10 +65,11 @@ CREATE INDEX IF NOT EXISTS idx_auctions_date ON auctions(auction_date);
 CREATE INDEX IF NOT EXISTS idx_auctions_status ON auctions(status);
 
 -- Auction Items
+-- Changed auction_id constraint to ON DELETE CASCADE (from 002)
 CREATE TABLE IF NOT EXISTS auction_items (
     id SERIAL PRIMARY KEY,
     fisherman_id INTEGER NOT NULL REFERENCES fishermen(id),
-    auction_id INTEGER REFERENCES auctions(id) ON DELETE RESTRICT,
+    auction_id INTEGER REFERENCES auctions(id) ON DELETE CASCADE,
     fish_type VARCHAR(255) NOT NULL CHECK (TRIM(fish_type) <> ''),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit VARCHAR(50) NOT NULL CHECK (TRIM(unit) <> ''),
@@ -78,21 +88,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Default Data
-INSERT INTO venues (name, location, description) 
-VALUES ('豊洲市場', '東京都江東区豊洲6-6-1', 'デフォルト会場')
-ON CONFLICT DO NOTHING;
+-- Indices for Transactions (from 005)
+CREATE INDEX IF NOT EXISTS idx_transactions_buyer_id ON transactions(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_item_id ON transactions(item_id);
 
--- Default Auction
-DO $$
-DECLARE
-    default_venue_id INTEGER;
-BEGIN
-    SELECT id INTO default_venue_id FROM venues WHERE name = '豊洲市場' LIMIT 1;
-    
-    IF default_venue_id IS NOT NULL THEN
-        INSERT INTO auctions (venue_id, auction_date, status)
-        VALUES (default_venue_id, CURRENT_DATE, 'in_progress')
-        ON CONFLICT DO NOTHING;
-    END IF;
-END $$;
+

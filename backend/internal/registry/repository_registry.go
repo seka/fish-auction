@@ -24,6 +24,7 @@ type Repository interface {
 	NewTransactionManager() repository.TransactionManager
 	NewVenueRepository() repository.VenueRepository
 	NewAuctionRepository() repository.AuctionRepository
+	NewAdminRepository() repository.AdminRepository
 }
 
 // repositoryRegistry implements the Repository interface
@@ -156,4 +157,8 @@ func (r *repositoryRegistry) NewVenueRepository() repository.VenueRepository {
 
 func (r *repositoryRegistry) NewAuctionRepository() repository.AuctionRepository {
 	return postgres.NewAuctionRepository(r.db)
+}
+
+func (r *repositoryRegistry) NewAdminRepository() repository.AdminRepository {
+	return postgres.NewAdminRepository(r.db)
 }
