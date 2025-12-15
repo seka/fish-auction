@@ -24,6 +24,16 @@ INSERT INTO fishermen (name)
 SELECT '佐藤 三郎'
 WHERE NOT EXISTS (SELECT 1 FROM fishermen WHERE name = '佐藤 三郎');
 
+-- Venues
+-- Default Venue (moved from 001_init.sql)
+INSERT INTO venues (name, location, description) 
+SELECT '豊洲市場', '東京都江東区豊洲6-6-1', 'デフォルト会場'
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = '豊洲市場');
+
+INSERT INTO venues (name, location, description)
+SELECT '函館港', '北海道函館市', 'イカが有名'
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = '函館港');
+
 -- Buyers
 -- Buyer 1
 DO $$
@@ -134,5 +144,19 @@ BEGIN
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'マグロ'
         );
+    END IF;
+END $$;
+
+-- Default Auction at Toyosu (moved from 001_init.sql)
+DO $$
+DECLARE
+    default_venue_id INTEGER;
+BEGIN
+    SELECT id INTO default_venue_id FROM venues WHERE name = '豊洲市場' LIMIT 1;
+    
+    IF default_venue_id IS NOT NULL THEN
+        INSERT INTO auctions (venue_id, auction_date, status)
+        SELECT default_venue_id, CURRENT_DATE, 'in_progress'
+        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = default_venue_id AND auction_date = CURRENT_DATE);
     END IF;
 END $$;

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	_ "embed"
 	"fmt"
@@ -9,6 +10,8 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/postgres"
+	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
 
 //go:embed seed.sql
@@ -72,6 +75,26 @@ func main() {
 	_, err = db.Exec(seedSQL)
 	if err != nil {
 		log.Fatalf("Failed to execute seed SQL: %v", err)
+	}
+
+	// Create Default Admin
+	fmt.Println("Creating default admin...")
+	repo := postgres.NewAdminRepository(db)
+	uc := admin.NewCreateAdminUseCase(repo)
+	ctx := context.Background()
+
+	count, err := uc.Count(ctx)
+	if err != nil {
+		log.Printf("Failed to count admins: %v", err)
+	} else if count > 0 {
+		fmt.Printf("Admin user(s) found (%d). Skipping default admin creation.\n", count)
+	} else {
+		email := "admin@example.com"
+		password := "admin-password"
+		if err := uc.Execute(ctx, email, password); err != nil {
+			log.Fatalf("Failed to create admin: %v", err)
+		}
+		fmt.Printf("Successfully created default admin user: %s\n", email)
 	}
 
 	fmt.Println("Database seeded successfully!")
