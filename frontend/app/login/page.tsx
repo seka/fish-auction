@@ -22,7 +22,7 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginFormData) => {
         setError('');
 
-        const success = await login(data.password);
+        const success = await login(data.email, data.password);
 
         if (success) {
             router.push('/admin');
@@ -46,6 +46,19 @@ export default function LoginPage() {
                 </Box>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Stack spacing="6">
+                        <Box>
+                            <label htmlFor="email" className={css({ srOnly: true })}>{t('Common.email')}</label>
+                            <Input
+                                id="email"
+                                type="email"
+                                {...register('email')}
+                                placeholder={t('Common.email')}
+                                bg="white"
+                            />
+                            {errors.email && (
+                                <Text className={css({ color: 'red.500', fontSize: 'sm', mt: '1' })}>{errors.email.message}</Text>
+                            )}
+                        </Box>
                         <Box>
                             <label htmlFor="password" className={css({ srOnly: true })}>{t('Common.password')}</label>
                             <Input

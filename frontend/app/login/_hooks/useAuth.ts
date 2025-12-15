@@ -3,11 +3,11 @@ import { login } from '@/src/api/auth';
 
 export const useLogin = () => {
     const mutation = useMutation({
-        mutationFn: (password: string) => login(password),
+        mutationFn: ({ email, password }: { email: string; password: string }) => login(email, password),
     });
 
     return {
-        login: mutation.mutateAsync,
+        login: (email: string, password: string) => mutation.mutateAsync({ email, password }),
         isLoading: mutation.isPending,
         error: mutation.error,
     };
