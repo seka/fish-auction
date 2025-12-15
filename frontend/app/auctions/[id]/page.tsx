@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
@@ -18,10 +18,10 @@ import { useTranslations } from 'next-intl';
 import { Box, Text, Button, Input, Card, Stack, HStack } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 
-export default function AuctionDetailPage({ params }: { params: { id: string } }) {
+export default function AuctionDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const t = useTranslations();
-    // const router = useRouter(); // Unused
-    const auctionId = Number(params.id);
+    const { id } = use(params);
+    const auctionId = Number(id);
 
     const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
     const [message, setMessage] = useState('');
