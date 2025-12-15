@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	"github.com/seka/fish-auction/backend/internal/usecase/bid"
@@ -37,6 +38,8 @@ type UseCase interface {
 	NewUpdateAuctionUseCase() auction.UpdateAuctionUseCase
 	NewUpdateAuctionStatusUseCase() auction.UpdateAuctionStatusUseCase
 	NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase
+	NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUseCase
+	NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase
 }
 
 // useCaseRegistry implements the UseCase interface
@@ -148,4 +151,12 @@ func (u *useCaseRegistry) NewUpdateAuctionStatusUseCase() auction.UpdateAuctionS
 
 func (u *useCaseRegistry) NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase {
 	return auction.NewDeleteAuctionUseCase(u.repo.NewAuctionRepository())
+}
+
+func (u *useCaseRegistry) NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUseCase {
+	return admin.NewUpdatePasswordUseCase(u.repo.NewAdminRepository())
+}
+
+func (u *useCaseRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase {
+	return buyer.NewUpdatePasswordUseCase(u.repo.NewAuthenticationRepository())
 }

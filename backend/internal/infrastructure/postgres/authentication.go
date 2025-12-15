@@ -115,3 +115,12 @@ func (r *authenticationRepository) LockAccount(ctx context.Context, id int, unti
 		until, id)
 	return err
 }
+
+func (r *authenticationRepository) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE authentications 
+		 SET password_hash = $1, updated_at = CURRENT_TIMESTAMP 
+		 WHERE buyer_id = $2`,
+		passwordHash, buyerID)
+	return err
+}

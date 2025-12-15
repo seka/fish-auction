@@ -33,6 +33,21 @@ func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*en
 	return admin, nil
 }
 
+func (r *adminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+	query := `SELECT id, email, password_hash, created_at FROM admins WHERE id = $1`
+	row := r.db.QueryRowContext(ctx, query, id)
+
+	admin := &entity.Admin{}
+	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // Or specific ErrNotFound
+		}
+		return nil, err
+	}
+	return admin, nil
+}
+
 func (r *adminRepository) Create(ctx context.Context, admin *entity.Admin) error {
 	query := `INSERT INTO admins (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
 	err := r.db.QueryRowContext(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
@@ -47,4 +62,10 @@ func (r *adminRepository) Count(ctx context.Context) (int, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *adminRepository) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
+	query := `UPDATE admins SET password_hash = $1 WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, passwordHash, id)
+	return err
 }

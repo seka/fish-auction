@@ -15,4 +15,5 @@ type AuthenticationRepository interface {
 	IncrementFailedAttempts(ctx context.Context, id int) error
 	ResetFailedAttempts(ctx context.Context, id int) error
 	LockAccount(ctx context.Context, id int, until time.Time) error
+	UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error
 }

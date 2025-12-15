@@ -12,20 +12,22 @@ import (
 )
 
 type BuyerHandler struct {
-	createUseCase       buyer.CreateBuyerUseCase
-	listUseCase         buyer.ListBuyersUseCase
-	loginUseCase        buyer.LoginBuyerUseCase
-	getPurchasesUseCase buyer.GetBuyerPurchasesUseCase
-	getAuctionsUseCase  buyer.GetBuyerAuctionsUseCase
+	createUseCase         buyer.CreateBuyerUseCase
+	listUseCase           buyer.ListBuyersUseCase
+	loginUseCase          buyer.LoginBuyerUseCase
+	getPurchasesUseCase   buyer.GetBuyerPurchasesUseCase
+	getAuctionsUseCase    buyer.GetBuyerAuctionsUseCase
+	updatePasswordUseCase buyer.UpdatePasswordUseCase
 }
 
 func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 	return &BuyerHandler{
-		createUseCase:       r.NewCreateBuyerUseCase(),
-		listUseCase:         r.NewListBuyersUseCase(),
-		loginUseCase:        r.NewLoginBuyerUseCase(),
-		getPurchasesUseCase: r.NewGetBuyerPurchasesUseCase(),
-		getAuctionsUseCase:  r.NewGetBuyerAuctionsUseCase(),
+		createUseCase:         r.NewCreateBuyerUseCase(),
+		listUseCase:           r.NewListBuyersUseCase(),
+		loginUseCase:          r.NewLoginBuyerUseCase(),
+		getPurchasesUseCase:   r.NewGetBuyerPurchasesUseCase(),
+		getAuctionsUseCase:    r.NewGetBuyerAuctionsUseCase(),
+		updatePasswordUseCase: r.NewBuyerUpdatePasswordUseCase(),
 	}
 }
 
@@ -253,6 +255,39 @@ func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	// Check authentication
+	cookie, err := r.Cookie("buyer_session")
+	if err != nil || cookie.Value != "authenticated" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	idCookie, err := r.Cookie("buyer_id")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	var buyerID int
+	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
+		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
+		return
+	}
+
+	var req dto.UpdatePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	if err := h.updatePasswordUseCase.Execute(r.Context(), buyerID, req.CurrentPassword, req.NewPassword); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+}
+
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -300,6 +335,14 @@ func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers/me/auctions", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			h.GetMyAuctions(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/api/buyers/password", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			h.UpdatePassword(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

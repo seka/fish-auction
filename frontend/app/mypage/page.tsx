@@ -1,47 +1,32 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
-import { logoutBuyer } from '@/src/api/buyer_auth';
 import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { Box, Text, Button, Card, Stack, HStack } from '@/src/core/ui';
+import { Box, Text, Button, Card, Stack, HStack, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
-import { useState } from 'react';
+
+import { useMyPage } from './_hooks/useMyPage';
 
 export default function MyPage() {
-    const t = useTranslations();
-    const [activeTab, setActiveTab] = useState<'purchases' | 'auctions'>('purchases');
-    const router = useRouter();
-
-    // 購入履歴を取得
-    // Fetch purchase history using the query hook
     const {
-        data: purchases = [],
-        isLoading: isPurchasesLoading
-    } = useQuery({
-        queryKey: ['purchases'],
-        queryFn: getMyPurchases,
-    });
-
-    // 参加中のセリを取得
-    const { data: auctions = [], isLoading: isAuctionsLoading } = useQuery({
-        queryKey: ['auctions', 'my'],
-        queryFn: getMyAuctions,
-    });
-
-    // どちらかのデータがロード中の場合はローディング表示
-    const isLoading = isPurchasesLoading || isAuctionsLoading;
-
-    const handleLogout = async () => {
-        const success = await logoutBuyer();
-        if (success) {
-            router.push('/login/buyer');
-        }
-    };
+        t,
+        activeTab,
+        setActiveTab,
+        currentPassword,
+        setCurrentPassword,
+        newPassword,
+        setNewPassword,
+        confirmPassword,
+        setConfirmPassword,
+        message,
+        isPasswordUpdating,
+        purchases,
+        auctions,
+        isLoading,
+        handleLogout,
+        handleUpdatePassword,
+    } = useMyPage();
 
     if (isLoading) {
         return (
@@ -106,6 +91,19 @@ export default function MyPage() {
                         >
                             {t('Public.MyPage.participating_auctions')}
                         </Box>
+                        <Box
+                            as="button"
+                            px="4"
+                            py="2"
+                            fontWeight={activeTab === 'settings' ? 'bold' : 'medium'}
+                            color={activeTab === 'settings' ? 'indigo.600' : 'gray.500'}
+                            borderBottom={activeTab === 'settings' ? '2px solid' : 'none'}
+                            borderColor="indigo.600"
+                            onClick={() => setActiveTab('settings')}
+                            className={css({ transition: 'all 0.2s', _hover: { color: 'indigo.600' } })}
+                        >
+                            設定
+                        </Box>
                     </HStack>
                 </Box>
 
@@ -156,6 +154,84 @@ export default function MyPage() {
                             ))
                         )}
                     </Stack>
+                ) : activeTab === 'settings' ? (
+                    <Box bg="white" p="6" borderRadius="lg" shadow="sm" maxW="md">
+                        <Text as="h2" fontSize="lg" fontWeight="semibold" mb="4" className={css({ color: 'gray.800' })}>
+                            パスワード変更
+                        </Text>
+
+                        {message && (
+                            <Box
+                                p="3"
+                                mb="4"
+                                borderRadius="md"
+                                bg={message.type === 'success' ? 'green.50' : 'red.50'}
+                                color={message.type === 'success' ? 'green.700' : 'red.700'}
+                                border="1px solid"
+                                borderColor={message.type === 'success' ? 'green.200' : 'red.200'}
+                            >
+                                {message.text}
+                            </Box>
+                        )}
+
+                        <form onSubmit={handleUpdatePassword}>
+                            <Stack spacing="4" alignItems="stretch">
+                                <Box>
+                                    <Text as="label" display="block" mb="1" fontSize="sm" fontWeight="medium" className={css({ color: 'gray.700' })}>
+                                        現在のパスワード
+                                    </Text>
+                                    <Input
+                                        type="password"
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                        required
+                                        className={css({ w: 'full' })}
+                                    />
+                                </Box>
+
+                                <Box>
+                                    <Text as="label" display="block" mb="1" fontSize="sm" fontWeight="medium" className={css({ color: 'gray.700' })}>
+                                        新しいパスワード
+                                    </Text>
+                                    <Input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        required
+                                        minLength={8}
+                                        className={css({ w: 'full' })}
+                                    />
+                                </Box>
+
+                                <Box>
+                                    <Text as="label" display="block" mb="1" fontSize="sm" fontWeight="medium" className={css({ color: 'gray.700' })}>
+                                        新しいパスワード（確認）
+                                    </Text>
+                                    <Input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        minLength={8}
+                                        className={css({ w: 'full' })}
+                                    />
+                                </Box>
+
+                                <Button
+                                    type="submit"
+                                    disabled={isPasswordUpdating}
+                                    className={css({
+                                        bg: 'indigo.600',
+                                        color: 'white',
+                                        _hover: { bg: 'indigo.700' },
+                                        _disabled: { opacity: 0.6, cursor: 'not-allowed' }
+                                    })}
+                                >
+                                    {isPasswordUpdating ? '更新中...' : 'パスワードを変更する'}
+                                </Button>
+                            </Stack>
+                        </form>
+                    </Box>
                 ) : (
                     <Stack spacing="4">
                         <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
@@ -211,7 +287,8 @@ export default function MyPage() {
                             ))
                         )}
                     </Stack>
-                )}
+                )
+                }
 
             </Box >
         </Box >

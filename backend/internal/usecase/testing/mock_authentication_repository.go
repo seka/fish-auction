@@ -16,6 +16,7 @@ type MockAuthenticationRepository struct {
 	IncrementFailedAttemptsFunc func(ctx context.Context, id int) error
 	ResetFailedAttemptsFunc     func(ctx context.Context, id int) error
 	LockAccountFunc             func(ctx context.Context, id int, until time.Time) error
+	UpdatePasswordFunc          func(ctx context.Context, buyerID int, passwordHash string) error
 }
 
 func (m *MockAuthenticationRepository) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
@@ -44,4 +45,8 @@ func (m *MockAuthenticationRepository) ResetFailedAttempts(ctx context.Context, 
 
 func (m *MockAuthenticationRepository) LockAccount(ctx context.Context, id int, until time.Time) error {
 	return m.LockAccountFunc(ctx, id, until)
+}
+
+func (m *MockAuthenticationRepository) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
+	return m.UpdatePasswordFunc(ctx, buyerID, passwordHash)
 }

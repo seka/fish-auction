@@ -3,6 +3,7 @@ package testing
 import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/registry"
+	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	"github.com/seka/fish-auction/backend/internal/usecase/bid"
@@ -151,6 +152,14 @@ func (m *MockRegistry) NewUpdateAuctionStatusUseCase() auction.UpdateAuctionStat
 
 func (m *MockRegistry) NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase {
 	return m.DeleteAuctionUC
+}
+
+func (m *MockRegistry) NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUseCase {
+	return nil
+}
+
+func (m *MockRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase {
+	return nil
 }
 
 // Ensure MockRegistry implements registry.UseCase
