@@ -130,6 +130,12 @@ export const Sidebar = () => {
                 <SidebarItem href="/admin/invoice" icon="💰">
                     請求書発行
                 </SidebarItem>
+
+                <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
+
+                <SidebarItem href="/admin/settings" icon="⚙️">
+                    設定
+                </SidebarItem>
             </Stack>
 
             {/* Footer / User info could go here */}
