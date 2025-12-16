@@ -26,7 +26,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize UseCase Registry
-	useCaseReg := registry.NewUseCaseRegistry(repoReg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, cfg)
 
 	// Initialize Handlers
 	handlers := buildHandlers(useCaseReg)
@@ -42,6 +42,8 @@ func main() {
 		handlers.auth,
 		handlers.venue,
 		handlers.auction,
+		handlers.admin,
+		handlers.authReset,
 	)
 
 	// Start Server
@@ -60,6 +62,8 @@ type handlers struct {
 	auth      *handler.AuthHandler
 	venue     *handler.VenueHandler
 	auction   *handler.AuctionHandler
+	admin     *handler.AdminHandler
+	authReset *handler.AuthResetHandler
 }
 
 func buildHandlers(reg registry.UseCase) *handlers {
@@ -73,5 +77,7 @@ func buildHandlers(reg registry.UseCase) *handlers {
 		auth:      handler.NewAuthHandler(reg),
 		venue:     handler.NewVenueHandler(reg),
 		auction:   handler.NewAuctionHandler(reg),
+		admin:     handler.NewAdminHandler(reg),
+		authReset: handler.NewAuthResetHandler(reg),
 	}
 }

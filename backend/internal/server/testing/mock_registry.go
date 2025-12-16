@@ -162,5 +162,13 @@ func (m *MockRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCa
 	return nil
 }
 
+func (m *MockRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
+	return nil
+}
+
+func (m *MockRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
+	return nil
+}
+
 // Ensure MockRegistry implements registry.UseCase
 var _ registry.UseCase = &MockRegistry{}

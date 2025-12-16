@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
@@ -40,16 +41,19 @@ type UseCase interface {
 	NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase
 	NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUseCase
 	NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase
+	NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase
+	NewResetPasswordUseCase() auth.ResetPasswordUseCase
 }
 
 // useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
 	repo Repository
+	cfg  *config.Config
 }
 
 // NewUseCaseRegistry creates a new UseCase registry
-func NewUseCaseRegistry(repo Repository) UseCase {
-	return &useCaseRegistry{repo: repo}
+func NewUseCaseRegistry(repo Repository, cfg *config.Config) UseCase {
+	return &useCaseRegistry{repo: repo, cfg: cfg}
 }
 
 func (u *useCaseRegistry) NewCreateItemUseCase() item.CreateItemUseCase {
@@ -159,4 +163,19 @@ func (u *useCaseRegistry) NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUs
 
 func (u *useCaseRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase {
 	return buyer.NewUpdatePasswordUseCase(u.repo.NewAuthenticationRepository())
+}
+
+func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
+	return auth.NewRequestPasswordResetUseCase(
+		u.repo.NewBuyerRepository(),
+		u.repo.NewPasswordResetRepository(),
+		u.cfg,
+	)
+}
+
+func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
+	return auth.NewResetPasswordUseCase(
+		u.repo.NewPasswordResetRepository(),
+		u.repo.NewAuthenticationRepository(),
+	)
 }

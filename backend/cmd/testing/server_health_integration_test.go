@@ -55,7 +55,21 @@ func TestServerIntegration(t *testing.T) {
 	}
 	defer db.Close()
 
-	useCaseReg := registry.NewUseCaseRegistry(repoReg)
+	appCfg := &config.Config{
+		DBHost:     cfg.DBHost,
+		DBPort:     cfg.DBPort,
+		DBUser:     cfg.DBUser,
+		DBPassword: cfg.DBPassword,
+		DBName:     testDBName,
+		RedisAddr:  "localhost:6379",
+		CacheTTL:   5 * time.Minute,
+		AppEnv:     "test",
+		SMTPHost:   "localhost",
+		SMTPPort:   "1025",
+		SMTPFrom:   "test@example.com",
+	}
+
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, appCfg)
 
 	// 6. Handlers を初期化
 	healthHandler := handler.NewHealthHandler()
@@ -67,6 +81,8 @@ func TestServerIntegration(t *testing.T) {
 	authHandler := handler.NewAuthHandler(useCaseReg)
 	venueHandler := handler.NewVenueHandler(useCaseReg)
 	auctionHandler := handler.NewAuctionHandler(useCaseReg)
+	adminHandler := handler.NewAdminHandler(useCaseReg)
+	authResetHandler := handler.NewAuthResetHandler(useCaseReg)
 
 	// 7. Server を起動
 	srv := server.NewServer(
@@ -79,6 +95,8 @@ func TestServerIntegration(t *testing.T) {
 		authHandler,
 		venueHandler,
 		auctionHandler,
+		adminHandler,
+		authResetHandler,
 	)
 
 	// 8. サーバーを goroutine で起動

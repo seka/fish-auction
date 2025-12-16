@@ -27,6 +27,7 @@ type Server struct {
 	venueHandler     *handler.VenueHandler
 	auctionHandler   *handler.AuctionHandler
 	adminHandler     *handler.AdminHandler
+	authResetHandler *handler.AuthResetHandler
 	buyerAuth        *middleware.BuyerAuthMiddleware
 }
 
@@ -41,6 +42,7 @@ func NewServer(
 	venueHandler *handler.VenueHandler,
 	auctionHandler *handler.AuctionHandler,
 	adminHandler *handler.AdminHandler,
+	authResetHandler *handler.AuthResetHandler,
 ) *Server {
 	s := &Server{
 		router:           http.NewServeMux(),
@@ -54,6 +56,7 @@ func NewServer(
 		venueHandler:     venueHandler,
 		auctionHandler:   auctionHandler,
 		adminHandler:     adminHandler,
+		authResetHandler: authResetHandler,
 		buyerAuth:        middleware.NewBuyerAuthMiddleware(),
 	}
 	s.routes()
@@ -75,7 +78,9 @@ func (s *Server) routes() {
 	s.authHandler.RegisterRoutes(s.router)
 	s.venueHandler.RegisterRoutes(s.router)
 	s.auctionHandler.RegisterRoutes(s.router)
+	s.auctionHandler.RegisterRoutes(s.router)
 	s.adminHandler.RegisterRoutes(s.router)
+	s.authResetHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) Start(addr string) error {
