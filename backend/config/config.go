@@ -17,6 +17,9 @@ type Config struct {
 	RedisAddr     string
 	CacheTTL      time.Duration
 	AppEnv        string
+	SMTPHost      string
+	SMTPPort      string
+	SMTPFrom      string
 }
 
 func Load() (*Config, error) {
@@ -32,6 +35,9 @@ func Load() (*Config, error) {
 		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		CacheTTL:      time.Duration(cacheTTL) * time.Second,
 		AppEnv:        getEnv("APP_ENV", "production"),
+		SMTPHost:      getEnv("SMTP_HOST", "mailhog"),
+		SMTPPort:      getEnv("SMTP_PORT", "1025"),
+		SMTPFrom:      getEnv("SMTP_FROM", "noreply@fish-auction.com"),
 	}
 
 	if cfg.ServerAddress == "" {
@@ -64,4 +70,8 @@ func getEnvInt(key string, defaultValue int) int {
 func (c *Config) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName)
+}
+
+func (c *Config) SMTPAddress() string {
+	return fmt.Sprintf("%s:%s", c.SMTPHost, c.SMTPPort)
 }

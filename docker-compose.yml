@@ -15,6 +15,9 @@ services:
       - DB_NAME=fish_auction
       - DB_PORT=5432
       - REDIS_ADDR=redis:6379
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_FROM=noreply@example.com
     depends_on:
       - db
       - redis
@@ -63,6 +66,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+    networks:
+      - app-network
 
   nginx:
     image: nginx:alpine
