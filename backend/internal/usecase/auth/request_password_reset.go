@@ -78,15 +78,29 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 func (u *requestPasswordResetUseCase) sendEmail(to, token string) error {
 	resetURL := fmt.Sprintf("%s/login/reset_password?token=%s", "http://localhost:3000", token) // TODO: frontend base url from config
 
+	subject := "【Fish Auction】パスワード再設定のご案内"
+	body := fmt.Sprintf(`
+いつもFish Auctionをご利用いただきありがとうございます。
+パスワード再設定のリクエストを受け付けました。
+
+以下のリンクをクリックして、新しいパスワードを設定してください。
+
+%s
+
+※このリンクは30分間有効です。
+※本メールに心当たりがない場合は、破棄してください。
+
+--------------------------------------------------
+Fish Auction 運営事務局
+--------------------------------------------------
+`, resetURL)
+
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
-		"Subject: Password Reset Request\r\n"+
+		"Subject: %s\r\n"+
+		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
 		"\r\n"+
-		"Click the link below to reset your password:\r\n"+
-		"%s\r\n"+
-		"\r\n"+
-		"This link expires in 30 minutes.\r\n", to, resetURL))
+		"%s", to, subject, body))
 
 	addr := fmt.Sprintf("%s:%s", u.cfg.SMTPHost, u.cfg.SMTPPort)
-	// MailHog doesn't require auth by default
 	return smtp.SendMail(addr, nil, u.cfg.SMTPFrom, []string{to}, msg)
 }
