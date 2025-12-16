@@ -15,27 +15,36 @@ import (
 )
 
 type MockRegistry struct {
-	CreateItemUC          item.CreateItemUseCase
-	ListItemsUC           item.ListItemsUseCase
-	CreateBidUC           bid.CreateBidUseCase
-	CreateBuyerUC         buyer.CreateBuyerUseCase
-	ListBuyersUC          buyer.ListBuyersUseCase
-	CreateFishermanUC     fisherman.CreateFishermanUseCase
-	ListFishermenUC       fisherman.ListFishermenUseCase
-	ListInvoicesUC        invoice.ListInvoicesUseCase
-	LoginUC               auth.LoginUseCase
-	CreateVenueUC         venue.CreateVenueUseCase
-	ListVenuesUC          venue.ListVenuesUseCase
-	GetVenueUC            venue.GetVenueUseCase
-	UpdateVenueUC         venue.UpdateVenueUseCase
-	DeleteVenueUC         venue.DeleteVenueUseCase
-	CreateAuctionUC       auction.CreateAuctionUseCase
-	ListAuctionsUC        auction.ListAuctionsUseCase
-	GetAuctionUC          auction.GetAuctionUseCase
-	GetAuctionItemsUC     auction.GetAuctionItemsUseCase
-	UpdateAuctionUC       auction.UpdateAuctionUseCase
-	UpdateAuctionStatusUC auction.UpdateAuctionStatusUseCase
-	DeleteAuctionUC       auction.DeleteAuctionUseCase
+	CreateItemUC                item.CreateItemUseCase
+	ListItemsUC                 item.ListItemsUseCase
+	CreateBidUC                 bid.CreateBidUseCase
+	CreateBuyerUC               buyer.CreateBuyerUseCase
+	ListBuyersUC                buyer.ListBuyersUseCase
+	CreateFishermanUC           fisherman.CreateFishermanUseCase
+	ListFishermenUC             fisherman.ListFishermenUseCase
+	ListInvoicesUC              invoice.ListInvoicesUseCase
+	LoginUC                     auth.LoginUseCase
+	CreateVenueUC               venue.CreateVenueUseCase
+	ListVenuesUC                venue.ListVenuesUseCase
+	GetVenueUC                  venue.GetVenueUseCase
+	UpdateVenueUC               venue.UpdateVenueUseCase
+	DeleteVenueUC               venue.DeleteVenueUseCase
+	CreateAuctionUC             auction.CreateAuctionUseCase
+	ListAuctionsUC              auction.ListAuctionsUseCase
+	GetAuctionUC                auction.GetAuctionUseCase
+	GetAuctionItemsUC           auction.GetAuctionItemsUseCase
+	UpdateAuctionUC             auction.UpdateAuctionUseCase
+	UpdateAuctionStatusUC       auction.UpdateAuctionStatusUseCase
+	DeleteAuctionUC             auction.DeleteAuctionUseCase
+	LoginBuyerUC                buyer.LoginBuyerUseCase
+	GetBuyerPurchasesUC         buyer.GetBuyerPurchasesUseCase
+	GetBuyerAuctionsUC          buyer.GetBuyerAuctionsUseCase
+	UpdateBuyerPasswordUC       buyer.UpdatePasswordUseCase
+	UpdateAdminPasswordUC       admin.UpdatePasswordUseCase
+	RequestPasswordResetUC      auth.RequestPasswordResetUseCase
+	ResetPasswordUC             auth.ResetPasswordUseCase
+	RequestAdminPasswordResetUC admin.RequestPasswordResetUseCase
+	ResetAdminPasswordUC        admin.ResetPasswordUseCase
 }
 
 func (m *MockRegistry) NewItemRepository() repository.ItemRepository {
@@ -95,15 +104,15 @@ func (m *MockRegistry) NewLoginUseCase() auth.LoginUseCase {
 }
 
 func (m *MockRegistry) NewLoginBuyerUseCase() buyer.LoginBuyerUseCase {
-	return nil // Or add a field to MockRegistry if needed for tests
+	return m.LoginBuyerUC
 }
 
 func (m *MockRegistry) NewGetBuyerPurchasesUseCase() buyer.GetBuyerPurchasesUseCase {
-	return nil
+	return m.GetBuyerPurchasesUC
 }
 
 func (m *MockRegistry) NewGetBuyerAuctionsUseCase() buyer.GetBuyerAuctionsUseCase {
-	return nil
+	return m.GetBuyerAuctionsUC
 }
 
 func (m *MockRegistry) NewCreateVenueUseCase() venue.CreateVenueUseCase {
@@ -155,27 +164,27 @@ func (m *MockRegistry) NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase {
 }
 
 func (m *MockRegistry) NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUseCase {
-	return nil
+	return m.UpdateAdminPasswordUC
 }
 
 func (m *MockRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase {
-	return nil
+	return m.UpdateBuyerPasswordUC
 }
 
 func (m *MockRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
-	return nil
+	return m.RequestPasswordResetUC
 }
 
 func (m *MockRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
-	return nil
+	return m.ResetPasswordUC
 }
 
 func (m *MockRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
-	return nil
+	return m.RequestAdminPasswordResetUC
 }
 
 func (m *MockRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
-	return nil
+	return m.ResetAdminPasswordUC
 }
 
 // Ensure MockRegistry implements registry.UseCase

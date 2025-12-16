@@ -1,0 +1,58 @@
+package handler_test
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/seka/fish-auction/backend/internal/server/handler"
+	mock "github.com/seka/fish-auction/backend/internal/server/testing"
+)
+
+func TestAuthResetHandler(t *testing.T) {
+	t.Run("RequestReset_Success", func(t *testing.T) {
+		mockReqUC := &mock.MockRequestPasswordResetUseCase{
+			ExecuteFunc: func(ctx context.Context, email string) error {
+				return nil
+			},
+		}
+		mockReg := &mock.MockRegistry{RequestPasswordResetUC: mockReqUC}
+		h := handler.NewAuthResetHandler(mockReg)
+
+		reqBody := map[string]string{"email": "buyer@example.com"}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/password-reset/request", bytes.NewReader(body))
+		w := httptest.NewRecorder()
+
+		h.RequestReset(w, req)
+
+		// Handler always returns 200
+		if w.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("ConfirmReset_Success", func(t *testing.T) {
+		mockResetUC := &mock.MockResetPasswordUseCase{
+			ExecuteFunc: func(ctx context.Context, token, newPassword string) error {
+				return nil
+			},
+		}
+		mockReg := &mock.MockRegistry{ResetPasswordUC: mockResetUC}
+		h := handler.NewAuthResetHandler(mockReg)
+
+		reqBody := map[string]string{"token": "token123", "new_password": "newpass"}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/password-reset/confirm", bytes.NewReader(body))
+		w := httptest.NewRecorder()
+
+		h.ConfirmReset(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", w.Code)
+		}
+	})
+}
