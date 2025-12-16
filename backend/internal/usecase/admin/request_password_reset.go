@@ -1,4 +1,4 @@
-package auth
+package admin
 
 import (
 	"context"
@@ -18,31 +18,29 @@ type RequestPasswordResetUseCase interface {
 }
 
 type requestPasswordResetUseCase struct {
-	buyerRepo    repository.BuyerRepository
-	pwdResetRepo repository.BuyerPasswordResetRepository
+	adminRepo    repository.AdminRepository
+	pwdResetRepo repository.AdminPasswordResetRepository
 	cfg          *config.Config
 }
 
 func NewRequestPasswordResetUseCase(
-	buyerRepo repository.BuyerRepository,
-	pwdResetRepo repository.BuyerPasswordResetRepository,
+	adminRepo repository.AdminRepository,
+	pwdResetRepo repository.AdminPasswordResetRepository,
 	cfg *config.Config,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
-		buyerRepo:    buyerRepo,
+		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,
 		cfg:          cfg,
 	}
 }
 
 func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string) error {
-	buyer, err := u.buyerRepo.FindByEmail(ctx, email)
+	admin, err := u.adminRepo.FindOneByEmail(ctx, email)
 	if err != nil {
-		// Security: Don't reveal if user exists.
-		// Return nil even if not found.
 		return nil
 	}
-	if buyer == nil {
+	if admin == nil {
 		return nil
 	}
 
@@ -59,11 +57,10 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 
 	// 3. Save to DB (expires in 30 mins)
 	expiresAt := time.Now().Add(30 * time.Minute)
-	// Invalidate old tokens for this user first
-	if err := u.pwdResetRepo.DeleteAllByBuyerID(ctx, buyer.ID); err != nil {
+	if err := u.pwdResetRepo.DeleteAllByAdminID(ctx, admin.ID); err != nil {
 		return fmt.Errorf("failed to delete old tokens: %w", err)
 	}
-	if err := u.pwdResetRepo.Create(ctx, buyer.ID, tokenHash, expiresAt); err != nil {
+	if err := u.pwdResetRepo.Create(ctx, admin.ID, tokenHash, expiresAt); err != nil {
 		return fmt.Errorf("failed to create reset token: %w", err)
 	}
 
@@ -76,10 +73,10 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 }
 
 func (u *requestPasswordResetUseCase) sendEmail(to, token string) error {
-	resetURL := fmt.Sprintf("%s/login/reset_password?token=%s", "http://localhost:3000", token) // TODO: frontend base url from config
+	resetURL := fmt.Sprintf("%s/login/admin/reset_password?token=%s", "http://localhost:3000", token) // TODO: config
 
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
-		"Subject: Password Reset Request\r\n"+
+		"Subject: Admin Password Reset Request\r\n"+
 		"\r\n"+
 		"Click the link below to reset your password:\r\n"+
 		"%s\r\n"+
@@ -87,6 +84,5 @@ func (u *requestPasswordResetUseCase) sendEmail(to, token string) error {
 		"This link expires in 30 minutes.\r\n", to, resetURL))
 
 	addr := fmt.Sprintf("%s:%s", u.cfg.SMTPHost, u.cfg.SMTPPort)
-	// MailHog doesn't require auth by default
 	return smtp.SendMail(addr, nil, u.cfg.SMTPFrom, []string{to}, msg)
 }

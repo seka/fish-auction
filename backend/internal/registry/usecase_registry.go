@@ -43,6 +43,8 @@ type UseCase interface {
 	NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase
 	NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase
 	NewResetPasswordUseCase() auth.ResetPasswordUseCase
+	NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase
+	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
 }
 
 // useCaseRegistry implements the UseCase interface
@@ -55,6 +57,8 @@ type useCaseRegistry struct {
 func NewUseCaseRegistry(repo Repository, cfg *config.Config) UseCase {
 	return &useCaseRegistry{repo: repo, cfg: cfg}
 }
+
+// ... (existing methods omitted for brevity, only changing what's needed or new)
 
 func (u *useCaseRegistry) NewCreateItemUseCase() item.CreateItemUseCase {
 	return item.NewCreateItemUseCase(u.repo.NewItemRepository())
@@ -168,14 +172,29 @@ func (u *useCaseRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUs
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
 	return auth.NewRequestPasswordResetUseCase(
 		u.repo.NewBuyerRepository(),
-		u.repo.NewPasswordResetRepository(),
+		u.repo.PasswordReset(),
 		u.cfg,
 	)
 }
 
 func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 	return auth.NewResetPasswordUseCase(
-		u.repo.NewPasswordResetRepository(),
+		u.repo.PasswordReset(),
 		u.repo.NewAuthenticationRepository(),
+	)
+}
+
+func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
+	return admin.NewRequestPasswordResetUseCase(
+		u.repo.NewAdminRepository(),
+		u.repo.AdminPasswordReset(),
+		u.cfg,
+	)
+}
+
+func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
+	return admin.NewResetPasswordUseCase(
+		u.repo.AdminPasswordReset(),
+		u.repo.NewAdminRepository(),
 	)
 }

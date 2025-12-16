@@ -1,4 +1,4 @@
-package auth
+package admin
 
 import (
 	"context"
@@ -16,56 +16,48 @@ type ResetPasswordUseCase interface {
 }
 
 type resetPasswordUseCase struct {
-	pwdResetRepo repository.BuyerPasswordResetRepository
-	authRepo     repository.AuthenticationRepository
+	pwdResetRepo repository.AdminPasswordResetRepository
+	adminRepo    repository.AdminRepository
 }
 
 func NewResetPasswordUseCase(
-	pwdResetRepo repository.BuyerPasswordResetRepository,
-	authRepo repository.AuthenticationRepository,
+	pwdResetRepo repository.AdminPasswordResetRepository,
+	adminRepo repository.AdminRepository,
 ) ResetPasswordUseCase {
 	return &resetPasswordUseCase{
 		pwdResetRepo: pwdResetRepo,
-		authRepo:     authRepo,
+		adminRepo:    adminRepo,
 	}
 }
 
 func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword string) error {
-	// 1. Hash token to verify
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
-	// 2. Find token in DB
-	buyerID, expiresAt, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
+	adminID, expiresAt, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
 		return fmt.Errorf("failed to find token: %w", err)
 	}
-	if buyerID == 0 {
+	if adminID == 0 {
 		return fmt.Errorf("invalid or expired token")
 	}
 
-	// 3. Check expiry
 	if time.Now().After(expiresAt) {
-		// Clean up expired token
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
 		return fmt.Errorf("token expired")
 	}
 
-	// 4. Hash new password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// 5. Update user password
-	if err := u.authRepo.UpdatePassword(ctx, buyerID, string(hashedPassword)); err != nil {
+	if err := u.adminRepo.UpdatePassword(ctx, adminID, string(hashedPassword)); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
-	// 6. Invalidate token
 	if err := u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash); err != nil {
-		// Log error but don't fail, critical part is done
-		// log.Printf("failed to delete token: %v", err)
+		// Log error
 	}
 
 	return nil
