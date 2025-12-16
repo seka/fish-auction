@@ -8,10 +8,11 @@ import (
 
 // MockBuyerRepository is a mock implementation of BuyerRepository
 type MockBuyerRepository struct {
-	CreateFunc     func(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error)
-	ListFunc       func(ctx context.Context) ([]model.Buyer, error)
-	FindByIDFunc   func(ctx context.Context, id int) (*model.Buyer, error)
-	FindByNameFunc func(ctx context.Context, name string) (*model.Buyer, error)
+	CreateFunc      func(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error)
+	ListFunc        func(ctx context.Context) ([]model.Buyer, error)
+	FindByIDFunc    func(ctx context.Context, id int) (*model.Buyer, error)
+	FindByNameFunc  func(ctx context.Context, name string) (*model.Buyer, error)
+	FindByEmailFunc func(ctx context.Context, email string) (*model.Buyer, error)
 }
 
 func (m *MockBuyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
@@ -28,4 +29,8 @@ func (m *MockBuyerRepository) FindByID(ctx context.Context, id int) (*model.Buye
 
 func (m *MockBuyerRepository) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
 	return m.FindByNameFunc(ctx, name)
+}
+
+func (m *MockBuyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+	return m.FindByEmailFunc(ctx, email)
 }

@@ -102,3 +102,22 @@ func (r *buyerRepository) FindByName(ctx context.Context, name string) (*model.B
 	}
 	return e.ToModel(), nil
 }
+
+func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+	var e entity.Buyer
+	query := `
+		SELECT b.id, b.name, b.organization, b.contact_info 
+		FROM buyers b 
+		JOIN authentications a ON b.id = a.buyer_id 
+		WHERE a.email = $1
+	`
+	err := r.db.QueryRowContext(ctx, query, email).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// No buyer found with this email
+			return nil, &apperrors.NotFoundError{Resource: "Buyer", ID: 0}
+		}
+		return nil, err
+	}
+	return e.ToModel(), nil
+}
