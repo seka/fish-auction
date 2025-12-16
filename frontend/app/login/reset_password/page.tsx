@@ -8,7 +8,10 @@ import { verifyResetToken, confirmPasswordReset, ResetPasswordConfirmRequest } f
 import { Box, Button, Text, Stack } from '@/src/core/ui';
 import { css } from '@/styled-system/css';
 
-export default function ResetPasswordPage() {
+import { Suspense } from 'react';
+// ... imports
+
+function ResetPasswordForm() {
     const t = useTranslations();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -167,5 +170,13 @@ export default function ResetPasswordPage() {
                 </form>
             </Box>
         </Box>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.100"><Text>読み込み中...</Text></Box>}>
+            <ResetPasswordForm />
+        </Suspense>
     );
 }

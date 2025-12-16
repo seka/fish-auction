@@ -83,6 +83,7 @@ func TestServerIntegration(t *testing.T) {
 	auctionHandler := handler.NewAuctionHandler(useCaseReg)
 	adminHandler := handler.NewAdminHandler(useCaseReg)
 	authResetHandler := handler.NewAuthResetHandler(useCaseReg)
+	adminAuthResetHandler := handler.NewAdminAuthResetHandler(useCaseReg)
 
 	// 7. Server を起動
 	srv := server.NewServer(
@@ -97,6 +98,7 @@ func TestServerIntegration(t *testing.T) {
 		auctionHandler,
 		adminHandler,
 		authResetHandler,
+		adminAuthResetHandler,
 	)
 
 	// 8. サーバーを goroutine で起動

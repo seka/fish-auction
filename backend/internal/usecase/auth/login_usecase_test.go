@@ -62,28 +62,28 @@ func TestLoginUseCase_Execute(t *testing.T) {
 		password  string
 		mockAdmin *entity.Admin
 		mockErr   error
-		want      bool
+		wantFound bool
 	}{
 		{
 			name:      "CorrectCredentials",
 			email:     "admin@example.com",
 			password:  "admin-password",
 			mockAdmin: validAdmin,
-			want:      true,
+			wantFound: true,
 		},
 		{
 			name:      "WrongPassword",
 			email:     "admin@example.com",
 			password:  "wrong-password",
 			mockAdmin: validAdmin,
-			want:      false,
+			wantFound: false,
 		},
 		{
 			name:      "UserNotFound",
 			email:     "other@example.com",
 			password:  "admin-password",
 			mockAdmin: validAdmin, // Repo has admin@example.com, but we search for other
-			want:      false,
+			wantFound: false,
 		},
 	}
 
@@ -95,12 +95,18 @@ func TestLoginUseCase_Execute(t *testing.T) {
 			}
 			uc := auth.NewLoginUseCase(repo)
 
-			got, err := uc.Execute(context.Background(), tt.email, tt.password)
+			gotAdmin, err := uc.Execute(context.Background(), tt.email, tt.password)
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
-			if got != tt.want {
-				t.Fatalf("expected %v, got %v", tt.want, got)
+			if (gotAdmin != nil) != tt.wantFound {
+				t.Fatalf("expected found=%v, got admin=%v", tt.wantFound, gotAdmin)
+			}
+			if tt.wantFound && gotAdmin.ID != validAdmin.ID { // Assuming validAdmin has ID 0 if not set, but pointers should match if logic was mock based?
+				// Ah, repo returns mockAdmin, so it should be same object or equivalent.
+				if gotAdmin.Email != validAdmin.Email {
+					t.Errorf("expected email %s, got %s", validAdmin.Email, gotAdmin.Email)
+				}
 			}
 		})
 	}

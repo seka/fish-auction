@@ -66,10 +66,10 @@ export default function ForgotPasswordPage() {
                             </label>
                             <input
                                 {...register('email', {
-                                    required: t('Public.Login.email_required'),
+                                    required: "メールアドレスを入力してください",
                                     pattern: {
                                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: t('Public.Login.email_invalid'),
+                                        message: "有効なメールアドレスを入力してください",
                                     }
                                 })}
                                 className={css({
