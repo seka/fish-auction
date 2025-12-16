@@ -2,7 +2,7 @@ package postgres_test
 
 import (
 	"context"
-	"errors"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -62,7 +62,7 @@ func TestVenueRepository_GetByID_NotFound(t *testing.T) {
 
 	mock.ExpectQuery("SELECT .* FROM venues WHERE id = \\$1").
 		WithArgs(id).
-		WillReturnError(errors.New("sql: no rows in result set"))
+		WillReturnError(sql.ErrNoRows)
 
 	// The repository returns nil, nil or specific error depending on implementation.
 	// Looking at implementation: it returns (nil, &apperrors.NotFoundError)

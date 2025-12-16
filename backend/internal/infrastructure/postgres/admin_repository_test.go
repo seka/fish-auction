@@ -2,7 +2,7 @@ package postgres_test
 
 import (
 	"context"
-	"errors"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -38,7 +38,7 @@ func TestAdminRepository_FindOneByEmail(t *testing.T) {
 	t.Run("NotFound", func(t *testing.T) {
 		mock.ExpectQuery("SELECT id, email, password_hash, created_at FROM admins WHERE email = \\$1").
 			WithArgs(email).
-			WillReturnError(errors.New("sql: no rows in result set"))
+			WillReturnError(sql.ErrNoRows)
 
 		got, err := repo.FindOneByEmail(context.Background(), email)
 		assert.NoError(t, err)
