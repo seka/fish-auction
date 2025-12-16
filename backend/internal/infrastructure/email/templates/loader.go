@@ -9,6 +9,10 @@ import (
 //go:embed *.txt
 var templateFS embed.FS
 
+type TemplateProvider interface {
+	Get(name string) *template.Template
+}
+
 type TemplateLoader struct {
 	templates *template.Template
 }

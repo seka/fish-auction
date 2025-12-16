@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/seka/fish-auction/backend/config"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/mailhog"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
@@ -54,9 +53,10 @@ type UseCase interface {
 
 // useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
-	repo         Repository
-	cfg          *config.Config
-	emailService service.EmailService
+	repo              Repository
+	cfg               *config.Config
+	adminEmailService *mailhog.AdminEmailService
+	buyerEmailService *mailhog.BuyerEmailService
 }
 
 // NewUseCaseRegistry creates a new UseCase registry
@@ -66,16 +66,18 @@ func NewUseCaseRegistry(repo Repository, cfg *config.Config) UseCase {
 		// Panic is acceptable here as it's startup initialization
 		panic(fmt.Sprintf("failed to load templates: %v", err))
 	}
-	emailService := mailhog.NewMailhogEmailService(cfg, loader)
+	adminEmailService := mailhog.NewAdminEmailService(cfg, loader)
+	buyerEmailService := mailhog.NewBuyerEmailService(cfg, loader)
 
 	return &useCaseRegistry{
-		repo:         repo,
-		cfg:          cfg,
-		emailService: emailService,
+		repo:              repo,
+		cfg:               cfg,
+		adminEmailService: adminEmailService,
+		buyerEmailService: buyerEmailService,
 	}
 }
 
-// ... (existing methods omitted for brevity, only changing what's needed or new)
+// ... (methods)
 
 func (u *useCaseRegistry) NewCreateItemUseCase() item.CreateItemUseCase {
 	return item.NewCreateItemUseCase(u.repo.NewItemRepository())
@@ -190,7 +192,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 	return auth.NewRequestPasswordResetUseCase(
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
-		u.emailService,
+		u.buyerEmailService,
 	)
 }
 
@@ -205,7 +207,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
 		u.repo.AdminPasswordReset(),
-		u.emailService,
+		u.adminEmailService,
 	)
 }
 
