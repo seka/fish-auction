@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/registry"
+	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
 
@@ -18,48 +22,39 @@ func NewAdminHandler(r registry.UseCase) *AdminHandler {
 }
 
 func (h *AdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	// Basic check for admin session
-	// In a real app we would have middleware adding context or strictly checking session
-	// Here we check cookie 'admin_session'
+	// Check authentication
 	cookie, err := r.Cookie("admin_session")
 	if err != nil || cookie.Value != "authenticated" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	// For Admin, we don't have ID in cookie/session in the current simple auth implementation (Login handler just sets "authenticated")
-	// But UpdatePasswordUseCase expects an ID.
-	// This is a disconnect I noted earlier. the Login handler for admin does NOT set an ID cookie.
-	// It only sets "admin_session=authenticated".
+	// Get admin ID from cookie
+	idCookie, err := r.Cookie("admin_id")
+	if err != nil {
+		http.Error(w, "Unauthorized: Admin ID missing", http.StatusUnauthorized)
+		return
+	}
 
-	// I need to update Login handler (internal/server/handler/auth.go) to set admin_id cookie as well.
-	// Or I can modify UpdatePasswordUseCase to use email? No, repository needs ID or we update repository to use email.
-	// But updating by ID is safer/standard.
-	// So I should update AuthHandler first to store ID.
+	var adminID int
+	if _, err := fmt.Sscanf(idCookie.Value, "%d", &adminID); err != nil {
+		http.Error(w, "Invalid admin ID", http.StatusBadRequest)
+		return
+	}
 
-	// Assuming I fix AuthHandler to set "admin_id", I can proceed here.
+	var req dto.UpdatePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 
-	// idCookie, err := r.Cookie("admin_id")
-	// if err != nil {
-	// 	// Fallback or error?
-	// 	http.Error(w, "Unauthorized: Admin ID missing", http.StatusUnauthorized)
-	// 	return
-	// }
+	if err := h.updatePasswordUseCase.Execute(r.Context(), adminID, req.CurrentPassword, req.NewPassword); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 
-	// var adminID int
-	// Assuming simple int parsing
-	// but I need to import fmt
-	// wait, I missed importing fmt
-	// I will fix imports.
-
-	// ... (logic resumes after imports)
-	// http.Error(w, "Functionality incomplete without admin_id", http.StatusInternalServerError)
-
-	// Temporary workaround: if we don't have admin_id cookie, we can't update password by ID.
-	// But for now let's just use a hardcoded check or assume ID 1 if authenticated (Bad practice but unblocks)
-	// Or better: update AuthHandler to set "admin_id".
-
-	// Let's implement RegisterRoutes to unblock compilation first.
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
 }
 
 func (h *AdminHandler) RegisterRoutes(mux *http.ServeMux) {

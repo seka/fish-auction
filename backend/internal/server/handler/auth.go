@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
@@ -26,12 +27,12 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, err := h.loginUseCase.Execute(r.Context(), req.Email, req.Password)
+	admin, err := h.loginUseCase.Execute(r.Context(), req.Email, req.Password)
 	if err != nil {
 		util.HandleError(w, err)
 		return
 	}
-	if !success {
+	if admin == nil {
 		util.HandleError(w, &errors.UnauthorizedError{Message: "Invalid credentials"})
 		return
 	}
@@ -44,6 +45,16 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   false, // Set to true in production with HTTPS
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	// Set admin_id cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "admin_id",
+		Value:    fmt.Sprintf("%d", admin.ID),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	})
 
