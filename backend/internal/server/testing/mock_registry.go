@@ -170,5 +170,13 @@ func (m *MockRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 	return nil
 }
 
+func (m *MockRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
+	return nil
+}
+
+func (m *MockRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
+	return nil
+}
+
 // Ensure MockRegistry implements registry.UseCase
 var _ registry.UseCase = &MockRegistry{}
