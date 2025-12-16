@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from './_hooks/useAuth';
@@ -86,6 +87,11 @@ export default function LoginPage() {
                         >
                             {isLoading ? t('Admin.Login.logging_in') : t('Common.submit')}
                         </Button>
+                        <Box textAlign="center">
+                            <Link href="/login/admin/forgot_password" className={css({ fontSize: 'sm', color: 'gray.500', _hover: { textDecoration: 'underline' }, cursor: 'pointer', display: 'block', mb: '2' })}>
+                                パスワードをお忘れの方はこちら
+                            </Link>
+                        </Box>
                     </Stack>
                 </form>
             </Card>
