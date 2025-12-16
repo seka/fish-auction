@@ -6,11 +6,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"net/smtp"
 	"time"
 
-	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 type RequestPasswordResetUseCase interface {
@@ -20,18 +19,18 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.AdminPasswordResetRepository
-	cfg          *config.Config
+	emailService service.EmailService
 }
 
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.AdminPasswordResetRepository,
-	cfg *config.Config,
+	emailService service.EmailService,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,
-		cfg:          cfg,
+		emailService: emailService,
 	}
 }
 
@@ -65,41 +64,10 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	}
 
 	// 4. Send Email
-	if err := u.sendEmail(email, token); err != nil {
+	resetURL := fmt.Sprintf("http://localhost:3000/login/admin/reset_password?token=%s", token) // TODO: config
+	if err := u.emailService.SendAdminPasswordReset(ctx, email, resetURL); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
 	return nil
-}
-
-func (u *requestPasswordResetUseCase) sendEmail(to, token string) error {
-	resetURL := fmt.Sprintf("%s/login/admin/reset_password?token=%s", "http://localhost:3000", token) // TODO: config
-
-	subject := "【Fish Auction】パスワード再設定のご案内"
-	body := fmt.Sprintf(`
-管理者様
-
-Fish Auctionをご利用いただきありがとうございます。
-パスワード再設定のリクエストを受け付けました。
-
-以下のリンクをクリックして、新しいパスワードを設定してください。
-
-%s
-
-※このリンクは30分間有効です。
-※本メールに心当たりがない場合は、破棄してください。
-
---------------------------------------------------
-Fish Auction 運営事務局
---------------------------------------------------
-`, resetURL)
-
-	msg := []byte(fmt.Sprintf("To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
-		"\r\n"+
-		"%s", to, subject, body))
-
-	addr := fmt.Sprintf("%s:%s", u.cfg.SMTPHost, u.cfg.SMTPPort)
-	return smtp.SendMail(addr, nil, u.cfg.SMTPFrom, []string{to}, msg)
 }
