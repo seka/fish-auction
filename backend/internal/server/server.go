@@ -15,20 +15,21 @@ import (
 )
 
 type Server struct {
-	router           *http.ServeMux
-	httpServer       *http.Server
-	healthHandler    *handler.HealthHandler
-	fishermanHandler *handler.FishermanHandler
-	buyerHandler     *handler.BuyerHandler
-	itemHandler      *handler.ItemHandler
-	bidHandler       *handler.BidHandler
-	invoiceHandler   *handler.InvoiceHandler
-	authHandler      *handler.AuthHandler
-	venueHandler     *handler.VenueHandler
-	auctionHandler   *handler.AuctionHandler
-	adminHandler     *handler.AdminHandler
-	authResetHandler *handler.AuthResetHandler
-	buyerAuth        *middleware.BuyerAuthMiddleware
+	router                *http.ServeMux
+	httpServer            *http.Server
+	healthHandler         *handler.HealthHandler
+	fishermanHandler      *handler.FishermanHandler
+	buyerHandler          *handler.BuyerHandler
+	itemHandler           *handler.ItemHandler
+	bidHandler            *handler.BidHandler
+	invoiceHandler        *handler.InvoiceHandler
+	authHandler           *handler.AuthHandler
+	venueHandler          *handler.VenueHandler
+	auctionHandler        *handler.AuctionHandler
+	adminHandler          *handler.AdminHandler
+	adminAuthResetHandler *handler.AdminAuthResetHandler
+	authResetHandler      *handler.AuthResetHandler
+	buyerAuth             *middleware.BuyerAuthMiddleware
 }
 
 func NewServer(
@@ -43,21 +44,23 @@ func NewServer(
 	auctionHandler *handler.AuctionHandler,
 	adminHandler *handler.AdminHandler,
 	authResetHandler *handler.AuthResetHandler,
+	adminAuthResetHandler *handler.AdminAuthResetHandler,
 ) *Server {
 	s := &Server{
-		router:           http.NewServeMux(),
-		healthHandler:    healthHandler,
-		fishermanHandler: fishermanHandler,
-		buyerHandler:     buyerHandler,
-		itemHandler:      itemHandler,
-		bidHandler:       bidHandler,
-		invoiceHandler:   invoiceHandler,
-		authHandler:      authHandler,
-		venueHandler:     venueHandler,
-		auctionHandler:   auctionHandler,
-		adminHandler:     adminHandler,
-		authResetHandler: authResetHandler,
-		buyerAuth:        middleware.NewBuyerAuthMiddleware(),
+		router:                http.NewServeMux(),
+		healthHandler:         healthHandler,
+		fishermanHandler:      fishermanHandler,
+		buyerHandler:          buyerHandler,
+		itemHandler:           itemHandler,
+		bidHandler:            bidHandler,
+		invoiceHandler:        invoiceHandler,
+		authHandler:           authHandler,
+		venueHandler:          venueHandler,
+		auctionHandler:        auctionHandler,
+		adminHandler:          adminHandler,
+		authResetHandler:      authResetHandler,
+		adminAuthResetHandler: adminAuthResetHandler,
+		buyerAuth:             middleware.NewBuyerAuthMiddleware(),
 	}
 	s.routes()
 	return s
@@ -78,9 +81,9 @@ func (s *Server) routes() {
 	s.authHandler.RegisterRoutes(s.router)
 	s.venueHandler.RegisterRoutes(s.router)
 	s.auctionHandler.RegisterRoutes(s.router)
-	s.auctionHandler.RegisterRoutes(s.router)
 	s.adminHandler.RegisterRoutes(s.router)
 	s.authResetHandler.RegisterRoutes(s.router)
+	s.adminAuthResetHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) Start(addr string) error {

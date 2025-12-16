@@ -44,6 +44,7 @@ func main() {
 		handlers.auction,
 		handlers.admin,
 		handlers.authReset,
+		handlers.adminAuthReset,
 	)
 
 	// Start Server
@@ -53,31 +54,33 @@ func main() {
 }
 
 type handlers struct {
-	health    *handler.HealthHandler
-	fisherman *handler.FishermanHandler
-	buyer     *handler.BuyerHandler
-	item      *handler.ItemHandler
-	bid       *handler.BidHandler
-	invoice   *handler.InvoiceHandler
-	auth      *handler.AuthHandler
-	venue     *handler.VenueHandler
-	auction   *handler.AuctionHandler
-	admin     *handler.AdminHandler
-	authReset *handler.AuthResetHandler
+	health         *handler.HealthHandler
+	fisherman      *handler.FishermanHandler
+	buyer          *handler.BuyerHandler
+	item           *handler.ItemHandler
+	bid            *handler.BidHandler
+	invoice        *handler.InvoiceHandler
+	auth           *handler.AuthHandler
+	venue          *handler.VenueHandler
+	auction        *handler.AuctionHandler
+	admin          *handler.AdminHandler
+	authReset      *handler.AuthResetHandler
+	adminAuthReset *handler.AdminAuthResetHandler
 }
 
 func buildHandlers(reg registry.UseCase) *handlers {
 	return &handlers{
-		health:    handler.NewHealthHandler(),
-		fisherman: handler.NewFishermanHandler(reg),
-		buyer:     handler.NewBuyerHandler(reg),
-		item:      handler.NewItemHandler(reg),
-		bid:       handler.NewBidHandler(reg),
-		invoice:   handler.NewInvoiceHandler(reg),
-		auth:      handler.NewAuthHandler(reg),
-		venue:     handler.NewVenueHandler(reg),
-		auction:   handler.NewAuctionHandler(reg),
-		admin:     handler.NewAdminHandler(reg),
-		authReset: handler.NewAuthResetHandler(reg),
+		health:         handler.NewHealthHandler(),
+		fisherman:      handler.NewFishermanHandler(reg),
+		buyer:          handler.NewBuyerHandler(reg),
+		item:           handler.NewItemHandler(reg),
+		bid:            handler.NewBidHandler(reg),
+		invoice:        handler.NewInvoiceHandler(reg),
+		auth:           handler.NewAuthHandler(reg),
+		venue:          handler.NewVenueHandler(reg),
+		auction:        handler.NewAuctionHandler(reg),
+		admin:          handler.NewAdminHandler(reg),
+		authReset:      handler.NewAuthResetHandler(reg),
+		adminAuthReset: handler.NewAdminAuthResetHandler(reg),
 	}
 }
