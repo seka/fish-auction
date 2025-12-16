@@ -12,8 +12,9 @@ import (
 )
 
 type mockAuthRepoForUpdate struct {
-	auth *model.Authentication
-	err  error
+	auth      *model.Authentication
+	findErr   error
+	updateErr error
 }
 
 func (m *mockAuthRepoForUpdate) Login(ctx context.Context, email, password string) (*model.Buyer, error) {
@@ -26,8 +27,8 @@ func (m *mockAuthRepoForUpdate) FindByEmail(ctx context.Context, email string) (
 	return nil, nil
 }
 func (m *mockAuthRepoForUpdate) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
-	if m.err != nil {
-		return nil, m.err
+	if m.findErr != nil {
+		return nil, m.findErr
 	}
 	return m.auth, nil
 }
@@ -44,8 +45,8 @@ func (m *mockAuthRepoForUpdate) LockAccount(ctx context.Context, id int, until t
 	return nil
 }
 func (m *mockAuthRepoForUpdate) UpdatePassword(ctx context.Context, buyerID int, hashedPassword string) error {
-	if m.err != nil {
-		return m.err
+	if m.updateErr != nil {
+		return m.updateErr
 	}
 	return nil
 }
@@ -61,7 +62,8 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 		currentPass string
 		newPass     string
 		mockAuth    *model.Authentication
-		repoErr     error
+		findErr     error
+		updateErr   error
 		wantErr     bool
 	}{
 		{
@@ -87,18 +89,39 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 			wantErr:     true,
 		},
 		{
-			name:        "RepoError",
+			name:        "FindRepoError",
 			buyerID:     1,
 			currentPass: "current-password",
 			mockAuth:    validAuth,
-			repoErr:     errors.New("db error"),
+			findErr:     errors.New("find error"),
+			wantErr:     true,
+		},
+		{
+			name:        "UpdateRepoError",
+			buyerID:     1,
+			currentPass: "current-password",
+			newPass:     "new-password",
+			mockAuth:    validAuth,
+			updateErr:   errors.New("update error"),
+			wantErr:     true,
+		},
+		{
+			name:        "PasswordTooLong",
+			buyerID:     1,
+			currentPass: "current-password",
+			newPass:     "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			mockAuth:    validAuth,
 			wantErr:     true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := &mockAuthRepoForUpdate{auth: tt.mockAuth, err: tt.repoErr}
+			repo := &mockAuthRepoForUpdate{
+				auth:      tt.mockAuth,
+				findErr:   tt.findErr,
+				updateErr: tt.updateErr,
+			}
 			uc := buyer.NewUpdatePasswordUseCase(repo)
 
 			err := uc.Execute(context.Background(), tt.buyerID, tt.currentPass, tt.newPass)

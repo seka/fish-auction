@@ -75,6 +75,12 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 			createErr: errors.New("create failed"),
 			wantErr:   true,
 		},
+		{
+			name:     "PasswordTooLong",
+			email:    "long@example.com",
+			password: "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			wantErr:  true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -91,5 +97,16 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestCreateAdminUseCase_Count(t *testing.T) {
+	uc := admin.NewCreateAdminUseCase(&mockAdminRepositoryForCreate{})
+	count, err := uc.Count(context.Background())
+	if err != nil {
+		t.Errorf("Count() error = %v", err)
+	}
+	if count != 0 {
+		t.Errorf("Count() = %v, want 0", count)
 	}
 }

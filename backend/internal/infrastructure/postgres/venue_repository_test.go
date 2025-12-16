@@ -69,3 +69,58 @@ func TestVenueRepository_GetByID_NotFound(t *testing.T) {
 	_, err = repo.GetByID(context.Background(), id)
 	assert.Error(t, err)
 }
+
+func TestVenueRepository_Update(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewVenueRepository(db)
+	venue := &model.Venue{ID: 1, Name: "Venue Updated", Location: "Loc Updated", Description: "Desc Updated"}
+
+	// Success case
+	mock.ExpectExec("UPDATE venues SET").
+		WithArgs(venue.Name, venue.Location, venue.Description, venue.ID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = repo.Update(context.Background(), venue)
+	assert.NoError(t, err)
+
+	// Not Found case
+	mock.ExpectExec("UPDATE venues SET").
+		WithArgs(venue.Name, venue.Location, venue.Description, venue.ID).
+		WillReturnResult(sqlmock.NewResult(1, 0))
+
+	err = repo.Update(context.Background(), venue)
+	assert.Error(t, err)
+	// Optionally check if error is NotFoundError if you want to be precise
+}
+
+func TestVenueRepository_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewVenueRepository(db)
+	id := 1
+
+	// Success case
+	mock.ExpectExec("DELETE FROM venues WHERE id =").
+		WithArgs(id).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = repo.Delete(context.Background(), id)
+	assert.NoError(t, err)
+
+	// Not Found case
+	mock.ExpectExec("DELETE FROM venues WHERE id =").
+		WithArgs(id).
+		WillReturnResult(sqlmock.NewResult(1, 0))
+
+	err = repo.Delete(context.Background(), id)
+	assert.Error(t, err)
+}

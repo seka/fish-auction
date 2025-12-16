@@ -2,6 +2,7 @@ package auth_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/entity"
@@ -63,6 +64,7 @@ func TestLoginUseCase_Execute(t *testing.T) {
 		mockAdmin *entity.Admin
 		mockErr   error
 		wantFound bool
+		wantErr   bool
 	}{
 		{
 			name:      "CorrectCredentials",
@@ -70,6 +72,7 @@ func TestLoginUseCase_Execute(t *testing.T) {
 			password:  "admin-password",
 			mockAdmin: validAdmin,
 			wantFound: true,
+			wantErr:   false,
 		},
 		{
 			name:      "WrongPassword",
@@ -77,6 +80,7 @@ func TestLoginUseCase_Execute(t *testing.T) {
 			password:  "wrong-password",
 			mockAdmin: validAdmin,
 			wantFound: false,
+			wantErr:   false,
 		},
 		{
 			name:      "UserNotFound",
@@ -84,6 +88,15 @@ func TestLoginUseCase_Execute(t *testing.T) {
 			password:  "admin-password",
 			mockAdmin: validAdmin, // Repo has admin@example.com, but we search for other
 			wantFound: false,
+			wantErr:   false,
+		},
+		{
+			name:      "RepoError",
+			email:     "admin@example.com",
+			password:  "admin-password",
+			mockErr:   errors.New("db error"),
+			wantFound: false,
+			wantErr:   true,
 		},
 	}
 
@@ -96,8 +109,8 @@ func TestLoginUseCase_Execute(t *testing.T) {
 			uc := auth.NewLoginUseCase(repo)
 
 			gotAdmin, err := uc.Execute(context.Background(), tt.email, tt.password)
-			if err != nil {
-				t.Fatalf("expected no error, got %v", err)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("expected error=%v, got %v", tt.wantErr, err)
 			}
 			if (gotAdmin != nil) != tt.wantFound {
 				t.Fatalf("expected found=%v, got admin=%v", tt.wantFound, gotAdmin)

@@ -100,3 +100,69 @@ func TestAuctionRepository_List(t *testing.T) {
 		assert.Len(t, list, 1)
 	})
 }
+
+func TestAuctionRepository_Update(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewAuctionRepository(db)
+	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
+	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	auction := &model.Auction{
+		ID:          1,
+		VenueID:     1,
+		AuctionDate: date,
+		StartTime:   &start,
+		EndTime:     &end,
+		Status:      model.AuctionStatusCompleted,
+	}
+
+	mock.ExpectExec("UPDATE auctions SET").
+		WithArgs(auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = repo.Update(context.Background(), auction)
+	assert.NoError(t, err)
+}
+
+func TestAuctionRepository_UpdateStatus(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewAuctionRepository(db)
+	id := 1
+	status := model.AuctionStatusCompleted
+
+	mock.ExpectExec("UPDATE auctions SET status = \\$1").
+		WithArgs(status, id).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = repo.UpdateStatus(context.Background(), id, status)
+	assert.NoError(t, err)
+}
+
+func TestAuctionRepository_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewAuctionRepository(db)
+	id := 1
+
+	mock.ExpectExec("DELETE FROM auctions WHERE id = \\$1").
+		WithArgs(id).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = repo.Delete(context.Background(), id)
+	assert.NoError(t, err)
+}

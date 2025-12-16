@@ -16,10 +16,14 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	updateStatusErr := errors.New("update status failed")
 	createBidErr := errors.New("create bid failed")
 	txErr := errors.New("tx error")
+	dbErr := errors.New("db error")
 
 	tests := []struct {
 		name             string
 		input            *model.Bid
+		listItemsErr     error
+		itemFound        bool
+		getAuctionErr    error
 		updateStatusErr  error
 		createErr        error
 		txErr            error
@@ -36,6 +40,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   1000,
 			},
+			itemFound:        true,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -55,6 +60,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   1000,
 			},
+			itemFound:        true,
 			updateStatusErr:  updateStatusErr,
 			wantErr:          nil, // UpdateStatus is no longer called, so no error expected from it
 			wantTxCalled:     true,
@@ -76,6 +82,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   1000,
 			},
+			itemFound:        true,
 			createErr:        createBidErr,
 			wantErr:          createBidErr,
 			wantCreateCalled: true,
@@ -96,6 +103,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   1000,
 			},
+			itemFound:    true,
 			txErr:        txErr,
 			wantErr:      txErr,
 			wantTxCalled: true,
@@ -115,7 +123,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   1000,
 			},
-			wantErr: &domainErrors.ValidationError{Field: "auction_time"},
+			itemFound: true,
+			wantErr:   &domainErrors.ValidationError{Field: "auction_time"},
 			mockAuction: func() *model.Auction {
 				now := time.Now()
 				startTime := now.Add(-2 * time.Hour)
@@ -130,6 +139,49 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				}
 			}(),
 		},
+		{
+			name: "Error_AuctionPeriodInvalid_BeforeStart",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   1000,
+			},
+			itemFound: true,
+			wantErr:   &domainErrors.ValidationError{Field: "auction_time"},
+			mockAuction: func() *model.Auction {
+				now := time.Now()
+				startTime := now.Add(1 * time.Hour)
+				endTime := now.Add(2 * time.Hour)
+				return &model.Auction{
+					ID:          1,
+					VenueID:     1,
+					AuctionDate: now,
+					StartTime:   &startTime,
+					EndTime:     &endTime,
+					Status:      model.AuctionStatusInProgress,
+				}
+			}(),
+		},
+		{
+			name:         "Error_ItemRepoError",
+			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: 1000},
+			listItemsErr: dbErr,
+			wantErr:      dbErr,
+		},
+		{
+			name:         "Error_ItemNotFound",
+			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: 1000},
+			itemFound:    false, // Simulate item not found
+			listItemsErr: nil,
+			wantErr:      &domainErrors.ValidationError{Field: "item_id"},
+		},
+		{
+			name:          "Error_AuctionRepoError",
+			input:         &model.Bid{ItemID: 1, BuyerID: 1, Price: 1000},
+			itemFound:     true,
+			getAuctionErr: dbErr,
+			wantErr:       dbErr,
+		},
 	}
 
 	for _, tt := range tests {
@@ -140,11 +192,16 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 			mockItemRepo := &mock.MockItemRepository{
 				ListFunc: func(ctx context.Context, status string) ([]model.AuctionItem, error) {
+					if tt.listItemsErr != nil {
+						return nil, tt.listItemsErr
+					}
+					if !tt.itemFound {
+						return []model.AuctionItem{}, nil
+					}
 					return []model.AuctionItem{
 						{ID: tt.input.ItemID, AuctionID: 1},
 					}, nil
 				},
-				// UpdateStatusFunc is not expected to be called
 			}
 
 			mockBidRepo := &mock.MockBidRepository{
@@ -164,6 +221,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 			mockAuctionRepo := &mock.MockAuctionRepository{
 				GetByIDFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+					if tt.getAuctionErr != nil {
+						return nil, tt.getAuctionErr
+					}
 					return tt.mockAuction, nil
 				},
 			}

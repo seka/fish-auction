@@ -2,6 +2,8 @@ package admin_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"testing"
 	"time"
@@ -28,92 +30,118 @@ func (m *mockAdminRepositoryForReset) UpdatePassword(ctx context.Context, id int
 	return m.err
 }
 
+type mockAdminPasswordResetRepositoryForReset struct {
+	tokenHash string
+	adminID   int
+	expiresAt time.Time
+	findErr   error
+}
+
+func (m *mockAdminPasswordResetRepositoryForReset) Create(ctx context.Context, adminID int, tokenHash string, expiresAt time.Time) error {
+	return nil
+}
+func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
+	if m.findErr != nil {
+		return 0, time.Time{}, m.findErr
+	}
+	if m.tokenHash == tokenHash {
+		return m.adminID, m.expiresAt, nil
+	}
+	return 0, time.Time{}, nil
+}
+func (m *mockAdminPasswordResetRepositoryForReset) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
+	return nil
+}
+func (m *mockAdminPasswordResetRepositoryForReset) DeleteAllByAdminID(ctx context.Context, adminID int) error {
+	return nil
+}
+
 func TestResetPasswordUseCase_Execute(t *testing.T) {
 	validAdminID := 1
 	validExpires := time.Now().Add(1 * time.Hour)
-	expiredExpires := time.Now().Add(-1 * time.Hour)
+	validToken := "valid-token"
+	hash := sha256.Sum256([]byte(validToken))
+	validTokenHash := hex.EncodeToString(hash[:])
 
 	tests := []struct {
-		name        string
-		token       string
-		newPassword string
-		mockAdminID int
-		mockExpires time.Time
-		repoFound   bool
-		updateErr   error
-		wantError   bool
+		name          string
+		token         string
+		newPassword   string
+		mockTokenHash string
+		mockAdminID   int
+		mockExpiresAt time.Time
+		mockFindErr   error
+		mockUpdateErr error
+		wantErr       bool
 	}{
 		{
-			name:        "Success",
-			token:       "valid-token",
-			newPassword: "new-password",
-			mockAdminID: validAdminID,
-			mockExpires: validExpires,
-			repoFound:   true,
+			name:          "Success",
+			token:         validToken,
+			newPassword:   "newPass123",
+			mockTokenHash: validTokenHash,
+			mockAdminID:   validAdminID,
+			mockExpiresAt: validExpires,
+			wantErr:       false,
 		},
 		{
-			name:      "TokenNotFound",
-			token:     "invalid-token",
-			repoFound: false,
-			wantError: true,
+			name:        "TokenNotFound",
+			token:       "invalid",
+			newPassword: "newPass123",
+			wantErr:     true,
 		},
 		{
-			name:        "TokenExpired",
-			token:       "expired-token",
-			mockAdminID: validAdminID,
-			mockExpires: expiredExpires,
-			repoFound:   true,
-			wantError:   true,
+			name:        "TokenFindError",
+			token:       validToken,
+			newPassword: "newPass123",
+			mockFindErr: errors.New("db error"),
+			wantErr:     true,
 		},
 		{
-			name:        "UpdateFailed",
-			token:       "valid-token",
-			newPassword: "new-password",
-			mockAdminID: validAdminID,
-			mockExpires: validExpires,
-			repoFound:   true,
-			updateErr:   errors.New("update failed"),
-			wantError:   true,
+			name:          "TokenExpired",
+			token:         validToken,
+			newPassword:   "newPass123",
+			mockTokenHash: validTokenHash,
+			mockAdminID:   validAdminID,
+			mockExpiresAt: time.Now().Add(-1 * time.Hour),
+			wantErr:       true,
+		},
+		{
+			name:          "UpdateFailed",
+			token:         validToken,
+			newPassword:   "newPass123",
+			mockTokenHash: validTokenHash,
+			mockAdminID:   validAdminID,
+			mockExpiresAt: validExpires,
+			mockUpdateErr: errors.New("update failed"),
+			wantErr:       true,
+		},
+		{
+			name:          "PasswordTooLong",
+			token:         validToken,
+			newPassword:   "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			mockTokenHash: validTokenHash,
+			mockAdminID:   validAdminID,
+			mockExpiresAt: validExpires,
+			wantErr:       true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resetRepo := &mockAdminPasswordResetRepositoryWithReturn{
+			pwdResetRepo := &mockAdminPasswordResetRepositoryForReset{
+				tokenHash: tt.mockTokenHash,
 				adminID:   tt.mockAdminID,
-				expiresAt: tt.mockExpires,
-				found:     tt.repoFound,
+				expiresAt: tt.mockExpiresAt,
+				findErr:   tt.mockFindErr,
 			}
-			adminRepo := &mockAdminRepositoryForReset{err: tt.updateErr}
+			adminRepo := &mockAdminRepositoryForReset{err: tt.mockUpdateErr}
 
-			uc := admin.NewResetPasswordUseCase(resetRepo, adminRepo)
+			uc := admin.NewResetPasswordUseCase(pwdResetRepo, adminRepo)
 			err := uc.Execute(context.Background(), tt.token, tt.newPassword)
 
-			if (err != nil) != tt.wantError {
-				t.Errorf("expected error=%v, got %v", tt.wantError, err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("expected error=%v, got %v", tt.wantErr, err)
 			}
 		})
 	}
-}
-
-type mockAdminPasswordResetRepositoryWithReturn struct {
-	adminID   int
-	expiresAt time.Time
-	found     bool
-}
-
-func (m *mockAdminPasswordResetRepositoryWithReturn) Create(ctx context.Context, adminID int, tokenHash string, expiresAt time.Time) error {
-	return nil
-}
-func (m *mockAdminPasswordResetRepositoryWithReturn) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
-	if !m.found {
-		return 0, time.Time{}, errors.New("not found")
-	}
-	return m.adminID, m.expiresAt, nil
-}
-func (m *mockAdminPasswordResetRepositoryWithReturn) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
-	return nil
-}
-func (m *mockAdminPasswordResetRepositoryWithReturn) DeleteAllByAdminID(ctx context.Context, adminID int) error {
-	return nil
 }

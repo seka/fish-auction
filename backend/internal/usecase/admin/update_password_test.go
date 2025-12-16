@@ -96,6 +96,14 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 			updateErr:       errors.New("update failed"),
 			wantErr:         true,
 		},
+		{
+			name:            "NewPasswordTooLong",
+			id:              1,
+			currentPassword: password,
+			newPassword:     "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			mockAdmin:       adminUser,
+			wantErr:         true,
+		},
 	}
 
 	for _, tt := range tests {

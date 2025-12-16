@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -11,8 +12,9 @@ import (
 )
 
 type mockAuctionRepoForGet struct {
-	auction *model.Auction
-	err     error
+	auction         *model.Auction
+	err             error
+	updateStatusErr error
 }
 
 func (m *mockAuctionRepoForGet) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
@@ -35,7 +37,7 @@ func (m *mockAuctionRepoForGet) ListByVenue(ctx context.Context, venueID int) ([
 }
 func (m *mockAuctionRepoForGet) Update(ctx context.Context, auction *model.Auction) error { return nil }
 func (m *mockAuctionRepoForGet) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
-	return nil
+	return m.updateStatusErr
 }
 func (m *mockAuctionRepoForGet) Delete(ctx context.Context, id int) error { return nil }
 
@@ -43,12 +45,13 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 	validAuction := &model.Auction{ID: 1}
 
 	tests := []struct {
-		name    string
-		id      int
-		mockAuc *model.Auction
-		mockErr error
-		wantErr bool
-		wantNil bool
+		name                string
+		id                  int
+		mockAuc             *model.Auction
+		mockErr             error
+		mockUpdateStatusErr error
+		wantErr             bool
+		wantNil             bool
 	}{
 		{
 			name:    "Success",
@@ -79,11 +82,27 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 			mockErr: errors.New("db error"),
 			wantErr: true,
 		},
+		{
+			name: "UpdateStatusError",
+			id:   1,
+			mockAuc: &model.Auction{
+				ID:        1,
+				Status:    model.AuctionStatusInProgress,
+				EndTime:   timePtr(time.Now().Add(-1 * time.Hour)),
+				StartTime: timePtr(time.Now().Add(-2 * time.Hour)),
+			},
+			mockUpdateStatusErr: errors.New("update failed"),
+			wantErr:             true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := &mockAuctionRepoForGet{auction: tt.mockAuc, err: tt.mockErr}
+			repo := &mockAuctionRepoForGet{
+				auction:         tt.mockAuc,
+				err:             tt.mockErr,
+				updateStatusErr: tt.mockUpdateStatusErr,
+			}
 			uc := auction.NewGetAuctionUseCase(repo)
 
 			got, err := uc.Execute(context.Background(), tt.id)
@@ -99,4 +118,8 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 			}
 		})
 	}
+}
+
+func timePtr(t time.Time) *time.Time {
+	return &t
 }
