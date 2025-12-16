@@ -12,6 +12,8 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
+var randRead = rand.Read
+
 type RequestPasswordResetUseCase interface {
 	Execute(ctx context.Context, email string) error
 }
@@ -19,13 +21,13 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.AdminPasswordResetRepository
-	emailService service.EmailService
+	emailService service.AdminEmailService
 }
 
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.AdminPasswordResetRepository,
-	emailService service.EmailService,
+	emailService service.AdminEmailService,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
@@ -45,7 +47,7 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 
 	// 1. Generate secure token
 	tokenBytes := make([]byte, 32)
-	if _, err := rand.Read(tokenBytes); err != nil {
+	if _, err := randRead(tokenBytes); err != nil {
 		return fmt.Errorf("failed to generate token: %w", err)
 	}
 	token := hex.EncodeToString(tokenBytes)

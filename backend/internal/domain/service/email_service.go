@@ -2,7 +2,10 @@ package service
 
 import "context"
 
-type EmailService interface {
+type BuyerEmailService interface {
 	SendBuyerPasswordReset(ctx context.Context, to, url string) error
+}
+
+type AdminEmailService interface {
 	SendAdminPasswordReset(ctx context.Context, to, url string) error
 }

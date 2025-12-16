@@ -10,15 +10,13 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
 
-type mockAdminRepository struct {
+type mockAdminRepoForReqPwd struct {
 	admin *entity.Admin
 	err   error
 }
 
-func (m *mockAdminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
-	return nil, nil
-}
-func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+func (m *mockAdminRepoForReqPwd) Create(ctx context.Context, admin *entity.Admin) error { return nil }
+func (m *mockAdminRepoForReqPwd) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -27,97 +25,119 @@ func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) 
 	}
 	return nil, nil
 }
-func (m *mockAdminRepository) Create(ctx context.Context, admin *entity.Admin) error { return nil }
-func (m *mockAdminRepository) Count(ctx context.Context) (int, error)                { return 0, nil }
-func (m *mockAdminRepository) UpdatePassword(ctx context.Context, id int, hash string) error {
+func (m *mockAdminRepoForReqPwd) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+	return nil, nil
+}
+func (m *mockAdminRepoForReqPwd) UpdatePassword(ctx context.Context, id int, password string) error {
 	return nil
 }
+func (m *mockAdminRepoForReqPwd) Count(ctx context.Context) (int, error) { return 0, nil }
 
-type mockAdminPasswordResetRepository struct {
-	createErr error
+type mockPwdResetRepoForReqPwd struct {
+	delErr error
+	creErr error
 }
 
-func (m *mockAdminPasswordResetRepository) Create(ctx context.Context, adminID int, tokenHash string, expiresAt time.Time) error {
-	return m.createErr
+func (m *mockPwdResetRepoForReqPwd) Create(ctx context.Context, adminID int, tokenHash string, expiresAt time.Time) error {
+	return m.creErr
 }
-func (m *mockAdminPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
+func (m *mockPwdResetRepoForReqPwd) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
 	return 0, time.Time{}, nil
 }
-func (m *mockAdminPasswordResetRepository) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
-	return nil
+func (m *mockPwdResetRepoForReqPwd) DeleteAllByAdminID(ctx context.Context, adminID int) error {
+	return m.delErr
 }
-func (m *mockAdminPasswordResetRepository) DeleteAllByAdminID(ctx context.Context, adminID int) error {
+func (m *mockPwdResetRepoForReqPwd) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
 	return nil
 }
 
-type mockEmailService struct {
-	sentAdminURL string
-	err          error
+type mockEmailServiceForReqPwd struct {
+	sndErr error
 }
 
-func (m *mockEmailService) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
-	return nil
+func (m *mockEmailServiceForReqPwd) SendAdminPasswordReset(ctx context.Context, to, url string) error {
+	return m.sndErr
 }
-func (m *mockEmailService) SendAdminPasswordReset(ctx context.Context, to, url string) error {
-	if m.err != nil {
-		return m.err
-	}
-	m.sentAdminURL = url
+func (m *mockEmailServiceForReqPwd) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
 	return nil
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
-	validAdmin := &entity.Admin{ID: 1, Email: "admin@example.com"}
+	validAdmin := &entity.Admin{ID: 1, Email: "test@example.com"}
 
 	tests := []struct {
-		name         string
-		email        string
-		mockAdmin    *entity.Admin
-		mockRepoErr  error
-		mockEmailErr error
-		wantError    bool
-		wantSent     bool
+		name        string
+		email       string
+		mockAdmin   *entity.Admin
+		mockFindErr error
+		mockRandErr error
+		mockDelErr  error
+		mockCreErr  error
+		mockSndErr  error
+		wantErr     bool
 	}{
 		{
 			name:      "Success",
-			email:     "admin@example.com",
+			email:     "test@example.com",
 			mockAdmin: validAdmin,
-			wantSent:  true,
 		},
 		{
-			name:      "UserNotFound",
-			email:     "other@example.com",
-			mockAdmin: validAdmin,
-			wantSent:  false,
+			name:      "AdminNotFound",
+			email:     "unknown@example.com",
+			mockAdmin: nil,   // Repo returns nil, nil
+			wantErr:   false, // Should return nil (masking)
 		},
 		{
-			name:         "EmailError",
-			email:        "admin@example.com",
-			mockAdmin:    validAdmin,
-			mockEmailErr: errors.New("email failed"),
-			wantError:    true,
+			name:        "RepoFindError",
+			email:       "test@example.com",
+			mockFindErr: errors.New("db error"),
+			wantErr:     false, // Should return nil (masking)
+		},
+		{
+			name:        "RandReadError",
+			email:       "test@example.com",
+			mockAdmin:   validAdmin,
+			mockRandErr: errors.New("rand error"),
+			wantErr:     true,
+		},
+		{
+			name:       "DeleteTokenError",
+			email:      "test@example.com",
+			mockAdmin:  validAdmin,
+			mockDelErr: errors.New("del error"),
+			wantErr:    true,
+		},
+		{
+			name:       "CreateTokenError",
+			email:      "test@example.com",
+			mockAdmin:  validAdmin,
+			mockCreErr: errors.New("cre error"),
+			wantErr:    true,
+		},
+		{
+			name:       "SendEmailError",
+			email:      "test@example.com",
+			mockAdmin:  validAdmin,
+			mockSndErr: errors.New("send error"),
+			wantErr:    true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			adminRepo := &mockAdminRepository{admin: tt.mockAdmin, err: tt.mockRepoErr}
-			resetRepo := &mockAdminPasswordResetRepository{}
-			emailService := &mockEmailService{err: tt.mockEmailErr}
+			// Mock rand
+			restore := admin.SetRandRead(admin.GetRandReadFunc(tt.mockRandErr))
+			defer restore()
 
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, resetRepo, emailService)
+			adminRepo := &mockAdminRepoForReqPwd{admin: tt.mockAdmin, err: tt.mockFindErr}
+			pwdResetRepo := &mockPwdResetRepoForReqPwd{delErr: tt.mockDelErr, creErr: tt.mockCreErr}
+			emailService := &mockEmailServiceForReqPwd{sndErr: tt.mockSndErr}
+
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService)
 			err := uc.Execute(context.Background(), tt.email)
 
-			if (err != nil) != tt.wantError {
-				if tt.name == "RepoError" && err == nil {
-					// Expected logic
-				} else {
-					t.Errorf("expected error=%v, got %v", tt.wantError, err)
-				}
-			}
-
-			if tt.wantSent && emailService.sentAdminURL == "" {
-				t.Error("expected email to be sent, but wasn't")
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

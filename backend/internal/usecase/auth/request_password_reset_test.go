@@ -37,6 +37,7 @@ func (m *mockBuyerRepository) Count(ctx context.Context) (int, error) { return 0
 
 type mockBuyerPasswordResetRepository struct {
 	createErr error
+	deleteErr error
 }
 
 func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, buyerID int, tokenHash string, expiresAt time.Time) error {
@@ -49,7 +50,7 @@ func (m *mockBuyerPasswordResetRepository) DeleteByTokenHash(ctx context.Context
 	return nil
 }
 func (m *mockBuyerPasswordResetRepository) DeleteAllByBuyerID(ctx context.Context, buyerID int) error {
-	return nil
+	return m.deleteErr
 }
 
 type mockEmailService struct {
@@ -77,13 +78,14 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 	validBuyer := &model.Buyer{ID: 1, Name: "Test Buyer"}
 
 	tests := []struct {
-		name         string
-		email        string
-		mockBuyer    *model.Buyer
-		mockRepoErr  error
-		mockEmailErr error
-		wantError    bool
-		wantSent     bool
+		name          string
+		email         string
+		mockBuyer     *model.Buyer
+		mockRepoErr   error
+		mockEmailErr  error
+		mockResetRepo *mockBuyerPasswordResetRepository
+		wantError     bool
+		wantSent      bool
 	}{
 		{
 			name:      "Success",
@@ -95,18 +97,13 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			name:      "UserNotFound",
 			email:     "other@example.com",
 			mockBuyer: nil,
-			wantSent:  false, // Should return nil error but not send email
+			wantSent:  false,
 		},
 		{
 			name:        "RepoError",
 			email:       "buyer@example.com",
 			mockRepoErr: errors.New("db error"),
-			wantError:   true, // Actually implementation returns nil on find error to hide user existence? No, implementation check:
-			// if err != nil { return nil } // Security.
-			// Wait, let's check implementation.
-			// if err != nil { return nil }
-			// So even DB error is masked.
-			// Let's verify this behavior.
+			wantError:   false, // Returns nil for security
 		},
 		{
 			name:         "EmailError",
@@ -114,6 +111,30 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			mockBuyer:    validBuyer,
 			mockEmailErr: errors.New("email failed"),
 			wantError:    true,
+		},
+		{
+			name:      "DeleteTokenError",
+			email:     "buyer@example.com",
+			mockBuyer: validBuyer,
+			mockResetRepo: &mockBuyerPasswordResetRepository{
+				deleteErr: errors.New("delete failed"),
+			},
+			wantError: true,
+		},
+		{
+			name:      "CreateTokenError",
+			email:     "buyer@example.com",
+			mockBuyer: validBuyer,
+			mockResetRepo: &mockBuyerPasswordResetRepository{
+				createErr: errors.New("create failed"),
+			},
+			wantError: true,
+		},
+		{
+			name:      "RandomError",
+			email:     "buyer@example.com",
+			mockBuyer: validBuyer,
+			wantError: true,
 		},
 	}
 
@@ -127,8 +148,19 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			// Yes, existing mock is manual and might be missing FindByName which is in interface.
 
 			buyerRepo := &mockBuyerRepository{buyer: tt.mockBuyer, err: tt.mockRepoErr}
-			resetRepo := &mockBuyerPasswordResetRepository{}
+			resetRepo := tt.mockResetRepo
+			if resetRepo == nil {
+				resetRepo = &mockBuyerPasswordResetRepository{}
+			}
 			emailService := &mockEmailService{err: tt.mockEmailErr}
+
+			// Mock rand.Read if testing random error
+			if tt.name == "RandomError" {
+				cleanup := auth.SetRandRead(func(b []byte) (int, error) {
+					return 0, errors.New("random failed")
+				})
+				defer cleanup()
+			}
 
 			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService)
 			err := uc.Execute(context.Background(), tt.email)
