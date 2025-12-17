@@ -61,13 +61,6 @@ func formatTime(t *time.Time) *string {
 }
 
 func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	// Enforce Admin Auth
-	cookie, err := r.Cookie("admin_session")
-	if err != nil || cookie.Value != "authenticated" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
 	var req dto.CreateAuctionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		util.HandleError(w, err)

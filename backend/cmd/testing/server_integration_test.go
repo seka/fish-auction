@@ -159,18 +159,21 @@ func TestServerIntegration(t *testing.T) {
 		buyerCookies := login(t, client, serverURL+"/api/buyers/login", `{"email": "ishmael@example.com", "password": "password123"}`)
 
 		// 6. Create Venue (as Admin)
-		venueID := createResource(t, client, serverURL+"/api/venues", `{"name": "Nantucket Harbor", "location": "Nantucket", "description": "Main harbor"}`, adminCookies)
+		// POST /api/admin/venues
+		venueID := createResource(t, client, serverURL+"/api/admin/venues", `{"name": "Nantucket Harbor", "location": "Nantucket", "description": "Main harbor"}`, adminCookies)
 
 		// 7. Create Auction (as Admin)
+		// POST /api/admin/auctions
 		// Links to Venue.
 		// Make auction active now so we can bid.
 		auctionDate := time.Now().Format("2006-01-02")
 		// StartTime 00:00, EndTime 23:59
-		auctionID := createResource(t, client, serverURL+"/api/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": "%s", "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
+		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": "%s", "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
 
 		// 8. Create Item (as Admin)
+		// POST /api/admin/items
 		// Note: Item creation needs FishermanID and AuctionID
-		itemID := createResource(t, client, serverURL+"/api/items", fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Whale", "quantity": 1, "unit": "whole"}`, auctionID, fishermanID), adminCookies)
+		itemID := createResource(t, client, serverURL+"/api/admin/items", fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Whale", "quantity": 1, "unit": "whole"}`, auctionID, fishermanID), adminCookies)
 
 		// Create another item for bidding test not needed if we use the first one, but let's keep logic simple
 		// reusing itemID for bidding if possible, or create duplicate?
@@ -178,14 +181,14 @@ func TestServerIntegration(t *testing.T) {
 		// Wait, previous code used itemID2.
 		// Let's just use the one item we created.
 
-		// 9. List Auctions
+		// 9. List Auctions (Public GET /api/auctions)
 		// Verify valid JSON response
 		listResources(t, client, serverURL+"/api/auctions")
 
 		// 10. Place Bid (as Buyer)
-		// POST /api/bids
+		// POST /api/buyer/bids
 		bidBody := fmt.Sprintf(`{"item_id": %d, "price": 5000}`, itemID)
-		postResource(t, client, serverURL+"/api/bids", bidBody, buyerCookies)
+		postResource(t, client, serverURL+"/api/buyer/bids", bidBody, buyerCookies)
 
 		// 11. Verify Bid via Auction Details or Item Details
 		verifyBid(t, client, serverURL+fmt.Sprintf("/api/auctions/%d/items", auctionID), itemID, 5000)
