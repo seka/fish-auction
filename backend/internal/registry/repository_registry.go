@@ -25,8 +25,7 @@ type Repository interface {
 	NewVenueRepository() repository.VenueRepository
 	NewAuctionRepository() repository.AuctionRepository
 	NewAdminRepository() repository.AdminRepository // ... other repositories
-	PasswordReset() repository.BuyerPasswordResetRepository
-	AdminPasswordReset() repository.AdminPasswordResetRepository
+	PasswordReset() repository.PasswordResetRepository
 }
 
 // repositoryRegistry implements the Repository interface
@@ -64,6 +63,7 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 		"001_init.sql",
 		"002_create_password_reset_tokens.sql",
 		"003_sep_password_reset_tokens.sql",
+		"004_consolidate_password_reset_tokens.sql",
 	}
 
 	for _, file := range migrationFiles {
@@ -153,10 +153,6 @@ func (r *repositoryRegistry) NewAdminRepository() repository.AdminRepository {
 	return postgres.NewAdminRepository(r.db)
 }
 
-func (r *repositoryRegistry) PasswordReset() repository.BuyerPasswordResetRepository {
-	return postgres.NewBuyerPasswordResetRepository(r.db)
-}
-
-func (r *repositoryRegistry) AdminPasswordReset() repository.AdminPasswordResetRepository {
-	return postgres.NewAdminPasswordResetRepository(r.db)
+func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository {
+	return postgres.NewPasswordResetRepository(r.db)
 }

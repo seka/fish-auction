@@ -8,6 +8,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockBuyerRepository struct {
@@ -36,21 +37,24 @@ func (m *mockBuyerRepository) FindByName(ctx context.Context, name string) (*mod
 func (m *mockBuyerRepository) Count(ctx context.Context) (int, error) { return 0, nil }
 
 type mockBuyerPasswordResetRepository struct {
-	createErr error
-	deleteErr error
+	mock.Mock
 }
 
-func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, buyerID int, tokenHash string, expiresAt time.Time) error {
-	return m.createErr
+func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
+	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
-	return 0, time.Time{}, nil
+func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+	args := m.Called(ctx, tokenHash)
+	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
 func (m *mockBuyerPasswordResetRepository) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
-	return nil
+	args := m.Called(ctx, tokenHash)
+	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepository) DeleteAllByBuyerID(ctx context.Context, buyerID int) error {
-	return m.deleteErr
+func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context, userID int, role string) error {
+	args := m.Called(ctx, userID, role)
+	return args.Error(0)
 }
 
 type mockEmailService struct {
@@ -113,21 +117,19 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			wantError:    true,
 		},
 		{
-			name:      "DeleteTokenError",
-			email:     "buyer@example.com",
-			mockBuyer: validBuyer,
-			mockResetRepo: &mockBuyerPasswordResetRepository{
-				deleteErr: errors.New("delete failed"),
-			},
-			wantError: true,
+			name:          "DeleteTokenError",
+			email:         "buyer@example.com",
+			mockBuyer:     validBuyer,
+			mockResetRepo: nil, // Setup in body
+			wantError:     true,
 		},
 		{
-			name:      "CreateTokenError",
-			email:     "buyer@example.com",
-			mockBuyer: validBuyer,
-			mockResetRepo: &mockBuyerPasswordResetRepository{
-				createErr: errors.New("create failed"),
-			},
+			name:          "CreateTokenError",
+			email:         "buyer@example.com",
+			mockBuyer:     validBuyer,
+			mockResetRepo: nil, // Will setup in test body
+			// we can't put mock expectations in struct easily here without changing struct type.
+			// Let's rely on name/logic to setup mocks.
 			wantError: true,
 		},
 		{
@@ -148,10 +150,23 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			// Yes, existing mock is manual and might be missing FindByName which is in interface.
 
 			buyerRepo := &mockBuyerRepository{buyer: tt.mockBuyer, err: tt.mockRepoErr}
-			resetRepo := tt.mockResetRepo
-			if resetRepo == nil {
-				resetRepo = &mockBuyerPasswordResetRepository{}
+			resetRepo := &mockBuyerPasswordResetRepository{}
+			if tt.name == "Success" {
+				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(nil)
+			} else if tt.name == "DeleteTokenError" {
+				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(errors.New("delete failed"))
+			} else if tt.name == "CreateTokenError" {
+				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(errors.New("create failed"))
+			} else if tt.name == "EmailError" {
+				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(nil)
 			}
+			// Other cases like UserNotFound don't call repo methods.
+
+			// For RandomError, if it fails before repo, no calls. SetRandRead fails inside Execute?
+			// Random error happens during token generation which is before repo calls. So no repo calls expected.
 			emailService := &mockEmailService{err: tt.mockEmailErr}
 
 			// Mock rand.Read if testing random error

@@ -206,14 +206,14 @@ func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
-		u.repo.AdminPasswordReset(),
+		u.repo.PasswordReset(),
 		u.adminEmailService,
 	)
 }
 
 func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
 	return admin.NewResetPasswordUseCase(
-		u.repo.AdminPasswordReset(),
+		u.repo.PasswordReset(),
 		u.repo.NewAdminRepository(),
 	)
 }

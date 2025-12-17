@@ -10,6 +10,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/entity"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockAdminRepositoryForReset struct {
@@ -31,29 +32,27 @@ func (m *mockAdminRepositoryForReset) UpdatePassword(ctx context.Context, id int
 }
 
 type mockAdminPasswordResetRepositoryForReset struct {
-	tokenHash string
-	adminID   int
-	expiresAt time.Time
-	findErr   error
+	mock.Mock
 }
 
-func (m *mockAdminPasswordResetRepositoryForReset) Create(ctx context.Context, adminID int, tokenHash string, expiresAt time.Time) error {
-	return nil
+func (m *mockAdminPasswordResetRepositoryForReset) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
+	return args.Error(0)
 }
-func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
-	if m.findErr != nil {
-		return 0, time.Time{}, m.findErr
-	}
-	if m.tokenHash == tokenHash {
-		return m.adminID, m.expiresAt, nil
-	}
-	return 0, time.Time{}, nil
+
+func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+	args := m.Called(ctx, tokenHash)
+	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
+
 func (m *mockAdminPasswordResetRepositoryForReset) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
-	return nil
+	args := m.Called(ctx, tokenHash)
+	return args.Error(0)
 }
-func (m *mockAdminPasswordResetRepositoryForReset) DeleteAllByAdminID(ctx context.Context, adminID int) error {
-	return nil
+
+func (m *mockAdminPasswordResetRepositoryForReset) DeleteAllByUserID(ctx context.Context, userID int, role string) error {
+	args := m.Called(ctx, userID, role)
+	return args.Error(0)
 }
 
 func TestResetPasswordUseCase_Execute(t *testing.T) {
@@ -128,12 +127,35 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pwdResetRepo := &mockAdminPasswordResetRepositoryForReset{
-				tokenHash: tt.mockTokenHash,
-				adminID:   tt.mockAdminID,
-				expiresAt: tt.mockExpiresAt,
-				findErr:   tt.mockFindErr,
+			pwdResetRepo := &mockAdminPasswordResetRepositoryForReset{}
+
+			// Calculate expected hash for the input token
+			hash := sha256.Sum256([]byte(tt.token))
+			expectedHash := hex.EncodeToString(hash[:])
+
+			if tt.mockFindErr != nil {
+				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, tt.mockFindErr)
+			} else if tt.mockTokenHash == "" {
+				// Token not found scenario
+				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, nil)
+			} else {
+				// Found
+				// Ensure that the mockTokenHash in test case matches expectedHash?
+				// Actually for the "Success" case, tt.mockTokenHash is validTokenHash, and tt.token is validToken. So they match.
+				// For "TokenExpired", same.
+				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(tt.mockAdminID, "admin", tt.mockExpiresAt, nil)
+
+				if tt.mockAdminID != 0 {
+					if tt.mockExpiresAt.After(time.Now()) {
+						// Valid
+						pwdResetRepo.On("DeleteAllByUserID", mock.Anything, tt.mockAdminID, "admin").Return(nil)
+					} else {
+						// Expired
+						pwdResetRepo.On("DeleteByTokenHash", mock.Anything, expectedHash).Return(nil)
+					}
+				}
 			}
+
 			adminRepo := &mockAdminRepositoryForReset{err: tt.mockUpdateErr}
 
 			uc := admin.NewResetPasswordUseCase(pwdResetRepo, adminRepo)

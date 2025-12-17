@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,12 +17,12 @@ type ResetPasswordUseCase interface {
 }
 
 type resetPasswordUseCase struct {
-	pwdResetRepo repository.BuyerPasswordResetRepository
+	pwdResetRepo repository.PasswordResetRepository
 	authRepo     repository.AuthenticationRepository
 }
 
 func NewResetPasswordUseCase(
-	pwdResetRepo repository.BuyerPasswordResetRepository,
+	pwdResetRepo repository.PasswordResetRepository,
 	authRepo repository.AuthenticationRepository,
 ) ResetPasswordUseCase {
 	return &resetPasswordUseCase{
@@ -36,12 +37,12 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	tokenHash := hex.EncodeToString(hash[:])
 
 	// 2. Find token in DB
-	buyerID, expiresAt, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
+	buyerID, role, expiresAt, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
-		return fmt.Errorf("failed to find token: %w", err)
+		return err
 	}
-	if buyerID == 0 {
-		return fmt.Errorf("invalid or expired token")
+	if buyerID == 0 || role != "buyer" { // Check role
+		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
 	// 3. Check expiry
@@ -63,7 +64,7 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	}
 
 	// 6. Invalidate token
-	if err := u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash); err != nil {
+	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, buyerID, "buyer"); err != nil {
 		// Log error but don't fail, critical part is done
 		// log.Printf("failed to delete token: %v", err)
 	}

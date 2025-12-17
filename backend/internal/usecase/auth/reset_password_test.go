@@ -10,6 +10,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockAuthRepositoryForReset struct {
@@ -45,29 +46,24 @@ func (m *mockAuthRepositoryForReset) UpdatePassword(ctx context.Context, buyerID
 }
 
 type mockBuyerPasswordResetRepositoryForReset struct {
-	tokenHash string
-	buyerID   int
-	expiresAt time.Time
-	findErr   error
+	mock.Mock
 }
 
-func (m *mockBuyerPasswordResetRepositoryForReset) Create(ctx context.Context, buyerID int, tokenHash string, expiresAt time.Time) error {
-	return nil
+func (m *mockBuyerPasswordResetRepositoryForReset) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
+	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, time.Time, error) {
-	if m.findErr != nil {
-		return 0, time.Time{}, m.findErr
-	}
-	if m.tokenHash == tokenHash {
-		return m.buyerID, m.expiresAt, nil
-	}
-	return 0, time.Time{}, nil
+func (m *mockBuyerPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+	args := m.Called(ctx, tokenHash)
+	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
 func (m *mockBuyerPasswordResetRepositoryForReset) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
-	return nil
+	args := m.Called(ctx, tokenHash)
+	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepositoryForReset) DeleteAllByBuyerID(ctx context.Context, buyerID int) error {
-	return nil
+func (m *mockBuyerPasswordResetRepositoryForReset) DeleteAllByUserID(ctx context.Context, userID int, role string) error {
+	args := m.Called(ctx, userID, role)
+	return args.Error(0)
 }
 
 func TestResetPasswordUseCase_Execute(t *testing.T) {
@@ -143,11 +139,26 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resetRepo := &mockBuyerPasswordResetRepositoryForReset{
-				tokenHash: tt.mockTokenHash,
-				buyerID:   tt.mockBuyerID,
-				expiresAt: tt.mockExpiresAt,
-				findErr:   tt.mockFindErr,
+			resetRepo := &mockBuyerPasswordResetRepositoryForReset{}
+
+			hash := sha256.Sum256([]byte(tt.token))
+			expectedHash := hex.EncodeToString(hash[:])
+
+			if tt.mockFindErr != nil {
+				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, tt.mockFindErr)
+			} else if tt.mockTokenHash == "" {
+				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, nil)
+			} else {
+				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(tt.mockBuyerID, "buyer", tt.mockExpiresAt, nil)
+				if tt.mockBuyerID != 0 {
+					if tt.mockExpiresAt.After(time.Now()) {
+						// Valid
+						resetRepo.On("DeleteAllByUserID", mock.Anything, tt.mockBuyerID, "buyer").Return(nil)
+					} else {
+						// Expired
+						resetRepo.On("DeleteByTokenHash", mock.Anything, expectedHash).Return(nil)
+					}
+				}
 			}
 			authRepo := &mockAuthRepositoryForReset{err: tt.mockUpdateErr}
 

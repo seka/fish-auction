@@ -20,13 +20,13 @@ type RequestPasswordResetUseCase interface {
 
 type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
-	pwdResetRepo repository.AdminPasswordResetRepository
+	pwdResetRepo repository.PasswordResetRepository
 	emailService service.AdminEmailService
 }
 
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
-	pwdResetRepo repository.AdminPasswordResetRepository,
+	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.AdminEmailService,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
@@ -58,10 +58,10 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 
 	// 3. Save to DB (expires in 30 mins)
 	expiresAt := time.Now().Add(30 * time.Minute)
-	if err := u.pwdResetRepo.DeleteAllByAdminID(ctx, admin.ID); err != nil {
+	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, admin.ID, "admin"); err != nil {
 		return fmt.Errorf("failed to delete old tokens: %w", err)
 	}
-	if err := u.pwdResetRepo.Create(ctx, admin.ID, tokenHash, expiresAt); err != nil {
+	if err = u.pwdResetRepo.Create(ctx, admin.ID, "admin", tokenHash, expiresAt); err != nil {
 		return fmt.Errorf("failed to create reset token: %w", err)
 	}
 
