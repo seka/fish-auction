@@ -13,8 +13,8 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "Fishing Auction",
-  description: "Fishing Auction System",
+  title: "FISHING AUCTION",
+  description: "FISHING AUCTION System",
 };
 
 import { NextIntlClientProvider } from 'next-intl';

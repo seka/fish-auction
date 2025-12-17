@@ -89,7 +89,7 @@ export const Sidebar = () => {
         <Box w="64" bg="indigo.900" color="white" flexShrink={0} shadow="xl" display="flex" flexDirection="column" h="full">
             <Box p="6" bg="indigo.950">
                 <Text as="h2" fontSize="xl" fontWeight="bold" letterSpacing="wider" className={css({ color: 'white' })}>管理画面</Text>
-                <Text fontSize="xs" className={css({ color: 'indigo.300' })} mt="1">Fishing Auction Admin</Text>
+                <Text fontSize="xs" className={css({ color: 'indigo.300' })} mt="1">FISHING AUCTION Admin</Text>
             </Box>
 
             <Stack as="nav" mt="6" px="2" spacing="1" flex="1">
@@ -140,7 +140,7 @@ export const Sidebar = () => {
 
             {/* Footer / User info could go here */}
             <Box p="4" bg="indigo.950" fontSize="xs" className={css({ color: 'indigo.400', textAlign: 'center' })}>
-                &copy; Fishing Auction System
+                &copy; FISHING AUCTION System
             </Box>
         </Box>
     );

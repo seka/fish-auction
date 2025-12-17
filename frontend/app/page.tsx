@@ -22,7 +22,7 @@ export default function Home() {
         gradientTo: 'indigo.50',
       })}
     >
-      <Image src="/logo_text.png" alt="Fishing Auction Logo" width={300} height={300} className={css({ mx: 'auto' })} />
+      <Image src="/logo_text.png" alt="FISHING AUCTION Logo" width={300} height={300} className={css({ mx: 'auto' })} />
 
       <div className={css({ display: 'grid', gridTemplateColumns: { base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }, gap: '8', w: 'full', maxW: '5xl' })}>
         {/* Admin Portal */}

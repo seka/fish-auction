@@ -56,7 +56,7 @@ export const PublicNavbar = () => {
                 <Link href="/" className={css({ textDecoration: 'none', _hover: { opacity: 0.8 } })}>
                     <HStack spacing="0">
                         {/* Logo Image */}
-                        <Image src="/logo_icon.png" alt="Fishing Auction Logo" width={50} height={50} />
+                        <Image src="/logo_icon.png" alt="FISHING AUCTION Logo" width={50} height={50} />
                         <Text fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })} display={{ base: 'none', sm: 'block' }}>
                             {t('Common.app_name')}
                         </Text>
