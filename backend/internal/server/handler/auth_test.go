@@ -76,3 +76,21 @@ func TestAuthHandler_Login(t *testing.T) {
 		}
 	})
 }
+
+func TestAuthHandler_RegisterRoutes(t *testing.T) {
+	t.Run("MethodNotAllowed", func(t *testing.T) {
+		mockReg := &mock.MockRegistry{}
+		h := handler.NewAuthHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/login", nil)
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusMethodNotAllowed {
+			t.Errorf("expected status 405, got %d", w.Code)
+		}
+	})
+}

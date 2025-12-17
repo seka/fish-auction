@@ -34,7 +34,7 @@ func TestBidHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/bids", bytes.NewReader(body))
 
 		// Inject buyer_id into context (simulating middleware)
-		ctx := context.WithValue(req.Context(), "buyer_id", 1)
+		ctx := context.WithValue(req.Context(), "buyer_id", 1) //nolint:staticcheck
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -76,7 +76,7 @@ func TestBidHandler_Create(t *testing.T) {
 		reqBody := dto.CreateBidRequest{ItemID: 10, Price: 500}
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/api/bids", bytes.NewReader(body))
-		ctx := context.WithValue(req.Context(), "buyer_id", 1)
+		ctx := context.WithValue(req.Context(), "buyer_id", 1) //nolint:staticcheck
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -85,6 +85,24 @@ func TestBidHandler_Create(t *testing.T) {
 
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("expected status 500, got %d", w.Code)
+		}
+	})
+}
+
+func TestBidHandler_RegisterRoutes(t *testing.T) {
+	t.Run("MethodNotAllowed", func(t *testing.T) {
+		mockReg := &mock.MockRegistry{}
+		h := handler.NewBidHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/bids", nil)
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusMethodNotAllowed {
+			t.Errorf("expected status 405, got %d", w.Code)
 		}
 	})
 }

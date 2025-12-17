@@ -53,3 +53,21 @@ func TestInvoiceHandler_List(t *testing.T) {
 		}
 	})
 }
+
+func TestInvoiceHandler_RegisterRoutes(t *testing.T) {
+	t.Run("MethodNotAllowed", func(t *testing.T) {
+		mockReg := &mock.MockRegistry{}
+		h := handler.NewInvoiceHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
+
+		req := httptest.NewRequest(http.MethodPut, "/api/invoices", nil)
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusMethodNotAllowed {
+			t.Errorf("expected status 405, got %d", w.Code)
+		}
+	})
+}

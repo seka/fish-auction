@@ -61,11 +61,11 @@ func (m *MockGetBuyerAuctionsUseCase) Execute(ctx context.Context, buyerID int) 
 	return nil, nil
 }
 
-type MockUpdatePasswordUseCase struct {
+type MockBuyerUpdatePasswordUseCase struct {
 	ExecuteFunc func(ctx context.Context, buyerID int, currentPassword, newPassword string) error
 }
 
-func (m *MockUpdatePasswordUseCase) Execute(ctx context.Context, buyerID int, currentPassword, newPassword string) error {
+func (m *MockBuyerUpdatePasswordUseCase) Execute(ctx context.Context, buyerID int, currentPassword, newPassword string) error {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, buyerID, currentPassword, newPassword)
 	}
