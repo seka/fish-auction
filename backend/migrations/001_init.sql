@@ -88,8 +88,19 @@ CREATE TABLE IF NOT EXISTS transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indices for Transactions (from 005)
+-- Indices for Transactions
 CREATE INDEX IF NOT EXISTS idx_transactions_buyer_id ON transactions(buyer_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_item_id ON transactions(item_id);
 
+-- Password Reset Tokens
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id INTEGER NOT NULL,
+    user_role VARCHAR(50) NOT NULL CHECK (user_role IN ('admin', 'buyer')),
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token_hash ON password_reset_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id_role ON password_reset_tokens(user_id, user_role);

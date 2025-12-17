@@ -61,9 +61,6 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 	// Run migrations
 	migrationFiles := []string{
 		"001_init.sql",
-		"002_create_password_reset_tokens.sql",
-		"003_sep_password_reset_tokens.sql",
-		"004_consolidate_password_reset_tokens.sql",
 	}
 
 	for _, file := range migrationFiles {
