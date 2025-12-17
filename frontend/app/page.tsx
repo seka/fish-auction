@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <Box
       className={css({
-        minH: '100vh',
+        minH: '50vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -22,15 +22,7 @@ export default function Home() {
         gradientTo: 'indigo.50',
       })}
     >
-      <Box className={css({ textAlign: 'center', mb: '16' })}>
-        <Image src="/logo.png" alt="Fish Auction Logo" width={100} height={100} className={css({ mx: 'auto', mb: '6' })} />
-        <Text variant="h1" className={css({ color: 'primary.900', mb: '6', letterSpacing: 'tight' })}>
-          {t(COMMON_TEXT_KEYS.home_title)}
-        </Text>
-        <Text variant="h3" className={css({ color: 'gray.600', fontSize: 'xl' })}>
-          {t(COMMON_TEXT_KEYS.home_subtitle)}
-        </Text>
-      </Box>
+      <Image src="/logo_text.png" alt="Fishing Auction Logo" width={300} height={300} className={css({ mx: 'auto' })} />
 
       <div className={css({ display: 'grid', gridTemplateColumns: { base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }, gap: '8', w: 'full', maxW: '5xl' })}>
         {/* Admin Portal */}

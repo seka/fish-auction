@@ -23,8 +23,6 @@ export const COMMON_TEXT_KEYS = {
     admin_panel: 'Common.admin_panel',
     loading: 'Common.loading',
     no_data: 'Common.no_data',
-    home_title: 'Common.home_title',
-    home_subtitle: 'Common.home_subtitle',
     admin_panel_description: 'Common.admin_panel_description',
     auction_venue_description: 'Common.auction_venue_description',
     go_to_admin: 'Common.go_to_admin',

@@ -12,8 +12,8 @@
         "Bidding": "入札中"
     },
     "Common": {
-        "title": "漁港のすしオク",
-        "app_name": "漁港のせりシステム",
+        "title": "Fishing Auction",
+        "app_name": "Fishing Auction",
         "update": "更新",
         "register": "登録",
         "cancel": "キャンセル",
@@ -35,8 +35,6 @@
         "purchase_history": "購入履歴",
         "participating_auctions": "参加中のセリ",
         "no_data": "データがありません",
-        "home_title": "漁港のせりシステム",
-        "home_subtitle": "役割を選択してログインしてください",
         "admin_panel": "管理画面",
         "admin_panel_description": "漁師・中買人の登録、<br />出品登録、請求書の管理を行います。",
         "auction_venue": "セリ会場",

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Box, HStack, Button, Text } from '@/src/core/ui'; // Button, Text等は src/core/ui からインポート
 import { useTranslations } from 'next-intl';
@@ -53,11 +54,9 @@ export const PublicNavbar = () => {
         >
             <Box maxW="7xl" mx="auto" px={{ base: '4', md: '8' }} h="16" display="flex" alignItems="center" justifyContent="space-between">
                 <Link href="/" className={css({ textDecoration: 'none', _hover: { opacity: 0.8 } })}>
-                    <HStack spacing="2">
-                        {/* 簡易的なロゴ表示 (画像があればImageコンポーネントに差し替え) */}
-                        <Box fontSize="2xl" role="img" aria-label="Logo">
-                            🐟
-                        </Box>
+                    <HStack spacing="0">
+                        {/* Logo Image */}
+                        <Image src="/logo_icon.png" alt="Fishing Auction Logo" width={50} height={50} />
                         <Text fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })} display={{ base: 'none', sm: 'block' }}>
                             {t('Common.app_name')}
                         </Text>
