@@ -36,12 +36,14 @@ type Metrics struct {
 
 // エンドポイント定義（重み付き）
 var endpoints = []Endpoint{
-	{Method: "GET", Path: "/api/health", Weight: 50, Body: nil},
-	{Method: "GET", Path: "/api/items", Weight: 25, Body: nil},
+	{Method: "GET", Path: "/api/health", Weight: 30, Body: nil},
+	{Method: "GET", Path: "/api/items", Weight: 20, Body: nil},
+	{Method: "GET", Path: "/api/auctions", Weight: 20, Body: nil},
 	{Method: "GET", Path: "/api/fishermen", Weight: 10, Body: nil},
 	{Method: "POST", Path: "/api/fishermen", Weight: 5, Body: generateFishermanBody},
 	{Method: "GET", Path: "/api/buyers", Weight: 5, Body: nil},
 	{Method: "POST", Path: "/api/buyers", Weight: 5, Body: generateBuyerBody},
+	// Note: /api/auctions/{id} requires valid IDs. Skipped for simple random stress test to avoid high 404 rate skewing results.
 }
 
 func TestLoadTest(t *testing.T) {
