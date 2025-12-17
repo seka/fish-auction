@@ -22,3 +22,20 @@ func TestHealthHandler_Check(t *testing.T) {
 		t.Errorf("expected body 'Backend is healthy!', got '%s'", w.Body.String())
 	}
 }
+
+func TestHealthHandler_RegisterRoutes(t *testing.T) {
+	t.Run("MethodNotAllowed", func(t *testing.T) {
+		h := handler.NewHealthHandler()
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/health", nil)
+		w := httptest.NewRecorder()
+
+		mux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusMethodNotAllowed {
+			t.Errorf("expected status 405, got %d", w.Code)
+		}
+	})
+}

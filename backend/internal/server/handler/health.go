@@ -12,6 +12,10 @@ func NewHealthHandler() *HealthHandler {
 }
 
 func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	fmt.Fprintf(w, "Backend is healthy!")
 }
 
