@@ -57,4 +57,35 @@ describe('InvoicePage', () => {
         expect(screen.getByText('Admin.Invoice.modal_title')).toBeInTheDocument();
         expect(screen.getByText('Buyer 1')).toBeInTheDocument();
     });
+    it('closes detail modal', () => {
+        (useInvoicePage as any).mockReturnValue({
+            state: {
+                invoices: [],
+                isLoading: false,
+                selectedInvoice: { buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 },
+            },
+            actions: {
+                setSelectedInvoice: mockSetSelectedInvoice,
+            },
+        });
+        render(<InvoicePage />);
+        const closeButton = screen.getByText('Admin.Invoice.close');
+        fireEvent.click(closeButton);
+        expect(mockSetSelectedInvoice).toHaveBeenCalledWith(null);
+    });
+
+    it('renders empty state', () => {
+        (useInvoicePage as any).mockReturnValue({
+            state: {
+                invoices: [],
+                isLoading: false,
+                selectedInvoice: null,
+            },
+            actions: {
+                setSelectedInvoice: mockSetSelectedInvoice,
+            },
+        });
+        render(<InvoicePage />);
+        expect(screen.getByText('Admin.Invoice.no_data')).toBeInTheDocument();
+    });
 });

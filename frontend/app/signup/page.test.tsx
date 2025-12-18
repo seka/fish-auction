@@ -70,4 +70,43 @@ describe('SignupPage', () => {
             expect(mockPush).toHaveBeenCalledWith('/login/buyer');
         });
     });
+    it('handles API errors (409 Conflict)', async () => {
+        (buyerAuth.signupBuyer as any).mockRejectedValue({
+            response: { status: 409 }
+        });
+
+        render(<SignupPage />);
+
+        fireEvent.change(screen.getByPlaceholderText('名前'), { target: { value: 'Test Buyer' } });
+        fireEvent.change(screen.getByPlaceholderText('メールアドレス'), { target: { value: 'test@example.com' } });
+        fireEvent.change(screen.getByPlaceholderText('所属組織'), { target: { value: 'Test Org' } });
+        fireEvent.change(screen.getByPlaceholderText('連絡先'), { target: { value: '090-1234-5678' } });
+        fireEvent.change(screen.getByPlaceholderText('パスワード'), { target: { value: 'password123' } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Common.register' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('登録に失敗しました。名前が既に使用されている可能性があります。')).toBeInTheDocument();
+        });
+    });
+
+    it('handles API errors (500 Server Error)', async () => {
+        (buyerAuth.signupBuyer as any).mockRejectedValue({
+            response: { status: 500 }
+        });
+
+        render(<SignupPage />);
+
+        fireEvent.change(screen.getByPlaceholderText('名前'), { target: { value: 'Test Buyer' } });
+        fireEvent.change(screen.getByPlaceholderText('メールアドレス'), { target: { value: 'test@example.com' } });
+        fireEvent.change(screen.getByPlaceholderText('所属組織'), { target: { value: 'Test Org' } });
+        fireEvent.change(screen.getByPlaceholderText('連絡先'), { target: { value: '090-1234-5678' } });
+        fireEvent.change(screen.getByPlaceholderText('パスワード'), { target: { value: 'password123' } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Common.register' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('この操作の実行中にエラーが発生しました。運営にお問い合わせください')).toBeInTheDocument();
+        });
+    });
 });

@@ -133,4 +133,57 @@ describe('AuctionDetailPage', () => {
             expect(screen.getByText('Public.AuctionDetail.fail_bid')).toBeInTheDocument();
         });
     });
+    it('renders checking state', () => {
+        (useAuth as any).mockReturnValue({ isLoggedIn: false, isChecking: true });
+        render(<AuctionDetailPage params={params} />);
+        expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
+    });
+
+    it('renders no data when auction not found', () => {
+        (useAuctionData as any).mockReturnValue({ auction: null, isLoading: false });
+        render(<AuctionDetailPage params={params} />);
+        expect(screen.getByText('Common.no_data')).toBeInTheDocument();
+    });
+
+    it('renders item ended message for non-pending items', () => {
+        render(<AuctionDetailPage params={params} />);
+        fireEvent.click(screen.getByText('Salmon')); // Status: Sold
+        expect(screen.getByText('Public.AuctionDetail.item_ended')).toBeInTheDocument();
+    });
+
+    it('renders out of hours message when auction is inactive', () => {
+        (isAuctionActive as any).mockReturnValue(false);
+        render(<AuctionDetailPage params={params} />);
+        fireEvent.click(screen.getByText('Tuna')); // Status: Pending
+        expect(screen.getByText('Public.AuctionDetail.out_of_hours_title')).toBeInTheDocument();
+    });
+
+    // Test login success separately?
+    // onSubmitLogin calls loginBuyer and reloads.
+    it('handles login flow', async () => {
+        // Need to mock window.location.reload
+        const originalLocation = window.location;
+        // @ts-ignore
+        delete window.location;
+        window.location = { ...originalLocation, reload: vi.fn() };
+
+        (useAuth as any).mockReturnValue({ isLoggedIn: false, isChecking: false });
+        const { loginBuyer } = await import('@/src/api/buyer_auth');
+        (loginBuyer as any).mockResolvedValue({ id: 1 });
+
+        render(<AuctionDetailPage params={params} />);
+
+        fireEvent.change(screen.getByPlaceholderText('Common.email'), { target: { value: 'user@example.com' } });
+        fireEvent.change(screen.getByPlaceholderText('Common.password'), { target: { value: 'password' } });
+
+        fireEvent.submit(screen.getByRole('button', { name: 'Public.Login.submit' })); // Or click button in form
+
+        await waitFor(() => {
+            expect(loginBuyer).toHaveBeenCalled();
+            expect(window.location.reload).toHaveBeenCalled();
+        });
+
+        // Cleanup
+        window.location = originalLocation;
+    });
 });

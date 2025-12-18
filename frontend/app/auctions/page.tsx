@@ -30,7 +30,7 @@ export default function AuctionsListPage() {
 
     // Filter for active auctions (Scheduled or In Progress)
     const auctions = allAuctions?.filter(a =>
-        a.status === 'scheduled' || a.status === 'in_progress' || a.status === 'completed' // Show completed too for public view? Or just active? Let's show all for now or stick to active. Previous code had active.
+        a.status === 'scheduled' || a.status === 'in_progress' || a.status === 'completed' || a.status === 'cancelled'
     ).sort((a, b) => {
         // Sort: In Progress first, then by date/time
         if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;

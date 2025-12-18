@@ -71,4 +71,114 @@ describe('AuctionsPage', () => {
         fireEvent.click(startButton);
         expect(mockOnStatusChange).toHaveBeenCalledWith(1, 'in_progress');
     });
+    it('handles filter change', () => {
+        const mockSetFilterVenueId = vi.fn();
+        (useAuctionPage as any).mockReturnValue({
+            state: {
+                venues: [{ id: 1, name: 'Venue 1' }, { id: 2, name: 'Venue 2' }],
+                auctions: [],
+                isLoading: false,
+                isCreating: false,
+                message: '',
+                filterVenueId: undefined,
+            },
+            form: {
+                register: mockRegister,
+                errors: {},
+            },
+            actions: {
+                onSubmit: mockOnSubmit,
+                onStatusChange: mockOnStatusChange,
+                setFilterVenueId: mockSetFilterVenueId,
+            },
+            t: (key: string) => key,
+        });
+
+        render(<AuctionsPage />);
+        // Use combobox or find by display value. Since we mocked select to show options:
+        // Select is usually implemented with native <select> in this project based on previous file reads?
+        // Let's assume standard behavior or use getByRole('combobox').
+        // Wait, the component file uses `Select` from `src/core/ui`.
+        // Let's try finding the select by role or label.
+        // Label is 'Admin.Auctions.filter_venue'
+
+        // Note: The label text is used as label for select?
+        // <Text as="label" ...>{t('Admin.Auctions.filter_venue')}</Text>
+        // <Select ...>
+        // Depending on accessibility, it might not be linked. Let's rely on display value 'Admin.Auctions.filter_all' which is the default option.
+
+        const select = screen.getByDisplayValue('Admin.Auctions.filter_all');
+        fireEvent.change(select, { target: { value: '2' } });
+        expect(mockSetFilterVenueId).toHaveBeenCalledWith(2);
+    });
+
+    it('calls edit and delete actions', () => {
+        const mockOnDelete = vi.fn();
+        const mockOnEdit = vi.fn();
+
+        (useAuctionPage as any).mockReturnValue({
+            state: {
+                venues: [{ id: 1, name: 'Venue 1' }],
+                auctions: [
+                    { id: 1, venueId: 1, auctionDate: '2023-01-01', status: 'scheduled' }
+                ],
+                isLoading: false,
+                isCreating: false,
+                message: '',
+            },
+            form: {
+                register: mockRegister,
+                errors: {},
+            },
+            actions: {
+                onSubmit: mockOnSubmit,
+                onStatusChange: mockOnStatusChange,
+                setFilterVenueId: vi.fn(),
+                onDelete: mockOnDelete,
+                onEdit: mockOnEdit,
+            },
+            t: (key: string) => key,
+        });
+
+        render(<AuctionsPage />);
+
+        const editButton = screen.getByText('Common.edit');
+        fireEvent.click(editButton);
+        expect(mockOnEdit).toHaveBeenCalled();
+
+        const deleteButton = screen.getByText('Common.delete');
+        fireEvent.click(deleteButton);
+        expect(mockOnDelete).toHaveBeenCalledWith(1);
+    });
+
+    it('calls status change (finish)', () => {
+        (useAuctionPage as any).mockReturnValue({
+            state: {
+                venues: [{ id: 1, name: 'Venue 1' }],
+                auctions: [
+                    { id: 2, venueId: 1, auctionDate: '2023-01-02', status: 'in_progress' }
+                ],
+                isLoading: false,
+                isCreating: false,
+                message: '',
+            },
+            form: {
+                register: mockRegister,
+                errors: {},
+            },
+            actions: {
+                onSubmit: mockOnSubmit,
+                onStatusChange: mockOnStatusChange,
+                setFilterVenueId: vi.fn(),
+                onDelete: vi.fn(),
+                onEdit: vi.fn(),
+            },
+            t: (key: string) => key,
+        });
+
+        render(<AuctionsPage />);
+        const finishButton = screen.getByText('Admin.Auctions.finish');
+        fireEvent.click(finishButton);
+        expect(mockOnStatusChange).toHaveBeenCalledWith(2, 'completed');
+    });
 });

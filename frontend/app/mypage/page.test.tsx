@@ -127,4 +127,35 @@ describe('MyPage', () => {
         fireEvent.click(logoutButton);
         expect(mockHandleLogout).toHaveBeenCalled();
     });
+
+    it('updates active tab when clicked', () => {
+        render(<MyPage />);
+        const settingsTab = screen.getByText('設定');
+        fireEvent.click(settingsTab);
+        expect(mockSetActiveTab).toHaveBeenCalledWith('settings');
+    });
+
+    it('handles password update flow', () => {
+        (useMyPage as any).mockReturnValue({
+            ...defaultMockValues,
+            activeTab: 'settings',
+        });
+        render(<MyPage />);
+
+        const currentPasswordInput = screen.getByText('現在のパスワード').closest('div')?.querySelector('input');
+        fireEvent.change(currentPasswordInput!, { target: { value: 'current123' } });
+        expect(mockSetCurrentPassword).toHaveBeenCalledWith('current123');
+
+        const newPasswordInput = screen.getByText('新しいパスワード').closest('div')?.querySelector('input');
+        fireEvent.change(newPasswordInput!, { target: { value: 'password123' } });
+        expect(mockSetNewPassword).toHaveBeenCalledWith('password123');
+
+        const confirmPasswordInput = screen.getByText('新しいパスワード（確認）').closest('div')?.querySelector('input');
+        fireEvent.change(confirmPasswordInput!, { target: { value: 'password123' } });
+        expect(mockSetConfirmPassword).toHaveBeenCalledWith('password123');
+
+        const submitButton = screen.getByText('パスワードを変更する');
+        fireEvent.submit(submitButton.closest('form')!);
+        expect(mockHandleUpdatePassword).toHaveBeenCalled();
+    });
 });
