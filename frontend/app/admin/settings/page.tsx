@@ -83,10 +83,11 @@ export default function AdminSettingsPage() {
                 <form onSubmit={handleSubmit}>
                     <Stack spacing="4" alignItems="stretch">
                         <Box>
-                            <Text as="label" display="block" mb="1" fontSize="sm" fontWeight="medium" className={css({ color: 'gray.700' })}>
+                            <label htmlFor="current-password" className={css({ display: 'block', mb: '1', fontSize: 'sm', fontWeight: 'medium', color: 'gray.700' })}>
                                 現在のパスワード
-                            </Text>
+                            </label>
                             <Input
+                                id="current-password"
                                 type="password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -96,10 +97,11 @@ export default function AdminSettingsPage() {
                         </Box>
 
                         <Box>
-                            <Text as="label" display="block" mb="1" fontSize="sm" fontWeight="medium" className={css({ color: 'gray.700' })}>
+                            <label htmlFor="new-password" className={css({ display: 'block', mb: '1', fontSize: 'sm', fontWeight: 'medium', color: 'gray.700' })}>
                                 新しいパスワード
-                            </Text>
+                            </label>
                             <Input
+                                id="new-password"
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
@@ -110,10 +112,11 @@ export default function AdminSettingsPage() {
                         </Box>
 
                         <Box>
-                            <Text as="label" display="block" mb="1" fontSize="sm" fontWeight="medium" className={css({ color: 'gray.700' })}>
+                            <label htmlFor="confirm-password" className={css({ display: 'block', mb: '1', fontSize: 'sm', fontWeight: 'medium', color: 'gray.700' })}>
                                 新しいパスワード（確認）
-                            </Text>
+                            </label>
                             <Input
+                                id="confirm-password"
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}

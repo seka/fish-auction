@@ -1,27 +1,15 @@
-import { render, screen } from "@testing-library/react";
-import { ModalBackdrop, ModalContent } from "./modal";
-import { describe, it, expect } from "vitest";
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { ModalBackdrop, ModalContent } from './modal';
 
-describe("Modal", () => {
-    describe("ModalBackdrop", () => {
-        it("renders children correctly", () => {
-            render(
-                <ModalBackdrop>
-                    <div data-testid="backdrop-content">Backdrop Content</div>
-                </ModalBackdrop>
-            );
-            expect(screen.getByTestId("backdrop-content")).toBeInTheDocument();
-        });
-    });
-
-    describe("ModalContent", () => {
-        it("renders children correctly", () => {
-            render(
-                <ModalContent>
-                    <div data-testid="modal-content">Modal Content</div>
-                </ModalContent>
-            );
-            expect(screen.getByTestId("modal-content")).toBeInTheDocument();
-        });
+describe('Modal Molecules', () => {
+    it('renders correctly', () => {
+        render(
+            <ModalBackdrop data-testid="backdrop">
+                <ModalContent>Modal Content</ModalContent>
+            </ModalBackdrop>
+        );
+        expect(screen.getByTestId('backdrop')).toBeInTheDocument();
+        expect(screen.getByText('Modal Content')).toBeInTheDocument();
     });
 });
