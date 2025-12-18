@@ -40,7 +40,7 @@ export default function Home() {
               <Box>
                 <Text variant="h2" className={css({ mb: '2' })}>{t(COMMON_TEXT_KEYS.admin_panel)}</Text>
                 <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
-                  <div dangerouslySetInnerHTML={{ __html: t.raw(COMMON_TEXT_KEYS.admin_panel_description) }} />
+                  <span dangerouslySetInnerHTML={{ __html: t.raw(COMMON_TEXT_KEYS.admin_panel_description) }} />
                 </Text>
               </Box>
               <Box className={css({ display: 'inline-flex', alignItems: 'center', color: 'primary.600', fontWeight: 'bold', transition: 'transform 0.3s', _groupHover: { transform: 'translateX(4px)' } })}>
@@ -49,7 +49,6 @@ export default function Home() {
             </Stack>
           </Card>
         </Link>
-
         {/* Auction Floor */}
         <Link href="/auctions" className={`group ${css({ textDecoration: 'none', display: 'block', h: 'full' })}`}>
           <Card variant="interactive" className={css({ position: 'relative', overflow: 'hidden', p: '10', h: 'full', display: 'flex', flexDirection: 'column' })}>
@@ -64,7 +63,7 @@ export default function Home() {
               <Box>
                 <Text variant="h2" className={css({ mb: '2' })}>{t(COMMON_TEXT_KEYS.auction_venue)}</Text>
                 <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
-                  <div dangerouslySetInnerHTML={{ __html: t.raw(COMMON_TEXT_KEYS.auction_venue_description) }} />
+                  <span dangerouslySetInnerHTML={{ __html: t.raw(COMMON_TEXT_KEYS.auction_venue_description) }} />
                 </Text>
               </Box>
               <Box className={css({ display: 'inline-flex', alignItems: 'center', color: 'secondary.600', fontWeight: 'bold', transition: 'transform 0.3s', _groupHover: { transform: 'translateX(4px)' } })}>
