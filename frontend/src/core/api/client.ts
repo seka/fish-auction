@@ -2,7 +2,9 @@ import { toCamelCase, toSnakeCase } from '@/src/utils/caseConverter';
 
 export class ApiClient {
     async get<T>(url: string): Promise<T> {
-        const res = await fetch(url);
+        const res = await fetch(url, {
+            credentials: 'include',
+        });
         if (!res.ok) {
             throw new Error(`GET ${url} failed: ${res.statusText}`);
         }
@@ -14,6 +16,7 @@ export class ApiClient {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(toSnakeCase(body)),
+            credentials: 'include',
         });
         if (!res.ok) {
             throw new Error(`POST ${url} failed: ${res.statusText}`);
@@ -29,6 +32,7 @@ export class ApiClient {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(toSnakeCase(body)),
+            credentials: 'include',
         });
         if (!res.ok) {
             throw new Error(`PUT ${url} failed: ${res.statusText}`);
@@ -40,6 +44,7 @@ export class ApiClient {
     async delete(url: string): Promise<void> {
         const res = await fetch(url, {
             method: 'DELETE',
+            credentials: 'include',
         });
         if (!res.ok) {
             throw new Error(`DELETE ${url} failed: ${res.statusText}`);
@@ -51,6 +56,7 @@ export class ApiClient {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(toSnakeCase(body)),
+            credentials: 'include',
         });
         if (!res.ok) {
             throw new Error(`PATCH ${url} failed: ${res.statusText}`);

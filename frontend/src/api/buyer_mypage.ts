@@ -26,7 +26,7 @@ export interface AuctionSummary {
 
 export const getMyPurchases = async (): Promise<Purchase[]> => {
     try {
-        return await apiClient.get<Purchase[]>('/api/buyers/me/purchases');
+        return await apiClient.get<Purchase[]>('/api/buyer/me/purchases');
     } catch (e) {
         console.error(e);
         return [];
@@ -35,7 +35,7 @@ export const getMyPurchases = async (): Promise<Purchase[]> => {
 
 export const getMyAuctions = async (): Promise<AuctionSummary[]> => {
     try {
-        return await apiClient.get<AuctionSummary[]>('/api/buyers/me/auctions');
+        return await apiClient.get<AuctionSummary[]>('/api/buyer/me/auctions');
     } catch (e) {
         console.error(e);
         return [];
