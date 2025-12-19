@@ -47,7 +47,7 @@ export default function AdminDashboard() {
         {
             title: t('Admin.Dashboard.invoice_title'),
             description: t('Admin.Dashboard.invoice_desc'),
-            href: '/invoice',
+            href: '/admin/invoice',
             icon: '💰',
             color: 'yellow',
         },
