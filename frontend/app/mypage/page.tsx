@@ -5,6 +5,7 @@ import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import Link from 'next/link';
 import { Box, Text, Button, Card, Stack, HStack, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
+import { EmptyState } from '../_components/atoms/EmptyState';
 
 import { useMyPage } from './_hooks/useMyPage';
 
@@ -114,9 +115,10 @@ export default function MyPage() {
                             {t('Public.MyPage.purchase_history')}
                         </Text>
                         {purchases.length === 0 ? (
-                            <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text className={css({ color: 'gray.500' })}>{t('Public.MyPage.no_history')}</Text>
-                            </Box>
+                            <EmptyState
+                                message={t('Public.MyPage.no_history')}
+                                icon={<span role="img" aria-label="invoice">🧾</span>}
+                            />
                         ) : (
                             purchases.map((purchase) => (
                                 <Card
@@ -238,9 +240,14 @@ export default function MyPage() {
                             {t('Public.MyPage.participating_auctions')}
                         </Text>
                         {auctions.length === 0 ? (
-                            <Box textAlign="center" py="12" bg="white" borderRadius="xl" border="1px dashed" borderColor="gray.300">
-                                <Text className={css({ color: 'gray.500' })}>{t('Public.MyPage.no_participating')}</Text>
-                            </Box>
+                            <EmptyState
+                                message={t('Public.MyPage.no_participating')}
+                                icon={<span role="img" aria-label="auction">🏷️</span>}
+                                action={{
+                                    label: t(COMMON_TEXT_KEYS.auction_list),
+                                    onClick: () => window.location.href = '/auctions'
+                                }}
+                            />
                         ) : (
                             auctions.map((auction) => (
                                 <Link key={auction.id} href={`/auctions/${auction.id}`}>

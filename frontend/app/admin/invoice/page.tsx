@@ -4,6 +4,7 @@ import { useInvoicePage } from './_hooks/useInvoicePage';
 import { useTranslations } from 'next-intl';
 import { Box, Text, Card, Button, ModalBackdrop, ModalContent, Table, Thead, Tbody, Tr, Th, Td } from '@/src/core/ui';
 import { css } from 'styled-system/css';
+import { EmptyState } from '../../_components/atoms/EmptyState';
 
 export default function InvoicePage() {
     const t = useTranslations();
@@ -16,29 +17,24 @@ export default function InvoicePage() {
             </Text>
 
             <Card padding="none" overflow="hidden">
-                <Table>
-                    <Thead>
-                        <Tr className={css({ cursor: 'default', _hover: { bg: 'gray.50' } })}>
-                            <Th>{t('Admin.Invoice.buyer_id')}</Th>
-                            <Th>{t('Admin.Invoice.buyer_name')}</Th>
-                            <Th className={css({ textAlign: 'right' })}>{t('Admin.Invoice.total_amount')}</Th>
-                        </Tr>
-                    </Thead>
-                    <Tbody>
-                        {state.isLoading ? (
-                            <Tr>
-                                <Td colSpan={3} className={css({ py: '12', textAlign: 'center', color: 'gray.500' })}>
-                                    {t('Common.loading')}
-                                </Td>
+                {state.isLoading ? (
+                    <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t('Common.loading')}</Box>
+                ) : state.invoices.length === 0 ? (
+                    <EmptyState
+                        message={t('Admin.Invoice.no_data')}
+                        icon={<span role="img" aria-label="invoice">🧾</span>}
+                    />
+                ) : (
+                    <Table>
+                        <Thead>
+                            <Tr className={css({ cursor: 'default', _hover: { bg: 'gray.50' } })}>
+                                <Th>{t('Admin.Invoice.buyer_id')}</Th>
+                                <Th>{t('Admin.Invoice.buyer_name')}</Th>
+                                <Th className={css({ textAlign: 'right' })}>{t('Admin.Invoice.total_amount')}</Th>
                             </Tr>
-                        ) : state.invoices.length === 0 ? (
-                            <Tr className={css({ cursor: 'default', _hover: { bg: 'white' } })}>
-                                <Td colSpan={3} className={css({ py: '12', textAlign: 'center', color: 'gray.500' })}>
-                                    {t('Admin.Invoice.no_data')}
-                                </Td>
-                            </Tr>
-                        ) : (
-                            state.invoices.map((invoice) => (
+                        </Thead>
+                        <Tbody>
+                            {state.invoices.map((invoice) => (
                                 <Tr key={invoice.buyerId} onClick={() => actions.setSelectedInvoice(invoice)}>
                                     <Td className={css({ fontSize: 'sm', color: 'gray.500', fontFamily: 'mono' })}>
                                         {invoice.buyerId}
@@ -50,10 +46,10 @@ export default function InvoicePage() {
                                         ¥{invoice.totalAmount.toLocaleString()}
                                     </Td>
                                 </Tr>
-                            ))
-                        )}
-                    </Tbody>
-                </Table>
+                            ))}
+                        </Tbody>
+                    </Table>
+                )}
             </Card>
 
             {/* Detail Modal */}

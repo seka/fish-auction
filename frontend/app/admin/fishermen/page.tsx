@@ -4,6 +4,7 @@ import { useFishermanPage } from './_hooks/useFishermanPage';
 import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { EmptyState } from '../../_components/atoms/EmptyState';
 
 export default function AdminFishermenPage() {
     const { state, form, actions, t } = useFishermanPage();
@@ -71,7 +72,10 @@ export default function AdminFishermenPage() {
                         {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : state.fishermen.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
+                            <EmptyState
+                                message={t(COMMON_TEXT_KEYS.no_data)}
+                                icon={<span role="img" aria-label="fisherman">🎣</span>}
+                            />
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {state.fishermen.map((fisherman) => (

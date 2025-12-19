@@ -5,6 +5,7 @@ import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
+import { EmptyState } from '../../_components/atoms/EmptyState';
 
 // Textarea component with similar styling to Input
 const Textarea = styled('textarea', {
@@ -131,7 +132,10 @@ export default function AdminVenuesPage() {
                         {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : state.venues.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
+                            <EmptyState
+                                message={t(COMMON_TEXT_KEYS.no_data)}
+                                icon={<span role="img" aria-label="venue">📍</span>}
+                            />
                         ) : (
                             <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
                                 {state.venues.map((venue) => (

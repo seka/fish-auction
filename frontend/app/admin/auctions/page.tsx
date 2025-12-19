@@ -5,6 +5,7 @@ import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { Box, Stack, HStack, Text, Card, Button, Input, Select, Table, Thead, Tbody, Tr, Th, Td } from '@/src/core/ui';
 import { css } from 'styled-system/css';
+import { EmptyState } from '../../_components/atoms/EmptyState';
 
 export default function AuctionsPage() {
     const { state, actions, form, t } = useAuctionPage();
@@ -156,7 +157,10 @@ export default function AuctionsPage() {
                         {state.isLoading ? (
                             <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.loading)}</Box>
                         ) : state.auctions.length === 0 ? (
-                            <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>{t(COMMON_TEXT_KEYS.no_data)}</Box>
+                            <EmptyState
+                                message={t(COMMON_TEXT_KEYS.no_data)}
+                                icon={<span role="img" aria-label="auction">🏷️</span>}
+                            />
                         ) : (
                             <Box overflowX="auto">
                                 <Table>
