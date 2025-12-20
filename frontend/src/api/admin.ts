@@ -3,7 +3,7 @@ import { RegisterItemParams, Fisherman, Buyer } from '@/src/models';
 
 export const registerFisherman = async (name: string): Promise<boolean> => {
     try {
-        await apiClient.post('/api/fishermen', { name });
+        await apiClient.post('/api/admin/fishermen', { name });
         return true;
     } catch (e) {
         console.error(e);
@@ -13,7 +13,7 @@ export const registerFisherman = async (name: string): Promise<boolean> => {
 
 export const registerBuyer = async (name: string): Promise<boolean> => {
     try {
-        await apiClient.post('/api/buyers', { name });
+        await apiClient.post('/api/admin/buyers', { name });
         return true;
     } catch (e) {
         console.error(e);
@@ -23,7 +23,7 @@ export const registerBuyer = async (name: string): Promise<boolean> => {
 
 export const registerItem = async (item: RegisterItemParams): Promise<boolean> => {
     try {
-        await apiClient.post('/api/items', item);
+        await apiClient.post('/api/admin/items', item);
         return true;
     } catch (e) {
         console.error(e);

@@ -3,7 +3,7 @@ import { Auction, AuctionItem } from '@/src/models/auction';
 import { AuctionFormData } from '@/src/models/schemas/auction';
 
 export const createAuction = async (data: AuctionFormData): Promise<Auction> => {
-    return apiClient.post<Auction>('/api/auctions', data);
+    return apiClient.post<Auction>('/api/admin/auctions', data);
 };
 
 export const getAuctions = async (params?: { venueId?: number; date?: string; status?: string }): Promise<Auction[]> => {
@@ -26,13 +26,13 @@ export const getAuctionItems = async (id: number): Promise<AuctionItem[]> => {
 };
 
 export const updateAuction = async (id: number, data: AuctionFormData): Promise<void> => {
-    return apiClient.put<void>(`/api/auctions/${id}`, data);
+    return apiClient.put<void>(`/api/admin/auctions/${id}`, data);
 };
 
 export const updateAuctionStatus = async (id: number, status: string): Promise<void> => {
-    return apiClient.patch<void>(`/api/auctions/${id}/status`, { status });
+    return apiClient.patch<void>(`/api/admin/auctions/${id}/status`, { status });
 };
 
 export const deleteAuction = async (id: number): Promise<void> => {
-    return apiClient.delete(`/api/auctions/${id}`);
+    return apiClient.delete(`/api/admin/auctions/${id}`);
 };
