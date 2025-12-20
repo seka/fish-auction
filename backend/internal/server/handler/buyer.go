@@ -291,8 +291,6 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case http.MethodPost:
-			h.Create(w, r)
 		case http.MethodGet:
 			h.List(w, r)
 		default:

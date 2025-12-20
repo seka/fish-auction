@@ -58,12 +58,9 @@ func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
 
 func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/fishermen", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			h.Create(w, r)
-		case http.MethodGet:
+		if r.Method == http.MethodGet {
 			h.List(w, r)
-		default:
+		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})

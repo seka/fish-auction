@@ -452,7 +452,7 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 	}
 
 	tests := []testCase{
-		{name: "Create_Post", method: http.MethodPost, path: "/api/buyers", wantStatus: http.StatusOK},
+		{name: "Create_Post", method: http.MethodPost, path: "/api/buyers", wantStatus: http.StatusMethodNotAllowed},
 		{name: "List_Get", method: http.MethodGet, path: "/api/buyers", wantStatus: http.StatusOK},
 		{name: "Create_Put", method: http.MethodPut, path: "/api/buyers", wantStatus: http.StatusMethodNotAllowed},
 
