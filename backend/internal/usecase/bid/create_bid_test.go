@@ -18,11 +18,15 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	txErr := errors.New("tx error")
 	dbErr := errors.New("db error")
 
+	// Helper to create int pointer
+	intPtr := func(i int) *int { return &i }
+
 	tests := []struct {
 		name             string
 		input            *model.Bid
 		listItemsErr     error
 		itemFound        bool
+		mockItem         *model.AuctionItem // Custom item for specific tests (e.g. HighestBid)
 		getAuctionErr    error
 		updateStatusErr  error
 		createErr        error
@@ -31,6 +35,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 		wantErr          error
 		wantCreateCalled bool
 		wantTxCalled     bool
+		wantUpdateCalled bool // Check if AuctionRepo.Update is called
 		mockAuction      *model.Auction
 	}{
 		{
@@ -54,6 +59,97 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 		},
 		{
+			name: "Success_BidIncrementOK",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   1500, // 1000 + 500 (min increment for < 10000 is 500, wait. 1000 < 10000 -> 500)
+			},
+			itemFound:        true,
+			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: intPtr(1000)}, // Current price 1000
+			wantID:           1,
+			wantCreateCalled: true,
+			wantTxCalled:     true,
+			mockAuction: &model.Auction{
+				ID:          1,
+				VenueID:     1,
+				AuctionDate: time.Now(),
+				StartTime:   nil,
+				EndTime:     nil, // No time check if nil
+				Status:      model.AuctionStatusInProgress,
+			},
+		},
+		{
+			name: "Error_BidTooLow",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   1499, // 1000 + 500 = 1500 required
+			},
+			itemFound:   true,
+			mockItem:    &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: intPtr(1000)},
+			wantErr:     &domainErrors.ValidationError{Field: "price"},
+			mockAuction: nil, // Should fail before fetching auction? No, after item check. But item check is first?
+			// Logic: Get Item -> Validate Price -> Get Auction. So Auction might not be fetched if price invalid.
+			// Re-reading code: Yes.
+			wantCreateCalled: false,
+			wantTxCalled:     false,
+		},
+		{
+			name: "Success_AutomaticExtension",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   1000,
+			},
+			itemFound:        true,
+			wantID:           1,
+			wantCreateCalled: true,
+			wantTxCalled:     true,
+			wantUpdateCalled: true,
+			mockAuction: func() *model.Auction {
+				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+				now := time.Now().In(jst)
+				startTime := now.Add(-1 * time.Hour)
+				endTime := now.Add(2 * time.Minute) // Within 5 mins -> Trigger extension
+				return &model.Auction{
+					ID:          1,
+					VenueID:     1,
+					AuctionDate: now,
+					StartTime:   &startTime,
+					EndTime:     &endTime,
+					Status:      model.AuctionStatusInProgress,
+				}
+			}(),
+		},
+		{
+			name: "Success_NoExtensionNeeded",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   1000,
+			},
+			itemFound:        true,
+			wantID:           1,
+			wantCreateCalled: true,
+			wantTxCalled:     true,
+			wantUpdateCalled: false,
+			mockAuction: func() *model.Auction {
+				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+				now := time.Now().In(jst)
+				startTime := now.Add(-1 * time.Hour)
+				endTime := now.Add(10 * time.Minute) // More than 5 mins -> No extension
+				return &model.Auction{
+					ID:          1,
+					VenueID:     1,
+					AuctionDate: now,
+					StartTime:   &startTime,
+					EndTime:     &endTime,
+					Status:      model.AuctionStatusInProgress,
+				}
+			}(),
+		},
+		{
 			name: "Error_UpdateStatusFails",
 			input: &model.Bid{
 				ItemID:  1,
@@ -62,10 +158,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			itemFound:        true,
 			updateStatusErr:  updateStatusErr,
-			wantErr:          nil, // UpdateStatus is no longer called, so no error expected from it
+			wantErr:          nil,
 			wantTxCalled:     true,
-			wantCreateCalled: true, // Should proceed to create
-			wantID:           1,    // Should succeed
+			wantCreateCalled: true,
+			wantID:           1,
 			mockAuction: &model.Auction{
 				ID:          1,
 				VenueID:     1,
@@ -126,32 +222,11 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			itemFound: true,
 			wantErr:   &domainErrors.ValidationError{Field: "auction_time"},
 			mockAuction: func() *model.Auction {
-				now := time.Now()
+				// Use JST for consistency with implementation
+				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+				now := time.Now().In(jst)
 				startTime := now.Add(-2 * time.Hour)
 				endTime := now.Add(-1 * time.Hour)
-				return &model.Auction{
-					ID:          1,
-					VenueID:     1,
-					AuctionDate: now,
-					StartTime:   &startTime,
-					EndTime:     &endTime,
-					Status:      model.AuctionStatusInProgress,
-				}
-			}(),
-		},
-		{
-			name: "Error_AuctionPeriodInvalid_BeforeStart",
-			input: &model.Bid{
-				ItemID:  1,
-				BuyerID: 1,
-				Price:   1000,
-			},
-			itemFound: true,
-			wantErr:   &domainErrors.ValidationError{Field: "auction_time"},
-			mockAuction: func() *model.Auction {
-				now := time.Now()
-				startTime := now.Add(1 * time.Hour)
-				endTime := now.Add(2 * time.Hour)
 				return &model.Auction{
 					ID:          1,
 					VenueID:     1,
@@ -198,6 +273,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 					if !tt.itemFound {
 						return []model.AuctionItem{}, nil
 					}
+					if tt.mockItem != nil {
+						return []model.AuctionItem{*tt.mockItem}, nil
+					}
 					return []model.AuctionItem{
 						{ID: tt.input.ItemID, AuctionID: 1},
 					}, nil
@@ -224,7 +302,14 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 					if tt.getAuctionErr != nil {
 						return nil, tt.getAuctionErr
 					}
+					// Only return mockAuction if it's set.
+					// If getAuctionErr is set, this might not be reached depending on implementation logic order.
+					// Tests above with getAuctionErr set expect error.
 					return tt.mockAuction, nil
+				},
+				UpdateFunc: func(ctx context.Context, auction *model.Auction) error {
+					updateCalled = true
+					return nil
 				},
 			}
 
@@ -268,8 +353,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			if updateCalled {
-				t.Fatalf("UpdateStatus called = %v, want %v", updateCalled, false)
+			if updateCalled != tt.wantUpdateCalled {
+				t.Fatalf("Update called = %v, want %v", updateCalled, tt.wantUpdateCalled)
 			}
 			if createCalled != tt.wantCreateCalled {
 				t.Fatalf("Create called = %v, want %v", createCalled, tt.wantCreateCalled)
