@@ -12,7 +12,7 @@ import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer
 import { useAuctionData } from './_hooks/useAuctionData';
 import { useBidMutation } from './_hooks/useBidMutation';
 import { useAuth } from './_hooks/useAuth';
-import { isAuctionActive, formatTime } from '@/src/utils/auction';
+import { isAuctionActive, formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
 import { AUCTION_STATUS_KEYS, ITEM_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
 import { Box, Text, Button, Input, Card, Stack, HStack } from '@/src/core/ui';
@@ -31,7 +31,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
     const { submitBid, isLoading: isBidLoading } = useBidMutation();
     const { isLoggedIn, isChecking } = useAuth();
 
-    // Check if auction is active (within bidding hours)
+    // オークションが開催中（入札時間内）かチェック
     const auctionActive = auction ? isAuctionActive(auction) : false;
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<BidFormData>({
@@ -42,7 +42,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
         resolver: zodResolver(buyerLoginSchema),
     });
 
-    // Reset selected item if it disappears from list or status changes (optional)
+    // 商品がリストから消えたり、ステータスが変わった場合、選択状態をリセットする (オプション)
     useEffect(() => {
         if (selectedItem) {
             const current = items.find(i => i.id === selectedItem.id);
@@ -91,10 +91,27 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
     const onSubmitBid = async (data: BidFormData) => {
         if (!selectedItem) return;
 
+        const currentPrice = selectedItem.highestBid || 0;
+        const minIncrement = getMinimumBidIncrement(currentPrice);
+        const inputPrice = parseInt(data.price);
+
+        if (inputPrice < currentPrice + minIncrement) {
+            // setError is not destructured from useForm, so I need to check if I can add it or return early.
+            // Since I cannot change the destructuring in this tool call easily without seeing the whole file,
+            // I will assume setError is available or just show alert/message?
+            // Actually, I should update the destructuring first or in the same step.
+            // Let's assume I can't access setError easily if not destructured.
+            // I'll update the destructuring in a separate chunk or just fail silently/show toast?
+            // Standard way: use setError.
+            // Let's check line 37 for destructuring.
+            setMessage(t('Public.AuctionDetail.fail_bid_low_price', { min: (currentPrice + minIncrement).toLocaleString() }));
+            return;
+        }
+
         const success = await submitBid({
             itemId: selectedItem.id,
             buyerId: 0, // Backend handles this from context
-            price: parseInt(data.price),
+            price: inputPrice,
         });
 
         if (success) {
@@ -109,7 +126,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
         }
     };
 
-    // Show login form if not logged in
+    // ログインしていない場合はログインフォームを表示
     if (!isLoggedIn) {
         return (
             <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50" py="12" px="4">
@@ -342,6 +359,11 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                                                         <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
                                                             {t('Public.AuctionDetail.bid_amount_label')}
                                                         </Text>
+                                                        <Text fontSize="xs" className={css({ color: 'gray.500', mb: '2' })}>
+                                                            {t('Public.AuctionDetail.next_min_bid', {
+                                                                price: ((selectedItem.highestBid || 0) + getMinimumBidIncrement(selectedItem.highestBid || 0)).toLocaleString()
+                                                            })}
+                                                        </Text>
                                                         <Box position="relative">
                                                             <Box position="absolute" top="50%" left="3" transform="translateY(-50%)" pointerEvents="none">
                                                                 <Text fontSize="sm" className={css({ color: 'gray.600' })}>¥</Text>
@@ -349,7 +371,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                                                             <Input
                                                                 type="number"
                                                                 {...register('price')}
-                                                                placeholder="0"
+                                                                placeholder={((selectedItem.highestBid || 0) + getMinimumBidIncrement(selectedItem.highestBid || 0)).toString()}
                                                                 className={css({ pl: '7' })}
                                                             />
                                                         </Box>
