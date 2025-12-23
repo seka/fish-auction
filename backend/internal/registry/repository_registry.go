@@ -25,6 +25,7 @@ type Repository interface {
 	NewVenueRepository() repository.VenueRepository
 	NewAuctionRepository() repository.AuctionRepository
 	NewAdminRepository() repository.AdminRepository // ... other repositories
+	NewPushRepository() repository.PushRepository
 	PasswordReset() repository.PasswordResetRepository
 }
 
@@ -61,6 +62,7 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 	// Run migrations
 	migrationFiles := []string{
 		"001_init.sql",
+		"000002_create_push_subscriptions.up.sql",
 	}
 
 	for _, file := range migrationFiles {
@@ -148,6 +150,10 @@ func (r *repositoryRegistry) NewAuctionRepository() repository.AuctionRepository
 
 func (r *repositoryRegistry) NewAdminRepository() repository.AdminRepository {
 	return postgres.NewAdminRepository(r.db)
+}
+
+func (r *repositoryRegistry) NewPushRepository() repository.PushRepository {
+	return postgres.NewPushRepository(r.db)
 }
 
 func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository {

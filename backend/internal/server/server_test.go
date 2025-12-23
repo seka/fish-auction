@@ -38,6 +38,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 	hAdmin := handler.NewAdminHandler(mockReg)
 	hAuthReset := handler.NewAuthResetHandler(mockReg)
 	hAdminAuthReset := handler.NewAdminAuthResetHandler(mockReg)
+	hPush := handler.NewPushHandler(mockReg)
 
 	// Initialize Server
 	s := NewServer(
@@ -53,6 +54,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hAdmin,
 		hAuthReset,
 		hAdminAuthReset,
+		hPush,
 	)
 
 	tests := []struct {

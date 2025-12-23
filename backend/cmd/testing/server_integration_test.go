@@ -89,6 +89,7 @@ func TestServerIntegration(t *testing.T) {
 	adminHandler := handler.NewAdminHandler(useCaseReg)
 	authResetHandler := handler.NewAuthResetHandler(useCaseReg)
 	adminAuthResetHandler := handler.NewAdminAuthResetHandler(useCaseReg)
+	pushHandler := handler.NewPushHandler(useCaseReg)
 
 	// 7. Server を起動
 	srv := server.NewServer(
@@ -104,6 +105,7 @@ func TestServerIntegration(t *testing.T) {
 		adminHandler,
 		authResetHandler,
 		adminAuthResetHandler,
+		pushHandler,
 	)
 
 	// 8. サーバーを goroutine で起動

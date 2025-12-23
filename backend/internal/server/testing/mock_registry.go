@@ -11,6 +11,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
 	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
 	"github.com/seka/fish-auction/backend/internal/usecase/item"
+	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 	"github.com/seka/fish-auction/backend/internal/usecase/venue"
 )
 
@@ -45,6 +46,7 @@ type MockRegistry struct {
 	ResetPasswordUC             auth.ResetPasswordUseCase
 	RequestAdminPasswordResetUC admin.RequestPasswordResetUseCase
 	ResetAdminPasswordUC        admin.ResetPasswordUseCase
+	PushNotificationUC          notification.PushNotificationUseCase
 }
 
 func (m *MockRegistry) NewItemRepository() repository.ItemRepository {
@@ -185,6 +187,10 @@ func (m *MockRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswo
 
 func (m *MockRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
 	return m.ResetAdminPasswordUC
+}
+
+func (m *MockRegistry) NewPushNotificationUseCase() notification.PushNotificationUseCase {
+	return m.PushNotificationUC
 }
 
 // Ensure MockRegistry implements registry.UseCase

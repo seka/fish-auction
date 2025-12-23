@@ -18,6 +18,9 @@ services:
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
       - SMTP_FROM=noreply@example.com
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_SUBJECT=${VAPID_SUBJECT}
     depends_on:
       - db
       - redis
@@ -35,6 +38,7 @@ services:
     environment:
       - NODE_ENV=development
       - API_BASE_URL=http://backend:8080
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
     volumes:
       - ./frontend:/app
       - /app/node_modules

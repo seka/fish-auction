@@ -14,6 +14,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
 	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
 	"github.com/seka/fish-auction/backend/internal/usecase/item"
+	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 	"github.com/seka/fish-auction/backend/internal/usecase/venue"
 )
 
@@ -49,6 +50,7 @@ type UseCase interface {
 	NewResetPasswordUseCase() auth.ResetPasswordUseCase
 	NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase
 	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
+	NewPushNotificationUseCase() notification.PushNotificationUseCase
 }
 
 // useCaseRegistry implements the UseCase interface
@@ -215,5 +217,14 @@ func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseC
 	return admin.NewResetPasswordUseCase(
 		u.repo.PasswordReset(),
 		u.repo.NewAdminRepository(),
+	)
+}
+
+func (u *useCaseRegistry) NewPushNotificationUseCase() notification.PushNotificationUseCase {
+	return notification.NewPushNotificationUseCase(
+		u.repo.NewPushRepository(),
+		u.cfg.VAPIDPublicKey,
+		u.cfg.VAPIDPrivateKey,
+		u.cfg.VAPIDSubject,
 	)
 }

@@ -45,6 +45,7 @@ func main() {
 		handlers.admin,
 		handlers.authReset,
 		handlers.adminAuthReset,
+		handlers.push,
 	)
 
 	// Start Server
@@ -66,6 +67,7 @@ type handlers struct {
 	admin          *handler.AdminHandler
 	authReset      *handler.AuthResetHandler
 	adminAuthReset *handler.AdminAuthResetHandler
+	push           *handler.PushHandler
 }
 
 func buildHandlers(reg registry.UseCase) *handlers {
@@ -82,5 +84,6 @@ func buildHandlers(reg registry.UseCase) *handlers {
 		admin:          handler.NewAdminHandler(reg),
 		authReset:      handler.NewAuthResetHandler(reg),
 		adminAuthReset: handler.NewAdminAuthResetHandler(reg),
+		push:           handler.NewPushHandler(reg),
 	}
 }

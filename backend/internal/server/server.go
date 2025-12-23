@@ -29,6 +29,7 @@ type Server struct {
 	adminHandler          *handler.AdminHandler
 	adminAuthResetHandler *handler.AdminAuthResetHandler
 	authResetHandler      *handler.AuthResetHandler
+	pushHandler           *handler.PushHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
 }
@@ -46,6 +47,7 @@ func NewServer(
 	adminHandler *handler.AdminHandler,
 	authResetHandler *handler.AuthResetHandler,
 	adminAuthResetHandler *handler.AdminAuthResetHandler,
+	pushHandler *handler.PushHandler,
 ) *Server {
 	s := &Server{
 		router:                http.NewServeMux(),
@@ -61,6 +63,7 @@ func NewServer(
 		adminHandler:          adminHandler,
 		authResetHandler:      authResetHandler,
 		adminAuthResetHandler: adminAuthResetHandler,
+		pushHandler:           pushHandler,
 		adminAuth:             middleware.NewAdminAuthMiddleware(),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(),
 	}
@@ -283,6 +286,15 @@ func (s *Server) registerBuyerRoutes() {
 	buyerMux.HandleFunc("/password", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPut {
 			s.buyerHandler.UpdatePassword(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	// Push Notification
+	buyerMux.HandleFunc("/push/subscribe", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			s.pushHandler.Subscribe(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
