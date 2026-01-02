@@ -50,6 +50,70 @@ export default function AdminBuyersPage() {
                                     )}
                                 </Box>
 
+                                <Box>
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
+                                        Email
+                                    </Text>
+                                    <Input
+                                        type="email"
+                                        {...form.register('email')}
+                                        placeholder="buyer@example.com"
+                                        error={!!form.errors.email}
+                                        className={css({ _focus: { borderColor: 'green.500', ringColor: 'green.500' } })}
+                                    />
+                                    {form.errors.email && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.email.message}</Text>
+                                    )}
+                                </Box>
+
+                                <Box>
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
+                                        Password
+                                    </Text>
+                                    <Input
+                                        type="password"
+                                        {...form.register('password')}
+                                        placeholder="********"
+                                        error={!!form.errors.password}
+                                        className={css({ _focus: { borderColor: 'green.500', ringColor: 'green.500' } })}
+                                    />
+                                    {form.errors.password && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.password.message}</Text>
+                                    )}
+                                </Box>
+
+                                <Box>
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
+                                        Organization
+                                    </Text>
+                                    <Input
+                                        type="text"
+                                        {...form.register('organization')}
+                                        placeholder="株式会社魚市場"
+                                        error={!!form.errors.organization}
+                                        className={css({ _focus: { borderColor: 'green.500', ringColor: 'green.500' } })}
+                                    />
+                                    {form.errors.organization && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.organization.message}</Text>
+                                    )}
+                                </Box>
+
+                                <Box>
+                                    <Text as="label" display="block" fontSize="sm" fontWeight="bold" className={css({ color: 'gray.700' })} mb="1">
+                                        Contact Info
+                                    </Text>
+                                    <Input
+                                        type="text"
+                                        {...form.register('contactInfo')}
+                                        placeholder="03-1234-5678"
+                                        error={!!form.errors.contactInfo}
+                                        className={css({ _focus: { borderColor: 'green.500', ringColor: 'green.500' } })}
+                                    />
+                                    {form.errors.contactInfo && (
+                                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">{form.errors.contactInfo.message}</Text>
+                                    )}
+                                </Box>
+
                                 <Button
                                     type="submit"
                                     disabled={state.isCreating}

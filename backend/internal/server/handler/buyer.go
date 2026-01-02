@@ -293,6 +293,8 @@ func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 		switch r.Method {
 		case http.MethodGet:
 			h.List(w, r)
+		case http.MethodPost:
+			h.Create(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

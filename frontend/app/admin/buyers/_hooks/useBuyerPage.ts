@@ -18,7 +18,7 @@ export const useBuyerPage = () => {
 
     const onSubmit = async (data: BuyerFormData) => {
         try {
-            await createBuyer({ name: data.name });
+            await createBuyer(data);
             setMessage(t('Admin.Buyers.success_register'));
             reset();
         } catch (e) {

@@ -1,5 +1,6 @@
 import { apiClient } from '@/src/core/api/client';
 import { RegisterItemParams, Fisherman, Buyer } from '@/src/models';
+import { BuyerFormData } from '@/src/models/schemas/admin';
 
 export const registerFisherman = async (name: string): Promise<boolean> => {
     try {
@@ -11,9 +12,9 @@ export const registerFisherman = async (name: string): Promise<boolean> => {
     }
 };
 
-export const registerBuyer = async (name: string): Promise<boolean> => {
+export const registerBuyer = async (data: BuyerFormData): Promise<boolean> => {
     try {
-        await apiClient.post('/api/admin/buyers', { name });
+        await apiClient.post('/api/admin/buyers', data);
         return true;
     } catch (e) {
         console.error(e);

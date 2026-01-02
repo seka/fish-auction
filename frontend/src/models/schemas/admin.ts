@@ -6,6 +6,10 @@ export const fishermanSchema = z.object({
 
 export const buyerSchema = z.object({
     name: z.string().min(1, '中買人名を入力してください'),
+    email: z.string().email('正しいメールアドレスを入力してください'),
+    password: z.string().min(8, 'パスワードは8文字以上で入力してください'),
+    organization: z.string().min(1, '組織名を入力してください'),
+    contactInfo: z.string().min(1, '連絡先を入力してください'),
 });
 
 export const itemSchema = z.object({

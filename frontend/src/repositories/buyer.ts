@@ -22,7 +22,7 @@ export const useBuyerMutation = () => {
     const queryClient = useQueryClient();
 
     const createMutation = useMutation({
-        mutationFn: (data: { name: string }) => registerBuyer(data.name),
+        mutationFn: (data: { name: string; email: string; password: string; organization: string; contactInfo: string }) => registerBuyer(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: buyerKeys.all });
         },
