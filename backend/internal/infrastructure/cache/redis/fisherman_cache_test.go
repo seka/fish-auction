@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

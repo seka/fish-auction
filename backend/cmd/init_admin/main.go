@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/seka/fish-auction/backend/config"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/postgres"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 
 	_ "github.com/lib/pq"

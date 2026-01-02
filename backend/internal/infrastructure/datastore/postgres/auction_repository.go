@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lib/pq"
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -30,6 +31,10 @@ func (r *auctionRepository) Create(ctx context.Context, auction *model.Auction) 
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status).
 		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == ErrCodeUniqueViolation {
+			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
+		}
 		return nil, err
 	}
 	return &a, nil
@@ -124,6 +129,10 @@ func (r *auctionRepository) Update(ctx context.Context, auction *model.Auction) 
 	result, err := r.db.ExecContext(ctx, query,
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == ErrCodeUniqueViolation {
+			return &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
+		}
 		return err
 	}
 

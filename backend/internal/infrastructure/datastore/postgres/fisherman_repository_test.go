@@ -7,7 +7,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/postgres"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/stretchr/testify/assert"
 )
 

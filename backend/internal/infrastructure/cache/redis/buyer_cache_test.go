@@ -9,29 +9,29 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestItemCache_Get(t *testing.T) {
+func TestBuyerCache_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewItemCache(db, time.Hour)
+	c := cache.NewBuyerCache(db, time.Hour)
 	ctx := context.Background()
 
 	t.Run("CacheHit", func(t *testing.T) {
-		item := &model.AuctionItem{ID: 1, FishType: "Tuna"}
-		data, _ := json.Marshal(item)
-		mock.ExpectGet("item:1").SetVal(string(data))
+		buyer := &model.Buyer{ID: 1, Name: "Buyer A"}
+		data, _ := json.Marshal(buyer)
+		mock.ExpectGet("buyer:1").SetVal(string(data))
 
 		got, err := c.Get(ctx, 1)
 		require.NoError(t, err)
-		assert.Equal(t, item.ID, got.ID)
-		assert.Equal(t, item.FishType, got.FishType)
+		assert.Equal(t, buyer.ID, got.ID)
+		assert.Equal(t, buyer.Name, got.Name)
 	})
 
 	t.Run("CacheMiss", func(t *testing.T) {
-		mock.ExpectGet("item:1").RedisNil()
+		mock.ExpectGet("buyer:1").RedisNil()
 
 		got, err := c.Get(ctx, 1)
 		require.NoError(t, err)
@@ -39,7 +39,7 @@ func TestItemCache_Get(t *testing.T) {
 	})
 
 	t.Run("RedisError", func(t *testing.T) {
-		mock.ExpectGet("item:1").SetErr(errors.New("connection failed"))
+		mock.ExpectGet("buyer:1").SetErr(errors.New("connection failed"))
 
 		got, err := c.Get(ctx, 1)
 		require.Error(t, err)
@@ -47,45 +47,45 @@ func TestItemCache_Get(t *testing.T) {
 	})
 }
 
-func TestItemCache_Set(t *testing.T) {
+func TestBuyerCache_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := cache.NewItemCache(db, ttl)
+	c := cache.NewBuyerCache(db, ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
-		item := &model.AuctionItem{ID: 1, FishType: "Tuna"}
-		data, _ := json.Marshal(item)
-		mock.ExpectSet("item:1", data, ttl).SetVal("OK")
+		buyer := &model.Buyer{ID: 1, Name: "Buyer A"}
+		data, _ := json.Marshal(buyer)
+		mock.ExpectSet("buyer:1", data, ttl).SetVal("OK")
 
-		err := c.Set(ctx, 1, item)
+		err := c.Set(ctx, 1, buyer)
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		item := &model.AuctionItem{ID: 1, FishType: "Tuna"}
-		data, _ := json.Marshal(item)
-		mock.ExpectSet("item:1", data, ttl).SetErr(errors.New("failed"))
+		buyer := &model.Buyer{ID: 1, Name: "Buyer A"}
+		data, _ := json.Marshal(buyer)
+		mock.ExpectSet("buyer:1", data, ttl).SetErr(errors.New("failed"))
 
-		err := c.Set(ctx, 1, item)
+		err := c.Set(ctx, 1, buyer)
 		assert.Error(t, err)
 	})
 }
 
-func TestItemCache_Delete(t *testing.T) {
+func TestBuyerCache_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewItemCache(db, time.Hour)
+	c := cache.NewBuyerCache(db, time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
-		mock.ExpectDel("item:1").SetVal(1)
+		mock.ExpectDel("buyer:1").SetVal(1)
 
 		err := c.Delete(ctx, 1)
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mock.ExpectDel("item:1").SetErr(errors.New("failed"))
+		mock.ExpectDel("buyer:1").SetErr(errors.New("failed"))
 
 		err := c.Delete(ctx, 1)
 		assert.Error(t, err)

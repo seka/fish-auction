@@ -9,8 +9,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/postgres"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/fish-auction/backend/migrations"
 )
 

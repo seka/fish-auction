@@ -8,7 +8,7 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/cache"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 

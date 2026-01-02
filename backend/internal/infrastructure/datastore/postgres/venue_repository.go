@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/lib/pq"
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -95,6 +96,10 @@ func (r *venueRepository) Delete(ctx context.Context, id int) error {
 
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == ErrCodeForeignKeyViolation {
+			return &apperrors.ConflictError{Message: "Cannot delete venue because it has associated transactions (bids/purchases)."}
+		}
 		return err
 	}
 
