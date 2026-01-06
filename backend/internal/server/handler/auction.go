@@ -226,7 +226,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/auctions/")
+	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -263,7 +263,8 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/auctions/"), "/status")
+	path := strings.TrimSuffix(r.URL.Path, "/status")
+	idStr := path[strings.LastIndex(path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -286,7 +287,7 @@ func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/auctions/")
+	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)

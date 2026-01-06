@@ -22,7 +22,9 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		ListBuyersUC:        &mock.MockListBuyersUseCase{ExecuteFunc: func(ctx context.Context) ([]model.Buyer, error) { return []model.Buyer{}, nil }},
 		GetBuyerPurchasesUC: &mock.MockGetBuyerPurchasesUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Purchase, error) { return []model.Purchase{}, nil }},
 		GetBuyerAuctionsUC:  &mock.MockGetBuyerAuctionsUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Auction, error) { return []model.Auction{}, nil }},
-		// Add mocks for other handlers if needed for the 200 OK checks, but for 401 checks they won't be called.
+		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
+			return &model.Auction{ID: 1, VenueID: auction.VenueID}, nil
+		}},
 	}
 
 	// Initialize Handlers
@@ -85,6 +87,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		// Auctions
 		{name: "Admin_CreateAuction_NoAuth", method: http.MethodPost, path: "/api/admin/auctions", expectedStatus: http.StatusUnauthorized},
 		{name: "Admin_UpdateAuction_NoAuth", method: http.MethodPut, path: "/api/admin/auctions/1", expectedStatus: http.StatusUnauthorized},
+		{name: "Admin_UpdateAuctionStatus_NoAuth", method: http.MethodPatch, path: "/api/admin/auctions/1/status", expectedStatus: http.StatusUnauthorized},
 		{name: "Admin_DeleteAuction_NoAuth", method: http.MethodDelete, path: "/api/admin/auctions/1", expectedStatus: http.StatusUnauthorized},
 		// Venues
 		{name: "Admin_CreateVenue_NoAuth", method: http.MethodPost, path: "/api/admin/venues", expectedStatus: http.StatusUnauthorized},
@@ -117,6 +120,15 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			cookieValue:    "authenticated",
 			expectedStatus: http.StatusOK,
 		},
+		// Auction Status (Admin)
+		{
+			name:           "Admin_UpdateAuctionStatus_Authorized",
+			method:         http.MethodPatch,
+			path:           "/api/admin/auctions/1/status",
+			cookieName:     "admin_session",
+			cookieValue:    "authenticated",
+			expectedStatus: http.StatusOK,
+		},
 		// Buyer Me (Buyer)
 		{
 			name:           "Buyer_GetMe_Authorized",
@@ -126,14 +138,27 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			cookieValue:    "authenticated",
 			expectedStatus: http.StatusOK,
 		},
+		// Auction Create (Admin)
+		{
+			name:           "Admin_CreateAuction_Authorized",
+			method:         http.MethodPost,
+			path:           "/api/admin/auctions",
+			cookieName:     "admin_session",
+			cookieValue:    "authenticated",
+			expectedStatus: http.StatusOK,
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var body io.Reader
 			// Provide dummy JSON body for POST/PUT to ensure handlers don't decode EOF
-			if tc.method == http.MethodPost || tc.method == http.MethodPut {
-				body = strings.NewReader(`{"name": "test", "email": "test@example.com", "password": "pass", "organization": "org", "contact_info": "info"}`)
+			if tc.method == http.MethodPost || tc.method == http.MethodPut || tc.method == http.MethodPatch {
+				payload := `{"name": "test", "email": "test@example.com", "password": "pass", "organization": "org", "contact_info": "info", "status": "in_progress"}`
+				if strings.Contains(tc.path, "auctions") {
+					payload = `{"venue_id": 1, "auction_date": "2025-01-01", "start_time": "10:00:00", "end_time": "11:00:00", "status": "scheduled"}`
+				}
+				body = strings.NewReader(payload)
 			}
 			req := httptest.NewRequest(tc.method, tc.path, body)
 

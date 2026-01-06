@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -207,6 +208,13 @@ func (s *Server) registerAdminRoutes() {
 		}
 	})
 	adminMux.HandleFunc("/auctions/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/status") {
+			if r.Method == http.MethodPatch {
+				s.auctionHandler.UpdateStatus(w, r)
+				return
+			}
+		}
+
 		switch r.Method {
 		case http.MethodPut:
 			s.auctionHandler.Update(w, r)
