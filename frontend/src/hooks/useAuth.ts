@@ -3,8 +3,12 @@ import { getCurrentBuyer } from '@/src/api/buyer_auth';
 
 // Check if user is logged in by calling the backend
 const checkAuth = async (): Promise<boolean> => {
-    const buyer = await getCurrentBuyer();
-    return buyer !== null;
+    try {
+        const buyer = await getCurrentBuyer();
+        return buyer !== null;
+    } catch (e) {
+        return false;
+    }
 };
 
 export const useAuth = () => {

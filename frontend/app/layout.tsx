@@ -6,6 +6,7 @@ import { css } from "styled-system/css";
 
 import { PublicNavbar } from './_components/organisms/PublicNavbar';
 import { MainLayoutTemplate } from './_components/templates/MainLayoutTemplate';
+import { PushInitializer } from '@/src/components/Notification/PushInitializer';
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <MainLayoutTemplate navbar={<PublicNavbar />}>
+              <PushInitializer />
               {children}
             </MainLayoutTemplate>
           </Providers>
