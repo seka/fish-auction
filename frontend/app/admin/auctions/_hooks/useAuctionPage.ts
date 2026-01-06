@@ -38,9 +38,19 @@ export const useAuctionPage = () => {
                 setMessage(t('Admin.Auctions.success_create'));
             }
             reset();
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            setMessage(t('Common.error_occurred'));
+            let errorMsg = t('Common.error_occurred');
+            if (e.name === 'ApiError') {
+                if (e.status === 409) {
+                    errorMsg = t('Admin.Auctions.error_conflict');
+                } else if (e.status === 500 || e.message === 'An internal error occurred') {
+                    errorMsg = t('Common.error_occurred');
+                } else if (e.message) {
+                    errorMsg = e.message;
+                }
+            }
+            setMessage(errorMsg);
         }
     };
 

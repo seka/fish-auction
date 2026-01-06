@@ -11,7 +11,7 @@ import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
 import { useAuctionData } from './_hooks/useAuctionData';
 import { useBidMutation } from './_hooks/useBidMutation';
-import { useAuth } from './_hooks/useAuth';
+import { useAuth } from '@/src/hooks/useAuth';
 import { isAuctionActive, formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
 import { AUCTION_STATUS_KEYS, ITEM_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';

@@ -52,9 +52,19 @@ export const useVenuePage = () => {
             try {
                 await deleteVenue(id);
                 setMessage(t('Admin.Venues.success_delete'));
-            } catch (e) {
+            } catch (e: any) {
                 console.error(e);
-                setMessage(t('Admin.Venues.fail_delete'));
+                let errorMsg = t('Admin.Venues.fail_delete');
+                if (e.name === 'ApiError') {
+                    if (e.status === 409) {
+                        errorMsg = t('Admin.Venues.error_delete_conflict');
+                    } else if (e.status === 500 || e.message === 'An internal error occurred') {
+                        errorMsg = t('Common.error_occurred');
+                    } else if (e.message) {
+                        errorMsg = e.message;
+                    }
+                }
+                setMessage(errorMsg);
             }
         }
     };

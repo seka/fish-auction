@@ -1,14 +1,40 @@
 import { toCamelCase, toSnakeCase } from '@/src/utils/caseConverter';
 
+export class ApiError extends Error {
+    constructor(public status: number, public statusText: string, public data?: any) {
+        super(`API Error ${status}: ${statusText}`);
+        this.name = 'ApiError';
+        // Try to extraction message from standard error format
+        if (data && typeof data === 'object' && data.message) {
+            this.message = data.message;
+        }
+    }
+}
+
 export class ApiClient {
+    private async handleResponse<T>(res: Response): Promise<T> {
+        if (!res.ok) {
+            let data;
+            try {
+                data = await res.json();
+            } catch (e) {
+                // ignore json parse error
+            }
+            throw new ApiError(res.status, res.statusText, data);
+        }
+        // Handle empty response (e.g. 204 No Content)
+        if (res.status === 204) {
+            return {} as T;
+        }
+        const text = await res.text();
+        return text ? toCamelCase(JSON.parse(text)) : ({} as T);
+    }
+
     async get<T>(url: string): Promise<T> {
         const res = await fetch(url, {
             credentials: 'include',
         });
-        if (!res.ok) {
-            throw new Error(`GET ${url} failed: ${res.statusText}`);
-        }
-        return toCamelCase(await res.json());
+        return this.handleResponse<T>(res);
     }
 
     async post<T>(url: string, body: any): Promise<T> {
@@ -18,13 +44,7 @@ export class ApiClient {
             body: JSON.stringify(toSnakeCase(body)),
             credentials: 'include',
         });
-        if (!res.ok) {
-            throw new Error(`POST ${url} failed: ${res.statusText}`);
-        }
-        // Some APIs might not return JSON on success (e.g. 201 Created with empty body)
-        // Adjust based on backend response. Assuming JSON or handling empty response if needed.
-        const text = await res.text();
-        return text ? toCamelCase(JSON.parse(text)) : ({} as T);
+        return this.handleResponse<T>(res);
     }
 
     async put<T>(url: string, body: any): Promise<T> {
@@ -34,11 +54,7 @@ export class ApiClient {
             body: JSON.stringify(toSnakeCase(body)),
             credentials: 'include',
         });
-        if (!res.ok) {
-            throw new Error(`PUT ${url} failed: ${res.statusText}`);
-        }
-        const text = await res.text();
-        return text ? toCamelCase(JSON.parse(text)) : ({} as T);
+        return this.handleResponse<T>(res);
     }
 
     async delete(url: string): Promise<void> {
@@ -47,7 +63,13 @@ export class ApiClient {
             credentials: 'include',
         });
         if (!res.ok) {
-            throw new Error(`DELETE ${url} failed: ${res.statusText}`);
+            let data;
+            try {
+                data = await res.json();
+            } catch (e) {
+                // ignore
+            }
+            throw new ApiError(res.status, res.statusText, data);
         }
     }
 
@@ -58,11 +80,7 @@ export class ApiClient {
             body: JSON.stringify(toSnakeCase(body)),
             credentials: 'include',
         });
-        if (!res.ok) {
-            throw new Error(`PATCH ${url} failed: ${res.statusText}`);
-        }
-        const text = await res.text();
-        return text ? toCamelCase(JSON.parse(text)) : ({} as T);
+        return this.handleResponse<T>(res);
     }
 }
 

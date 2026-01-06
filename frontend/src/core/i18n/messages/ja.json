@@ -132,7 +132,9 @@
             "success_create": "会場を作成しました",
             "success_update": "会場を更新しました",
             "success_delete": "会場を削除しました",
-            "fail_delete": "削除に失敗しました"
+            "success_delete": "会場を削除しました",
+            "fail_delete": "削除に失敗しました",
+            "error_delete_conflict": "取引履歴が存在するため削除できません"
         },
         "Auctions": {
             "title": "セリ管理",
@@ -156,7 +158,8 @@
             "success_delete": "セリを削除しました",
             "success_status_update": "ステータスを更新しました",
             "fail_delete": "削除に失敗しました",
-            "fail_status_update": "ステータスの更新に失敗しました"
+            "fail_status_update": "ステータスの更新に失敗しました",
+            "error_conflict": "指定された会場と日付のセリは既に登録されています"
         },
         "Login": {
             "title": "管理者ログイン",

@@ -10,7 +10,7 @@ export const venueSchema = z.object({
 
 export const auctionSchema = z.object({
     id: z.number().optional(),
-    venueId: z.number().min(1, '会場を選択してください'),
+    venueId: z.coerce.number().min(1, '会場を選択してください'),
     auctionDate: z.string().min(1, '開催日を入力してください'),
     startTime: z.string().optional(),
     endTime: z.string().optional(),
