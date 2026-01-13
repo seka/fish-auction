@@ -4,13 +4,25 @@ import { Auction } from '@/src/models/auction';
  * オークションが現在開催中（入札可能時間内）かどうかをチェックする
  */
 export const isAuctionActive = (auction: Auction): boolean => {
-    if (!auction.startTime || !auction.endTime) {
-        // 時間が設定されていない場合は常にアクティブとみなす
+    // ステータスが明確に終了または中止なら非アクティブ
+    if (auction.status === 'completed' || auction.status === 'cancelled') {
+        return false;
+    }
+
+    // ステータスが開催中ならアクティブ
+    if (auction.status === 'in_progress') {
         return true;
     }
 
+    // それ以外（scheduled等）は時刻判定
+    if (!auction.startTime || !auction.endTime) {
+        return auction.status === 'scheduled';
+    }
+
     const now = new Date();
-    const auctionDate = new Date(auction.auctionDate);
+    // yyyy-mm-dd を yyyy/mm/dd に置換すると多くのブラウザでローカル時刻として解釈されやすい
+    const dateStr = auction.auctionDate.replace(/-/g, '/');
+    const auctionDate = new Date(dateStr);
 
     // 開始時間と終了時間をパース
     const [startHour, startMin] = auction.startTime.split(':').map(Number);
