@@ -12,6 +12,7 @@ import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer
 import { useAuctionData } from './_hooks/useAuctionData';
 import { useBidMutation } from './_hooks/useBidMutation';
 import { useAuth } from '@/src/hooks/useAuth';
+import { useToast } from '@/src/hooks/useToast';
 import { isAuctionActive, formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
 import { AUCTION_STATUS_KEYS, ITEM_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
@@ -30,6 +31,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
     const { auction, items, isLoading, refetchItems } = useAuctionData(auctionId);
     const { submitBid, isLoading: isBidLoading } = useBidMutation();
     const { isLoggedIn, isChecking } = useAuth();
+    const { showToast } = useToast();
 
     // オークションが開催中（入札時間内）かチェック
     const auctionActive = auction ? isAuctionActive(auction) : false;

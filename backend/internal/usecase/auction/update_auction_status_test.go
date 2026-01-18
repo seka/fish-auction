@@ -34,6 +34,34 @@ func (m *mockAuctionRepoForStatusUpdate) UpdateStatus(ctx context.Context, id in
 }
 func (m *mockAuctionRepoForStatusUpdate) Delete(ctx context.Context, id int) error { return nil }
 
+type mockBuyerRepoForStatusUpdate struct{}
+
+func (m *mockBuyerRepoForStatusUpdate) Create(ctx context.Context, b *model.Buyer) (*model.Buyer, error) {
+	return nil, nil
+}
+func (m *mockBuyerRepoForStatusUpdate) List(ctx context.Context) ([]model.Buyer, error) {
+	return []model.Buyer{{ID: 1}}, nil
+}
+func (m *mockBuyerRepoForStatusUpdate) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+	return nil, nil
+}
+func (m *mockBuyerRepoForStatusUpdate) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
+	return nil, nil
+}
+func (m *mockBuyerRepoForStatusUpdate) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+	return nil, nil
+}
+func (m *mockBuyerRepoForStatusUpdate) Delete(ctx context.Context, id int) error { return nil }
+
+type mockPushUseCaseForStatusUpdate struct{}
+
+func (m *mockPushUseCaseForStatusUpdate) Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error {
+	return nil
+}
+func (m *mockPushUseCaseForStatusUpdate) SendNotification(ctx context.Context, buyerID int, payload interface{}) error {
+	return nil
+}
+
 func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -65,7 +93,9 @@ func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mockAuctionRepoForStatusUpdate{err: tt.mockErr}
-			uc := auction.NewUpdateAuctionStatusUseCase(repo)
+			buyerRepo := &mockBuyerRepoForStatusUpdate{}
+			pushUseCase := &mockPushUseCaseForStatusUpdate{}
+			uc := auction.NewUpdateAuctionStatusUseCase(repo, buyerRepo, pushUseCase)
 
 			err := uc.Execute(context.Background(), tt.id, tt.status)
 

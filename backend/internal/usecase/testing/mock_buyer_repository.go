@@ -13,6 +13,7 @@ type MockBuyerRepository struct {
 	FindByIDFunc    func(ctx context.Context, id int) (*model.Buyer, error)
 	FindByNameFunc  func(ctx context.Context, name string) (*model.Buyer, error)
 	FindByEmailFunc func(ctx context.Context, email string) (*model.Buyer, error)
+	DeleteFunc      func(ctx context.Context, id int) error
 }
 
 func (m *MockBuyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
@@ -33,4 +34,8 @@ func (m *MockBuyerRepository) FindByName(ctx context.Context, name string) (*mod
 
 func (m *MockBuyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
 	return m.FindByEmailFunc(ctx, email)
+}
+
+func (m *MockBuyerRepository) Delete(ctx context.Context, id int) error {
+	return m.DeleteFunc(ctx, id)
 }
