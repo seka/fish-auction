@@ -2,14 +2,16 @@ package entity
 
 import (
 	"strings"
+	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
 type Fisherman struct {
-	ID   int    `db:"id"`
-	Name string `db:"name"`
+	ID        int        `db:"id"`
+	Name      string     `db:"name"`
+	DeletedAt *time.Time `db:"deleted_at"`
 }
 
 func (e *Fisherman) Validate() error {

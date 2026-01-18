@@ -44,7 +44,7 @@ func (r *buyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*mode
 }
 
 func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, name, organization, contact_info FROM buyers")
+	rows, err := r.db.QueryContext(ctx, "SELECT id, name, organization, contact_info FROM buyers WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (r *buyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, e
 func (r *buyerRepository) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
 	var e entity.Buyer
 	err := r.db.QueryRowContext(ctx,
-		"SELECT id, name, organization, contact_info FROM buyers WHERE name = $1",
+		"SELECT id, name, organization, contact_info FROM buyers WHERE name = $1 AND deleted_at IS NULL",
 		name,
 	).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)
 	if err != nil {
@@ -109,7 +109,7 @@ func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model
 		SELECT b.id, b.name, b.organization, b.contact_info 
 		FROM buyers b 
 		JOIN authentications a ON b.id = a.buyer_id 
-		WHERE a.email = $1
+		WHERE a.email = $1 AND b.deleted_at IS NULL
 	`
 	err := r.db.QueryRowContext(ctx, query, email).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)
 	if err != nil {
@@ -120,4 +120,14 @@ func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model
 		return nil, err
 	}
 	return e.ToModel(), nil
+}
+
+func (r *buyerRepository) Delete(ctx context.Context, id int) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	// キャッシュを削除
+	_ = r.cache.Delete(ctx, id)
+	return nil
 }

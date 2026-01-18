@@ -30,6 +30,8 @@ type UseCase interface {
 	NewGetBuyerAuctionsUseCase() buyer.GetBuyerAuctionsUseCase
 	NewCreateFishermanUseCase() fisherman.CreateFishermanUseCase
 	NewListFishermenUseCase() fisherman.ListFishermenUseCase
+	NewDeleteFishermanUseCase() fisherman.DeleteFishermanUseCase
+	NewDeleteBuyerUseCase() buyer.DeleteBuyerUseCase
 	NewListInvoicesUseCase() invoice.ListInvoicesUseCase
 	NewLoginUseCase() auth.LoginUseCase
 	NewCreateVenueUseCase() venue.CreateVenueUseCase
@@ -94,6 +96,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 		u.repo.NewItemRepository(),
 		u.repo.NewBidRepository(),
 		u.repo.NewAuctionRepository(),
+		u.NewPushNotificationUseCase(),
 		u.repo.NewTransactionManager(),
 	)
 }
@@ -124,6 +127,14 @@ func (u *useCaseRegistry) NewCreateFishermanUseCase() fisherman.CreateFishermanU
 
 func (u *useCaseRegistry) NewListFishermenUseCase() fisherman.ListFishermenUseCase {
 	return fisherman.NewListFishermenUseCase(u.repo.NewFishermanRepository())
+}
+
+func (u *useCaseRegistry) NewDeleteFishermanUseCase() fisherman.DeleteFishermanUseCase {
+	return fisherman.NewDeleteFishermanUseCase(u.repo.NewFishermanRepository())
+}
+
+func (u *useCaseRegistry) NewDeleteBuyerUseCase() buyer.DeleteBuyerUseCase {
+	return buyer.NewDeleteBuyerUseCase(u.repo.NewBuyerRepository())
 }
 
 func (u *useCaseRegistry) NewListInvoicesUseCase() invoice.ListInvoicesUseCase {
@@ -175,7 +186,11 @@ func (u *useCaseRegistry) NewUpdateAuctionUseCase() auction.UpdateAuctionUseCase
 }
 
 func (u *useCaseRegistry) NewUpdateAuctionStatusUseCase() auction.UpdateAuctionStatusUseCase {
-	return auction.NewUpdateAuctionStatusUseCase(u.repo.NewAuctionRepository())
+	return auction.NewUpdateAuctionStatusUseCase(
+		u.repo.NewAuctionRepository(),
+		u.repo.NewBuyerRepository(),
+		u.NewPushNotificationUseCase(),
+	)
 }
 
 func (u *useCaseRegistry) NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase {

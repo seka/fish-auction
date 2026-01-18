@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/lib/pq"
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -33,11 +32,11 @@ func (r *venueRepository) Create(ctx context.Context, venue *model.Venue) (*mode
 }
 
 func (r *venueRepository) GetByID(ctx context.Context, id int) (*model.Venue, error) {
-	query := `SELECT id, name, location, description, created_at FROM venues WHERE id = $1`
+	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE id = $1`
 
 	var v model.Venue
 	err := r.db.QueryRowContext(ctx, query, id).
-		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt)
+		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt, &v.DeletedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &apperrors.NotFoundError{Resource: "Venue", ID: id}
@@ -48,7 +47,7 @@ func (r *venueRepository) GetByID(ctx context.Context, id int) (*model.Venue, er
 }
 
 func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
-	query := `SELECT id, name, location, description, created_at FROM venues ORDER BY created_at DESC`
+	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL ORDER BY created_at DESC`
 
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
@@ -59,7 +58,7 @@ func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
 	var venues []model.Venue
 	for rows.Next() {
 		var v model.Venue
-		if err := rows.Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt); err != nil {
+		if err := rows.Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt, &v.DeletedAt); err != nil {
 			return nil, err
 		}
 		venues = append(venues, v)
@@ -68,7 +67,7 @@ func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
 }
 
 func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error {
-	query := `UPDATE venues SET name = $1, location = $2, description = $3 WHERE id = $4`
+	query := `UPDATE venues SET name = $1, location = $2, description = $3 WHERE id = $4 AND deleted_at IS NULL`
 
 	result, err := r.db.ExecContext(ctx, query, venue.Name, venue.Location, venue.Description, venue.ID)
 	if err != nil {
@@ -85,21 +84,12 @@ func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error 
 	return nil
 }
 
-// Delete は会場をデータベースから削除します。
-// CASCADE削除: この操作により以下のデータも自動的に削除されます:
-//   - この会場に関連付けられたすべてのセリ
-//   - それらのセリに関連付けられたすべての出品
-//
-// 注意: 出品に入札（transactions）が存在する場合、入札履歴を保護するため削除は失敗します。
+// Delete は会場を論理削除します。
 func (r *venueRepository) Delete(ctx context.Context, id int) error {
-	query := `DELETE FROM venues WHERE id = $1`
+	query := `UPDATE venues SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`
 
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == ErrCodeForeignKeyViolation {
-			return &apperrors.ConflictError{Message: "Cannot delete venue because it has associated transactions (bids/purchases)."}
-		}
 		return err
 	}
 

@@ -12,4 +12,5 @@ type BuyerRepository interface {
 	FindByID(ctx context.Context, id int) (*model.Buyer, error)
 	FindByName(ctx context.Context, name string) (*model.Buyer, error)
 	FindByEmail(ctx context.Context, email string) (*model.Buyer, error)
+	Delete(ctx context.Context, id int) error
 }

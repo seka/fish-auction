@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { registerFisherman, registerBuyer, registerItem, getFishermen, getBuyers } from '@/src/api/admin';
 import { RegisterItemParams } from '@/src/models';
+import { BuyerFormData } from '@/src/models/schemas/admin';
 
 export const useRegisterFisherman = () => {
     const mutation = useMutation({
@@ -16,7 +17,7 @@ export const useRegisterFisherman = () => {
 
 export const useRegisterBuyer = () => {
     const mutation = useMutation({
-        mutationFn: (data: { name: string }) => registerBuyer(data.name),
+        mutationFn: (data: BuyerFormData) => registerBuyer(data),
     });
 
     return {

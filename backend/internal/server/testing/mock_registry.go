@@ -46,6 +46,8 @@ type MockRegistry struct {
 	ResetPasswordUC             auth.ResetPasswordUseCase
 	RequestAdminPasswordResetUC admin.RequestPasswordResetUseCase
 	ResetAdminPasswordUC        admin.ResetPasswordUseCase
+	DeleteFishermanUC           fisherman.DeleteFishermanUseCase
+	DeleteBuyerUC               buyer.DeleteBuyerUseCase
 	PushNotificationUC          notification.PushNotificationUseCase
 }
 
@@ -187,6 +189,14 @@ func (m *MockRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswo
 
 func (m *MockRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
 	return m.ResetAdminPasswordUC
+}
+
+func (m *MockRegistry) NewDeleteFishermanUseCase() fisherman.DeleteFishermanUseCase {
+	return m.DeleteFishermanUC
+}
+
+func (m *MockRegistry) NewDeleteBuyerUseCase() buyer.DeleteBuyerUseCase {
+	return m.DeleteBuyerUC
 }
 
 func (m *MockRegistry) NewPushNotificationUseCase() notification.PushNotificationUseCase {

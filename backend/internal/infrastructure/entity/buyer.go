@@ -2,16 +2,18 @@ package entity
 
 import (
 	"strings"
+	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
 type Buyer struct {
-	ID           int    `db:"id"`
-	Name         string `db:"name"`
-	Organization string `db:"organization"`
-	ContactInfo  string `db:"contact_info"`
+	ID           int        `db:"id"`
+	Name         string     `db:"name"`
+	Organization string     `db:"organization"`
+	ContactInfo  string     `db:"contact_info"`
+	DeletedAt    *time.Time `db:"deleted_at"`
 }
 
 func (b *Buyer) Validate() error {

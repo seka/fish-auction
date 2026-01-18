@@ -9,4 +9,5 @@ type Venue struct {
 	Location    string
 	Description string
 	CreatedAt   time.Time
+	DeletedAt   *time.Time
 }

@@ -38,7 +38,7 @@ func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.F
 }
 
 func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, name FROM fishermen")
+	rows, err := r.db.QueryContext(ctx, "SELECT id, name FROM fishermen WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -80,4 +80,14 @@ func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fish
 	_ = r.cache.Set(ctx, id, fisherman)
 
 	return fisherman, nil
+}
+
+func (r *fishermanRepository) Delete(ctx context.Context, id int) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	// キャッシュを削除
+	_ = r.cache.Delete(ctx, id)
+	return nil
 }

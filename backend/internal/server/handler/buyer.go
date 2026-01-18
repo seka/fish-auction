@@ -18,6 +18,7 @@ type BuyerHandler struct {
 	getPurchasesUseCase   buyer.GetBuyerPurchasesUseCase
 	getAuctionsUseCase    buyer.GetBuyerAuctionsUseCase
 	updatePasswordUseCase buyer.UpdatePasswordUseCase
+	deleteUseCase         buyer.DeleteBuyerUseCase
 }
 
 func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
@@ -28,6 +29,7 @@ func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 		getPurchasesUseCase:   r.NewGetBuyerPurchasesUseCase(),
 		getAuctionsUseCase:    r.NewGetBuyerAuctionsUseCase(),
 		updatePasswordUseCase: r.NewBuyerUpdatePasswordUseCase(),
+		deleteUseCase:         r.NewDeleteBuyerUseCase(),
 	}
 }
 
@@ -286,6 +288,20 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+}
+func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, err := util.ParseID(r)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	if err := h.deleteUseCase.Execute(r.Context(), id); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {

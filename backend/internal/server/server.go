@@ -172,7 +172,7 @@ func (s *Server) registerPublicRoutes() {
 func (s *Server) registerAdminRoutes() {
 	adminMux := http.NewServeMux()
 
-	// Fishermen (Create)
+	// Fishermen (Create, Delete)
 	adminMux.HandleFunc("/fishermen", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			s.fishermanHandler.Create(w, r)
@@ -180,11 +180,25 @@ func (s *Server) registerAdminRoutes() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+	adminMux.HandleFunc("/fishermen/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			s.fishermanHandler.Delete(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
-	// Buyers (Create)
+	// Buyers (Create, Delete)
 	adminMux.HandleFunc("/buyers", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			s.buyerHandler.Create(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	adminMux.HandleFunc("/buyers/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			s.buyerHandler.Delete(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
