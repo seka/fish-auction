@@ -12,4 +12,5 @@ type ItemRepository interface {
 	ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 	FindByID(ctx context.Context, id int) (*model.AuctionItem, error)
 	UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error
+	InvalidateCache(ctx context.Context, id int) error
 }

@@ -8,11 +8,12 @@ import (
 
 // MockItemRepository is a mock implementation of ItemRepository
 type MockItemRepository struct {
-	CreateFunc        func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
-	ListFunc          func(ctx context.Context, status string) ([]model.AuctionItem, error)
-	ListByAuctionFunc func(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
-	FindByIDFunc      func(ctx context.Context, id int) (*model.AuctionItem, error)
-	UpdateStatusFunc  func(ctx context.Context, id int, status model.ItemStatus) error
+	CreateFunc          func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
+	ListFunc            func(ctx context.Context, status string) ([]model.AuctionItem, error)
+	ListByAuctionFunc   func(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
+	FindByIDFunc        func(ctx context.Context, id int) (*model.AuctionItem, error)
+	UpdateStatusFunc    func(ctx context.Context, id int, status model.ItemStatus) error
+	InvalidateCacheFunc func(ctx context.Context, id int) error
 }
 
 func (m *MockItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
@@ -33,4 +34,8 @@ func (m *MockItemRepository) FindByID(ctx context.Context, id int) (*model.Aucti
 
 func (m *MockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	return m.UpdateStatusFunc(ctx, id, status)
+}
+
+func (m *MockItemRepository) InvalidateCache(ctx context.Context, id int) error {
+	return m.InvalidateCacheFunc(ctx, id)
 }

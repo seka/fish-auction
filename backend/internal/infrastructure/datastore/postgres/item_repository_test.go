@@ -154,13 +154,15 @@ func TestItemRepository_FindByID(t *testing.T) {
 		repo := postgres.NewItemRepository(db, mockCache)
 		id := 1
 
-		mock.ExpectQuery("SELECT .* FROM auction_items WHERE id = \\$1").
+		mock.ExpectQuery("(?s)SELECT .* FROM auction_items ai .*").
 			WithArgs(id).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at"}).
-				AddRow(id, 1, 1, "DB Tuna", 10, "kg", "Sold", time.Now()))
+			WillReturnRows(sqlmock.NewRows([]string{
+				"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at",
+				"highest_bid", "highest_bidder_id", "highest_bidder_name",
+			}).AddRow(id, 1, 1, "DB Tuna", 10, "kg", "Sold", time.Now(), nil, nil, nil))
 
 		item, err := repo.FindByID(context.Background(), id)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "DB Tuna", item.FishType)
 	})
 }

@@ -164,15 +164,57 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	// DBから取得
 	db := r.getDB(ctx)
 	var e entity.AuctionItem
-	err := db.QueryRowContext(ctx,
-		"SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items WHERE id = $1",
-		id,
-	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
+	var highestBid sql.NullInt64
+	var highestBidderID sql.NullInt64
+	var highestBidderName sql.NullString
+
+	query := `
+		SELECT 
+			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
+			ai.quantity, ai.unit, ai.status, ai.created_at,
+			t_max.max_price as highest_bid,
+			t_max.buyer_id as highest_bidder_id,
+			b.name as highest_bidder_name
+		FROM auction_items ai
+		LEFT JOIN (
+			SELECT 
+				t1.item_id, 
+				MAX(t1.price) as max_price,
+				(SELECT t2.buyer_id FROM transactions t2 
+				 WHERE t2.item_id = t1.item_id 
+				 ORDER BY t2.price DESC, t2.created_at ASC 
+				 LIMIT 1) as buyer_id
+			FROM transactions t1
+			WHERE t1.item_id = $1
+			GROUP BY t1.item_id
+		) t_max ON ai.id = t_max.item_id
+		LEFT JOIN buyers b ON t_max.buyer_id = b.id
+		WHERE ai.id = $1
+	`
+
+	err := db.QueryRowContext(ctx, query, id).Scan(
+		&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
+		&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+		&highestBid, &highestBidderID, &highestBidderName,
+	)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &apperrors.NotFoundError{Resource: "Item", ID: id}
 		}
 		return nil, err
+	}
+
+	if highestBid.Valid {
+		bid := int(highestBid.Int64)
+		e.HighestBid = &bid
+	}
+	if highestBidderID.Valid {
+		bidderID := int(highestBidderID.Int64)
+		e.HighestBidderID = &bidderID
+	}
+	if highestBidderName.Valid {
+		e.HighestBidderName = &highestBidderName.String
 	}
 
 	item := e.ToModel()
@@ -191,7 +233,11 @@ func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.
 	}
 
 	// キャッシュを削除（エラーは無視）
-	_ = r.cache.Delete(ctx, id)
+	_ = r.InvalidateCache(ctx, id)
 
 	return nil
+}
+
+func (r *itemRepository) InvalidateCache(ctx context.Context, id int) error {
+	return r.cache.Delete(ctx, id)
 }
