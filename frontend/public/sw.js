@@ -1,3 +1,13 @@
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
+});
+
+const pushChannel = new BroadcastChannel('push-notification-channel');
+
 self.addEventListener('push', function (event) {
     if (!event.data) {
         console.log('Push event but no data');
@@ -20,9 +30,18 @@ self.addEventListener('push', function (event) {
         }
     };
 
-    event.waitUntil(
-        self.registration.showNotification(data.title || 'Fish Auction', options)
-    );
+    const notificationPromise = self.registration.showNotification(data.title || 'Fish Auction', options);
+
+    // Send a message via BroadcastChannel (reliable multi-tab communication)
+    pushChannel.postMessage({
+        type: 'PUSH_NOTIFICATION',
+        title: data.title,
+        body: data.body,
+        url: data.url
+    });
+    console.log('Push message sent via BroadcastChannel');
+
+    event.waitUntil(notificationPromise);
 });
 
 self.addEventListener('notificationclick', function (event) {
