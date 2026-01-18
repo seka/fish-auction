@@ -78,6 +78,12 @@ export default defineConfig({
           '2xl': { value: '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
         },
       },
+      keyframes: {
+        slideIn: {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+      },
     },
   },
 

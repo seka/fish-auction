@@ -1,4 +1,5 @@
 import { Box } from '@/src/core/ui';
+import { ToastContainer } from '../atoms/Toast';
 
 type MainLayoutTemplateProps = {
     navbar: React.ReactNode;
@@ -12,6 +13,7 @@ export const MainLayoutTemplate = ({ navbar, children }: MainLayoutTemplateProps
             <Box flex="1">
                 {children}
             </Box>
+            <ToastContainer />
         </Box>
     );
 };
