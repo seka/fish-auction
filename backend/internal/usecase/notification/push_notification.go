@@ -60,6 +60,7 @@ func (uc *pushNotificationUseCase) SendNotification(ctx context.Context, buyerID
 	// Send to all subscriptions for the user
 	// In production, this should probably be done asynchronously via a queue
 	for _, sub := range subs {
+		log.Printf("Attempting to send push notification to buyer %d, endpoint: %s", buyerID, sub.Endpoint)
 		s := &webpush.Subscription{
 			Endpoint: sub.Endpoint,
 			Keys: webpush.Keys{
@@ -77,9 +78,9 @@ func (uc *pushNotificationUseCase) SendNotification(ctx context.Context, buyerID
 
 		if err != nil {
 			log.Printf("Failed to send push notification to %s: %v", sub.Endpoint, err)
-			// TODO: check for 410 Gone and delete subscription
 			continue
 		}
+		log.Printf("Push notification sent to %s, status: %d", sub.Endpoint, resp.StatusCode)
 		defer resp.Body.Close()
 
 		if resp.StatusCode == 410 || resp.StatusCode == 404 {

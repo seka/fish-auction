@@ -3,11 +3,13 @@ package bid
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
 // CreateBidUseCase は入札作成のインターフェースを定義します
@@ -20,6 +22,7 @@ type createBidUseCase struct {
 	itemRepo    repository.ItemRepository
 	bidRepo     repository.BidRepository
 	auctionRepo repository.AuctionRepository
+	pushUseCase notification.PushNotificationUseCase
 	txMgr       repository.TransactionManager
 }
 
@@ -28,30 +31,27 @@ func NewCreateBidUseCase(
 	itemRepo repository.ItemRepository,
 	bidRepo repository.BidRepository,
 	auctionRepo repository.AuctionRepository,
+	pushUseCase notification.PushNotificationUseCase,
 	txMgr repository.TransactionManager,
 ) CreateBidUseCase {
 	return &createBidUseCase{
 		itemRepo:    itemRepo,
 		bidRepo:     bidRepo,
 		auctionRepo: auctionRepo,
+		pushUseCase: pushUseCase,
 		txMgr:       txMgr,
 	}
 }
 
 // Execute は新しい入札を作成します
 func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+	// 入札前にキャッシュを無効化して最新情報を取得する
+	_ = uc.itemRepo.InvalidateCache(ctx, bid.ItemID)
+
 	// 商品を取得して auction_id を見つける
-	items, err := uc.itemRepo.List(ctx, "")
+	item, err := uc.itemRepo.FindByID(ctx, bid.ItemID)
 	if err != nil {
 		return nil, err
-	}
-
-	var item *model.AuctionItem
-	for i := range items {
-		if items[i].ID == bid.ItemID {
-			item = &items[i]
-			break
-		}
 	}
 
 	if item == nil {
@@ -138,6 +138,31 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 		result = created
 		return nil
 	})
+
+	if err == nil {
+		// 入札成功後にキャッシュを無効化（フロントエンドからの次回の取得で最新情報が見えるようにする）
+		_ = uc.itemRepo.InvalidateCache(ctx, bid.ItemID)
+
+		// 高値更新通知の送信
+		// 前の最高入札者がいて、現在の入札者と異なる場合に通知
+		if item.HighestBidderID != nil && *item.HighestBidderID != bid.BuyerID {
+			log.Printf("Outbid detected. Sending notification to previous bidder (ID: %d). Current bidder (ID: %d)", *item.HighestBidderID, bid.BuyerID)
+			payload := map[string]interface{}{
+				"title": "高値更新されました",
+				"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price),
+				"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
+			}
+			// 非同期で送信してもよいが、ここではシンプルに呼び出し
+			// エラーはログ出力のみとし、入札処理自体を失敗させない
+			_ = uc.pushUseCase.SendNotification(ctx, *item.HighestBidderID, payload)
+		} else {
+			if item.HighestBidderID == nil {
+				log.Printf("No previous bidder for item %d. Skip notification.", item.ID)
+			} else if *item.HighestBidderID == bid.BuyerID {
+				log.Printf("Current bidder %d is the same as previous bidder. Skip notification.", bid.BuyerID)
+			}
+		}
+	}
 
 	return result, err
 }
