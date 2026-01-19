@@ -42,6 +42,7 @@ type MockRegistry struct {
 	GetBuyerAuctionsUC          buyer.GetBuyerAuctionsUseCase
 	UpdateBuyerPasswordUC       buyer.UpdatePasswordUseCase
 	UpdateAdminPasswordUC       admin.UpdatePasswordUseCase
+	GetBuyerUC                  buyer.GetBuyerUseCase
 	RequestPasswordResetUC      auth.RequestPasswordResetUseCase
 	ResetPasswordUC             auth.ResetPasswordUseCase
 	RequestAdminPasswordResetUC admin.RequestPasswordResetUseCase
@@ -117,6 +118,10 @@ func (m *MockRegistry) NewGetBuyerPurchasesUseCase() buyer.GetBuyerPurchasesUseC
 
 func (m *MockRegistry) NewGetBuyerAuctionsUseCase() buyer.GetBuyerAuctionsUseCase {
 	return m.GetBuyerAuctionsUC
+}
+
+func (m *MockRegistry) NewGetBuyerUseCase() buyer.GetBuyerUseCase {
+	return m.GetBuyerUC
 }
 
 func (m *MockRegistry) NewCreateVenueUseCase() venue.CreateVenueUseCase {

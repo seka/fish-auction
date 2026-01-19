@@ -19,6 +19,7 @@ type BuyerHandler struct {
 	getAuctionsUseCase    buyer.GetBuyerAuctionsUseCase
 	updatePasswordUseCase buyer.UpdatePasswordUseCase
 	deleteUseCase         buyer.DeleteBuyerUseCase
+	getBuyerUseCase       buyer.GetBuyerUseCase
 }
 
 func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
@@ -30,6 +31,7 @@ func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 		getAuctionsUseCase:    r.NewGetBuyerAuctionsUseCase(),
 		updatePasswordUseCase: r.NewBuyerUpdatePasswordUseCase(),
 		deleteUseCase:         r.NewDeleteBuyerUseCase(),
+		getBuyerUseCase:       r.NewGetBuyerUseCase(),
 	}
 }
 
@@ -144,10 +146,24 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Convert buyer_id to int
+	var buyerID int
+	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
+		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
+		return
+	}
+
+	buyer, err := h.getBuyerUseCase.Execute(r.Context(), buyerID)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"authenticated": true,
 		"buyer_id":      idCookie.Value,
+		"name":          buyer.Name,
 	})
 }
 

@@ -79,9 +79,14 @@ export const PublicNavbar = () => {
                     {/* 必要に応じて useAuth フックなどで状態監視して出し分ける */}
                     <HStack spacing="3">
                         {isLoggedIn ? (
-                            <Button size="sm" variant="outline" onClick={handleLogout}>
-                                {t('Navbar.logout')}
-                            </Button>
+                            <HStack spacing="3">
+                                <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.600' })}>
+                                    {buyer.name} {t('Navbar.honorific')}
+                                </Text>
+                                <Button size="sm" variant="outline" onClick={handleLogout}>
+                                    {t('Navbar.logout')}
+                                </Button>
+                            </HStack>
                         ) : (
                             <Link href="/login/buyer">
                                 <Button size="sm" variant="primary">

@@ -132,7 +132,6 @@
             "success_create": "会場を作成しました",
             "success_update": "会場を更新しました",
             "success_delete": "会場を削除しました",
-            "success_delete": "会場を削除しました",
             "fail_delete": "削除に失敗しました",
             "error_delete_conflict": "取引履歴が存在するため削除できません"
         },
@@ -246,7 +245,8 @@
         "active_auctions": "開催中のセリ一覧",
         "mypage": "マイページ",
         "login": "ログイン",
-        "logout": "ログアウト"
+        "logout": "ログアウト",
+        "honorific": "様"
     },
     "Validation": {
         "required": "{field}を入力してください",
