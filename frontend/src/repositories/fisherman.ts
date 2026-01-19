@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { registerFisherman, getFishermen } from '@/src/api/admin';
+import { registerFisherman, getFishermen, deleteFisherman } from '@/src/api/admin';
 
 export const fishermanKeys = {
     all: ['fishermen'] as const,
@@ -28,9 +28,18 @@ export const useFishermanMutation = () => {
         },
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: deleteFisherman,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: fishermanKeys.all });
+        },
+    });
+
     return {
         createFisherman: createMutation.mutateAsync,
         isCreating: createMutation.isPending,
-        error: createMutation.error,
+        deleteFisherman: deleteMutation.mutateAsync,
+        isDeleting: deleteMutation.isPending,
+        error: createMutation.error || deleteMutation.error,
     };
 };

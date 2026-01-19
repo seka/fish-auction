@@ -39,3 +39,11 @@ export const getFishermen = async (): Promise<Fisherman[]> => {
 export const getBuyers = async (): Promise<Buyer[]> => {
     return apiClient.get<Buyer[]>('/api/buyers');
 };
+
+export const deleteFisherman = async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/admin/fishermen/${id}`);
+};
+
+export const deleteBuyer = async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/admin/buyers/${id}`);
+};

@@ -31,6 +31,7 @@ describe('AdminFishermenPage', () => {
             },
             actions: {
                 onSubmit: mockOnSubmit,
+                onDelete: vi.fn(),
             },
             t: (key: string) => key,
         });
@@ -76,5 +77,23 @@ describe('AdminFishermenPage', () => {
         const button = screen.getByRole('button', { name: 'Common.register' });
         fireEvent.click(button);
         expect(mockOnSubmit).toHaveBeenCalled();
+    });
+
+    it('calls delete action', () => {
+        const mockOnDelete = vi.fn();
+        (useFishermanPage as any).mockReturnValue({
+            state: {
+                fishermen: [{ id: 1, name: 'Fisherman 1' }],
+                isLoading: false,
+                isCreating: false,
+                isDeleting: false,
+            },
+            form: { register: mockRegister, errors: {} },
+            actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
+            t: (key: string) => key,
+        });
+        render(<AdminFishermenPage />);
+        fireEvent.click(screen.getAllByText('Common.delete')[0]);
+        expect(mockOnDelete).toHaveBeenCalledWith(1);
     });
 });

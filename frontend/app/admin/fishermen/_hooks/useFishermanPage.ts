@@ -10,7 +10,7 @@ export const useFishermanPage = () => {
     const [message, setMessage] = useState('');
 
     const { fishermen, isLoading } = useFishermanQuery();
-    const { createFisherman, isCreating } = useFishermanMutation();
+    const { createFisherman, isCreating, deleteFisherman, isDeleting } = useFishermanMutation();
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<FishermanFormData>({
         resolver: zodResolver(fishermanSchema),
@@ -27,12 +27,24 @@ export const useFishermanPage = () => {
         }
     };
 
+    const onDelete = async (id: number) => {
+        if (!window.confirm(t('Common.confirm_delete'))) return;
+        try {
+            await deleteFisherman(id);
+            setMessage(t('Common.success_delete'));
+        } catch (e) {
+            console.error(e);
+            setMessage(t('Common.error_occurred'));
+        }
+    };
+
     return {
         state: {
             message,
             fishermen,
             isLoading,
             isCreating,
+            isDeleting,
         },
         form: {
             register,
@@ -40,6 +52,7 @@ export const useFishermanPage = () => {
         },
         actions: {
             onSubmit: handleSubmit(onSubmit),
+            onDelete,
         },
         t,
     };

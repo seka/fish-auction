@@ -150,6 +150,15 @@ export default function AdminBuyersPage() {
                                                 <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'green.900' })}>{buyer.name}</Text>
                                                 <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="1">ID: {buyer.id}</Text>
                                             </Box>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className={css({ color: 'red.500', borderColor: 'red.200', _hover: { bg: 'red.50', borderColor: 'red.500' } })}
+                                                onClick={() => buyer.id && actions.onDelete(buyer.id)}
+                                                disabled={state.isDeleting}
+                                            >
+                                                {t('Common.delete')}
+                                            </Button>
                                         </HStack>
                                     </Box>
                                 ))}

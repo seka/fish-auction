@@ -57,3 +57,21 @@ func TestBuyerRepository_FindByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, id, found.ID)
 }
+
+func TestBuyerRepository_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewBuyerRepository(db, &mockBuyerCache{})
+	id := 1
+
+	mock.ExpectExec("UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").
+		WithArgs(id).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err = repo.Delete(context.Background(), id)
+	assert.NoError(t, err)
+}

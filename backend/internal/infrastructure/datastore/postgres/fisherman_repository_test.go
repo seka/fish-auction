@@ -59,3 +59,21 @@ func TestFishermanRepository_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, list, 2)
 }
+
+func TestFishermanRepository_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewFishermanRepository(db, &mockFishermanCache{})
+	id := 1
+
+	mock.ExpectExec("UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").
+		WithArgs(id).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err = repo.Delete(context.Background(), id)
+	assert.NoError(t, err)
+}

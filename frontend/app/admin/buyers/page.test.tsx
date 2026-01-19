@@ -30,6 +30,7 @@ describe('AdminBuyersPage', () => {
             },
             actions: {
                 onSubmit: mockOnSubmit,
+                onDelete: vi.fn(),
             },
             t: (key: string) => key,
         });
@@ -50,5 +51,23 @@ describe('AdminBuyersPage', () => {
         render(<AdminBuyersPage />);
         fireEvent.click(screen.getByRole('button', { name: 'Common.register' }));
         expect(mockOnSubmit).toHaveBeenCalled();
+    });
+
+    it('calls delete action', () => {
+        const mockOnDelete = vi.fn();
+        (useBuyerPage as any).mockReturnValue({
+            state: {
+                buyers: [{ id: 1, name: 'Buyer 1' }],
+                isLoading: false,
+                isCreating: false,
+                isDeleting: false,
+            },
+            form: { register: mockRegister, errors: {} },
+            actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
+            t: (key: string) => key,
+        });
+        render(<AdminBuyersPage />);
+        fireEvent.click(screen.getAllByText('Common.delete')[0]);
+        expect(mockOnDelete).toHaveBeenCalledWith(1);
     });
 });

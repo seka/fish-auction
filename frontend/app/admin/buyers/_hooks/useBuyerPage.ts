@@ -10,7 +10,7 @@ export const useBuyerPage = () => {
     const [message, setMessage] = useState('');
 
     const { buyers, isLoading } = useBuyerQuery();
-    const { createBuyer, isCreating } = useBuyerMutation();
+    const { createBuyer, isCreating, deleteBuyer, isDeleting } = useBuyerMutation();
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<BuyerFormData>({
         resolver: zodResolver(buyerSchema),
@@ -27,12 +27,24 @@ export const useBuyerPage = () => {
         }
     };
 
+    const onDelete = async (id: number) => {
+        if (!window.confirm(t('Common.confirm_delete'))) return;
+        try {
+            await deleteBuyer(id);
+            setMessage(t('Common.success_delete'));
+        } catch (e) {
+            console.error(e);
+            setMessage(t('Common.error_occurred'));
+        }
+    };
+
     return {
         state: {
             message,
             buyers,
             isLoading,
             isCreating,
+            isDeleting,
         },
         form: {
             register,
@@ -40,6 +52,7 @@ export const useBuyerPage = () => {
         },
         actions: {
             onSubmit: handleSubmit(onSubmit),
+            onDelete,
         },
         t,
     };

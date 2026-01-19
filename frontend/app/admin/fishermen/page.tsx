@@ -85,6 +85,15 @@ export default function AdminFishermenPage() {
                                                 <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })}>{fisherman.name}</Text>
                                                 <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="1">ID: {fisherman.id}</Text>
                                             </Box>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className={css({ color: 'red.500', borderColor: 'red.200', _hover: { bg: 'red.50', borderColor: 'red.500' } })}
+                                                onClick={() => fisherman.id && actions.onDelete(fisherman.id)}
+                                                disabled={state.isDeleting}
+                                            >
+                                                {t('Common.delete')}
+                                            </Button>
                                         </HStack>
                                     </Box>
                                 ))}
