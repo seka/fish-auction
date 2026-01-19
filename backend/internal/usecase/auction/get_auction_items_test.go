@@ -30,7 +30,16 @@ func (m *mockItemRepository) ListByAuction(ctx context.Context, auctionID int) (
 	}
 	return m.items, nil
 }
+func (m *mockItemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+	return nil, nil
+}
+func (m *mockItemRepository) Delete(ctx context.Context, id int) error {
+	return nil
+}
 func (m *mockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+	return nil
+}
+func (m *mockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	return nil
 }
 func (m *mockItemRepository) InvalidateCache(ctx context.Context, id int) error {

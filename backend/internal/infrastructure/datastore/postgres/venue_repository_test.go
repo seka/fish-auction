@@ -41,9 +41,9 @@ func TestVenueRepository_List(t *testing.T) {
 
 	repo := postgres.NewVenueRepository(db)
 
-	mock.ExpectQuery("SELECT id, name, location, description, created_at FROM venues ORDER BY created_at DESC").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "location", "description", "created_at"}).
-			AddRow(1, "Venue A", "Loc A", "Desc A", time.Now()))
+	mock.ExpectQuery("SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "location", "description", "created_at", "deleted_at"}).
+			AddRow(1, "Venue A", "Loc A", "Desc A", time.Now(), nil))
 
 	list, err := repo.List(context.Background())
 	assert.NoError(t, err)
@@ -109,7 +109,7 @@ func TestVenueRepository_Delete(t *testing.T) {
 	id := 1
 
 	// Success case
-	mock.ExpectExec("DELETE FROM venues WHERE id =").
+	mock.ExpectExec("UPDATE venues SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1 AND deleted_at IS NULL").
 		WithArgs(id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -117,7 +117,7 @@ func TestVenueRepository_Delete(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Not Found case
-	mock.ExpectExec("DELETE FROM venues WHERE id =").
+	mock.ExpectExec("UPDATE venues SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1 AND deleted_at IS NULL").
 		WithArgs(id).
 		WillReturnResult(sqlmock.NewResult(1, 0))
 

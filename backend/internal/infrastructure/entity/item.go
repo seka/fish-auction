@@ -19,7 +19,9 @@ type AuctionItem struct {
 	HighestBid        *int             `db:"highest_bid"`
 	HighestBidderID   *int             `db:"highest_bidder_id"`
 	HighestBidderName *string          `db:"highest_bidder_name"`
+	SortOrder         int              `db:"sort_order"`
 	CreatedAt         time.Time        `db:"created_at"`
+	DeletedAt         *time.Time       `db:"deleted_at"`
 }
 
 func (e *AuctionItem) Validate() error {
@@ -68,6 +70,8 @@ func (e *AuctionItem) ToModel() *model.AuctionItem {
 		HighestBid:        e.HighestBid,
 		HighestBidderID:   e.HighestBidderID,
 		HighestBidderName: e.HighestBidderName,
+		SortOrder:         e.SortOrder,
 		CreatedAt:         e.CreatedAt,
+		DeletedAt:         e.DeletedAt,
 	}
 }

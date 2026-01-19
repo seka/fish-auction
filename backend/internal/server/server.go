@@ -204,11 +204,28 @@ func (s *Server) registerAdminRoutes() {
 		}
 	})
 
-	// Items (Create)
+	// Items (Create, Update, Delete)
 	adminMux.HandleFunc("/items", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			s.itemHandler.Create(w, r)
 		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	adminMux.HandleFunc("/items/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/sort-order") {
+			if r.Method == http.MethodPut {
+				s.itemHandler.UpdateSortOrder(w, r)
+				return
+			}
+		}
+
+		switch r.Method {
+		case http.MethodPut:
+			s.itemHandler.Update(w, r)
+		case http.MethodDelete:
+			s.itemHandler.Delete(w, r)
+		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})

@@ -22,6 +22,9 @@ import (
 type UseCase interface {
 	NewCreateItemUseCase() item.CreateItemUseCase
 	NewListItemsUseCase() item.ListItemsUseCase
+	NewUpdateItemUseCase() item.UpdateItemUseCase
+	NewDeleteItemUseCase() item.DeleteItemUseCase
+	NewUpdateItemSortOrderUseCase() item.UpdateItemSortOrderUseCase
 	NewCreateBidUseCase() bid.CreateBidUseCase
 	NewCreateBuyerUseCase() buyer.CreateBuyerUseCase
 	NewListBuyersUseCase() buyer.ListBuyersUseCase
@@ -90,6 +93,18 @@ func (u *useCaseRegistry) NewCreateItemUseCase() item.CreateItemUseCase {
 
 func (u *useCaseRegistry) NewListItemsUseCase() item.ListItemsUseCase {
 	return item.NewListItemsUseCase(u.repo.NewItemRepository())
+}
+
+func (u *useCaseRegistry) NewUpdateItemUseCase() item.UpdateItemUseCase {
+	return item.NewUpdateItemUseCase(u.repo.NewItemRepository())
+}
+
+func (u *useCaseRegistry) NewDeleteItemUseCase() item.DeleteItemUseCase {
+	return item.NewDeleteItemUseCase(u.repo.NewItemRepository())
+}
+
+func (u *useCaseRegistry) NewUpdateItemSortOrderUseCase() item.UpdateItemSortOrderUseCase {
+	return item.NewUpdateItemSortOrderUseCase(u.repo.NewItemRepository())
 }
 
 func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {

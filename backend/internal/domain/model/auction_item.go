@@ -13,5 +13,7 @@ type AuctionItem struct {
 	HighestBid        *int
 	HighestBidderID   *int
 	HighestBidderName *string
+	SortOrder         int
 	CreatedAt         time.Time
+	DeletedAt         *time.Time
 }

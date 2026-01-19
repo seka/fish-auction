@@ -55,9 +55,9 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 	}
 
 	err := db.QueryRowContext(ctx,
-		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at",
+		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order) VALUES ($1, $2, $3, $4, $5, 'Pending', (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM auction_items WHERE auction_id = $1)) RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
 		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
-	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt)
+	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -66,13 +66,13 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 
 func (r *itemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	db := r.getDB(ctx)
-	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, created_at FROM auction_items"
+	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
 	var args []interface{}
 	if status != "" {
-		query += " WHERE status = $1"
+		query += " AND status = $1"
 		args = append(args, status)
 	}
-	query += " ORDER BY created_at DESC"
+	query += " ORDER BY auction_id DESC, sort_order ASC, created_at DESC"
 
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -83,7 +83,7 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	var items []model.AuctionItem
 	for rows.Next() {
 		var e entity.AuctionItem
-		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.CreatedAt); err != nil {
+		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt, &e.DeletedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, *e.ToModel())
@@ -96,7 +96,7 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 	query := `
 		SELECT 
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
-			ai.quantity, ai.unit, ai.status, ai.created_at,
+			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
@@ -113,8 +113,8 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 			GROUP BY t1.item_id
 		) t_max ON ai.id = t_max.item_id
 		LEFT JOIN buyers b ON t_max.buyer_id = b.id
-		WHERE ai.auction_id = $1
-		ORDER BY ai.created_at DESC
+		WHERE ai.auction_id = $1 AND ai.deleted_at IS NULL
+		ORDER BY ai.sort_order ASC, ai.created_at DESC
 	`
 
 	rows, err := db.QueryContext(ctx, query, auctionID)
@@ -133,6 +133,7 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 		if err := rows.Scan(
 			&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
 			&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+			&e.SortOrder,
 			&highestBid, &highestBidderID, &highestBidderName,
 		); err != nil {
 			return nil, err
@@ -171,7 +172,7 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	query := `
 		SELECT 
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
-			ai.quantity, ai.unit, ai.status, ai.created_at,
+			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
@@ -195,6 +196,7 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	err := db.QueryRowContext(ctx, query, id).Scan(
 		&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
 		&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+		&e.SortOrder,
 		&highestBid, &highestBidderID, &highestBidderName,
 	)
 
@@ -235,6 +237,63 @@ func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.
 	// キャッシュを削除（エラーは無視）
 	_ = r.InvalidateCache(ctx, id)
 
+	return nil
+}
+
+func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+	db := r.getDB(ctx)
+	e := entity.AuctionItem{
+		ID:          item.ID,
+		AuctionID:   item.AuctionID,
+		FishermanID: item.FishermanID,
+		FishType:    item.FishType,
+		Quantity:    item.Quantity,
+		Unit:        item.Unit,
+		Status:      item.Status,
+	}
+
+	if err := e.Validate(); err != nil {
+		return nil, err
+	}
+
+	query := `
+		UPDATE auction_items 
+		SET auction_id = $1, fisherman_id = $2, fish_type = $3, quantity = $4, unit = $5, status = $6 
+		WHERE id = $7 
+		RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at
+	`
+	err := db.QueryRowContext(ctx, query,
+		e.AuctionID, e.FishermanID, e.FishType, e.Quantity, e.Unit, e.Status, e.ID,
+	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.NotFoundError{Resource: "Item", ID: e.ID}
+		}
+		return nil, err
+	}
+
+	_ = r.InvalidateCache(ctx, item.ID)
+	return e.ToModel(), nil
+}
+
+func (r *itemRepository) Delete(ctx context.Context, id int) error {
+	db := r.getDB(ctx)
+	_, err := db.ExecContext(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	_ = r.InvalidateCache(ctx, id)
+	return nil
+}
+
+func (r *itemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+	db := r.getDB(ctx)
+	_, err := db.ExecContext(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
+	if err != nil {
+		return err
+	}
+	_ = r.InvalidateCache(ctx, id)
 	return nil
 }
 

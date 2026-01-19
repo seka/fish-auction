@@ -217,6 +217,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 			HighestBid:        item.HighestBid,
 			HighestBidderID:   item.HighestBidderID,
 			HighestBidderName: item.HighestBidderName,
+			SortOrder:         item.SortOrder,
 			CreatedAt:         item.CreatedAt,
 		}
 	}

@@ -15,3 +15,13 @@ export interface RegisterItemParams {
     quantity: number;
     unit: string;
 }
+
+export interface UpdateItemParams extends RegisterItemParams {
+    id: number;
+    status: string;
+}
+
+export interface UpdateItemSortOrderParams {
+    id: number;
+    sortOrder: number;
+}

@@ -11,6 +11,7 @@ import (
 	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestItemRepository_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
@@ -62,10 +63,10 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	// Item
 	var itemID int
 	err = db.QueryRow(`
-		INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status)
-		VALUES ($1, $2, 'Katsuo', 10, 'kg', 'Pending') RETURNING id
+		INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+		VALUES ($1, $2, 'Katsuo', 10, 'kg', 'Pending', 1) RETURNING id
 	`, fishermanID, auctionID).Scan(&itemID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Clear cache for this new item just in case
 	itemCache.Delete(ctx, itemID)
@@ -84,8 +85,8 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 
 	// 3. Test FindByID
 	item, err := repo.FindByID(ctx, itemID)
-	assert.NoError(t, err)
-	assert.NotNil(t, item)
+	require.NoError(t, err)
+	require.NotNil(t, item)
 
 	// 4. Assert HighestBid
 	if item.HighestBid == nil {
@@ -136,7 +137,8 @@ func TestItemRepository_FindByID_NoBids(t *testing.T) {
 	db.QueryRow("INSERT INTO fishermen (name) VALUES ('NoBid Fisherman') RETURNING id").Scan(&fishermanID)
 
 	var itemID int
-	db.QueryRow("INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status) VALUES ($1, $2, 'Iwashi', 50, 'kg', 'Pending') RETURNING id", fishermanID, auctionID).Scan(&itemID)
+	err = db.QueryRow("INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order) VALUES ($1, $2, 'Iwashi', 50, 'kg', 'Pending', 1) RETURNING id", fishermanID, auctionID).Scan(&itemID)
+	require.NoError(t, err)
 
 	// Clear cache
 	itemCache.Delete(ctx, itemID)

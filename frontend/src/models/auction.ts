@@ -28,7 +28,9 @@ export interface AuctionItem {
     highestBid?: number;
     highestBidderId?: number;
     highestBidderName?: string;
+    sortOrder: number;
     createdAt: string;
+    deletedAt?: string;
 }
 
 export interface Bid {

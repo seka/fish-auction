@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuctionPage } from './_hooks/useAuctionPage';
+import Link from 'next/link';
 import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { Box, Stack, HStack, Text, Card, Button, Input, Select, Table, Thead, Tbody, Tr, Th, Td } from '@/src/core/ui';
@@ -211,6 +212,11 @@ export default function AuctionsPage() {
                                                                     {t('Admin.Auctions.finish')}
                                                                 </Button>
                                                             )}
+                                                            <Link href={`/admin/items?auctionId=${auction.id}`}>
+                                                                <Button size="sm" variant="outline" className={css({ borderStyle: 'dashed', _hover: { borderColor: 'indigo.500', color: 'indigo.600' } })}>
+                                                                    📦 {t('Admin.Auctions.manage_items')}
+                                                                </Button>
+                                                            </Link>
                                                             <Button size="sm" variant="outline" onClick={() => actions.onEdit(auction)}>
                                                                 {t(COMMON_TEXT_KEYS.edit)}
                                                             </Button>

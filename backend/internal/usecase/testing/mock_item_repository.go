@@ -12,7 +12,10 @@ type MockItemRepository struct {
 	ListFunc            func(ctx context.Context, status string) ([]model.AuctionItem, error)
 	ListByAuctionFunc   func(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 	FindByIDFunc        func(ctx context.Context, id int) (*model.AuctionItem, error)
+	UpdateFunc          func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
+	DeleteFunc          func(ctx context.Context, id int) error
 	UpdateStatusFunc    func(ctx context.Context, id int, status model.ItemStatus) error
+	UpdateSortOrderFunc func(ctx context.Context, id int, sortOrder int) error
 	InvalidateCacheFunc func(ctx context.Context, id int) error
 }
 
@@ -32,8 +35,20 @@ func (m *MockItemRepository) FindByID(ctx context.Context, id int) (*model.Aucti
 	return m.FindByIDFunc(ctx, id)
 }
 
+func (m *MockItemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+	return m.UpdateFunc(ctx, item)
+}
+
+func (m *MockItemRepository) Delete(ctx context.Context, id int) error {
+	return m.DeleteFunc(ctx, id)
+}
+
 func (m *MockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	return m.UpdateStatusFunc(ctx, id, status)
+}
+
+func (m *MockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+	return m.UpdateSortOrderFunc(ctx, id, sortOrder)
 }
 
 func (m *MockItemRepository) InvalidateCache(ctx context.Context, id int) error {

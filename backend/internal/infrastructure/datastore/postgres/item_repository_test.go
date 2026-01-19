@@ -56,8 +56,8 @@ func TestItemRepository_Create(t *testing.T) {
 
 	mock.ExpectQuery("INSERT INTO auction_items").
 		WithArgs(item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at"}).
-			AddRow(1, item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit, "Pending", time.Now()))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "sort_order", "created_at"}).
+			AddRow(1, item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit, "Pending", 1, time.Now()))
 
 	created, err := repo.Create(context.Background(), item)
 	assert.NoError(t, err)
@@ -74,9 +74,9 @@ func TestItemRepository_List(t *testing.T) {
 	repo := postgres.NewItemRepository(db, &mockItemCache{})
 
 	t.Run("NoFilter", func(t *testing.T) {
-		mock.ExpectQuery("SELECT .* FROM auction_items ORDER BY created_at DESC").
-			WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at"}).
-				AddRow(1, 1, 1, "Tuna", 10, "kg", "Pending", time.Now()))
+		mock.ExpectQuery("SELECT .* FROM auction_items WHERE deleted_at IS NULL").
+			WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "sort_order", "created_at", "deleted_at"}).
+				AddRow(1, 1, 1, "Tuna", 10, "kg", "Pending", 1, time.Now(), nil))
 
 		list, err := repo.List(context.Background(), "")
 		assert.NoError(t, err)
@@ -85,10 +85,10 @@ func TestItemRepository_List(t *testing.T) {
 
 	t.Run("WithStatus", func(t *testing.T) {
 		status := "Pending"
-		mock.ExpectQuery("SELECT .* FROM auction_items WHERE status = \\$1 ORDER BY created_at DESC").
+		mock.ExpectQuery("SELECT .* FROM auction_items WHERE deleted_at IS NULL AND status = \\$1").
 			WithArgs(status).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at"}).
-				AddRow(2, 1, 1, "Salmon", 5, "kg", "Pending", time.Now()))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "sort_order", "created_at", "deleted_at"}).
+				AddRow(2, 1, 1, "Salmon", 5, "kg", "Pending", 2, time.Now(), nil))
 
 		list, err := repo.List(context.Background(), status)
 		assert.NoError(t, err)
@@ -110,9 +110,9 @@ func TestItemRepository_ListByAuction(t *testing.T) {
 	mock.ExpectQuery(`(?s)SELECT .* FROM auction_items .* WHERE ai.auction_id = \$1.*`).
 		WithArgs(auctionID).
 		WillReturnRows(sqlmock.NewRows([]string{
-			"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at",
+			"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at", "sort_order",
 			"highest_bid", "highest_bidder_id", "highest_bidder_name",
-		}).AddRow(1, auctionID, 1, "Tuna", 10, "kg", "Pending", time.Now(), 1000, 5, "Buyer A"))
+		}).AddRow(1, auctionID, 1, "Tuna", 10, "kg", "Pending", time.Now(), 1, 1000, 5, "Buyer A"))
 
 	items, err := repo.ListByAuction(context.Background(), auctionID)
 	require.NoError(t, err)
@@ -157,9 +157,9 @@ func TestItemRepository_FindByID(t *testing.T) {
 		mock.ExpectQuery("(?s)SELECT .* FROM auction_items ai .*").
 			WithArgs(id).
 			WillReturnRows(sqlmock.NewRows([]string{
-				"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at",
+				"id", "auction_id", "fisherman_id", "fish_type", "quantity", "unit", "status", "created_at", "sort_order",
 				"highest_bid", "highest_bidder_id", "highest_bidder_name",
-			}).AddRow(id, 1, 1, "DB Tuna", 10, "kg", "Sold", time.Now(), nil, nil, nil))
+			}).AddRow(id, 1, 1, "DB Tuna", 10, "kg", "Sold", time.Now(), 1, nil, nil, nil))
 
 		item, err := repo.FindByID(context.Background(), id)
 		require.NoError(t, err)

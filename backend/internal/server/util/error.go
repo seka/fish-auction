@@ -37,7 +37,22 @@ func HandleError(w http.ResponseWriter, err error) {
 		log.Printf("Internal error: %v", err)
 	}
 	resp := dto.ErrorResponse{Error: errorType, Message: message, Code: status}
+	WriteJSON(w, status, resp)
+}
+
+// WriteJSON writes a JSON response with the given status code.
+func WriteJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(data)
+}
+
+// WriteError writes an error response with the given status code and message.
+func WriteError(w http.ResponseWriter, status int, message string) {
+	resp := dto.ErrorResponse{
+		Error:   "error",
+		Message: message,
+		Code:    status,
+	}
+	WriteJSON(w, status, resp)
 }

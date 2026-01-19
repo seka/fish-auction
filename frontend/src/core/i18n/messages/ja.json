@@ -115,8 +115,18 @@
             "placeholder_fish_type": "例: マグロ",
             "placeholder_quantity": "例: 10",
             "placeholder_unit": "例: kg, 匹, 箱",
+            "filter_auction": "セリで絞り込み:",
+            "filter_all": "すべて",
+            "edit_item": "出品編集",
+            "list_title": "出品一覧",
+            "sort_order": "順序",
+            "confirm_delete": "この出品を削除しますか？",
             "success_register": "出品を登録しました",
-            "fail_register": "登録に失敗しました"
+            "success_update": "出品を更新しました",
+            "success_delete": "出品を削除しました",
+            "fail_register": "登録に失敗しました",
+            "fail_update": "更新に失敗しました",
+            "fail_delete": "削除に失敗しました"
         },
         "Venues": {
             "title": "会場管理",
@@ -152,6 +162,7 @@
             "action": "操作",
             "start": "開始",
             "finish": "終了",
+            "manage_items": "出品管理",
             "success_create": "セリを作成しました",
             "success_update": "セリを更新しました",
             "success_delete": "セリを削除しました",
