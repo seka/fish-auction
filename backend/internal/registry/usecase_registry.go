@@ -25,6 +25,7 @@ type UseCase interface {
 	NewUpdateItemUseCase() item.UpdateItemUseCase
 	NewDeleteItemUseCase() item.DeleteItemUseCase
 	NewUpdateItemSortOrderUseCase() item.UpdateItemSortOrderUseCase
+	NewReorderItemsUseCase() item.ReorderItemsUseCase
 	NewCreateBidUseCase() bid.CreateBidUseCase
 	NewCreateBuyerUseCase() buyer.CreateBuyerUseCase
 	NewListBuyersUseCase() buyer.ListBuyersUseCase
@@ -105,6 +106,10 @@ func (u *useCaseRegistry) NewDeleteItemUseCase() item.DeleteItemUseCase {
 
 func (u *useCaseRegistry) NewUpdateItemSortOrderUseCase() item.UpdateItemSortOrderUseCase {
 	return item.NewUpdateItemSortOrderUseCase(u.repo.NewItemRepository())
+}
+
+func (u *useCaseRegistry) NewReorderItemsUseCase() item.ReorderItemsUseCase {
+	return item.NewReorderItemsUseCase(u.repo.NewItemRepository())
 }
 
 func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
