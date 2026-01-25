@@ -24,7 +24,7 @@ export const useItemPage = () => {
     const { fishermen } = useFishermanQuery();
     const { auctions } = useAuctionQuery({});
     const { data: items, isLoading: isItemsLoading } = useItemQuery(filterAuctionId);
-    const { createItem, isCreating, deleteItem, isDeleting, updateItem, isUpdating, updateSortOrder, isSorting } = useItemMutation();
+    const { createItem, isCreating, deleteItem, isDeleting, updateItem, isUpdating, reorderItems, isSorting } = useItemMutation();
 
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<ItemFormData>({
         resolver: zodResolver(itemSchema),
@@ -89,6 +89,33 @@ export const useItemPage = () => {
         }
     };
 
+    const onDragEnd = async (event: any) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        if (!items || !filterAuctionId) return;
+
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+            try {
+                const newItemsOrder = [...items];
+                const [movedItem] = newItemsOrder.splice(oldIndex, 1);
+                newItemsOrder.splice(newIndex, 0, movedItem);
+
+                await reorderItems({
+                    auctionId: filterAuctionId,
+                    ids: newItemsOrder.map(item => item.id),
+                });
+                setMessage(t('Admin.Items.success_sort'));
+            } catch (e) {
+                console.error(e);
+                setMessage(t('Admin.Items.fail_sort'));
+            }
+        }
+    };
+
     const onDelete = async (id: number) => {
         if (!window.confirm(t('Admin.Items.confirm_delete'))) return;
         try {
@@ -124,6 +151,7 @@ export const useItemPage = () => {
             onEdit,
             onCancelEdit,
             onDelete,
+            onDragEnd,
             setFilterAuctionId,
         },
         t,

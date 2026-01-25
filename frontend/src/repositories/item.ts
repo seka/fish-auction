@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { registerItem, updateItem, deleteItem, updateItemSortOrder, getItemsByAuction } from '@/src/api/admin';
-import { RegisterItemParams, UpdateItemParams, UpdateItemSortOrderParams } from '@/src/models';
+import { registerItem, updateItem, deleteItem, updateItemSortOrder, getItemsByAuction, reorderItems } from '@/src/api/admin';
+import { RegisterItemParams, UpdateItemParams, UpdateItemSortOrderParams, ReorderItemsParams } from '@/src/models';
 
 export const itemKeys = {
     all: ['items'] as const,
@@ -31,10 +31,64 @@ export const useItemMutation = () => {
         },
     });
 
+    const reorderMutation = useMutation({
+        mutationFn: (params: ReorderItemsParams) => reorderItems(params.auctionId, params.ids),
+        onMutate: async (params) => {
+            const queryKey = itemKeys.byAuction(params.auctionId);
+            await queryClient.cancelQueries({ queryKey });
+
+            const previousItems = queryClient.getQueryData<any[]>(queryKey);
+
+            if (previousItems) {
+                // Rearrange items based on the new ids order
+                const idToIndex = new Map(params.ids.map((id, index) => [id, index]));
+                const newItems = [...previousItems].sort((a, b) => {
+                    const indexA = idToIndex.get(a.id) ?? 999;
+                    const indexB = idToIndex.get(b.id) ?? 999;
+                    return indexA - indexB;
+                });
+                queryClient.setQueryData(queryKey, newItems);
+            }
+
+            return { previousItems, queryKey };
+        },
+        onError: (err, variables, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData(context.queryKey, context.previousItems);
+            }
+        },
+        onSettled: (data, error, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: context?.queryKey || itemKeys.all });
+        },
+    });
+
     const sortMutation = useMutation({
         mutationFn: updateItemSortOrder,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: itemKeys.all });
+        onMutate: async (newOrder) => {
+            const queryKey = itemKeys.byAuction(newOrder.auctionId);
+            await queryClient.cancelQueries({ queryKey });
+
+            const previousItems = queryClient.getQueryData<any[]>(queryKey);
+
+            if (previousItems) {
+                const oldIndex = previousItems.findIndex(i => i.id === newOrder.id);
+                if (oldIndex !== -1) {
+                    const newItems = [...previousItems];
+                    const [movedItem] = newItems.splice(oldIndex, 1);
+                    newItems.splice(newOrder.newIndex, 0, { ...movedItem, sortOrder: newOrder.sortOrder });
+                    queryClient.setQueryData(queryKey, newItems);
+                }
+            }
+
+            return { previousItems, queryKey };
+        },
+        onError: (err, newOrder, context) => {
+            if (context?.previousItems) {
+                queryClient.setQueryData(context.queryKey, context.previousItems);
+            }
+        },
+        onSettled: (data, error, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: context?.queryKey || itemKeys.all });
         },
     });
 
@@ -47,6 +101,8 @@ export const useItemMutation = () => {
         isDeleting: deleteMutation.isPending,
         updateSortOrder: sortMutation.mutateAsync,
         isSorting: sortMutation.isPending,
+        reorderItems: reorderMutation.mutateAsync,
+        isReordering: reorderMutation.isPending,
     };
 };
 

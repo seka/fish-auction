@@ -124,6 +124,7 @@
             "success_register": "出品を登録しました",
             "success_update": "出品を更新しました",
             "success_delete": "出品を削除しました",
+            "success_sort": "表示順を更新しました",
             "fail_register": "登録に失敗しました",
             "fail_update": "更新に失敗しました",
             "fail_delete": "削除に失敗しました"
