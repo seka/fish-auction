@@ -15,5 +15,6 @@ type ItemRepository interface {
 	Delete(ctx context.Context, id int) error
 	UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error
 	UpdateSortOrder(ctx context.Context, id int, sortOrder int) error
+	Reorder(ctx context.Context, auctionID int, ids []int) error
 	InvalidateCache(ctx context.Context, id int) error
 }

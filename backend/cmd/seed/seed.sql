@@ -116,15 +116,15 @@ BEGIN
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status)
-        SELECT fid, aid, 'スルメイカ', 100, 'kg', 'Pending'
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, 'スルメイカ', 100, 'kg', 'Pending', 1
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'スルメイカ'
         );
         
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status)
-        SELECT fid, aid, 'ホッケ', 50, 'kg', 'Pending'
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, 'ホッケ', 50, 'kg', 'Pending', 2
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'ホッケ'
@@ -146,8 +146,8 @@ BEGIN
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status)
-        SELECT fid, aid, 'マグロ', 200, 'kg', 'Pending'
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, 'マグロ', 200, 'kg', 'Pending', 3
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'マグロ'

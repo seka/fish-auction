@@ -55,7 +55,7 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 	}
 
 	err := db.QueryRowContext(ctx,
-		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order) VALUES ($1, $2, $3, $4, $5, 'Pending', (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM auction_items WHERE auction_id = $1)) RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
+		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
 		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
 	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
 	if err != nil {
@@ -294,6 +294,25 @@ func (r *itemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder 
 		return err
 	}
 	_ = r.InvalidateCache(ctx, id)
+	return nil
+}
+
+func (r *itemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
+	db := r.getDB(ctx)
+
+	// Since we might be updating multiple rows, and we want it to be atomic,
+	// ideally we'd use a transaction. If r.getDB returns the DB, we should start one.
+	// However, usually reorder is called from a UseCase that might already have a transaction context.
+
+	for i, id := range ids {
+		newSortOrder := i + 1
+		_, err := db.ExecContext(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
+		if err != nil {
+			return err
+		}
+		_ = r.InvalidateCache(ctx, id)
+	}
+
 	return nil
 }
 
