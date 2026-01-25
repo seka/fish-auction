@@ -39,10 +39,12 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 
 	// 2b. Create Auction
 	var auctionID int
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
 	err = db.QueryRow(`
 		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) 
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
-	`, createdVenue.ID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
+	`, createdVenue.ID, now, now.Add(1*time.Hour), now).Scan(&auctionID)
 	assert.NoError(t, err)
 
 	// 2c. Create Fisherman

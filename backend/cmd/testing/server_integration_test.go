@@ -165,9 +165,9 @@ func TestServerIntegration(t *testing.T) {
 		// 7. Create Auction (as Admin)
 		// POST /api/admin/auctions
 		// Links to Venue.
-		// Make auction active now so we can bid.
-		auctionDate := time.Now().Format("2006-01-02")
 		// StartTime 00:00, EndTime 23:59
+		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+		auctionDate := time.Now().In(jst).Format("2006-01-02")
 		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": "%s", "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
 
 		// 8. Create Item (as Admin)
