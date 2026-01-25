@@ -70,16 +70,15 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 	`, itemID, buyerID)
 	assert.NoError(t, err)
 
-	// 3. Attempt Delete Venue
+	// 3. Attempt Delete Venue (Logical)
 	err = repo.Delete(ctx, createdVenue.ID)
+	assert.NoError(t, err)
 
-	// 4. Inspect Error
-	if err != nil {
-		t.Logf("Returned Error Type: %T", err)
-		t.Logf("Returned Error Value: %+v", err)
-	} else {
-		t.Error("Expected error but got nil (Delete succeeded unexpectedly)")
-	}
+	// 4. Verify Logical Delete
+	var deletedAt sql.NullTime
+	err = db.QueryRow("SELECT deleted_at FROM venues WHERE id = $1", createdVenue.ID).Scan(&deletedAt)
+	assert.NoError(t, err)
+	assert.True(t, deletedAt.Valid, "Venue should have deleted_at set")
 
 	// 5. Cleanup
 	db.Exec("DELETE FROM transactions WHERE item_id = $1", itemID)

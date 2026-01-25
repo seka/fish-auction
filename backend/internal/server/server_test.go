@@ -25,6 +25,12 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
 			return &model.Auction{ID: 1, VenueID: auction.VenueID}, nil
 		}},
+		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(ctx context.Context, id int, status model.AuctionStatus) error {
+			return nil
+		}},
+		GetBuyerUC: &mock.MockGetBuyerUseCase{ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+			return &model.Buyer{ID: 1, Name: "Test Buyer"}, nil
+		}},
 	}
 
 	// Initialize Handlers

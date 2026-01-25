@@ -143,19 +143,17 @@ func TestServerIntegration(t *testing.T) {
 			Jar: jar,
 		}
 
-		// 1. Register Fisherman
-		fishermanID := registerUser(t, client, serverURL+"/api/fishermen", `{"name": "Captain Ahab"}`)
-
-		// 2. Register Buyer
-		// We use buyerID for nothing currently, but we use buyer account for login
-		_ = registerUser(t, client, serverURL+"/api/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
-
-		// 3. Seed Admin (Direct DB)
-		// Assuming "admin" table/model exists and we can insert.
+		// 1. Seed Admin (Direct DB)
 		seedAdmin(t, db, "admin@example.com", "admin123")
 
-		// 4. Login Admin
+		// 2. Login Admin
 		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "admin123"}`)
+
+		// 3. Register Fisherman (using Admin URL)
+		fishermanID := registerUser(t, client, serverURL+"/api/admin/fishermen", `{"name": "Captain Ahab"}`)
+
+		// 4. Register Buyer (using Admin URL)
+		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
 
 		// 5. Login Buyer
 		buyerCookies := login(t, client, serverURL+"/api/buyers/login", `{"email": "ishmael@example.com", "password": "password123"}`)

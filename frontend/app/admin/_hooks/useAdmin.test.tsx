@@ -63,9 +63,9 @@ describe('useAdmin Hooks', () => {
 
             const { result } = renderHook(() => useRegisterBuyer(), { wrapper });
 
-            await result.current.registerBuyer({ name: 'Buyer 1' });
+            await result.current.registerBuyer({ name: 'Buyer 1' } as any);
 
-            expect(registerBuyer).toHaveBeenCalledWith('Buyer 1');
+            expect(registerBuyer).toHaveBeenCalledWith({ name: 'Buyer 1' });
         });
     });
 

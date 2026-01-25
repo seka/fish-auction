@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionDetailPage from './page';
 import { useAuctionData } from './_hooks/useAuctionData';
 import { useBidMutation } from './_hooks/useBidMutation';
-import { useAuth } from './_hooks/useAuth';
+import { useAuth } from '@/src/hooks/useAuth';
 import { isAuctionActive } from '@/src/utils/auction';
+import { ToastProvider } from '@/src/hooks/useToast';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
@@ -37,7 +38,7 @@ vi.mock('react', async (importOriginal) => {
 
 vi.mock('./_hooks/useAuctionData');
 vi.mock('./_hooks/useBidMutation');
-vi.mock('./_hooks/useAuth');
+vi.mock('@/src/hooks/useAuth');
 vi.mock('@/src/utils/auction');
 vi.mock('@/src/api/buyer_auth', () => ({
     loginBuyer: vi.fn(),
@@ -79,25 +80,41 @@ describe('AuctionDetailPage', () => {
 
     it('renders loading state', () => {
         (useAuctionData as any).mockReturnValue({ isLoading: true });
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         expect(screen.getByText('Common.loading')).toBeInTheDocument();
     });
 
     it('renders login form if not logged in', () => {
         (useAuth as any).mockReturnValue({ isLoggedIn: false, isChecking: false });
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         expect(screen.getByText('Public.AuctionDetail.login_title')).toBeInTheDocument();
     });
 
     it('renders auction details when logged in', () => {
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         expect(screen.getByText('Public.AuctionDetail.auction_venue_title')).toBeInTheDocument();
         expect(screen.getByText('Tuna')).toBeInTheDocument();
         expect(screen.getByText('Salmon')).toBeInTheDocument();
     });
 
     it('selects an item and allows bidding', async () => {
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
 
         // Select Tuna
         const tunaCard = screen.getByText('Tuna');
@@ -107,7 +124,7 @@ describe('AuctionDetailPage', () => {
         expect(screen.getByText('Public.AuctionDetail.selected_item')).toBeInTheDocument();
 
         // Bid amount input
-        const bidInput = screen.getByPlaceholderText('0');
+        const bidInput = screen.getByRole('spinbutton');
         fireEvent.change(bidInput, { target: { value: '1000' } });
 
         // Submit
@@ -121,10 +138,14 @@ describe('AuctionDetailPage', () => {
     });
 
     it('shows error message on failed bid', async () => {
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
 
         fireEvent.click(screen.getByText('Tuna'));
-        fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '1000' } });
+        fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '1000' } });
 
         mockSubmitBid.mockResolvedValue(false);
         fireEvent.click(screen.getByRole('button', { name: 'Public.AuctionDetail.bid_button' }));
@@ -135,25 +156,41 @@ describe('AuctionDetailPage', () => {
     });
     it('renders checking state', () => {
         (useAuth as any).mockReturnValue({ isLoggedIn: false, isChecking: true });
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
     });
 
     it('renders no data when auction not found', () => {
         (useAuctionData as any).mockReturnValue({ auction: null, isLoading: false });
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         expect(screen.getByText('Common.no_data')).toBeInTheDocument();
     });
 
     it('renders item ended message for non-pending items', () => {
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         fireEvent.click(screen.getByText('Salmon')); // Status: Sold
         expect(screen.getByText('Public.AuctionDetail.item_ended')).toBeInTheDocument();
     });
 
     it('renders out of hours message when auction is inactive', () => {
         (isAuctionActive as any).mockReturnValue(false);
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
         fireEvent.click(screen.getByText('Tuna')); // Status: Pending
         expect(screen.getByText('Public.AuctionDetail.out_of_hours_title')).toBeInTheDocument();
     });
@@ -171,7 +208,11 @@ describe('AuctionDetailPage', () => {
         const { loginBuyer } = await import('@/src/api/buyer_auth');
         (loginBuyer as any).mockResolvedValue({ id: 1 });
 
-        render(<AuctionDetailPage params={params} />);
+        render(
+            <ToastProvider>
+                <AuctionDetailPage params={params} />
+            </ToastProvider>
+        );
 
         fireEvent.change(screen.getByPlaceholderText('Common.email'), { target: { value: 'user@example.com' } });
         fireEvent.change(screen.getByPlaceholderText('Common.password'), { target: { value: 'password' } });
