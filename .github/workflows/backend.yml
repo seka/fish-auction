@@ -2,7 +2,7 @@ name: Backend CI
 
 on:
   push:
-    branches: [ master ]
+    # branches: [ master ] # Removed to trigger on all branches
     paths:
       - 'backend/**'
   pull_request:

@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ master ]
+    # branches: [ master ] # Removed to trigger on all branches
     paths:
       - 'frontend/**'
   pull_request:
