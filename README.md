@@ -29,22 +29,27 @@ graph LR
 - **repository**: データベースなど、外部ストレージへのデータアクセス。
 
 ### Frontend (Next.js)
-UI、状態管理、データ取得の役割を明確に分けています。
+UI、状態管理、データ取得の役割を明確に分けています。UIに関しては **Atomic Design** を採用し、粒度に応じたディレクトリ配置を行っています。
 
 ```mermaid
 graph TD
-    App["app (Pages)"] --> Hooks["hooks (UI Logic)"]
+    App["app (Pages)"] --> Temp["app/_components (Templates)"]
+    Temp --> Org["app/_components (Organisms)"]
+    Org --> Mol["core/ui (Molecules)"]
+    Mol --> Ato["core/ui (Atoms)"]
+    
+    App --> Hooks["hooks (UI Logic)"]
     Hooks --> Repo["core/repository (TanStack Query)"]
     Repo --> API["core/api (API Client)"]
-    
-    App --> UI["core/ui (Atomic Design: Atoms/Molecules)"]
 ```
 
-- **app (Pages)**: 各画面のルートコンポーネント。ルーティングやレイアウトを担当。
-- **hooks**: 画面固有のロジックや状態管理、リポジトリの呼び出しを隠蔽するカスタムフック。
-- **core/ui**: **Atomic Design**（Atoms / Molecules）に基づいた再利用可能なUIコンポーネント群。
-- **core/repository**: TanStack Query によるデータ取得・キャッシュ・サーバー状態の管理。
-- **core/api**: バックエンド API との通信を行うための低レイヤーなクライアント。
+- **app (Pages / Templates / Organisms)**: 
+  - `app/_components/templates`: ページ全体のレイアウト構造（ヘッダー、サイドバーの配置など）。
+  - `app/_components/organisms`: ヘッダーやナビゲーションなど、ドメイン知識を伴う具体的な機能の集合体。
+- **hooks**: 画面固有のロジックやデータ取得を隠蔽するカスタムフック。
+- **core/ui (Atoms / Molecules)**: ドメインに依存しない、再利用可能な汎用UIコンポーネント群。
+- **core/repository**: TanStack Query によるサーバー状態の管理。
+- **core/api**: API 通信を行うためのクライアント定義。
 
 ## 開発環境のセットアップ (Setup)
 
