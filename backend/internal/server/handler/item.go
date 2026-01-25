@@ -21,6 +21,7 @@ type ItemHandler struct {
 	updateUseCase          item.UpdateItemUseCase
 	deleteUseCase          item.DeleteItemUseCase
 	updateSortOrderUseCase item.UpdateItemSortOrderUseCase
+	reorderItemsUseCase    item.ReorderItemsUseCase
 }
 
 func NewItemHandler(r registry.UseCase) *ItemHandler {
@@ -30,6 +31,7 @@ func NewItemHandler(r registry.UseCase) *ItemHandler {
 		updateUseCase:          r.NewUpdateItemUseCase(),
 		deleteUseCase:          r.NewDeleteItemUseCase(),
 		updateSortOrderUseCase: r.NewUpdateItemSortOrderUseCase(),
+		reorderItemsUseCase:    r.NewReorderItemsUseCase(),
 	}
 }
 
@@ -143,18 +145,8 @@ func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
-	// Extract ID from path: /items/{id}/sort-order
-	path := r.URL.Path
-	segments := strings.Split(strings.Trim(path, "/"), "/")
-	var idStr string
-	for i, s := range segments {
-		if s == "items" && i+1 < len(segments) {
-			idStr = segments[i+1]
-			break
-		}
-	}
-
-	id, err := strconv.Atoi(idStr)
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		util.WriteError(w, http.StatusBadRequest, "invalid item id")
 		return
@@ -167,6 +159,28 @@ func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.updateSortOrderUseCase.Execute(r.Context(), id, req.SortOrder); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ItemHandler) Reorder(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	auctionID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "invalid auction id")
+		return
+	}
+
+	var req dto.ReorderItemsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := h.reorderItemsUseCase.Execute(r.Context(), auctionID, req.IDs); err != nil {
 		util.HandleError(w, err)
 		return
 	}

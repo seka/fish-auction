@@ -24,6 +24,10 @@ type UpdateItemSortOrderRequest struct {
 	SortOrder int `json:"sort_order"`
 }
 
+type ReorderItemsRequest struct {
+	IDs []int `json:"ids"`
+}
+
 type ItemResponse struct {
 	ID                int       `json:"id"`
 	AuctionID         int       `json:"auction_id"`

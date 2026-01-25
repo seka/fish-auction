@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
 )
@@ -170,122 +170,47 @@ func (s *Server) registerPublicRoutes() {
 }
 
 func (s *Server) registerAdminRoutes() {
-	adminMux := http.NewServeMux()
+	// Mount Admin Router
+	adminRouter := mux.NewRouter()
+	adminSub := adminRouter.PathPrefix("/api/admin").Subrouter()
+	adminSub.Use(s.adminAuth.Handle)
 
-	// Fishermen (Create, Delete)
-	adminMux.HandleFunc("/fishermen", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.fishermanHandler.Create(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	adminMux.HandleFunc("/fishermen/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodDelete {
-			s.fishermanHandler.Delete(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	// Since we are moving to gorilla/mux, let's register the item routes properly
+	// Note: ItemHandler.RegisterRoutes adds "/api/items" prefix,
+	// but adminSub is already at "/api/admin".
+	// The paths in RegisterRoutes might need adjustment or we register manually.
 
-	// Buyers (Create, Delete)
-	adminMux.HandleFunc("/buyers", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.buyerHandler.Create(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	adminMux.HandleFunc("/buyers/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodDelete {
-			s.buyerHandler.Delete(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	// Items (Create, Update, Delete, Sort)
+	adminSub.HandleFunc("/items", s.itemHandler.Create).Methods(http.MethodPost)
+	adminSub.HandleFunc("/items/{id:[0-9]+}", s.itemHandler.Update).Methods(http.MethodPut)
+	adminSub.HandleFunc("/items/{id:[0-9]+}", s.itemHandler.Delete).Methods(http.MethodDelete)
+	adminSub.HandleFunc("/items/{id:[0-9]+}/sort-order", s.itemHandler.UpdateSortOrder).Methods(http.MethodPut)
 
-	// Items (Create, Update, Delete)
-	adminMux.HandleFunc("/items", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.itemHandler.Create(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	adminMux.HandleFunc("/items/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/sort-order") {
-			if r.Method == http.MethodPut {
-				s.itemHandler.UpdateSortOrder(w, r)
-				return
-			}
-		}
+	// Fishermen
+	adminSub.HandleFunc("/fishermen", s.fishermanHandler.Create).Methods(http.MethodPost)
+	adminSub.HandleFunc("/fishermen/{id:[0-9]+}", s.fishermanHandler.Delete).Methods(http.MethodDelete)
 
-		switch r.Method {
-		case http.MethodPut:
-			s.itemHandler.Update(w, r)
-		case http.MethodDelete:
-			s.itemHandler.Delete(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	// Buyers
+	adminSub.HandleFunc("/buyers", s.buyerHandler.Create).Methods(http.MethodPost)
+	adminSub.HandleFunc("/buyers/{id:[0-9]+}", s.buyerHandler.Delete).Methods(http.MethodDelete)
 
-	// Auctions (Create, Update, Delete)
-	adminMux.HandleFunc("/auctions", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.auctionHandler.Create(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	adminMux.HandleFunc("/auctions/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/status") {
-			if r.Method == http.MethodPatch {
-				s.auctionHandler.UpdateStatus(w, r)
-				return
-			}
-		}
+	// Auctions
+	adminSub.HandleFunc("/auctions", s.auctionHandler.Create).Methods(http.MethodPost)
+	adminSub.HandleFunc("/auctions/{id:[0-9]+}", s.auctionHandler.Update).Methods(http.MethodPut)
+	adminSub.HandleFunc("/auctions/{id:[0-9]+}", s.auctionHandler.Delete).Methods(http.MethodDelete)
+	adminSub.HandleFunc("/auctions/{id:[0-9]+}/status", s.auctionHandler.UpdateStatus).Methods(http.MethodPatch)
+	adminSub.HandleFunc("/auctions/{id:[0-9]+}/reorder", s.itemHandler.Reorder).Methods(http.MethodPut)
 
-		switch r.Method {
-		case http.MethodPut:
-			s.auctionHandler.Update(w, r)
-		case http.MethodDelete:
-			s.auctionHandler.Delete(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	// Venues
+	adminSub.HandleFunc("/venues", s.venueHandler.Create).Methods(http.MethodPost)
+	adminSub.HandleFunc("/venues/{id:[0-9]+}", s.venueHandler.Update).Methods(http.MethodPut)
+	adminSub.HandleFunc("/venues/{id:[0-9]+}", s.venueHandler.Delete).Methods(http.MethodDelete)
 
-	// Venues (Create, Update, Delete)
-	adminMux.HandleFunc("/venues", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.venueHandler.Create(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	adminMux.HandleFunc("/venues/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPut:
-			s.venueHandler.Update(w, r)
-		case http.MethodDelete:
-			s.venueHandler.Delete(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	// Settings
+	adminSub.HandleFunc("/password", s.adminHandler.UpdatePassword).Methods(http.MethodPut)
 
-	// Password Update
-	adminMux.HandleFunc("/password", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPut {
-			s.adminHandler.UpdatePassword(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	// Mount Admin Mux with Auth & StripPrefix
-	s.router.Handle("/api/admin/", s.adminAuth.Handle(http.StripPrefix("/api/admin", adminMux)))
+	// Use the router for all /api/admin requests
+	s.router.Handle("/api/admin/", adminRouter)
 }
 
 func (s *Server) registerBuyerRoutes() {
