@@ -23,5 +23,12 @@ export interface UpdateItemParams extends RegisterItemParams {
 
 export interface UpdateItemSortOrderParams {
     id: number;
+    auctionId: number;
     sortOrder: number;
+    newIndex: number;
+}
+
+export interface ReorderItemsParams {
+    auctionId: number;
+    ids: number[];
 }

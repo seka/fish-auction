@@ -78,6 +78,16 @@ export const updateItemSortOrder = async (params: UpdateItemSortOrderParams): Pr
     }
 };
 
+export const reorderItems = async (auctionId: number, ids: number[]): Promise<boolean> => {
+    try {
+        await apiClient.put(`/api/admin/auctions/${auctionId}/reorder`, { ids });
+        return true;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
 export const getItemsByAuction = async (auctionId: number): Promise<AuctionItem[]> => {
     return apiClient.get<AuctionItem[]>(`/api/auctions/${auctionId}/items`);
 };
