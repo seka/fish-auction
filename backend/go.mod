@@ -10,7 +10,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.17.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.45.0
+	golang.org/x/crypto v0.47.0
 )
 
 require (
