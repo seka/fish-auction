@@ -21,6 +21,7 @@ type MockRegistry struct {
 	UpdateItemUC                item.UpdateItemUseCase
 	DeleteItemUC                item.DeleteItemUseCase
 	UpdateItemSortOrderUC       item.UpdateItemSortOrderUseCase
+	ReorderItemsUC              item.ReorderItemsUseCase
 	CreateBidUC                 bid.CreateBidUseCase
 	CreateBuyerUC               buyer.CreateBuyerUseCase
 	ListBuyersUC                buyer.ListBuyersUseCase
@@ -93,6 +94,10 @@ func (m *MockRegistry) NewDeleteItemUseCase() item.DeleteItemUseCase {
 
 func (m *MockRegistry) NewUpdateItemSortOrderUseCase() item.UpdateItemSortOrderUseCase {
 	return m.UpdateItemSortOrderUC
+}
+
+func (m *MockRegistry) NewReorderItemsUseCase() item.ReorderItemsUseCase {
+	return m.ReorderItemsUC
 }
 
 func (m *MockRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {

@@ -42,6 +42,9 @@ func (m *mockItemRepository) UpdateStatus(ctx context.Context, id int, status mo
 func (m *mockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	return nil
 }
+func (m *mockItemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
+	return nil
+}
 func (m *mockItemRepository) InvalidateCache(ctx context.Context, id int) error {
 	return nil
 }

@@ -71,3 +71,25 @@ func (m *MockBuyerUpdatePasswordUseCase) Execute(ctx context.Context, buyerID in
 	}
 	return nil
 }
+
+type MockGetBuyerUseCase struct {
+	ExecuteFunc func(ctx context.Context, id int) (*model.Buyer, error)
+}
+
+func (m *MockGetBuyerUseCase) Execute(ctx context.Context, id int) (*model.Buyer, error) {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+type MockDeleteBuyerUseCase struct {
+	ExecuteFunc func(ctx context.Context, id int) error
+}
+
+func (m *MockDeleteBuyerUseCase) Execute(ctx context.Context, id int) error {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, id)
+	}
+	return nil
+}

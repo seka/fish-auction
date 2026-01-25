@@ -296,20 +296,45 @@ func TestBuyerHandler_List(t *testing.T) {
 }
 
 func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
-	// Reusing logic from GetMyPurchases table approach conceptually
 	type testCase struct {
 		name       string
 		cookies    map[string]string
+		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
 	tests := []testCase{
-		{name: "Success", cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"}, wantStatus: http.StatusOK},
-		{name: "NoSession", cookies: map[string]string{}, wantStatus: http.StatusUnauthorized},
-		{name: "NoID", cookies: map[string]string{"buyer_session": "authenticated"}, wantStatus: http.StatusUnauthorized},
+		{
+			name:    "Success",
+			cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			mockSetup: func(r *mock.MockRegistry) {
+				r.GetBuyerUC = &mock.MockGetBuyerUseCase{
+					ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+						return &model.Buyer{ID: 1, Name: "Buyer 1"}, nil
+					},
+				}
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "NoSession",
+			cookies:    map[string]string{},
+			mockSetup:  func(r *mock.MockRegistry) {},
+			wantStatus: http.StatusUnauthorized,
+		},
+		{
+			name:       "NoID",
+			cookies:    map[string]string{"buyer_session": "authenticated"},
+			mockSetup:  func(r *mock.MockRegistry) {},
+			wantStatus: http.StatusUnauthorized,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			h := handler.NewBuyerHandler(&mock.MockRegistry{})
+			mockReg := &mock.MockRegistry{}
+			if tc.mockSetup != nil {
+				tc.mockSetup(mockReg)
+			}
+			h := handler.NewBuyerHandler(mockReg)
 			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me", nil)
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
@@ -482,6 +507,7 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 		GetBuyerPurchasesUC:   &mock.MockGetBuyerPurchasesUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Purchase, error) { return []model.Purchase{}, nil }},
 		GetBuyerAuctionsUC:    &mock.MockGetBuyerAuctionsUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Auction, error) { return []model.Auction{}, nil }},
 		UpdateBuyerPasswordUC: &mock.MockBuyerUpdatePasswordUseCase{ExecuteFunc: func(ctx context.Context, id int, c, n string) error { return nil }},
+		GetBuyerUC:            &mock.MockGetBuyerUseCase{ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) { return &model.Buyer{Name: "B1"}, nil }},
 	}
 
 	h := handler.NewBuyerHandler(mockReg)

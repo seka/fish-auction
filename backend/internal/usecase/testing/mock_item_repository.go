@@ -16,6 +16,7 @@ type MockItemRepository struct {
 	DeleteFunc          func(ctx context.Context, id int) error
 	UpdateStatusFunc    func(ctx context.Context, id int, status model.ItemStatus) error
 	UpdateSortOrderFunc func(ctx context.Context, id int, sortOrder int) error
+	ReorderFunc         func(ctx context.Context, auctionID int, ids []int) error
 	InvalidateCacheFunc func(ctx context.Context, id int) error
 }
 
@@ -49,6 +50,10 @@ func (m *MockItemRepository) UpdateStatus(ctx context.Context, id int, status mo
 
 func (m *MockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	return m.UpdateSortOrderFunc(ctx, id, sortOrder)
+}
+
+func (m *MockItemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
+	return m.ReorderFunc(ctx, auctionID, ids)
 }
 
 func (m *MockItemRepository) InvalidateCache(ctx context.Context, id int) error {
