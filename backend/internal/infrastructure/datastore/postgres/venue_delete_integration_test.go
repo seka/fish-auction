@@ -39,10 +39,12 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 
 	// 2b. Create Auction
 	var auctionID int
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
 	err = db.QueryRow(`
 		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) 
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
-	`, createdVenue.ID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
+	`, createdVenue.ID, now, now.Add(1*time.Hour), now).Scan(&auctionID)
 	assert.NoError(t, err)
 
 	// 2c. Create Fisherman
@@ -70,16 +72,15 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 	`, itemID, buyerID)
 	assert.NoError(t, err)
 
-	// 3. Attempt Delete Venue
+	// 3. Attempt Delete Venue (Logical)
 	err = repo.Delete(ctx, createdVenue.ID)
+	assert.NoError(t, err)
 
-	// 4. Inspect Error
-	if err != nil {
-		t.Logf("Returned Error Type: %T", err)
-		t.Logf("Returned Error Value: %+v", err)
-	} else {
-		t.Error("Expected error but got nil (Delete succeeded unexpectedly)")
-	}
+	// 4. Verify Logical Delete
+	var deletedAt sql.NullTime
+	err = db.QueryRow("SELECT deleted_at FROM venues WHERE id = $1", createdVenue.ID).Scan(&deletedAt)
+	assert.NoError(t, err)
+	assert.True(t, deletedAt.Valid, "Venue should have deleted_at set")
 
 	// 5. Cleanup
 	db.Exec("DELETE FROM transactions WHERE item_id = $1", itemID)

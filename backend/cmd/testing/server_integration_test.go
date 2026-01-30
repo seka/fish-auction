@@ -143,19 +143,17 @@ func TestServerIntegration(t *testing.T) {
 			Jar: jar,
 		}
 
-		// 1. Register Fisherman
-		fishermanID := registerUser(t, client, serverURL+"/api/fishermen", `{"name": "Captain Ahab"}`)
-
-		// 2. Register Buyer
-		// We use buyerID for nothing currently, but we use buyer account for login
-		_ = registerUser(t, client, serverURL+"/api/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
-
-		// 3. Seed Admin (Direct DB)
-		// Assuming "admin" table/model exists and we can insert.
+		// 1. Seed Admin (Direct DB)
 		seedAdmin(t, db, "admin@example.com", "admin123")
 
-		// 4. Login Admin
+		// 2. Login Admin
 		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "admin123"}`)
+
+		// 3. Register Fisherman (using Admin URL)
+		fishermanID := registerUser(t, client, serverURL+"/api/admin/fishermen", `{"name": "Captain Ahab"}`)
+
+		// 4. Register Buyer (using Admin URL)
+		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
 
 		// 5. Login Buyer
 		buyerCookies := login(t, client, serverURL+"/api/buyers/login", `{"email": "ishmael@example.com", "password": "password123"}`)
@@ -167,9 +165,9 @@ func TestServerIntegration(t *testing.T) {
 		// 7. Create Auction (as Admin)
 		// POST /api/admin/auctions
 		// Links to Venue.
-		// Make auction active now so we can bid.
-		auctionDate := time.Now().Format("2006-01-02")
 		// StartTime 00:00, EndTime 23:59
+		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+		auctionDate := time.Now().In(jst).Format("2006-01-02")
 		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": "%s", "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
 
 		// 8. Create Item (as Admin)

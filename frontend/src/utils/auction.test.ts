@@ -20,7 +20,7 @@ describe('Auction Utils', () => {
             startTime: '10:00:00',
             endTime: '15:00:00',
             venueId: 1,
-            status: 'in_progress',
+            status: 'scheduled',
             createdAt: '',
             updatedAt: ''
         };
