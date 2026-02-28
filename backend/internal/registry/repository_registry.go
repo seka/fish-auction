@@ -4,7 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"log"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -59,12 +62,22 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 		return nil, nil, fmt.Errorf("could not connect to database after retries: %w", err)
 	}
 
-	// Run migrations
-	migrationFiles := []string{
-		"001_init.sql",
+	// Run migrations - Scan and execute all .sql files in order
+	entries, err := fs.ReadDir(migrations.FS, ".")
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to read migrations directory: %w", err)
 	}
 
+	var migrationFiles []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".sql") {
+			migrationFiles = append(migrationFiles, entry.Name())
+		}
+	}
+	sort.Strings(migrationFiles)
+
 	for _, file := range migrationFiles {
+		log.Printf("Applying migration: %s", file)
 		migrationSQL, err := migrations.FS.ReadFile(file)
 		if err != nil {
 			db.Close()
@@ -73,13 +86,8 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 
 		_, err = db.Exec(string(migrationSQL))
 		if err != nil {
-			// Check if error is due to table already existing or similar, depending on driver.
-			// For now, we propagate the error as it's critical for consistency.
-			// If 002 was already applied manually, 002 might fail if it's not idempotent.
-			// But we assume standard migration behavior or manual intervention if needed.
-			// Given the environment, simplest is to try running.
-			log.Printf("Migration %s failed (might be already applied): %v", file, err)
-			// We continue, but ideally we should have a proper migration tool.
+			log.Printf("Migration %s potential issue: %v", file, err)
+			// We continue as we rely on SQL idempotency (IF NOT EXISTS)
 		}
 	}
 
