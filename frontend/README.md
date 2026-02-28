@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend (Next.js)
 
-## Getting Started
+漁港のせりシステムのフロントエンドアプリケーションです。
 
-First, run the development server:
+## 技術構成 (Tech Stack)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Vanilla CSS, [Panda CSS](https://panda-css.com/) (Design Tokens)
+- **State Management**: [TanStack Query](https://tanstack.com/query/latest) (React Query)
+- **Testing**: Vitest / React Testing Library
+- **Authentication**: クッキーベースの認証
+
+### コンポーネント設計 (Atomic Design)
+
+- **Atoms**: 最小単位のボタン、入力フォーム、アイコンなどの汎用パーツ。
+- **Molecules**: Atoms を組み合わせた、特定の役割を持つ塊（ステータスラベル、入力フィールド）。
+- **Organisms**: ドメイン知識を伴う、より具体的で機能的なコンポーネント（入札ダイアログ、アイテムカード）。
+- **Templates**: ページ全体のレイアウト構造を定義する枠組み。
+
+### データフロー (Data Flow)
+
+```mermaid
+graph LR
+    User([User]) -- Action --> UI[UI Context / Hooks]
+    UI -- "Mutation/Query" --> Repo[Repository]
+    Repo -- "Request" --> API[API Client]
+    API -- "Fetch" --> Server[(Backend API)]
+
+    Server -- "Response" --> API
+    API -- "DTO" --> Repo
+    Repo -- "Model" --> UI
+    UI -- "Render" --> User
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### ディレクトリ構成
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+frontend/
+├── app/               # Next.js App Router (Pages, Templates, Organisms)
+│   ├── auctions/      # オークション関連ページ
+│   ├── items/         # アイテム管理ページ
+│   └── _components/   # ページ共有の構成要素 (Organisms, Templates)
+├── src/
+│   └── core/          # 基盤機能
+│       ├── ui/        # 汎用UIコンポーネント (Atoms, Molecules)
+│       ├── repository/# TanStack Query によるサーバー状態管理
+│       └── api/       # API クライアント
+├── hooks/             # UI ロジックを抽象化するカスタムフック
+└── public/            # 静的アセット
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 開発環境 (Development)
 
-## Learn More
+フロントエンドのみを個別に操作する場合の主なコマンドです。
 
-To learn more about Next.js, take a look at the following resources:
+### 前提条件
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Node.js** (v20+)
+- **Yarn**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 1. 依存関係のインストール
 
-## Deploy on Vercel
+```bash
+cd frontend
+yarn install
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. 開発サーバーの起動
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+yarn dev
+```
+
+ブラウザで `https://localhost` (Nginx 経由) または `http://localhost:3000` (直通) を開いてください。
+
+### 3. テストの実行
+
+```bash
+yarn test
+```
