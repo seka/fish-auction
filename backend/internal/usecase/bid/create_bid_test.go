@@ -18,9 +18,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	txErr := errors.New("tx error")
 	dbErr := errors.New("db error")
 
-	// Helper to create int pointer
-	intPtr := func(i int) *int { return &i }
-
 	tests := []struct {
 		name             string
 		input            *model.Bid
@@ -67,7 +64,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				Price:   1500, // 1000 + 500 (min increment for < 10000 is 500, wait. 1000 < 10000 -> 500)
 			},
 			itemFound:        true,
-			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: intPtr(1000)}, // Current price 1000
+			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: new(1000)}, // Current price 1000
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -88,7 +85,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				Price:   1499, // 1000 + 500 = 1500 required
 			},
 			itemFound:   true,
-			mockItem:    &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: intPtr(1000)},
+			mockItem:    &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: new(1000)},
 			wantErr:     &domainErrors.ValidationError{Field: "price"},
 			mockAuction: nil, // Should fail before fetching auction? No, after item check. But item check is first?
 			// Logic: Get Item -> Validate Price -> Get Auction. So Auction might not be fetched if price invalid.
@@ -272,8 +269,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				ID:              1,
 				AuctionID:       1,
 				FishType:        "Maguro",
-				HighestBid:      intPtr(1500),
-				HighestBidderID: intPtr(1), // Previous bidder (different from current)
+				HighestBid:      new(1500),
+				HighestBidderID: new(1), // Previous bidder (different from current)
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -297,8 +294,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockItem: &model.AuctionItem{
 				ID:              1,
 				FishType:        "Maguro",
-				HighestBid:      intPtr(1500),
-				HighestBidderID: intPtr(1), // Same bidder
+				HighestBid:      new(1500),
+				HighestBidderID: new(1), // Same bidder
 			},
 			wantID:           1,
 			wantCreateCalled: true,
