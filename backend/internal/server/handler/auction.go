@@ -49,7 +49,7 @@ func parseTime(s *string) *time.Time {
 			return nil
 		}
 	}
-	return &t
+	return new(t)
 }
 
 func formatTime(t *time.Time) *string {
@@ -57,7 +57,7 @@ func formatTime(t *time.Time) *string {
 		return nil
 	}
 	s := t.Format("15:04:05")
-	return &s
+	return new(s)
 }
 
 func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
