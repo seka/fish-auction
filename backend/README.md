@@ -4,7 +4,7 @@
 
 ## 技術構成 (Tech Stack)
 
-- **Language**: Go 1.25+
+- **Language**: Go 1.26+
 - **Database**: PostgreSQL
 - **Cache**: Redis
 - **Framework/Libraries**:
@@ -64,7 +64,7 @@ backend/
 
 ### 前提条件
 
-- **Go** (v1.25+)
+- **Go** (v1.26+)
 - **PostgreSQL**, **Redis** が起動していること
   - ※ データベース等のインフラのみを Docker で起動する場合は `docker-compose up db redis` を実行してください。
 

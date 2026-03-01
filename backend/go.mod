@@ -1,6 +1,6 @@
 module github.com/seka/fish-auction/backend
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
