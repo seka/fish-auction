@@ -8,6 +8,9 @@
     "build": "panda codegen && next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
@@ -37,7 +40,9 @@
     "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9",
     "eslint-config-next": "^16.1.4",
+    "eslint-config-prettier": "^10.1.8",
     "jsdom": "^27.4.0",
+    "prettier": "^3.8.1",
     "typescript": "^5",
     "vitest": "^4.0.16"
   }
