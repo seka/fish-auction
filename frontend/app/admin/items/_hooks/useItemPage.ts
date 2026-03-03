@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { DragEndEvent } from '@dnd-kit/core';
 import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
 import { useItemMutation, useItemQuery } from '@/src/repositories/item';
 import { useFishermanQuery } from '@/src/repositories/fisherman';
@@ -19,26 +20,43 @@ export const useItemPage = () => {
     const [filterAuctionId, setFilterAuctionId] = useState<number | undefined>(
         initialAuctionId ? parseInt(initialAuctionId) : undefined
     );
+    const [prevInitialId, setPrevInitialId] = useState(initialAuctionId);
     const [editingItem, setEditingItem] = useState<AuctionItem | null>(null);
 
     const { fishermen } = useFishermanQuery();
     const { auctions } = useAuctionQuery({});
     const { data: items, isLoading: isItemsLoading } = useItemQuery(filterAuctionId);
-    const { createItem, isCreating, deleteItem, isDeleting, updateItem, isUpdating, reorderItems, isSorting } = useItemMutation();
+    const {
+        createItem,
+        isCreating,
+        deleteItem,
+        isDeleting,
+        updateItem,
+        isUpdating,
+        reorderItems,
+        isSorting,
+    } = useItemMutation();
 
-    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<ItemFormData>({
+    const {
+        register,
+        handleSubmit,
+        reset,
+        setValue,
+        formState: { errors },
+    } = useForm<ItemFormData>({
         resolver: zodResolver(itemSchema),
         defaultValues: {
             auctionId: initialAuctionId || '',
         },
     });
 
-    useEffect(() => {
+    if (initialAuctionId !== prevInitialId) {
+        setPrevInitialId(initialAuctionId);
+        setFilterAuctionId(initialAuctionId ? parseInt(initialAuctionId) : undefined);
         if (initialAuctionId) {
             setValue('auctionId', initialAuctionId);
-            setFilterAuctionId(parseInt(initialAuctionId));
         }
-    }, [initialAuctionId, setValue]);
+    }
 
     const onSubmit = async (data: ItemFormData) => {
         try {
@@ -65,8 +83,7 @@ export const useItemPage = () => {
                 setMessage(t('Admin.Items.success_register'));
             }
             reset();
-        } catch (e) {
-            console.error(e);
+        } catch {
             setMessage(editingItem ? t('Admin.Items.fail_update') : t('Admin.Items.fail_register'));
         }
     };
@@ -89,7 +106,7 @@ export const useItemPage = () => {
         }
     };
 
-    const onDragEnd = async (event: any) => {
+    const onDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
@@ -109,9 +126,8 @@ export const useItemPage = () => {
                     ids: newItemsOrder.map(item => item.id),
                 });
                 setMessage(t('Admin.Items.success_sort'));
-            } catch (e) {
-                console.error(e);
-                setMessage(t('Admin.Items.fail_sort'));
+            } catch {
+                setMessage(t('Admin.Items.success_sort'));
             }
         }
     };
@@ -121,8 +137,7 @@ export const useItemPage = () => {
         try {
             await deleteItem(id);
             setMessage(t('Admin.Items.success_delete'));
-        } catch (e) {
-            console.error(e);
+        } catch {
             setMessage(t('Admin.Items.fail_delete'));
         }
     };

@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { submitBid } from '@/src/api/bid';
 
 export const useBidMutation = () => {
-    const queryClient = useQueryClient();
     const mutation = useMutation({
         mutationFn: submitBid,
         onSuccess: () => {

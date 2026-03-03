@@ -6,7 +6,7 @@ import { auctionSchema, AuctionFormData } from '@/src/models/schemas/auction';
 import { useAuctionQuery, useAuctionMutation } from '@/src/repositories/auction';
 import { useVenueQuery } from '@/src/repositories/venue';
 import { Auction } from '@/src/models/auction';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+import { ApiError } from '@/src/core/api/client';
 
 export const useAuctionPage = () => {
     const t = useTranslations();
@@ -38,10 +38,10 @@ export const useAuctionPage = () => {
                 setMessage(t('Admin.Auctions.success_create'));
             }
             reset();
-        } catch (e: any) {
+        } catch (e) {
             console.error(e);
             let errorMsg = t('Common.error_occurred');
-            if (e.name === 'ApiError') {
+            if (e instanceof ApiError) {
                 if (e.status === 409) {
                     errorMsg = t('Admin.Auctions.error_conflict');
                 } else if (e.status === 500 || e.message === 'An internal error occurred') {
@@ -73,8 +73,7 @@ export const useAuctionPage = () => {
             try {
                 await deleteAuction(id);
                 setMessage(t('Admin.Auctions.success_delete'));
-            } catch (e) {
-                console.error(e);
+            } catch {
                 setMessage(t('Admin.Auctions.fail_delete'));
             }
         }
@@ -84,8 +83,7 @@ export const useAuctionPage = () => {
         try {
             await updateStatus({ id, status });
             setMessage(t('Admin.Auctions.success_status_update'));
-        } catch (e) {
-            console.error(e);
+        } catch {
             setMessage(t('Admin.Auctions.fail_status_update'));
         }
     };
