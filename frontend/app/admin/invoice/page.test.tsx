@@ -6,86 +6,88 @@ import { useInvoicePage } from './_hooks/useInvoicePage';
 // Mock hook
 vi.mock('./_hooks/useInvoicePage');
 vi.mock('next-intl', () => ({
-    useTranslations: () => (key: string) => key,
+  useTranslations: () => (key: string) => key,
 }));
 
 describe('InvoicePage', () => {
-    const mockSetSelectedInvoice = vi.fn();
+  const mockSetSelectedInvoice = vi.fn();
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        (useInvoicePage as any).mockReturnValue({
-            state: {
-                invoices: [
-                    { buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 },
-                ],
-                isLoading: false,
-                selectedInvoice: null,
-            },
-            actions: {
-                setSelectedInvoice: mockSetSelectedInvoice,
-            },
-        });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (useInvoicePage as any).mockReturnValue({
+      state: {
+        invoices: [{ buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 }],
+        isLoading: false,
+        selectedInvoice: null,
+      },
+      actions: {
+        setSelectedInvoice: mockSetSelectedInvoice,
+      },
     });
+  });
 
-    it('renders invoice list', () => {
-        render(<InvoicePage />);
-        expect(screen.getByText('Admin.Invoice.title')).toBeInTheDocument();
-        expect(screen.getByText('Buyer 1')).toBeInTheDocument();
-        expect(screen.getByText('¥1,000')).toBeInTheDocument();
-    });
+  it('renders invoice list', () => {
+    render(<InvoicePage />);
+    expect(screen.getByText('Admin.Invoice.title')).toBeInTheDocument();
+    expect(screen.getByText('Buyer 1')).toBeInTheDocument();
+    expect(screen.getByText('¥1,000')).toBeInTheDocument();
+  });
 
-    it('opens detail modal on row click', () => {
-        render(<InvoicePage />);
-        const row = screen.getByText('Buyer 1').closest('tr');
-        fireEvent.click(row!);
-        expect(mockSetSelectedInvoice).toHaveBeenCalled();
-    });
+  it('opens detail modal on row click', () => {
+    render(<InvoicePage />);
+    const row = screen.getByText('Buyer 1').closest('tr');
+    fireEvent.click(row!);
+    expect(mockSetSelectedInvoice).toHaveBeenCalled();
+  });
 
-    it('renders detail modal when selected', () => {
-        (useInvoicePage as any).mockReturnValue({
-            state: {
-                invoices: [],
-                isLoading: false,
-                selectedInvoice: { buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 },
-            },
-            actions: {
-                setSelectedInvoice: mockSetSelectedInvoice,
-            },
-        });
-        render(<InvoicePage />);
-        expect(screen.getByText('Admin.Invoice.modal_title')).toBeInTheDocument();
-        expect(screen.getByText('Buyer 1')).toBeInTheDocument();
+  it('renders detail modal when selected', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (useInvoicePage as any).mockReturnValue({
+      state: {
+        invoices: [],
+        isLoading: false,
+        selectedInvoice: { buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 },
+      },
+      actions: {
+        setSelectedInvoice: mockSetSelectedInvoice,
+      },
     });
-    it('closes detail modal', () => {
-        (useInvoicePage as any).mockReturnValue({
-            state: {
-                invoices: [],
-                isLoading: false,
-                selectedInvoice: { buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 },
-            },
-            actions: {
-                setSelectedInvoice: mockSetSelectedInvoice,
-            },
-        });
-        render(<InvoicePage />);
-        const closeButton = screen.getByText('Admin.Invoice.close');
-        fireEvent.click(closeButton);
-        expect(mockSetSelectedInvoice).toHaveBeenCalledWith(null);
+    render(<InvoicePage />);
+    expect(screen.getByText('Admin.Invoice.modal_title')).toBeInTheDocument();
+    expect(screen.getByText('Buyer 1')).toBeInTheDocument();
+  });
+  it('closes detail modal', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (useInvoicePage as any).mockReturnValue({
+      state: {
+        invoices: [],
+        isLoading: false,
+        selectedInvoice: { buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 },
+      },
+      actions: {
+        setSelectedInvoice: mockSetSelectedInvoice,
+      },
     });
+    render(<InvoicePage />);
+    const closeButton = screen.getByText('Admin.Invoice.close');
+    fireEvent.click(closeButton);
+    expect(mockSetSelectedInvoice).toHaveBeenCalledWith(null);
+  });
 
-    it('renders empty state', () => {
-        (useInvoicePage as any).mockReturnValue({
-            state: {
-                invoices: [],
-                isLoading: false,
-                selectedInvoice: null,
-            },
-            actions: {
-                setSelectedInvoice: mockSetSelectedInvoice,
-            },
-        });
-        render(<InvoicePage />);
-        expect(screen.getByText('Admin.Invoice.no_data')).toBeInTheDocument();
+  it('renders empty state', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (useInvoicePage as any).mockReturnValue({
+      state: {
+        invoices: [],
+        isLoading: false,
+        selectedInvoice: null,
+      },
+      actions: {
+        setSelectedInvoice: mockSetSelectedInvoice,
+      },
     });
+    render(<InvoicePage />);
+    expect(screen.getByText('Admin.Invoice.no_data')).toBeInTheDocument();
+  });
 });
