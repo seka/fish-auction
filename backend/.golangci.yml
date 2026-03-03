@@ -1,0 +1,56 @@
+version: "2"
+
+run:
+  timeout: 5m
+  # 依存関係のダウンロードが必要な場合に、既存の go.mod を変更せずに読み取り専用で実行
+  modules-download-mode: readonly
+
+# リンターの有効化/無効化設定
+linters:
+  disable-all: true
+  enable:
+    - errcheck # エラーハンドリング（戻り値のエラー確認）の漏れをチェック
+    - gosimple # Goコードをよりシンプルに書ける箇所の提案
+    - govet # Go標準の静的解析ツール
+    - ineffassign # 値が一度も使われない代入文の検出
+    - staticcheck # 高機能な静的コード解析（バグや非推奨コードの検出）
+    - unused # 未使用の変数、関数、定数、型の検出
+    - revive # スタイルのチェック（golint の後継）
+    - gosec # セキュリティ上の脆弱性チェック（SQLインジェクションなど）
+    - gocritic # コード品質、パフォーマンス、スタイルに関する広範なチェック
+    - bodyclose # HTTP レスポンスボディのクローズ忘れを検出
+    - noctx # HTTP リクエスト作成時に Context が渡されていない箇所を検出
+    - exportloopref # ループ変数のポインタ参照に関するバグ（古いGoバージョン向け）
+    - misspell # タイポ（綴りミス）のチェック
+
+# 検出された問題のレポートに関する設定
+issues:
+  # golangci-lint のデフォルトの除外ルールを使わず、すべて表示する設定
+  exclude-use-default: false
+  # 同じリンターからの問題報告数に制限を設けない
+  max-issues-per-linter: 0
+  # 同一の問題の報告数に制限を設けない
+  max-same-issues: 0
+
+# 各リンターの詳細設定
+linters-settings:
+  govet:
+    # すべての解析項目を有効化（シャドウイングなどのチェックを含む）
+    enable-all: true
+  revive:
+    rules:
+      # 公開された（大文字で始まる）関数や型へのコメント必須ルールを無効化
+      - name: exported
+        disabled: true
+  gocritic:
+    # 有効にするチェック項目のカテゴリ
+    enabled-tags:
+      - diagnostic # バグの可能性があるもの
+      - style # スタイル改善
+      - performance # パフォーマンス改善
+    disabled-checks:
+      - ifElseChain # if-else-if の連鎖を制限するチェック（プロジェクトにより好みがあるため無効）
+      - appendAssign # 自己代入のチェック
+  misspell:
+    # 修正するロケール (US または UK)
+    locale: US

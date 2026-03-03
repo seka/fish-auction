@@ -4,6 +4,7 @@
     "esbenp.prettier-vscode",
     "golang.go",
     "ms-azuretools.vscode-docker",
-    "editorconfig.editorconfig"
+    "editorconfig.editorconfig",
+    "golang.golangci-lint"
   ]
 }
