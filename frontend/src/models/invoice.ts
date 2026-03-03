@@ -1,5 +1,5 @@
 export interface InvoiceItem {
-    buyerId: number;
-    buyerName: string;
-    totalAmount: number;
+  buyerId: number;
+  buyerName: string;
+  totalAmount: number;
 }
