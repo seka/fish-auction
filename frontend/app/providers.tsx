@@ -5,20 +5,21 @@ import { useState, ReactNode } from 'react';
 import { ToastProvider } from '@/src/hooks/useToast';
 
 export default function Providers({ children }: { children: ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient({
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
         defaultOptions: {
-            queries: {
-                staleTime: 60 * 1000, // 1 minute
-                refetchOnWindowFocus: false,
-            },
+          queries: {
+            staleTime: 60 * 1000, // 1 minute
+            refetchOnWindowFocus: false,
+          },
         },
-    }));
+      }),
+  );
 
-    return (
-        <QueryClientProvider client={queryClient}>
-            <ToastProvider>
-                {children}
-            </ToastProvider>
-        </QueryClientProvider>
-    );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>{children}</ToastProvider>
+    </QueryClientProvider>
+  );
 }

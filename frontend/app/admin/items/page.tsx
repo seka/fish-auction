@@ -14,8 +14,8 @@ import {
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
+import { AuctionItem, Fisherman } from '@/src/models';
 import {
-    arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
@@ -25,16 +25,15 @@ import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 interface SortableRowProps {
-    item: any;
-    fisherman: any;
-    onEdit: (item: any) => void;
+    item: AuctionItem;
+    fisherman: Fisherman | undefined;
+    onEdit: (item: AuctionItem) => void;
     onDelete: (id: number) => void;
     isDeleting: boolean;
-    t: any;
-    index: number; // Added index prop
+    t: (key: string) => string;
 }
 
-function SortableRow({ item, fisherman, onEdit, onDelete, isDeleting, t, index }: SortableRowProps) {
+function SortableRow({ item, fisherman, onEdit, onDelete, isDeleting, t }: SortableRowProps) {
     const {
         attributes,
         listeners,
@@ -304,13 +303,12 @@ function ItemsPageContent() {
                                                 items={state.items.map(i => i.id)}
                                                 strategy={verticalListSortingStrategy}
                                             >
-                                                {state.items.map((item, index) => {
+                                                {state.items.map((item) => {
                                                     const fisherman = state.fishermen.find(f => f.id === item.fishermanId);
                                                     return (
                                                         <SortableRow
                                                             key={item.id}
                                                             item={item}
-                                                            index={index}
                                                             fisherman={fisherman}
                                                             onEdit={actions.onEdit}
                                                             onDelete={actions.onDelete}

@@ -1,6 +1,6 @@
 const config = {
   plugins: {
-    "@pandacss/postcss": {},
+    '@pandacss/postcss': {},
   },
 };
 

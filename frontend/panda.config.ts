@@ -1,4 +1,4 @@
-import { defineConfig } from '@pandacss/dev'
+import { defineConfig } from '@pandacss/dev';
 
 export default defineConfig({
   // Enable CSS reset
@@ -17,16 +17,16 @@ export default defineConfig({
         colors: {
           // Primary colors
           primary: {
-            50: { value: '#eef2ff' },   // indigo-50
-            100: { value: '#e0e7ff' },  // indigo-100
-            600: { value: '#4f46e5' },  // indigo-600
-            900: { value: '#312e81' },  // indigo-900
+            50: { value: '#eef2ff' }, // indigo-50
+            100: { value: '#e0e7ff' }, // indigo-100
+            600: { value: '#4f46e5' }, // indigo-600
+            900: { value: '#312e81' }, // indigo-900
           },
           // Secondary colors
           secondary: {
-            50: { value: '#fff7ed' },   // orange-50
-            100: { value: '#ffedd5' },  // orange-100
-            600: { value: '#ea580c' },  // orange-600
+            50: { value: '#fff7ed' }, // orange-50
+            100: { value: '#ffedd5' }, // orange-100
+            600: { value: '#ea580c' }, // orange-600
           },
           // UI colors
           blue: {
@@ -74,7 +74,7 @@ export default defineConfig({
           '3xl': { value: '1.5rem' },
         },
         shadows: {
-          'xl': { value: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
+          xl: { value: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
           '2xl': { value: '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
         },
       },
@@ -92,4 +92,4 @@ export default defineConfig({
 
   // Configure JSX framework
   jsxFramework: 'react',
-})
+});

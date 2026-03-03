@@ -1,21 +1,21 @@
-import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
-import "./globals.css";
-import Providers from "./providers";
-import { css } from "styled-system/css";
+import type { Metadata } from 'next';
+import { Noto_Sans_JP } from 'next/font/google';
+import './globals.css';
+import Providers from './providers';
+
 
 import { PublicNavbar } from './_components/organisms/PublicNavbar';
 import { MainLayoutTemplate } from './_components/templates/MainLayoutTemplate';
 import { PushInitializer } from '@/src/components/Notification/PushInitializer';
 
 const notoSansJP = Noto_Sans_JP({
-  subsets: ["latin"],
-  variable: "--font-noto-sans-jp",
+  subsets: ['latin'],
+  variable: '--font-noto-sans-jp',
 });
 
 export const metadata: Metadata = {
-  title: "FISHING AUCTION",
-  description: "FISHING AUCTION System",
+  title: 'FISHING AUCTION',
+  description: 'FISHING AUCTION System',
 };
 
 import { NextIntlClientProvider } from 'next-intl';
@@ -31,9 +31,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body
-        className={notoSansJP.className}
-      >
+      <body className={notoSansJP.className}>
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <MainLayoutTemplate navbar={<PublicNavbar />}>

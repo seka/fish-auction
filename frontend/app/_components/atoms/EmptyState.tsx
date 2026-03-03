@@ -1,4 +1,4 @@
-import { Box, Text, Button, Stack } from '@/src/core/ui';
+import { Box, Text, Button } from '@/src/core/ui';
 import { css } from 'styled-system/css';
 import { ReactNode } from 'react';
 

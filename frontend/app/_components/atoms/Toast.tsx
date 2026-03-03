@@ -1,7 +1,7 @@
 'use client';
 
-import { Box, Stack, HStack, Text } from '@/src/core/ui';
-import { useToast } from '@/src/hooks/useToast';
+import { Box, HStack, Text } from '@/src/core/ui';
+import { useToast, Toast } from '@/src/hooks/useToast';
 import { css } from '@/styled-system/css';
 import { useRouter } from 'next/navigation';
 
@@ -28,7 +28,7 @@ export const ToastContainer = () => {
     );
 };
 
-const ToastItem = ({ toast, onRemove }: { toast: any; onRemove: () => void }) => {
+const ToastItem = ({ toast, onRemove }: { toast: Toast; onRemove: () => void }) => {
     const router = useRouter();
 
     const handleClick = () => {
