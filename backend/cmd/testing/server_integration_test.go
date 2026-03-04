@@ -74,7 +74,8 @@ func TestServerIntegration(t *testing.T) {
 		SMTPFrom:   "test@example.com",
 	}
 
-	useCaseReg := registry.NewUseCaseRegistry(repoReg, appCfg)
+	serviceReg := registry.NewServiceRegistry(appCfg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg)
 
 	// 6. Handlers を初期化
 	healthHandler := handler.NewHealthHandler()
