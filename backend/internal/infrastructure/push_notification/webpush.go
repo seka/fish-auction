@@ -12,6 +12,8 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
+var webpushSendNotification = webpush.SendNotification
+
 type webpushNotificationService struct {
 	cfg *config.Config
 }
@@ -37,7 +39,7 @@ func (s *webpushNotificationService) Send(ctx context.Context, sub *model.PushSu
 		},
 	}
 
-	resp, err := webpush.SendNotification(message, pushSub, &webpush.Options{
+	resp, err := webpushSendNotification(message, pushSub, &webpush.Options{
 		Subscriber:      s.cfg.VAPIDSubject,
 		VAPIDPublicKey:  s.cfg.VAPIDPublicKey,
 		VAPIDPrivateKey: s.cfg.VAPIDPrivateKey,
