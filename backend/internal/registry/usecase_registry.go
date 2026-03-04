@@ -1,11 +1,6 @@
 package registry
 
 import (
-	"fmt"
-
-	"github.com/seka/fish-auction/backend/config"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/email/mailhog"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
@@ -60,29 +55,16 @@ type UseCase interface {
 	NewPushNotificationUseCase() notification.PushNotificationUseCase
 }
 
-// useCaseRegistry implements the UseCase interface
 type useCaseRegistry struct {
-	repo              Repository
-	cfg               *config.Config
-	adminEmailService *mailhog.AdminEmailService
-	buyerEmailService *mailhog.BuyerEmailService
+	repo    Repository
+	service Service
 }
 
 // NewUseCaseRegistry creates a new UseCase registry
-func NewUseCaseRegistry(repo Repository, cfg *config.Config) UseCase {
-	loader, err := templates.NewTemplateLoader()
-	if err != nil {
-		// Panic is acceptable here as it's startup initialization
-		panic(fmt.Sprintf("failed to load templates: %v", err))
-	}
-	adminEmailService := mailhog.NewAdminEmailService(cfg, loader)
-	buyerEmailService := mailhog.NewBuyerEmailService(cfg, loader)
-
+func NewUseCaseRegistry(repo Repository, service Service) UseCase {
 	return &useCaseRegistry{
-		repo:              repo,
-		cfg:               cfg,
-		adminEmailService: adminEmailService,
-		buyerEmailService: buyerEmailService,
+		repo:    repo,
+		service: service,
 	}
 }
 
@@ -234,7 +216,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 	return auth.NewRequestPasswordResetUseCase(
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
-		u.buyerEmailService,
+		u.service.NewBuyerEmailService(),
 	)
 }
 
@@ -249,7 +231,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
 		u.repo.PasswordReset(),
-		u.adminEmailService,
+		u.service.NewAdminEmailService(),
 	)
 }
 
@@ -263,8 +245,6 @@ func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseC
 func (u *useCaseRegistry) NewPushNotificationUseCase() notification.PushNotificationUseCase {
 	return notification.NewPushNotificationUseCase(
 		u.repo.NewPushRepository(),
-		u.cfg.VAPIDPublicKey,
-		u.cfg.VAPIDPrivateKey,
-		u.cfg.VAPIDSubject,
+		u.service.NewPushNotificationService(),
 	)
 }
