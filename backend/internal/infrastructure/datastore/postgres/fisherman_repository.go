@@ -8,16 +8,17 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type fishermanRepository struct {
-	db    *sql.DB
+	db    datastore.Database
 	cache redis.FishermanCache
 }
 
-func NewFishermanRepository(db *sql.DB, fishermanCache redis.FishermanCache) repository.FishermanRepository {
+func NewFishermanRepository(db datastore.Database, fishermanCache redis.FishermanCache) repository.FishermanRepository {
 	return &fishermanRepository{
 		db:    db,
 		cache: fishermanCache,
@@ -30,7 +31,7 @@ func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.F
 		return nil, err
 	}
 
-	err := r.db.QueryRowContext(ctx, "INSERT INTO fishermen (name) VALUES ($1) RETURNING id, name", name).Scan(&e.ID, &e.Name)
+	err := r.db.QueryRow(ctx, "INSERT INTO fishermen (name) VALUES ($1) RETURNING id, name", name).Scan(&e.ID, &e.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.F
 }
 
 func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, name FROM fishermen WHERE deleted_at IS NULL")
+	rows, err := r.db.Query(ctx, "SELECT id, name FROM fishermen WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fish
 
 	// DBから取得
 	var e entity.Fisherman
-	err := r.db.QueryRowContext(ctx,
+	err := r.db.QueryRow(ctx,
 		"SELECT id, name FROM fishermen WHERE id = $1",
 		id,
 	).Scan(&e.ID, &e.Name)
@@ -83,7 +84,7 @@ func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fish
 }
 
 func (r *fishermanRepository) Delete(ctx context.Context, id int) error {
-	_, err := r.db.ExecContext(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
+	_, err := r.db.Execute(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
