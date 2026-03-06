@@ -33,7 +33,7 @@ func main() {
 		log.Fatalf("Failed to ping DB: %v", err)
 	}
 
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminRepository(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
 	ctx := context.Background()
 

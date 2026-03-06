@@ -12,6 +12,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/migrations"
@@ -34,8 +35,8 @@ type Repository interface {
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db       *sql.DB
-	cache    *redis.Client
+	db       datastore.Database
+	cache    datastore.Cache
 	cacheTTL time.Duration
 }
 
@@ -114,8 +115,8 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 	}
 
 	return &repositoryRegistry{
-		db:       db,
-		cache:    redisClient,
+		db:       postgres.NewClient(db),
+		cache:    cache.NewClient(redisClient),
 		cacheTTL: cacheTTL,
 	}, db, nil
 }
@@ -144,7 +145,7 @@ func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanReposi
 }
 
 func (r *repositoryRegistry) NewTransactionManager() repository.TransactionManager {
-	return postgres.NewTransactionManager(r.db)
+	return r.db.TransactionManager()
 }
 
 func (r *repositoryRegistry) NewVenueRepository() repository.VenueRepository {

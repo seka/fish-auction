@@ -79,7 +79,7 @@ func main() {
 
 	// Create Default Admin
 	fmt.Println("Creating default admin...")
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminRepository(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
 	ctx := context.Background()
 
