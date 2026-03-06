@@ -29,3 +29,5 @@ go.work
 # Build and distribution
 build/*
 !build/.gitkeep
+.cache/
+lint_output.txt
