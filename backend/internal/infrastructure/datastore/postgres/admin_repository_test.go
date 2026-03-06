@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/stretchr/testify/assert"
 )
@@ -78,7 +78,7 @@ func TestAdminRepository_Create(t *testing.T) {
 	defer db.Close()
 
 	repo := postgres.NewAdminRepository(postgres.NewClient(db))
-	admin := &entity.Admin{Email: "new@example.com", PasswordHash: "hash"}
+	admin := &model.Admin{Email: "admin@example.com", PasswordHash: "hashed"}
 
 	t.Run("Success", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"id", "created_at"}).AddRow(1, time.Now())

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
@@ -19,11 +19,11 @@ func NewAdminRepository(db datastore.Database) repository.AdminRepository {
 	return &adminRepository{db: db}
 }
 
-func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE email = $1`
 	row := r.db.QueryRow(ctx, query, email)
 
-	admin := &entity.Admin{}
+	admin := &model.Admin{}
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -34,11 +34,11 @@ func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*en
 	return admin, nil
 }
 
-func (r *adminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+func (r *adminRepository) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE id = $1`
 	row := r.db.QueryRow(ctx, query, id)
 
-	admin := &entity.Admin{}
+	admin := &model.Admin{}
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -49,7 +49,7 @@ func (r *adminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, 
 	return admin, nil
 }
 
-func (r *adminRepository) Create(ctx context.Context, admin *entity.Admin) error {
+func (r *adminRepository) Create(ctx context.Context, admin *model.Admin) error {
 	query := `INSERT INTO admins (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
 	err := r.db.QueryRow(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
 	return err
