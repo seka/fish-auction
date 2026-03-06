@@ -8,16 +8,16 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type fishermanRepository struct {
 	db    *sql.DB
-	cache cache.FishermanCache
+	cache redis.FishermanCache
 }
 
-func NewFishermanRepository(db *sql.DB, fishermanCache cache.FishermanCache) repository.FishermanRepository {
+func NewFishermanRepository(db *sql.DB, fishermanCache redis.FishermanCache) repository.FishermanRepository {
 	return &fishermanRepository{
 		db:    db,
 		cache: fishermanCache,

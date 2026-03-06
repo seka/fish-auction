@@ -8,16 +8,16 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type itemRepository struct {
 	db    *sql.DB
-	cache cache.ItemCache
+	cache redis.ItemCache
 }
 
-func NewItemRepository(db *sql.DB, itemCache cache.ItemCache) repository.ItemRepository {
+func NewItemRepository(db *sql.DB, itemCache redis.ItemCache) repository.ItemRepository {
 	return &itemRepository{
 		db:    db,
 		cache: itemCache,
@@ -94,20 +94,20 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	db := r.getDB(ctx)
 	query := `
-		SELECT 
-			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
+		SELECT
+			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
 			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
 		FROM auction_items ai
 		LEFT JOIN (
-			SELECT 
-				t1.item_id, 
+			SELECT
+				t1.item_id,
 				MAX(t1.price) as max_price,
-				(SELECT t2.buyer_id FROM transactions t2 
-				 WHERE t2.item_id = t1.item_id 
-				 ORDER BY t2.price DESC, t2.created_at ASC 
+				(SELECT t2.buyer_id FROM transactions t2
+				 WHERE t2.item_id = t1.item_id
+				 ORDER BY t2.price DESC, t2.created_at ASC
 				 LIMIT 1) as buyer_id
 			FROM transactions t1
 			GROUP BY t1.item_id
@@ -170,20 +170,20 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	var highestBidderName sql.NullString
 
 	query := `
-		SELECT 
-			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type, 
+		SELECT
+			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
 			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
 		FROM auction_items ai
 		LEFT JOIN (
-			SELECT 
-				t1.item_id, 
+			SELECT
+				t1.item_id,
 				MAX(t1.price) as max_price,
-				(SELECT t2.buyer_id FROM transactions t2 
-				 WHERE t2.item_id = t1.item_id 
-				 ORDER BY t2.price DESC, t2.created_at ASC 
+				(SELECT t2.buyer_id FROM transactions t2
+				 WHERE t2.item_id = t1.item_id
+				 ORDER BY t2.price DESC, t2.created_at ASC
 				 LIMIT 1) as buyer_id
 			FROM transactions t1
 			WHERE t1.item_id = $1
@@ -257,9 +257,9 @@ func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*
 	}
 
 	query := `
-		UPDATE auction_items 
-		SET auction_id = $1, fisherman_id = $2, fish_type = $3, quantity = $4, unit = $5, status = $6 
-		WHERE id = $7 
+		UPDATE auction_items
+		SET auction_id = $1, fisherman_id = $2, fish_type = $3, quantity = $4, unit = $5, status = $6
+		WHERE id = $7
 		RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at
 	`
 	err := db.QueryRowContext(ctx, query,

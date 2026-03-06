@@ -1,4 +1,4 @@
-package cache_test
+package redis_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

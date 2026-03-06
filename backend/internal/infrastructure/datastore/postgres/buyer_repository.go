@@ -8,16 +8,16 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type buyerRepository struct {
 	db    *sql.DB
-	cache cache.BuyerCache
+	cache redis.BuyerCache
 }
 
-func NewBuyerRepository(db *sql.DB, buyerCache cache.BuyerCache) repository.BuyerRepository {
+func NewBuyerRepository(db *sql.DB, buyerCache redis.BuyerCache) repository.BuyerRepository {
 	return &buyerRepository{
 		db:    db,
 		cache: buyerCache,
@@ -106,9 +106,9 @@ func (r *buyerRepository) FindByName(ctx context.Context, name string) (*model.B
 func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
 	var e entity.Buyer
 	query := `
-		SELECT b.id, b.name, b.organization, b.contact_info 
-		FROM buyers b 
-		JOIN authentications a ON b.id = a.buyer_id 
+		SELECT b.id, b.name, b.organization, b.contact_info
+		FROM buyers b
+		JOIN authentications a ON b.id = a.buyer_id
 		WHERE a.email = $1 AND b.deleted_at IS NULL
 	`
 	err := r.db.QueryRowContext(ctx, query, email).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)

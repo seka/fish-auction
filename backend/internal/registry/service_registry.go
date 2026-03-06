@@ -19,8 +19,8 @@ type Service interface {
 
 type serviceRegistry struct {
 	pushNotificationService service.PushNotificationService
-	adminEmailService service.AdminEmailService
-	buyerEmailService service.BuyerEmailService
+	adminEmailService       service.AdminEmailService
+	buyerEmailService       service.BuyerEmailService
 }
 
 // NewServiceRegistry creates a new Service registry

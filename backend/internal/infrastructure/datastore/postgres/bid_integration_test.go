@@ -8,8 +8,8 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -50,7 +50,7 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	// Auction
 	var auctionID int
 	err = db.QueryRow(`
-		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) 
+		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
 	`, venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
 	assert.NoError(t, err)
