@@ -54,7 +54,10 @@ func (h *AdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"}); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *AdminHandler) RegisterRoutes(mux *http.ServeMux) {

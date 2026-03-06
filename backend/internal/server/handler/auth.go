@@ -59,7 +59,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"}); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +81,10 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"}); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {

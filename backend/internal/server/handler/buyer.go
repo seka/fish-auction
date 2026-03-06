@@ -48,7 +48,10 @@ func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := dto.BuyerResponse{ID: buyer.ID, Name: buyer.Name}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -128,7 +131,10 @@ func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"}); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
@@ -160,11 +166,14 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"authenticated": true,
 		"buyer_id":      idCookie.Value,
 		"name":          buyer.Name,
-	})
+	}); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
@@ -303,7 +312,10 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"}); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := util.ParseID(r)

@@ -103,7 +103,10 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		util.HandleError(w, err)
+		return
+	}
 }
 
 func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {

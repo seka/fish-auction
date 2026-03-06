@@ -7,6 +7,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
@@ -29,7 +30,7 @@ func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get buyer ID from context (authenticated user)
-	buyerID, ok := r.Context().Value("buyer_id").(int)
+	buyerID, ok := r.Context().Value(middleware.BuyerIDKey).(int)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
