@@ -103,7 +103,7 @@ func (r *auctionRepository) List(ctx context.Context, filters *repository.Auctio
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var auctions []model.Auction
 	for rows.Next() {

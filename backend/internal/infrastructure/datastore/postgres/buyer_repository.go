@@ -49,7 +49,7 @@ func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var buyers []model.Buyer
 	for rows.Next() {

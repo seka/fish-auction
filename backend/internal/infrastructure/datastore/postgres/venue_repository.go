@@ -54,7 +54,7 @@ func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var venues []model.Venue
 	for rows.Next() {

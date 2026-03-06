@@ -48,7 +48,7 @@ func (r *bidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var invoices []model.InvoiceItem
 	for rows.Next() {
@@ -93,7 +93,7 @@ func (r *bidRepository) ListPurchasesByBuyerID(ctx context.Context, buyerID int)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var purchases []model.Purchase
 	for rows.Next() {
@@ -137,7 +137,7 @@ func (r *bidRepository) ListAuctionsByBuyerID(ctx context.Context, buyerID int) 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var auctions []model.Auction
 	for rows.Next() {

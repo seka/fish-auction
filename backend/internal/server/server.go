@@ -273,8 +273,9 @@ func (s *Server) Start(addr string) error {
 		addr = ":8080"
 	}
 	s.httpServer = &http.Server{
-		Addr:    addr,
-		Handler: s.router,
+		Addr:              addr,
+		Handler:           s.router,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {

@@ -62,7 +62,7 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var items []model.AuctionItem
 	for rows.Next() {
@@ -104,7 +104,7 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var items []model.AuctionItem
 	for rows.Next() {

@@ -43,7 +43,7 @@ func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, erro
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var fishermen []model.Fisherman
 	for rows.Next() {

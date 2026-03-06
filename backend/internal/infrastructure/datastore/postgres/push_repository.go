@@ -56,7 +56,7 @@ func (r *pushRepository) GetSubscriptionsByBuyerID(ctx context.Context, buyerID 
 	if err != nil {
 		return nil, fmt.Errorf("failed to list subscriptions: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var subs []model.PushSubscription
 	for rows.Next() {
