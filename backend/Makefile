@@ -9,7 +9,6 @@ PORT ?= 8080
 export GOCACHE=$(shell pwd)/.cache/go-build
 export GOMODCACHE=$(shell pwd)/.cache/go-mod
 export GOTMPDIR=$(shell pwd)/.cache/tmp
-# export GOPATH=$(shell pwd)/build/.gopath
 export PATH := $(shell pwd)/build/.gopath/bin:$(PATH)
 
 # Ensure cache directories exist
