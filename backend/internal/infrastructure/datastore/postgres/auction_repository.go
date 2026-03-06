@@ -11,28 +11,30 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/errors"
 )
 
 type auctionRepository struct {
-	db *sql.DB
+	db datastore.Database
 }
 
-func NewAuctionRepository(db *sql.DB) repository.AuctionRepository {
+func NewAuctionRepository(db datastore.Database) repository.AuctionRepository {
 	return &auctionRepository{db: db}
 }
 
 func (r *auctionRepository) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
-	query := `INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status) 
-			  VALUES ($1, $2, $3, $4, $5) 
+	query := `INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
+			  VALUES ($1, $2, $3, $4, $5)
 			  RETURNING id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at`
 
 	var a model.Auction
-	err := r.db.QueryRowContext(ctx, query,
+	err := r.db.QueryRow(ctx, query,
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status).
 		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == ErrCodeUniqueViolation {
+		if errors.As(err, &pqErr) && pqErr.Code == dserrors.ErrCodeUniqueViolation {
 			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
 		}
 		return nil, err
@@ -41,11 +43,11 @@ func (r *auctionRepository) Create(ctx context.Context, auction *model.Auction) 
 }
 
 func (r *auctionRepository) GetByID(ctx context.Context, id int) (*model.Auction, error) {
-	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at 
+	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions WHERE id = $1`
 
 	var a model.Auction
-	err := r.db.QueryRowContext(ctx, query, id).
+	err := r.db.QueryRow(ctx, query, id).
 		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -57,7 +59,7 @@ func (r *auctionRepository) GetByID(ctx context.Context, id int) (*model.Auction
 }
 
 func (r *auctionRepository) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
-	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at 
+	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions`
 
 	var conditions []string
@@ -97,7 +99,7 @@ func (r *auctionRepository) List(ctx context.Context, filters *repository.Auctio
 	}
 	query += " ORDER BY auction_date DESC, created_at DESC"
 
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,24 +124,20 @@ func (r *auctionRepository) ListByVenue(ctx context.Context, venueID int) ([]mod
 }
 
 func (r *auctionRepository) Update(ctx context.Context, auction *model.Auction) error {
-	query := `UPDATE auctions 
-			  SET venue_id = $1, auction_date = $2, start_time = $3, end_time = $4, status = $5, updated_at = CURRENT_TIMESTAMP 
+	query := `UPDATE auctions
+			  SET venue_id = $1, auction_date = $2, start_time = $3, end_time = $4, status = $5, updated_at = CURRENT_TIMESTAMP
 			  WHERE id = $6`
 
-	result, err := r.db.ExecContext(ctx, query,
+	rowsAffected, err := r.db.Execute(ctx, query,
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID)
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == ErrCodeUniqueViolation {
-			return &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return &apperrors.ConflictError{Message: "Auction already exists for this venue and time"}
 		}
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
 	if rowsAffected == 0 {
 		return &apperrors.NotFoundError{Resource: "Auction", ID: auction.ID}
 	}
@@ -149,15 +147,11 @@ func (r *auctionRepository) Update(ctx context.Context, auction *model.Auction) 
 func (r *auctionRepository) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
 	query := `UPDATE auctions SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`
 
-	result, err := r.db.ExecContext(ctx, query, status, id)
+	rowsAffected, err := r.db.Execute(ctx, query, status, id)
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
 	if rowsAffected == 0 {
 		return &apperrors.NotFoundError{Resource: "Auction", ID: id}
 	}
@@ -171,18 +165,6 @@ func (r *auctionRepository) UpdateStatus(ctx context.Context, id int, status mod
 // 注意: 出品に入札（transactions）が存在する場合、入札履歴を保護するため削除は失敗します。
 func (r *auctionRepository) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM auctions WHERE id = $1`
-
-	result, err := r.db.ExecContext(ctx, query, id)
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return &apperrors.NotFoundError{Resource: "Auction", ID: id}
-	}
-	return nil
+	_, err := r.db.Execute(ctx, query, id)
+	return err
 }

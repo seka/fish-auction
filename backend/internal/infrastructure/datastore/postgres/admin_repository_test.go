@@ -19,7 +19,7 @@ func TestAdminRepository_FindOneByEmail(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminRepository(postgres.NewClient(db))
 	email := "admin@example.com"
 
 	t.Run("Success", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestAdminRepository_FindByID(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminRepository(postgres.NewClient(db))
 	id := 1
 
 	t.Run("Success", func(t *testing.T) {
@@ -77,7 +77,7 @@ func TestAdminRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminRepository(postgres.NewClient(db))
 	admin := &entity.Admin{Email: "new@example.com", PasswordHash: "hash"}
 
 	t.Run("Success", func(t *testing.T) {
@@ -100,7 +100,7 @@ func TestAdminRepository_UpdatePassword(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminRepository(postgres.NewClient(db))
 	id := 1
 	newHash := "newHash"
 

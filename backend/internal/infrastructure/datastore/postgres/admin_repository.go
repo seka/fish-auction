@@ -7,20 +7,21 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/entity"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
 type adminRepository struct {
-	db *sql.DB
+	db datastore.Database
 }
 
 // NewAdminRepository creates a new instance of AdminRepository
-func NewAdminRepository(db *sql.DB) repository.AdminRepository {
+func NewAdminRepository(db datastore.Database) repository.AdminRepository {
 	return &adminRepository{db: db}
 }
 
 func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE email = $1`
-	row := r.db.QueryRowContext(ctx, query, email)
+	row := r.db.QueryRow(ctx, query, email)
 
 	admin := &entity.Admin{}
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
@@ -35,7 +36,7 @@ func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*en
 
 func (r *adminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE id = $1`
-	row := r.db.QueryRowContext(ctx, query, id)
+	row := r.db.QueryRow(ctx, query, id)
 
 	admin := &entity.Admin{}
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
@@ -50,14 +51,14 @@ func (r *adminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, 
 
 func (r *adminRepository) Create(ctx context.Context, admin *entity.Admin) error {
 	query := `INSERT INTO admins (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
-	err := r.db.QueryRowContext(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
+	err := r.db.QueryRow(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
 	return err
 }
 
 func (r *adminRepository) Count(ctx context.Context) (int, error) {
 	var count int
 	query := `SELECT COUNT(*) FROM admins`
-	err := r.db.QueryRowContext(ctx, query).Scan(&count)
+	err := r.db.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -66,6 +67,6 @@ func (r *adminRepository) Count(ctx context.Context) (int, error) {
 
 func (r *adminRepository) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
 	query := `UPDATE admins SET password_hash = $1 WHERE id = $2`
-	_, err := r.db.ExecContext(ctx, query, passwordHash, id)
+	_, err := r.db.Execute(ctx, query, passwordHash, id)
 	return err
 }
