@@ -5,15 +5,16 @@
 PORT ?= 8080
 
 # Go cache and module cache confinement
-# Use build directory for isolation
-export GOCACHE=$(shell pwd)/build/.gocache
-export GOMODCACHE=$(shell pwd)/build/.gomodcache
-export GOTMPDIR=$(shell pwd)/build/.tmp
-export GOPATH=$(shell pwd)/build/.gopath
+# Use project-local .cache directory for reliability in restricted environments
+export GOCACHE=$(shell pwd)/.cache/go-build
+export GOMODCACHE=$(shell pwd)/.cache/go-mod
+export GOTMPDIR=$(shell pwd)/.cache/tmp
+# export GOPATH=$(shell pwd)/build/.gopath
 export PATH := $(shell pwd)/build/.gopath/bin:$(PATH)
 
-# Ensure build and temporary directories exist
-$(shell mkdir -p $(GOCACHE) $(GOMODCACHE) $(GOTMPDIR) $(shell pwd)/build/.gopath/bin)
+# Ensure cache directories exist
+$(shell mkdir -p $(GOCACHE) $(GOMODCACHE) $(GOTMPDIR) 2>/dev/null || true)
+$(shell mkdir -p build/.gopath/bin 2>/dev/null || true)
 
 # ============================================================================
 # Development tools setup
@@ -52,15 +53,11 @@ app.clean: ## Clean build artifacts
 app.fmt: ## Format code
 	@echo "Running go fmt..."
 	go fmt ./...
-	@if command -v golangci-lint >/dev/null; then \
-		echo "Running golangci-lint fmt..."; \
-		golangci-lint fmt ./...; \
-	fi
 
 .PHONY: app.lint
 app.lint: ## Run linter
 	@echo "Running golangci-lint..."
-	golangci-lint run ./...
+	./build/.gopath/bin/golangci-lint run ./...
 
 .PHONY: app.lint.fix
 app.lint.fix: ## Run linter and auto-fix
