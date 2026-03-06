@@ -18,7 +18,7 @@ func TestBidRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewBidRepository(db)
+	repo := postgres.NewBidRepository(postgres.NewClient(db))
 	bid := &model.Bid{
 		ItemID:  101,
 		BuyerID: 1,
@@ -42,7 +42,7 @@ func TestBidRepository_ListPurchasesByBuyerID(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewBidRepository(db)
+	repo := postgres.NewBidRepository(postgres.NewClient(db))
 	buyerID := 1
 
 	mock.ExpectQuery("SELECT t.id, t.item_id, ai.fish_type, ai.quantity, ai.unit, t.price, t.buyer_id, ai.auction_id, a.auction_date, t.created_at FROM transactions t .* WHERE t.buyer_id = \\$1").

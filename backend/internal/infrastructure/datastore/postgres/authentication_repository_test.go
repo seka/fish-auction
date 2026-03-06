@@ -18,7 +18,7 @@ func TestAuthenticationRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuthenticationRepository(db)
+	repo := postgres.NewAuthenticationRepository(postgres.NewClient(db))
 	auth := &model.Authentication{
 		BuyerID:      1,
 		Email:        "buyer@example.com",
@@ -43,7 +43,7 @@ func TestAuthenticationRepository_FindByEmail(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuthenticationRepository(db)
+	repo := postgres.NewAuthenticationRepository(postgres.NewClient(db))
 	email := "buyer@example.com"
 
 	mock.ExpectQuery("SELECT .* FROM authentications WHERE email = \\$1").
@@ -63,7 +63,7 @@ func TestAuthenticationRepository_UpdatePassword(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuthenticationRepository(db)
+	repo := postgres.NewAuthenticationRepository(postgres.NewClient(db))
 	buyerID := 1
 	newHash := "newHash"
 
