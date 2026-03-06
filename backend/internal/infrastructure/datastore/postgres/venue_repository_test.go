@@ -19,7 +19,7 @@ func TestVenueRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueRepository(postgres.NewClient(db))
 	venue := &model.Venue{Name: "Venue A", Location: "Loc A", Description: "Desc A"}
 
 	mock.ExpectQuery("INSERT INTO venues").
@@ -39,7 +39,7 @@ func TestVenueRepository_List(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueRepository(postgres.NewClient(db))
 
 	mock.ExpectQuery("SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "location", "description", "created_at", "deleted_at"}).
@@ -57,7 +57,7 @@ func TestVenueRepository_GetByID_NotFound(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueRepository(postgres.NewClient(db))
 	id := 99
 
 	mock.ExpectQuery("SELECT .* FROM venues WHERE id = \\$1").
@@ -77,7 +77,7 @@ func TestVenueRepository_Update(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueRepository(postgres.NewClient(db))
 	venue := &model.Venue{ID: 1, Name: "Venue Updated", Location: "Loc Updated", Description: "Desc Updated"}
 
 	// Success case
@@ -105,7 +105,7 @@ func TestVenueRepository_Delete(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueRepository(postgres.NewClient(db))
 	id := 1
 
 	// Success case

@@ -8,22 +8,23 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
 type venueRepository struct {
-	db *sql.DB
+	db datastore.Database
 }
 
-func NewVenueRepository(db *sql.DB) repository.VenueRepository {
+func NewVenueRepository(db datastore.Database) repository.VenueRepository {
 	return &venueRepository{db: db}
 }
 
 func (r *venueRepository) Create(ctx context.Context, venue *model.Venue) (*model.Venue, error) {
-	query := `INSERT INTO venues (name, location, description) VALUES ($1, $2, $3) 
+	query := `INSERT INTO venues (name, location, description) VALUES ($1, $2, $3)
 			  RETURNING id, name, location, description, created_at`
 
 	var v model.Venue
-	err := r.db.QueryRowContext(ctx, query, venue.Name, venue.Location, venue.Description).
+	err := r.db.QueryRow(ctx, query, venue.Name, venue.Location, venue.Description).
 		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt)
 	if err != nil {
 		return nil, err
@@ -35,7 +36,7 @@ func (r *venueRepository) GetByID(ctx context.Context, id int) (*model.Venue, er
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE id = $1`
 
 	var v model.Venue
-	err := r.db.QueryRowContext(ctx, query, id).
+	err := r.db.QueryRow(ctx, query, id).
 		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt, &v.DeletedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -49,7 +50,7 @@ func (r *venueRepository) GetByID(ctx context.Context, id int) (*model.Venue, er
 func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL ORDER BY created_at DESC`
 
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -69,15 +70,11 @@ func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
 func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error {
 	query := `UPDATE venues SET name = $1, location = $2, description = $3 WHERE id = $4 AND deleted_at IS NULL`
 
-	result, err := r.db.ExecContext(ctx, query, venue.Name, venue.Location, venue.Description, venue.ID)
+	rowsAffected, err := r.db.Execute(ctx, query, venue.Name, venue.Location, venue.Description, venue.ID)
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
 	if rowsAffected == 0 {
 		return &apperrors.NotFoundError{Resource: "Venue", ID: venue.ID}
 	}
@@ -88,15 +85,11 @@ func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error 
 func (r *venueRepository) Delete(ctx context.Context, id int) error {
 	query := `UPDATE venues SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`
 
-	result, err := r.db.ExecContext(ctx, query, id)
+	rowsAffected, err := r.db.Execute(ctx, query, id)
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
 	if rowsAffected == 0 {
 		return &apperrors.NotFoundError{Resource: "Venue", ID: id}
 	}

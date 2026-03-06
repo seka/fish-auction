@@ -27,7 +27,7 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 		t.Skip("Skipping integration test: DB ping failed: ", err)
 	}
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueRepository(postgres.NewClient(db))
 
 	// 2. Setup Data
 	ctx := context.Background()
@@ -42,7 +42,7 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 	now := time.Now().In(jst)
 	err = db.QueryRow(`
-		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) 
+		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
 	`, createdVenue.ID, now, now.Add(1*time.Hour), now).Scan(&auctionID)
 	assert.NoError(t, err)
