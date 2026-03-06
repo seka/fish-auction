@@ -45,7 +45,7 @@ func TestItemRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewItemRepository(postgres.NewClient(db), &mockItemCache{})
+	repo := postgres.NewItemRepository(postgres.NewClient(db))
 	item := &model.AuctionItem{
 		AuctionID:   1,
 		FishermanID: 1,
@@ -71,7 +71,7 @@ func TestItemRepository_List(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewItemRepository(postgres.NewClient(db), &mockItemCache{})
+	repo := postgres.NewItemRepository(postgres.NewClient(db))
 
 	t.Run("NoFilter", func(t *testing.T) {
 		mock.ExpectQuery("SELECT .* FROM auction_items WHERE deleted_at IS NULL").
@@ -103,7 +103,7 @@ func TestItemRepository_ListByAuction(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewItemRepository(postgres.NewClient(db), &mockItemCache{})
+	repo := postgres.NewItemRepository(postgres.NewClient(db))
 	auctionID := 10
 
 	// Use (?s) to allow dot to match newlines
@@ -126,13 +126,7 @@ func TestItemRepository_FindByID(t *testing.T) {
 		db, _, _ := sqlmock.New()
 		defer db.Close()
 
-		mockCache := &mockItemCache{
-			getFunc: func(ctx context.Context, id int) (*model.AuctionItem, error) {
-				return &model.AuctionItem{ID: id, FishType: "Cached Tuna"}, nil
-			},
-		}
-
-		repo := postgres.NewItemRepository(postgres.NewClient(db), mockCache)
+		repo := postgres.NewItemRepository(postgres.NewClient(db))
 		item, err := repo.FindByID(context.Background(), 1)
 		assert.NoError(t, err)
 		assert.Equal(t, "Cached Tuna", item.FishType)
@@ -151,7 +145,7 @@ func TestItemRepository_FindByID(t *testing.T) {
 			},
 		}
 
-		repo := postgres.NewItemRepository(postgres.NewClient(db), mockCache)
+		repo := postgres.NewItemRepository(postgres.NewClient(db))
 		id := 1
 
 		mock.ExpectQuery("(?s)SELECT .* FROM auction_items ai .*").
@@ -180,7 +174,7 @@ func TestItemRepository_UpdateStatus(t *testing.T) {
 		},
 	}
 
-	repo := postgres.NewItemRepository(postgres.NewClient(db), mockCache)
+	repo := postgres.NewItemRepository(postgres.NewClient(db))
 	id := 1
 	status := model.ItemStatusSold
 

@@ -34,7 +34,7 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 	itemCache := cache.NewItemCache(cache.NewClient(redisClient), 1*time.Minute)
 
-	repo := postgres.NewItemRepository(postgres.NewClient(db), itemCache)
+	repo := postgres.NewItemRepository(postgres.NewClient(db))
 
 	// Setup Data
 	ctx := context.Background()
@@ -123,7 +123,7 @@ func TestItemRepository_FindByID_NoBids(t *testing.T) {
 
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 	itemCache := cache.NewItemCache(cache.NewClient(redisClient), 1*time.Minute)
-	repo := postgres.NewItemRepository(postgres.NewClient(db), itemCache)
+	repo := postgres.NewItemRepository(postgres.NewClient(db))
 	ctx := context.Background()
 
 	// 2. Setup Data (No Transaction this time)

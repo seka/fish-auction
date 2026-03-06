@@ -26,7 +26,7 @@ func TestBuyerRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewBuyerRepository(postgres.NewClient(db), &mockBuyerCache{})
+	repo := postgres.NewBuyerRepository(postgres.NewClient(db))
 	buyer := &model.Buyer{Name: "Buyer1", Organization: "Org1", ContactInfo: "Contact1"}
 
 	mock.ExpectQuery("INSERT INTO buyers").
@@ -45,7 +45,7 @@ func TestBuyerRepository_FindByID(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewBuyerRepository(postgres.NewClient(db), &mockBuyerCache{})
+	repo := postgres.NewBuyerRepository(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectQuery("SELECT id, name, organization, contact_info FROM buyers WHERE id = \\$1").
@@ -65,7 +65,7 @@ func TestBuyerRepository_Delete(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewBuyerRepository(postgres.NewClient(db), &mockBuyerCache{})
+	repo := postgres.NewBuyerRepository(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectExec("UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").

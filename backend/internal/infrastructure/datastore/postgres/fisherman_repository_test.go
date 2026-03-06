@@ -28,7 +28,7 @@ func TestFishermanRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewFishermanRepository(postgres.NewClient(db), &mockFishermanCache{})
+	repo := postgres.NewFishermanRepository(postgres.NewClient(db))
 	name := "Fisherman A"
 
 	mock.ExpectQuery("INSERT INTO fishermen").
@@ -48,7 +48,7 @@ func TestFishermanRepository_List(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewFishermanRepository(postgres.NewClient(db), &mockFishermanCache{})
+	repo := postgres.NewFishermanRepository(postgres.NewClient(db))
 
 	mock.ExpectQuery("SELECT id, name FROM fishermen").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).
@@ -67,7 +67,7 @@ func TestFishermanRepository_Delete(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewFishermanRepository(postgres.NewClient(db), &mockFishermanCache{})
+	repo := postgres.NewFishermanRepository(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectExec("UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").

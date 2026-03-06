@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/stretchr/testify/mock"
 )
@@ -17,13 +17,13 @@ type mockAdminRepositoryForReset struct {
 	err error
 }
 
-func (m *mockAdminRepositoryForReset) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+func (m *mockAdminRepositoryForReset) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForReset) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+func (m *mockAdminRepositoryForReset) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForReset) Create(ctx context.Context, admin *entity.Admin) error {
+func (m *mockAdminRepositoryForReset) Create(ctx context.Context, admin *model.Admin) error {
 	return nil
 }
 func (m *mockAdminRepositoryForReset) Count(ctx context.Context) (int, error) { return 0, nil }
