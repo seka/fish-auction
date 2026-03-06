@@ -21,6 +21,10 @@ import (
 )
 
 func TestServerIntegration(t *testing.T) {
+	// Define a root context for the entire test
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -121,7 +125,11 @@ func TestServerIntegration(t *testing.T) {
 
 	// 10. Health エンドポイントをテスト
 	t.Run("Health", func(t *testing.T) {
-		resp, err := http.Get(serverURL + "/api/health")
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, serverURL+"/api/health", nil)
+		if err != nil {
+			t.Fatalf("failed to create request: %v", err)
+		}
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Fatalf("Failed to call health endpoint: %v", err)
 		}
@@ -191,7 +199,7 @@ func TestServerIntegration(t *testing.T) {
 	})
 
 	// 11. サーバーをシャットダウン
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
@@ -225,12 +233,19 @@ func waitForServer(url string) error {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
+	// Use background context for waiting
+	ctx := context.Background()
+
 	for {
 		select {
 		case <-timeout:
 			return fmt.Errorf("timeout waiting for server to start")
 		case <-ticker.C:
-			resp, err := http.Get(url)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			if err != nil {
+				return fmt.Errorf("failed to create request: %w", err)
+			}
+			resp, err := http.DefaultClient.Do(req)
 			if err == nil {
 				resp.Body.Close()
 				if resp.StatusCode == http.StatusOK {

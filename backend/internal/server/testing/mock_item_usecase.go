@@ -35,7 +35,7 @@ type MockUpdateItemSortOrderUseCase struct {
 	ExecuteFunc func(ctx context.Context, id int, sortOrder int) error
 }
 
-func (m *MockUpdateItemSortOrderUseCase) Execute(ctx context.Context, id int, sortOrder int) error {
+func (m *MockUpdateItemSortOrderUseCase) Execute(ctx context.Context, id, sortOrder int) error {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, id, sortOrder)
 	}

@@ -48,7 +48,7 @@ func (m *mockAuctionRepoForCreate) UpdateStatus(ctx context.Context, id int, sta
 func (m *mockAuctionRepoForCreate) Delete(ctx context.Context, id int) error { return nil }
 
 // Fix List signature
-// But we need to import repository packge for the signature.
+// But we need to import repository package for the signature.
 // Alternatively, embed the full mock if we extract it to a shared file, but for now local stub.
 
 func TestCreateAuctionUseCase_Execute(t *testing.T) {
