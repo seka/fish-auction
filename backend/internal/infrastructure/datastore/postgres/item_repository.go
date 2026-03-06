@@ -8,39 +8,24 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type itemRepository struct {
-	db    *sql.DB
+	db    datastore.Database
 	cache redis.ItemCache
 }
 
-func NewItemRepository(db *sql.DB, itemCache redis.ItemCache) repository.ItemRepository {
+func NewItemRepository(db datastore.Database, itemCache redis.ItemCache) repository.ItemRepository {
 	return &itemRepository{
 		db:    db,
 		cache: itemCache,
 	}
 }
 
-// dbExecutor is an interface that both *sql.DB and *sql.Tx implement
-type dbExecutor interface {
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-}
-
-// getDB returns the transaction if one exists in context, otherwise returns the default DB
-func (r *itemRepository) getDB(ctx context.Context) dbExecutor {
-	if tx, ok := GetTx(ctx); ok {
-		return tx
-	}
-	return r.db
-}
-
 func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-	db := r.getDB(ctx)
 
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
@@ -54,7 +39,7 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 		return nil, err
 	}
 
-	err := db.QueryRowContext(ctx,
+	err := r.db.QueryRow(ctx,
 		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
 		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
 	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
@@ -65,7 +50,6 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 }
 
 func (r *itemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	db := r.getDB(ctx)
 	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
 	var args []interface{}
 	if status != "" {
@@ -74,7 +58,7 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 	}
 	query += " ORDER BY auction_id DESC, sort_order ASC, created_at DESC"
 
-	rows, err := db.QueryContext(ctx, query, args...)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +76,6 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 }
 
 func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
-	db := r.getDB(ctx)
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
@@ -117,7 +100,7 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 		ORDER BY ai.sort_order ASC, ai.created_at DESC
 	`
 
-	rows, err := db.QueryContext(ctx, query, auctionID)
+	rows, err := r.db.Query(ctx, query, auctionID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +146,6 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	}
 
 	// DBから取得
-	db := r.getDB(ctx)
 	var e entity.AuctionItem
 	var highestBid sql.NullInt64
 	var highestBidderID sql.NullInt64
@@ -193,7 +175,7 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 		WHERE ai.id = $1
 	`
 
-	err := db.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRow(ctx, query, id).Scan(
 		&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
 		&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
 		&e.SortOrder,
@@ -228,8 +210,7 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 }
 
 func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
-	db := r.getDB(ctx)
-	_, err := db.ExecContext(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
+	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	if err != nil {
 		return err
 	}
@@ -241,7 +222,6 @@ func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.
 }
 
 func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-	db := r.getDB(ctx)
 	e := entity.AuctionItem{
 		ID:          item.ID,
 		AuctionID:   item.AuctionID,
@@ -262,7 +242,7 @@ func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*
 		WHERE id = $7
 		RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at
 	`
-	err := db.QueryRowContext(ctx, query,
+	err := r.db.QueryRow(ctx, query,
 		e.AuctionID, e.FishermanID, e.FishType, e.Quantity, e.Unit, e.Status, e.ID,
 	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
 
@@ -278,8 +258,7 @@ func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*
 }
 
 func (r *itemRepository) Delete(ctx context.Context, id int) error {
-	db := r.getDB(ctx)
-	_, err := db.ExecContext(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
+	_, err := r.db.Execute(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
@@ -288,8 +267,7 @@ func (r *itemRepository) Delete(ctx context.Context, id int) error {
 }
 
 func (r *itemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
-	db := r.getDB(ctx)
-	_, err := db.ExecContext(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
+	_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
 	if err != nil {
 		return err
 	}
@@ -298,15 +276,14 @@ func (r *itemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder 
 }
 
 func (r *itemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
-	db := r.getDB(ctx)
 
 	// Since we might be updating multiple rows, and we want it to be atomic,
-	// ideally we'd use a transaction. If r.getDB returns the DB, we should start one.
+	// ideally we'd use a transaction.
 	// However, usually reorder is called from a UseCase that might already have a transaction context.
 
 	for i, id := range ids {
 		newSortOrder := i + 1
-		_, err := db.ExecContext(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
+		_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
 		if err != nil {
 			return err
 		}

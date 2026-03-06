@@ -19,7 +19,7 @@ func TestPasswordResetRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(db)
+	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
 	userID := 1
 	role := "buyer"
 	tokenHash := "hash"
@@ -50,7 +50,7 @@ func TestPasswordResetRepository_FindByTokenHash(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(db)
+	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
 	tokenHash := "hash"
 	userID := 1
 	role := "buyer"
@@ -93,7 +93,7 @@ func TestPasswordResetRepository_DeleteByTokenHash(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(db)
+	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
 	tokenHash := "hash"
 
 	t.Run("Success", func(t *testing.T) {
@@ -113,7 +113,7 @@ func TestPasswordResetRepository_DeleteAllByUserID(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(db)
+	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
 	userID := 1
 	role := "buyer"
 

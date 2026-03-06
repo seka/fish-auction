@@ -7,19 +7,20 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
 type passwordResetRepository struct {
-	db *sql.DB
+	db datastore.Database
 }
 
-func NewPasswordResetRepository(db *sql.DB) repository.PasswordResetRepository {
+func NewPasswordResetRepository(db datastore.Database) repository.PasswordResetRepository {
 	return &passwordResetRepository{db: db}
 }
 
 func (r *passwordResetRepository) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
 	query := `INSERT INTO password_reset_tokens (user_id, user_role, token_hash, expires_at) VALUES ($1, $2, $3, $4)`
-	_, err := r.db.ExecContext(ctx, query, userID, role, tokenHash, expiresAt)
+	_, err := r.db.Execute(ctx, query, userID, role, tokenHash, expiresAt)
 	return err
 }
 
@@ -28,7 +29,7 @@ func (r *passwordResetRepository) FindByTokenHash(ctx context.Context, tokenHash
 	var role string
 	var expiresAt time.Time
 	query := `SELECT user_id, user_role, expires_at FROM password_reset_tokens WHERE token_hash = $1`
-	err := r.db.QueryRowContext(ctx, query, tokenHash).Scan(&userID, &role, &expiresAt)
+	err := r.db.QueryRow(ctx, query, tokenHash).Scan(&userID, &role, &expiresAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, "", time.Time{}, nil
@@ -40,12 +41,12 @@ func (r *passwordResetRepository) FindByTokenHash(ctx context.Context, tokenHash
 
 func (r *passwordResetRepository) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
 	query := `DELETE FROM password_reset_tokens WHERE token_hash = $1`
-	_, err := r.db.ExecContext(ctx, query, tokenHash)
+	_, err := r.db.Execute(ctx, query, tokenHash)
 	return err
 }
 
 func (r *passwordResetRepository) DeleteAllByUserID(ctx context.Context, userID int, role string) error {
 	query := `DELETE FROM password_reset_tokens WHERE user_id = $1 AND user_role = $2`
-	_, err := r.db.ExecContext(ctx, query, userID, role)
+	_, err := r.db.Execute(ctx, query, userID, role)
 	return err
 }

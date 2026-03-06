@@ -45,7 +45,7 @@ func TestItemRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewItemRepository(db, &mockItemCache{})
+	repo := postgres.NewItemRepository(postgres.NewClient(db), &mockItemCache{})
 	item := &model.AuctionItem{
 		AuctionID:   1,
 		FishermanID: 1,
@@ -71,7 +71,7 @@ func TestItemRepository_List(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewItemRepository(db, &mockItemCache{})
+	repo := postgres.NewItemRepository(postgres.NewClient(db), &mockItemCache{})
 
 	t.Run("NoFilter", func(t *testing.T) {
 		mock.ExpectQuery("SELECT .* FROM auction_items WHERE deleted_at IS NULL").
@@ -103,7 +103,7 @@ func TestItemRepository_ListByAuction(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := postgres.NewItemRepository(db, &mockItemCache{})
+	repo := postgres.NewItemRepository(postgres.NewClient(db), &mockItemCache{})
 	auctionID := 10
 
 	// Use (?s) to allow dot to match newlines
@@ -132,7 +132,7 @@ func TestItemRepository_FindByID(t *testing.T) {
 			},
 		}
 
-		repo := postgres.NewItemRepository(db, mockCache)
+		repo := postgres.NewItemRepository(postgres.NewClient(db), mockCache)
 		item, err := repo.FindByID(context.Background(), 1)
 		assert.NoError(t, err)
 		assert.Equal(t, "Cached Tuna", item.FishType)
@@ -151,7 +151,7 @@ func TestItemRepository_FindByID(t *testing.T) {
 			},
 		}
 
-		repo := postgres.NewItemRepository(db, mockCache)
+		repo := postgres.NewItemRepository(postgres.NewClient(db), mockCache)
 		id := 1
 
 		mock.ExpectQuery("(?s)SELECT .* FROM auction_items ai .*").
@@ -180,7 +180,7 @@ func TestItemRepository_UpdateStatus(t *testing.T) {
 		},
 	}
 
-	repo := postgres.NewItemRepository(db, mockCache)
+	repo := postgres.NewItemRepository(postgres.NewClient(db), mockCache)
 	id := 1
 	status := model.ItemStatusSold
 
