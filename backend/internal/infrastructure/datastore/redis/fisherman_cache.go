@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
 // FishermanCache は漁師のキャッシュインターフェース
@@ -18,26 +18,26 @@ type FishermanCache interface {
 }
 
 type fishermanCache struct {
-	client *redis.Client
-	ttl    time.Duration
+	cache datastore.Cache
+	ttl   time.Duration
 }
 
 // NewFishermanCache は新しいFishermanCacheを作成
-func NewFishermanCache(client *redis.Client, ttl time.Duration) FishermanCache {
+func NewFishermanCache(cache datastore.Cache, ttl time.Duration) FishermanCache {
 	return &fishermanCache{
-		client: client,
-		ttl:    ttl,
+		cache: cache,
+		ttl:   ttl,
 	}
 }
 
 func (c *fishermanCache) Get(ctx context.Context, id int) (*model.Fisherman, error) {
 	key := fmt.Sprintf("fisherman:%d", id)
-	data, err := c.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
-		return nil, nil // キャッシュミス
-	}
+	data, err := c.cache.Get(ctx, key)
 	if err != nil {
 		return nil, err
+	}
+	if data == nil {
+		return nil, nil // キャッシュミス
 	}
 
 	var fisherman model.Fisherman
@@ -53,10 +53,10 @@ func (c *fishermanCache) Set(ctx context.Context, id int, fisherman *model.Fishe
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, key, data, c.ttl).Err()
+	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
 func (c *fishermanCache) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("fisherman:%d", id)
-	return c.client.Del(ctx, key).Err()
+	return c.cache.Delete(ctx, key)
 }

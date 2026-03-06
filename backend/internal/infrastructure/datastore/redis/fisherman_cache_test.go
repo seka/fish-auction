@@ -16,7 +16,7 @@ import (
 
 func TestFishermanCache_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewFishermanCache(db, time.Hour)
+	c := cache.NewFishermanCache(cache.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("CacheHit", func(t *testing.T) {
@@ -50,7 +50,7 @@ func TestFishermanCache_Get(t *testing.T) {
 func TestFishermanCache_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := cache.NewFishermanCache(db, ttl)
+	c := cache.NewFishermanCache(cache.NewClient(db), ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestFishermanCache_Set(t *testing.T) {
 
 func TestFishermanCache_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewFishermanCache(db, time.Hour)
+	c := cache.NewFishermanCache(cache.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {

@@ -16,7 +16,7 @@ import (
 
 func TestItemCache_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewItemCache(db, time.Hour)
+	c := cache.NewItemCache(cache.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("CacheHit", func(t *testing.T) {
@@ -50,7 +50,7 @@ func TestItemCache_Get(t *testing.T) {
 func TestItemCache_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := cache.NewItemCache(db, ttl)
+	c := cache.NewItemCache(cache.NewClient(db), ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestItemCache_Set(t *testing.T) {
 
 func TestItemCache_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewItemCache(db, time.Hour)
+	c := cache.NewItemCache(cache.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
 // BuyerCache は買い手のキャッシュインターフェース
@@ -18,26 +18,26 @@ type BuyerCache interface {
 }
 
 type buyerCache struct {
-	client *redis.Client
-	ttl    time.Duration
+	cache datastore.Cache
+	ttl   time.Duration
 }
 
 // NewBuyerCache は新しいBuyerCacheを作成
-func NewBuyerCache(client *redis.Client, ttl time.Duration) BuyerCache {
+func NewBuyerCache(cache datastore.Cache, ttl time.Duration) BuyerCache {
 	return &buyerCache{
-		client: client,
-		ttl:    ttl,
+		cache: cache,
+		ttl:   ttl,
 	}
 }
 
 func (c *buyerCache) Get(ctx context.Context, id int) (*model.Buyer, error) {
 	key := fmt.Sprintf("buyer:%d", id)
-	data, err := c.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
-		return nil, nil // キャッシュミス
-	}
+	data, err := c.cache.Get(ctx, key)
 	if err != nil {
 		return nil, err
+	}
+	if data == nil {
+		return nil, nil // キャッシュミス
 	}
 
 	var buyer model.Buyer
@@ -53,10 +53,10 @@ func (c *buyerCache) Set(ctx context.Context, id int, buyer *model.Buyer) error 
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, key, data, c.ttl).Err()
+	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
 func (c *buyerCache) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("buyer:%d", id)
-	return c.client.Del(ctx, key).Err()
+	return c.cache.Delete(ctx, key)
 }
