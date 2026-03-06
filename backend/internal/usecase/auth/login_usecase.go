@@ -3,14 +3,14 @@ package auth
 import (
 	"context"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginUseCase defines the interface for user authentication
 type LoginUseCase interface {
-	Execute(ctx context.Context, email, password string) (*entity.Admin, error)
+	Execute(ctx context.Context, email, password string) (*model.Admin, error)
 }
 
 // loginUseCase handles user authentication
@@ -24,8 +24,8 @@ func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
 }
 
 // Execute authenticates a user with the provided password
-func (uc *loginUseCase) Execute(ctx context.Context, email, password string) (*entity.Admin, error) {
-	admin, err := uc.adminRepo.FindOneByEmail(ctx, email)
+func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
+	admin, err := u.adminRepo.FindOneByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}

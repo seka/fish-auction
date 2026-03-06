@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateAdminUseCase defines the interface for creating an admin
 type CreateAdminUseCase interface {
-	Execute(ctx context.Context, email, password string) error
+	Execute(ctx context.Context, email, password string) (*model.Admin, error)
 	Count(ctx context.Context) (int, error)
 }
 
@@ -24,31 +24,31 @@ func NewCreateAdminUseCase(adminRepo repository.AdminRepository) CreateAdminUseC
 	return &createAdminUseCase{adminRepo: adminRepo}
 }
 
-func (uc *createAdminUseCase) Execute(ctx context.Context, email, password string) error {
-	// Check if email already exists? (Optional, repo will error on unique constraint, but nicer here)
-	existing, err := uc.adminRepo.FindOneByEmail(ctx, email)
+func (u *createAdminUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
+	// 既に管理者が存在するか確認
+	count, err := u.adminRepo.Count(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to check existing admin: %w", err)
+		return nil, err
 	}
-	if existing != nil {
-		return fmt.Errorf("admin already exists with email: %s", email)
+	if count > 0 {
+		return nil, fmt.Errorf("admin already exists")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("failed to hash password: %w", err)
+		return nil, err
 	}
 
-	admin := &entity.Admin{
+	admin := &model.Admin{
 		Email:        email,
 		PasswordHash: string(hashedPassword),
 	}
 
-	if err := uc.adminRepo.Create(ctx, admin); err != nil {
-		return fmt.Errorf("failed to create admin: %w", err)
+	if err := u.adminRepo.Create(ctx, admin); err != nil {
+		return nil, err
 	}
 
-	return nil
+	return admin, nil
 }
 
 func (uc *createAdminUseCase) Count(ctx context.Context) (int, error) {
