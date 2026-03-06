@@ -135,8 +135,9 @@ func connectRedis(redisAddr string) (*redis.Client, error) {
 }
 
 func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
+	pgRepo := postgres.NewItemRepository(r.db)
 	itemCache := cache.NewItemCache(r.cache, r.cacheTTL)
-	return postgres.NewItemRepository(r.db, itemCache)
+	return datastore.NewItemRepository(pgRepo, itemCache)
 }
 
 func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
@@ -144,8 +145,9 @@ func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
 }
 
 func (r *repositoryRegistry) NewBuyerRepository() repository.BuyerRepository {
+	pgRepo := postgres.NewBuyerRepository(r.db)
 	buyerCache := cache.NewBuyerCache(r.cache, r.cacheTTL)
-	return postgres.NewBuyerRepository(r.db, buyerCache)
+	return datastore.NewBuyerRepository(pgRepo, buyerCache)
 }
 
 func (r *repositoryRegistry) NewAuthenticationRepository() repository.AuthenticationRepository {
@@ -153,8 +155,9 @@ func (r *repositoryRegistry) NewAuthenticationRepository() repository.Authentica
 }
 
 func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanRepository {
+	pgRepo := postgres.NewFishermanRepository(r.db)
 	fishermanCache := cache.NewFishermanCache(r.cache, r.cacheTTL)
-	return postgres.NewFishermanRepository(r.db, fishermanCache)
+	return datastore.NewFishermanRepository(pgRepo, fishermanCache)
 }
 
 func (r *repositoryRegistry) NewTransactionManager() repository.TransactionManager {
