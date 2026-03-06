@@ -9,24 +9,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type itemRepository struct {
-	db    datastore.Database
-	cache redis.ItemCache
+	db datastore.Database
 }
 
-func NewItemRepository(db datastore.Database, itemCache redis.ItemCache) repository.ItemRepository {
+func NewItemRepository(db datastore.Database) repository.ItemRepository {
 	return &itemRepository{
-		db:    db,
-		cache: itemCache,
+		db: db,
 	}
 }
 
 func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
@@ -140,12 +136,6 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 }
 
 func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
-	// キャッシュを確認
-	if item, err := r.cache.Get(ctx, id); err == nil && item != nil {
-		return item, nil
-	}
-
-	// DBから取得
 	var e entity.AuctionItem
 	var highestBid sql.NullInt64
 	var highestBidderID sql.NullInt64
@@ -201,24 +191,12 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 		e.HighestBidderName = &highestBidderName.String
 	}
 
-	item := e.ToModel()
-
-	// キャッシュに保存（エラーは無視）
-	_ = r.cache.Set(ctx, id, item)
-
-	return item, nil
+	return e.ToModel(), nil
 }
 
 func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
-	if err != nil {
-		return err
-	}
-
-	// キャッシュを削除（エラーは無視）
-	_ = r.InvalidateCache(ctx, id)
-
-	return nil
+	return err
 }
 
 func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
@@ -253,46 +231,30 @@ func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*
 		return nil, err
 	}
 
-	_ = r.InvalidateCache(ctx, item.ID)
 	return e.ToModel(), nil
 }
 
 func (r *itemRepository) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
-	if err != nil {
-		return err
-	}
-	_ = r.InvalidateCache(ctx, id)
-	return nil
+	return err
 }
 
 func (r *itemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
-	if err != nil {
-		return err
-	}
-	_ = r.InvalidateCache(ctx, id)
-	return nil
+	return err
 }
 
 func (r *itemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
-
-	// Since we might be updating multiple rows, and we want it to be atomic,
-	// ideally we'd use a transaction.
-	// However, usually reorder is called from a UseCase that might already have a transaction context.
-
 	for i, id := range ids {
 		newSortOrder := i + 1
 		_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
 		if err != nil {
 			return err
 		}
-		_ = r.InvalidateCache(ctx, id)
 	}
-
 	return nil
 }
 
 func (r *itemRepository) InvalidateCache(ctx context.Context, id int) error {
-	return r.cache.Delete(ctx, id)
+	return nil
 }

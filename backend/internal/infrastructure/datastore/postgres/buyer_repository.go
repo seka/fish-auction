@@ -9,19 +9,16 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type buyerRepository struct {
-	db    datastore.Database
-	cache redis.BuyerCache
+	db datastore.Database
 }
 
-func NewBuyerRepository(db datastore.Database, buyerCache redis.BuyerCache) repository.BuyerRepository {
+func NewBuyerRepository(db datastore.Database) repository.BuyerRepository {
 	return &buyerRepository{
-		db:    db,
-		cache: buyerCache,
+		db: db,
 	}
 }
 
@@ -41,7 +38,8 @@ func (r *buyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*mode
 	if err != nil {
 		return nil, err
 	}
-	return e.ToModel(), nil
+	buyer.ID = e.ID
+	return buyer, nil
 }
 
 func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
@@ -63,12 +61,6 @@ func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
 }
 
 func (r *buyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
-	// キャッシュを確認
-	if buyer, err := r.cache.Get(ctx, id); err == nil && buyer != nil {
-		return buyer, nil
-	}
-
-	// DBから取得
 	var e entity.Buyer
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name, organization, contact_info FROM buyers WHERE id = $1",
@@ -81,12 +73,7 @@ func (r *buyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, e
 		return nil, err
 	}
 
-	buyer := e.ToModel()
-
-	// キャッシュに保存（エラーは無視）
-	_ = r.cache.Set(ctx, id, buyer)
-
-	return buyer, nil
+	return e.ToModel(), nil
 }
 
 func (r *buyerRepository) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
@@ -125,10 +112,9 @@ func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model
 
 func (r *buyerRepository) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
-	if err != nil {
-		return err
-	}
-	// キャッシュを削除
-	_ = r.cache.Delete(ctx, id)
+	return err
+}
+
+func (r *buyerRepository) InvalidateCache(ctx context.Context, id int) error {
 	return nil
 }

@@ -9,19 +9,16 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
 type fishermanRepository struct {
-	db    datastore.Database
-	cache redis.FishermanCache
+	db datastore.Database
 }
 
-func NewFishermanRepository(db datastore.Database, fishermanCache redis.FishermanCache) repository.FishermanRepository {
+func NewFishermanRepository(db datastore.Database) repository.FishermanRepository {
 	return &fishermanRepository{
-		db:    db,
-		cache: fishermanCache,
+		db: db,
 	}
 }
 
@@ -57,12 +54,6 @@ func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, erro
 }
 
 func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
-	// キャッシュを確認
-	if fisherman, err := r.cache.Get(ctx, id); err == nil && fisherman != nil {
-		return fisherman, nil
-	}
-
-	// DBから取得
 	var e entity.Fisherman
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name FROM fishermen WHERE id = $1",
@@ -75,20 +66,14 @@ func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fish
 		return nil, err
 	}
 
-	fisherman := e.ToModel()
-
-	// キャッシュに保存（エラーは無視）
-	_ = r.cache.Set(ctx, id, fisherman)
-
-	return fisherman, nil
+	return e.ToModel(), nil
 }
 
 func (r *fishermanRepository) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
-	if err != nil {
-		return err
-	}
-	// キャッシュを削除
-	_ = r.cache.Delete(ctx, id)
+	return err
+}
+
+func (r *fishermanRepository) InvalidateCache(ctx context.Context, id int) error {
 	return nil
 }
