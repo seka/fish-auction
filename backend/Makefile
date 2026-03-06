@@ -57,7 +57,7 @@ app.fmt: ## Format code
 .PHONY: app.lint
 app.lint: ## Run linter
 	@echo "Running golangci-lint..."
-	./build/.gopath/bin/golangci-lint run ./...
+	golangci-lint run ./...
 
 .PHONY: app.lint.fix
 app.lint.fix: ## Run linter and auto-fix
