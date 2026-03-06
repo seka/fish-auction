@@ -34,8 +34,7 @@ func main() {
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	connStr := cfg.DBConnectionURL()
-	repoReg, db, err := registry.NewRepositoryRegistry(connStr, cfg.RedisAddr, cfg.CacheTTL)
+	repoReg, db, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}

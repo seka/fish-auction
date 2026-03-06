@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
@@ -42,31 +43,53 @@ type repositoryRegistry struct {
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (Repository, *sql.DB, error) {
-	// Connect to database with retry
+func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
+	db, err := connectDB(cfg.DBConnectionURL())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := runMigrations(db); err != nil {
+		db.Close()
+		return nil, nil, err
+	}
+
+	redisClient, err := connectRedis(cfg.RedisAddr)
+	if err != nil {
+		db.Close()
+		return nil, nil, err
+	}
+
+	return &repositoryRegistry{
+		db:       postgres.NewClient(db),
+		cache:    cache.NewClient(redisClient),
+		cacheTTL: cfg.CacheTTL,
+	}, db, nil
+}
+
+func connectDB(postgresAddr string) (*sql.DB, error) {
 	var db *sql.DB
 	var err error
 
-	for i := 0; i < 10; i++ {
-		db, err = sql.Open("postgres", connStr)
+	for range 10 {
+		db, err = sql.Open("postgres", postgresAddr)
 		if err == nil {
 			err = db.Ping()
 		}
 		if err == nil {
-			break
+			return db, nil
 		}
 		log.Printf("Failed to connect to DB: %v. Retrying in 2s...", err)
 		time.Sleep(2 * time.Second)
 	}
 
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not connect to database after retries: %w", err)
-	}
+	return nil, fmt.Errorf("could not connect to database after retries: %w", err)
+}
 
-	// Run migrations - Scan and execute all .sql files in order
+func runMigrations(db *sql.DB) error {
 	entries, err := fs.ReadDir(migrations.FS, ".")
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to read migrations directory: %w", err)
+		return fmt.Errorf("failed to read migrations directory: %w", err)
 	}
 
 	var migrationFiles []string
@@ -81,44 +104,34 @@ func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (R
 		log.Printf("Applying migration: %s", file)
 		migrationSQL, err := migrations.FS.ReadFile(file)
 		if err != nil {
-			db.Close()
-			return nil, nil, fmt.Errorf("failed to read migration file %s: %w", file, err)
+			return fmt.Errorf("failed to read migration file %s: %w", file, err)
 		}
 
 		_, err = db.Exec(string(migrationSQL))
 		if err != nil {
 			log.Printf("Migration %s potential issue: %v", file, err)
-			// We continue as we rely on SQL idempotency (IF NOT EXISTS)
 		}
 	}
+	return nil
+}
 
-	// ... (Redis connection code matches existing)
-
-	// Connect to Redis
+func connectRedis(redisAddr string) (*redis.Client, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
 	})
 
 	var redisErr error
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		redisErr = redisClient.Ping(context.Background()).Err()
 		if redisErr == nil {
-			break
+			return redisClient, nil
 		}
 		log.Printf("Failed to connect to Redis: %v. Retrying in 2s...", redisErr)
 		time.Sleep(2 * time.Second)
 	}
 
-	if redisErr != nil {
-		db.Close()
-		return nil, nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
-	}
-
-	return &repositoryRegistry{
-		db:       postgres.NewClient(db),
-		cache:    cache.NewClient(redisClient),
-		cacheTTL: cacheTTL,
-	}, db, nil
+	redisClient.Close()
+	return nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
 }
 
 func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
