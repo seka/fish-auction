@@ -9,7 +9,7 @@ const (
 	AuctionStatusScheduled  AuctionStatus = "scheduled"
 	AuctionStatusInProgress AuctionStatus = "in_progress"
 	AuctionStatusCompleted  AuctionStatus = "completed"
-	AuctionStatusCancelled  AuctionStatus = "cancelled"
+	AuctionStatusCancelled  AuctionStatus = "canceled"
 )
 
 // IsValid checks if the auction status is valid
