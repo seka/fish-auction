@@ -10,16 +10,16 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type adminRepository struct {
+type adminStore struct {
 	db datastore.Database
 }
 
-// NewAdminRepository creates a new instance of AdminRepository
-func NewAdminRepository(db datastore.Database) repository.AdminRepository {
-	return &adminRepository{db: db}
+// NewAdminStore creates a new instance of AdminStore
+func NewAdminStore(db datastore.Database) repository.AdminRepository {
+	return &adminStore{db: db}
 }
 
-func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+func (r *adminStore) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE email = $1`
 	row := r.db.QueryRow(ctx, query, email)
 
@@ -27,14 +27,14 @@ func (r *adminRepository) FindOneByEmail(ctx context.Context, email string) (*mo
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil // Or specific ErrNotFound
+			return nil, nil
 		}
 		return nil, err
 	}
 	return admin, nil
 }
 
-func (r *adminRepository) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+func (r *adminStore) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE id = $1`
 	row := r.db.QueryRow(ctx, query, id)
 
@@ -42,20 +42,20 @@ func (r *adminRepository) FindByID(ctx context.Context, id int) (*model.Admin, e
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil // Or specific ErrNotFound
+			return nil, nil
 		}
 		return nil, err
 	}
 	return admin, nil
 }
 
-func (r *adminRepository) Create(ctx context.Context, admin *model.Admin) error {
+func (r *adminStore) Create(ctx context.Context, admin *model.Admin) error {
 	query := `INSERT INTO admins (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
 	err := r.db.QueryRow(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
 	return err
 }
 
-func (r *adminRepository) Count(ctx context.Context) (int, error) {
+func (r *adminStore) Count(ctx context.Context) (int, error) {
 	var count int
 	query := `SELECT COUNT(*) FROM admins`
 	err := r.db.QueryRow(ctx, query).Scan(&count)
@@ -65,7 +65,7 @@ func (r *adminRepository) Count(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (r *adminRepository) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
+func (r *adminStore) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
 	query := `UPDATE admins SET password_hash = $1 WHERE id = $2`
 	_, err := r.db.Execute(ctx, query, passwordHash, id)
 	return err

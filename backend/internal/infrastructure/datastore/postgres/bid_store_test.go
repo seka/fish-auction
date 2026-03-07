@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBidRepository_Create(t *testing.T) {
+func TestBidStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewBidRepository(postgres.NewClient(db))
+	repo := postgres.NewBidStore(postgres.NewClient(db))
 	bid := &model.Bid{
 		ItemID:  101,
 		BuyerID: 1,
@@ -35,14 +35,14 @@ func TestBidRepository_Create(t *testing.T) {
 	assert.Equal(t, 1, created.ID)
 }
 
-func TestBidRepository_ListPurchasesByBuyerID(t *testing.T) {
+func TestBidStore_ListPurchasesByBuyerID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewBidRepository(postgres.NewClient(db))
+	repo := postgres.NewBidStore(postgres.NewClient(db))
 	buyerID := 1
 
 	mock.ExpectQuery("SELECT t.id, t.item_id, ai.fish_type, ai.quantity, ai.unit, t.price, t.buyer_id, ai.auction_id, a.auction_date, t.created_at FROM transactions t .* WHERE t.buyer_id = \\$1").

@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthenticationRepository_Create(t *testing.T) {
+func TestAuthenticationStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuthenticationRepository(postgres.NewClient(db))
+	repo := postgres.NewAuthenticationStore(postgres.NewClient(db))
 	auth := &model.Authentication{
 		BuyerID:      1,
 		Email:        "buyer@example.com",
@@ -36,14 +36,14 @@ func TestAuthenticationRepository_Create(t *testing.T) {
 	assert.Equal(t, 1, created.ID)
 }
 
-func TestAuthenticationRepository_FindByEmail(t *testing.T) {
+func TestAuthenticationStore_FindByEmail(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuthenticationRepository(postgres.NewClient(db))
+	repo := postgres.NewAuthenticationStore(postgres.NewClient(db))
 	email := "buyer@example.com"
 
 	mock.ExpectQuery("SELECT .* FROM authentications WHERE email = \\$1").
@@ -56,14 +56,14 @@ func TestAuthenticationRepository_FindByEmail(t *testing.T) {
 	assert.Equal(t, email, found.Email)
 }
 
-func TestAuthenticationRepository_UpdatePassword(t *testing.T) {
+func TestAuthenticationStore_UpdatePassword(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuthenticationRepository(postgres.NewClient(db))
+	repo := postgres.NewAuthenticationStore(postgres.NewClient(db))
 	buyerID := 1
 	newHash := "newHash"
 

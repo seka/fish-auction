@@ -12,14 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuctionRepository_Create(t *testing.T) {
+func TestAuctionStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuctionRepository(postgres.NewClient(db))
+	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -42,14 +42,14 @@ func TestAuctionRepository_Create(t *testing.T) {
 	assert.Equal(t, 1, created.ID)
 }
 
-func TestAuctionRepository_GetByID(t *testing.T) {
+func TestAuctionStore_GetByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuctionRepository(postgres.NewClient(db))
+	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
@@ -65,14 +65,14 @@ func TestAuctionRepository_GetByID(t *testing.T) {
 	assert.Equal(t, id, got.ID)
 }
 
-func TestAuctionRepository_List(t *testing.T) {
+func TestAuctionStore_List(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuctionRepository(postgres.NewClient(db))
+	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -101,14 +101,14 @@ func TestAuctionRepository_List(t *testing.T) {
 	})
 }
 
-func TestAuctionRepository_Update(t *testing.T) {
+func TestAuctionStore_Update(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuctionRepository(postgres.NewClient(db))
+	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -130,14 +130,14 @@ func TestAuctionRepository_Update(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAuctionRepository_UpdateStatus(t *testing.T) {
+func TestAuctionStore_UpdateStatus(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuctionRepository(postgres.NewClient(db))
+	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1
 	status := model.AuctionStatusCompleted
 
@@ -149,14 +149,14 @@ func TestAuctionRepository_UpdateStatus(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAuctionRepository_Delete(t *testing.T) {
+func TestAuctionStore_Delete(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAuctionRepository(postgres.NewClient(db))
+	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectExec("DELETE FROM auctions WHERE id = \\$1").

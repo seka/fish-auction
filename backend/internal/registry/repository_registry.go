@@ -15,7 +15,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
+	cacheStore "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/migrations"
 )
 
@@ -62,7 +62,7 @@ func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
 
 	return &repositoryRegistry{
 		db:       postgres.NewClient(db),
-		cache:    cache.NewClient(redisClient),
+		cache:    cacheStore.NewClient(redisClient),
 		cacheTTL: cfg.CacheTTL,
 	}, db, nil
 }
@@ -135,29 +135,29 @@ func connectRedis(redisAddr string) (*redis.Client, error) {
 }
 
 func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
-	pgRepo := postgres.NewItemRepository(r.db)
-	itemCache := cache.NewItemCache(r.cache, r.cacheTTL)
-	return datastore.NewItemRepository(pgRepo, itemCache)
+	repo := postgres.NewItemStore(r.db)
+	cache := cacheStore.NewItemCacheStore(r.cache, r.cacheTTL)
+	return datastore.NewItemCompositeStore(repo, cache)
 }
 
 func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
-	return postgres.NewBidRepository(r.db)
+	return postgres.NewBidStore(r.db)
 }
 
 func (r *repositoryRegistry) NewBuyerRepository() repository.BuyerRepository {
-	pgRepo := postgres.NewBuyerRepository(r.db)
-	buyerCache := cache.NewBuyerCache(r.cache, r.cacheTTL)
-	return datastore.NewBuyerRepository(pgRepo, buyerCache)
+	repo := postgres.NewBuyerStore(r.db)
+	cache := cacheStore.NewBuyerCacheStore(r.cache, r.cacheTTL)
+	return datastore.NewBuyerCompositeStore(repo, cache)
 }
 
 func (r *repositoryRegistry) NewAuthenticationRepository() repository.AuthenticationRepository {
-	return postgres.NewAuthenticationRepository(r.db)
+	return postgres.NewAuthenticationStore(r.db)
 }
 
 func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanRepository {
-	pgRepo := postgres.NewFishermanRepository(r.db)
-	fishermanCache := cache.NewFishermanCache(r.cache, r.cacheTTL)
-	return datastore.NewFishermanRepository(pgRepo, fishermanCache)
+	repo := postgres.NewFishermanStore(r.db)
+	cache := cacheStore.NewFishermanCacheStore(r.cache, r.cacheTTL)
+	return datastore.NewFishermanCompositeStore(repo, cache)
 }
 
 func (r *repositoryRegistry) NewTransactionManager() repository.TransactionManager {
@@ -165,21 +165,21 @@ func (r *repositoryRegistry) NewTransactionManager() repository.TransactionManag
 }
 
 func (r *repositoryRegistry) NewVenueRepository() repository.VenueRepository {
-	return postgres.NewVenueRepository(r.db)
+	return postgres.NewVenueStore(r.db)
 }
 
 func (r *repositoryRegistry) NewAuctionRepository() repository.AuctionRepository {
-	return postgres.NewAuctionRepository(r.db)
+	return postgres.NewAuctionStore(r.db)
 }
 
 func (r *repositoryRegistry) NewAdminRepository() repository.AdminRepository {
-	return postgres.NewAdminRepository(r.db)
+	return postgres.NewAdminStore(r.db)
 }
 
 func (r *repositoryRegistry) NewPushRepository() repository.PushRepository {
-	return postgres.NewPushRepository(r.db)
+	return postgres.NewPushStore(r.db)
 }
 
 func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository {
-	return postgres.NewPasswordResetRepository(r.db)
+	return postgres.NewPasswordResetStore(r.db)
 }

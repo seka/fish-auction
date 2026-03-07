@@ -4,22 +4,22 @@ import (
 	"context"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	goredis "github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
 type cache struct {
-	client *redis.Client
+	client *goredis.Client
 }
 
 // NewClient creates a new Cache implementation using Redis
-func NewClient(client *redis.Client) datastore.Cache {
+func NewClient(client *goredis.Client) datastore.Cache {
 	return &cache{client: client}
 }
 
 func (c *cache) Get(ctx context.Context, key string) ([]byte, error) {
 	data, err := c.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
+	if err == goredis.Nil {
 		return nil, nil // キャッシュミス
 	}
 	return data, err

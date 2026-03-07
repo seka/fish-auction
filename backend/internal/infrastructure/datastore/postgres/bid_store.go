@@ -9,15 +9,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type bidRepository struct {
+type bidStore struct {
 	db datastore.Database
 }
 
-func NewBidRepository(db datastore.Database) repository.BidRepository {
-	return &bidRepository{db: db}
+func NewBidStore(db datastore.Database) repository.BidRepository {
+	return &bidStore{db: db}
 }
 
-func (r *bidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+func (r *bidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 
 	e := entity.Bid{
 		ItemID:  bid.ItemID,
@@ -38,7 +38,7 @@ func (r *bidRepository) Create(ctx context.Context, bid *model.Bid) (*model.Bid,
 	return e.ToModel(), nil
 }
 
-func (r *bidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
+func (r *bidStore) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT b.id, b.name, SUM(t.price) as total_price
 		FROM transactions t
@@ -68,10 +68,10 @@ func (r *bidRepository) ListInvoices(ctx context.Context) ([]model.InvoiceItem, 
 			TotalAmount: totalAmount,
 		})
 	}
-	return invoices, nil
+	return invoices, rows.Err()
 }
 
-func (r *bidRepository) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
+func (r *bidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT
 			t.id,
@@ -117,7 +117,7 @@ func (r *bidRepository) ListPurchasesByBuyerID(ctx context.Context, buyerID int)
 	return purchases, rows.Err()
 }
 
-func (r *bidRepository) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
+func (r *bidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT DISTINCT
 			a.id,

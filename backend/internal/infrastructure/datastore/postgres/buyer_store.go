@@ -12,17 +12,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type buyerRepository struct {
+type buyerStore struct {
 	db datastore.Database
 }
 
-func NewBuyerRepository(db datastore.Database) repository.BuyerRepository {
-	return &buyerRepository{
+func NewBuyerStore(db datastore.Database) repository.BuyerRepository {
+	return &buyerStore{
 		db: db,
 	}
 }
 
-func (r *buyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
+func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
 	e := entity.Buyer{
 		Name:         buyer.Name,
 		Organization: buyer.Organization,
@@ -42,7 +42,7 @@ func (r *buyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*mode
 	return buyer, nil
 }
 
-func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
+func (r *buyerStore) List(ctx context.Context) ([]model.Buyer, error) {
 	rows, err := r.db.Query(ctx, "SELECT id, name, organization, contact_info FROM buyers WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, err
@@ -57,10 +57,10 @@ func (r *buyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
 		}
 		buyers = append(buyers, *e.ToModel())
 	}
-	return buyers, nil
+	return buyers, rows.Err()
 }
 
-func (r *buyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+func (r *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
 	var e entity.Buyer
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name, organization, contact_info FROM buyers WHERE id = $1",
@@ -76,7 +76,7 @@ func (r *buyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, e
 	return e.ToModel(), nil
 }
 
-func (r *buyerRepository) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
+func (r *buyerStore) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
 	var e entity.Buyer
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name, organization, contact_info FROM buyers WHERE name = $1 AND deleted_at IS NULL",
@@ -91,7 +91,7 @@ func (r *buyerRepository) FindByName(ctx context.Context, name string) (*model.B
 	return e.ToModel(), nil
 }
 
-func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+func (r *buyerStore) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
 	var e entity.Buyer
 	query := `
 		SELECT b.id, b.name, b.organization, b.contact_info
@@ -110,11 +110,7 @@ func (r *buyerRepository) FindByEmail(ctx context.Context, email string) (*model
 	return e.ToModel(), nil
 }
 
-func (r *buyerRepository) Delete(ctx context.Context, id int) error {
+func (r *buyerStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	return err
-}
-
-func (r *buyerRepository) InvalidateCache(ctx context.Context, id int) error {
-	return nil
 }

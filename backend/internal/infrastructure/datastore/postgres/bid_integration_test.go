@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestItemRepository_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
+// TestItemStore_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
 // This is critical for CreateBidUseCase validation.
-func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
+func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	// 1. Connect to DB
 	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -32,9 +32,9 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	// 2. Setup Redis (Mock or Real)
 	// Using real redis from docker
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	itemCache := cache.NewItemCache(cache.NewClient(redisClient), 1*time.Minute)
+	itemCache := cache.NewItemCacheStore(cache.NewClient(redisClient), 1*time.Minute)
 
-	repo := postgres.NewItemRepository(postgres.NewClient(db))
+	repo := postgres.NewItemStore(postgres.NewClient(db))
 
 	// Setup Data
 	ctx := context.Background()
@@ -108,7 +108,7 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	db.Exec("DELETE FROM buyers WHERE id = $1", buyerID)
 }
 
-func TestItemRepository_FindByID_NoBids(t *testing.T) {
+func TestItemStore_FindByID_NoBids(t *testing.T) {
 	// 1. Connect
 	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -122,8 +122,8 @@ func TestItemRepository_FindByID_NoBids(t *testing.T) {
 	}
 
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	itemCache := cache.NewItemCache(cache.NewClient(redisClient), 1*time.Minute)
-	repo := postgres.NewItemRepository(postgres.NewClient(db))
+	itemCache := cache.NewItemCacheStore(cache.NewClient(redisClient), 1*time.Minute)
+	repo := postgres.NewItemStore(postgres.NewClient(db))
 	ctx := context.Background()
 
 	// 2. Setup Data (No Transaction this time)

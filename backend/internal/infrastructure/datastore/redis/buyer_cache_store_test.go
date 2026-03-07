@@ -9,17 +9,17 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuyerCache_Get(t *testing.T) {
+func TestBuyerCacheStore_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewBuyerCache(cache.NewClient(db), time.Hour)
+	c := redis.NewBuyerCacheStore(redis.NewClient(db), time.Hour)
 	ctx := context.Background()
 
-	t.Run("CacheHit", func(t *testing.T) {
+	t.Run("CacheStoreHit", func(t *testing.T) {
 		buyer := &model.Buyer{ID: 1, Name: "Buyer A"}
 		data, _ := json.Marshal(buyer)
 		mock.ExpectGet("buyer:1").SetVal(string(data))
@@ -30,7 +30,7 @@ func TestBuyerCache_Get(t *testing.T) {
 		assert.Equal(t, buyer.Name, got.Name)
 	})
 
-	t.Run("CacheMiss", func(t *testing.T) {
+	t.Run("CacheStoreMiss", func(t *testing.T) {
 		mock.ExpectGet("buyer:1").RedisNil()
 
 		got, err := c.Get(ctx, 1)
@@ -47,10 +47,10 @@ func TestBuyerCache_Get(t *testing.T) {
 	})
 }
 
-func TestBuyerCache_Set(t *testing.T) {
+func TestBuyerCacheStore_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := cache.NewBuyerCache(cache.NewClient(db), ttl)
+	c := redis.NewBuyerCacheStore(redis.NewClient(db), ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
@@ -72,9 +72,9 @@ func TestBuyerCache_Set(t *testing.T) {
 	})
 }
 
-func TestBuyerCache_Delete(t *testing.T) {
+func TestBuyerCacheStore_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewBuyerCache(cache.NewClient(db), time.Hour)
+	c := redis.NewBuyerCacheStore(redis.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {

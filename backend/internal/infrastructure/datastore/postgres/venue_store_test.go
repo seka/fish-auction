@@ -12,14 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVenueRepository_Create(t *testing.T) {
+func TestVenueStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(postgres.NewClient(db))
+	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	venue := &model.Venue{Name: "Venue A", Location: "Loc A", Description: "Desc A"}
 
 	mock.ExpectQuery("INSERT INTO venues").
@@ -32,14 +32,14 @@ func TestVenueRepository_Create(t *testing.T) {
 	assert.Equal(t, 1, created.ID)
 }
 
-func TestVenueRepository_List(t *testing.T) {
+func TestVenueStore_List(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(postgres.NewClient(db))
+	repo := postgres.NewVenueStore(postgres.NewClient(db))
 
 	mock.ExpectQuery("SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "location", "description", "created_at", "deleted_at"}).
@@ -50,34 +50,34 @@ func TestVenueRepository_List(t *testing.T) {
 	assert.Len(t, list, 1)
 }
 
-func TestVenueRepository_GetByID_NotFound(t *testing.T) {
+func TestVenueStore_GetByID_NotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(postgres.NewClient(db))
+	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	id := 99
 
 	mock.ExpectQuery("SELECT .* FROM venues WHERE id = \\$1").
 		WithArgs(id).
 		WillReturnError(sql.ErrNoRows)
 
-	// The repository returns nil, nil or specific error depending on implementation.
+	// The store returns nil, nil or specific error depending on implementation.
 	// Looking at implementation: it returns (nil, &apperrors.NotFoundError)
 	_, err = repo.GetByID(context.Background(), id)
 	assert.Error(t, err)
 }
 
-func TestVenueRepository_Update(t *testing.T) {
+func TestVenueStore_Update(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(postgres.NewClient(db))
+	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	venue := &model.Venue{ID: 1, Name: "Venue Updated", Location: "Loc Updated", Description: "Desc Updated"}
 
 	// Success case
@@ -98,14 +98,14 @@ func TestVenueRepository_Update(t *testing.T) {
 	// Optionally check if error is NotFoundError if you want to be precise
 }
 
-func TestVenueRepository_Delete(t *testing.T) {
+func TestVenueStore_Delete(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewVenueRepository(postgres.NewClient(db))
+	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	id := 1
 
 	// Success case

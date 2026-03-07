@@ -12,17 +12,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type itemRepository struct {
+type itemStore struct {
 	db datastore.Database
 }
 
-func NewItemRepository(db datastore.Database) repository.ItemRepository {
-	return &itemRepository{
+func NewItemStore(db datastore.Database) repository.ItemRepository {
+	return &itemStore{
 		db: db,
 	}
 }
 
-func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (r *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
@@ -45,7 +45,7 @@ func (r *itemRepository) Create(ctx context.Context, item *model.AuctionItem) (*
 	return e.ToModel(), nil
 }
 
-func (r *itemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
 	var args []interface{}
 	if status != "" {
@@ -68,10 +68,10 @@ func (r *itemRepository) List(ctx context.Context, status string) ([]model.Aucti
 		}
 		items = append(items, *e.ToModel())
 	}
-	return items, nil
+	return items, rows.Err()
 }
 
-func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
@@ -132,10 +132,10 @@ func (r *itemRepository) ListByAuction(ctx context.Context, auctionID int) ([]mo
 
 		items = append(items, *e.ToModel())
 	}
-	return items, nil
+	return items, rows.Err()
 }
 
-func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
+func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	var e entity.AuctionItem
 	var highestBid sql.NullInt64
 	var highestBidderID sql.NullInt64
@@ -194,12 +194,12 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*model.AuctionIt
 	return e.ToModel(), nil
 }
 
-func (r *itemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+func (r *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	return err
 }
 
-func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
 		ID:          item.ID,
 		AuctionID:   item.AuctionID,
@@ -234,17 +234,17 @@ func (r *itemRepository) Update(ctx context.Context, item *model.AuctionItem) (*
 	return e.ToModel(), nil
 }
 
-func (r *itemRepository) Delete(ctx context.Context, id int) error {
+func (r *itemStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	return err
 }
 
-func (r *itemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+func (r *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
 	return err
 }
 
-func (r *itemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
+func (r *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
 	for i, id := range ids {
 		newSortOrder := i + 1
 		_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
@@ -252,9 +252,5 @@ func (r *itemRepository) Reorder(ctx context.Context, auctionID int, ids []int) 
 			return err
 		}
 	}
-	return nil
-}
-
-func (r *itemRepository) InvalidateCache(ctx context.Context, id int) error {
 	return nil
 }

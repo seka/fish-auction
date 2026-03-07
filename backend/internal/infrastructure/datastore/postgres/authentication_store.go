@@ -13,17 +13,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type authenticationRepository struct {
+type authenticationStore struct {
 	db datastore.Database
 }
 
-func NewAuthenticationRepository(db datastore.Database) repository.AuthenticationRepository {
-	return &authenticationRepository{
+func NewAuthenticationStore(db datastore.Database) repository.AuthenticationRepository {
+	return &authenticationStore{
 		db: db,
 	}
 }
 
-func (r *authenticationRepository) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
+func (r *authenticationStore) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
 	e := entity.Authentication{
 		BuyerID:      auth.BuyerID,
 		Email:        auth.Email,
@@ -49,7 +49,7 @@ func (r *authenticationRepository) Create(ctx context.Context, auth *model.Authe
 	return e.ToModel(), nil
 }
 
-func (r *authenticationRepository) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
+func (r *authenticationStore) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
 	var e entity.Authentication
 	err := r.db.QueryRow(ctx,
 		`SELECT id, buyer_id, email, password_hash, auth_type, failed_attempts, locked_until, last_login_at, created_at, updated_at
@@ -65,7 +65,7 @@ func (r *authenticationRepository) FindByEmail(ctx context.Context, email string
 	return e.ToModel(), nil
 }
 
-func (r *authenticationRepository) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
+func (r *authenticationStore) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
 	var e entity.Authentication
 	err := r.db.QueryRow(ctx,
 		`SELECT id, buyer_id, email, password_hash, auth_type, failed_attempts, locked_until, last_login_at, created_at, updated_at
@@ -81,7 +81,7 @@ func (r *authenticationRepository) FindByBuyerID(ctx context.Context, buyerID in
 	return e.ToModel(), nil
 }
 
-func (r *authenticationRepository) UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error {
+func (r *authenticationStore) UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET last_login_at = $1, failed_attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
@@ -90,7 +90,7 @@ func (r *authenticationRepository) UpdateLoginSuccess(ctx context.Context, id in
 	return err
 }
 
-func (r *authenticationRepository) IncrementFailedAttempts(ctx context.Context, id int) error {
+func (r *authenticationStore) IncrementFailedAttempts(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET failed_attempts = failed_attempts + 1, updated_at = CURRENT_TIMESTAMP
@@ -99,7 +99,7 @@ func (r *authenticationRepository) IncrementFailedAttempts(ctx context.Context, 
 	return err
 }
 
-func (r *authenticationRepository) ResetFailedAttempts(ctx context.Context, id int) error {
+func (r *authenticationStore) ResetFailedAttempts(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET failed_attempts = 0, updated_at = CURRENT_TIMESTAMP
@@ -108,7 +108,7 @@ func (r *authenticationRepository) ResetFailedAttempts(ctx context.Context, id i
 	return err
 }
 
-func (r *authenticationRepository) LockAccount(ctx context.Context, id int, until time.Time) error {
+func (r *authenticationStore) LockAccount(ctx context.Context, id int, until time.Time) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET locked_until = $1, updated_at = CURRENT_TIMESTAMP
@@ -117,7 +117,7 @@ func (r *authenticationRepository) LockAccount(ctx context.Context, id int, unti
 	return err
 }
 
-func (r *authenticationRepository) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
+func (r *authenticationStore) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET password_hash = $1, updated_at = CURRENT_TIMESTAMP

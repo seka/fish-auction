@@ -11,15 +11,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type venueRepository struct {
+type venueStore struct {
 	db datastore.Database
 }
 
-func NewVenueRepository(db datastore.Database) repository.VenueRepository {
-	return &venueRepository{db: db}
+func NewVenueStore(db datastore.Database) repository.VenueRepository {
+	return &venueStore{db: db}
 }
 
-func (r *venueRepository) Create(ctx context.Context, venue *model.Venue) (*model.Venue, error) {
+func (r *venueStore) Create(ctx context.Context, venue *model.Venue) (*model.Venue, error) {
 	query := `INSERT INTO venues (name, location, description) VALUES ($1, $2, $3)
 			  RETURNING id, name, location, description, created_at`
 
@@ -32,7 +32,7 @@ func (r *venueRepository) Create(ctx context.Context, venue *model.Venue) (*mode
 	return &v, nil
 }
 
-func (r *venueRepository) GetByID(ctx context.Context, id int) (*model.Venue, error) {
+func (r *venueStore) GetByID(ctx context.Context, id int) (*model.Venue, error) {
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE id = $1`
 
 	var v model.Venue
@@ -47,7 +47,7 @@ func (r *venueRepository) GetByID(ctx context.Context, id int) (*model.Venue, er
 	return &v, nil
 }
 
-func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
+func (r *venueStore) List(ctx context.Context) ([]model.Venue, error) {
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL ORDER BY created_at DESC`
 
 	rows, err := r.db.Query(ctx, query)
@@ -64,10 +64,10 @@ func (r *venueRepository) List(ctx context.Context) ([]model.Venue, error) {
 		}
 		venues = append(venues, v)
 	}
-	return venues, nil
+	return venues, rows.Err()
 }
 
-func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error {
+func (r *venueStore) Update(ctx context.Context, venue *model.Venue) error {
 	query := `UPDATE venues SET name = $1, location = $2, description = $3 WHERE id = $4 AND deleted_at IS NULL`
 
 	rowsAffected, err := r.db.Execute(ctx, query, venue.Name, venue.Location, venue.Description, venue.ID)
@@ -82,7 +82,7 @@ func (r *venueRepository) Update(ctx context.Context, venue *model.Venue) error 
 }
 
 // Delete は会場を論理削除します。
-func (r *venueRepository) Delete(ctx context.Context, id int) error {
+func (r *venueStore) Delete(ctx context.Context, id int) error {
 	query := `UPDATE venues SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`
 
 	rowsAffected, err := r.db.Execute(ctx, query, id)

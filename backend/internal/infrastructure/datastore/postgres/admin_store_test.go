@@ -12,14 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAdminRepository_FindOneByEmail(t *testing.T) {
+func TestAdminStore_FindOneByEmail(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(postgres.NewClient(db))
+	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	email := "admin@example.com"
 
 	t.Run("Success", func(t *testing.T) {
@@ -46,14 +46,14 @@ func TestAdminRepository_FindOneByEmail(t *testing.T) {
 	})
 }
 
-func TestAdminRepository_FindByID(t *testing.T) {
+func TestAdminStore_FindByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(postgres.NewClient(db))
+	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	id := 1
 
 	t.Run("Success", func(t *testing.T) {
@@ -70,14 +70,14 @@ func TestAdminRepository_FindByID(t *testing.T) {
 	})
 }
 
-func TestAdminRepository_Create(t *testing.T) {
+func TestAdminStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(postgres.NewClient(db))
+	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	admin := &model.Admin{Email: "admin@example.com", PasswordHash: "hashed"}
 
 	t.Run("Success", func(t *testing.T) {
@@ -93,14 +93,14 @@ func TestAdminRepository_Create(t *testing.T) {
 	})
 }
 
-func TestAdminRepository_UpdatePassword(t *testing.T) {
+func TestAdminStore_UpdatePassword(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewAdminRepository(postgres.NewClient(db))
+	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	id := 1
 	newHash := "newHash"
 

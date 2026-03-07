@@ -2,7 +2,6 @@ package postgres_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -11,22 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockBuyerCache struct{}
-
-func (m *mockBuyerCache) Get(ctx context.Context, id int) (*model.Buyer, error) {
-	return nil, errors.New("cache miss")
-}
-func (m *mockBuyerCache) Set(ctx context.Context, id int, buyer *model.Buyer) error { return nil }
-func (m *mockBuyerCache) Delete(ctx context.Context, id int) error                  { return nil }
-
-func TestBuyerRepository_Create(t *testing.T) {
+func TestBuyerStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewBuyerRepository(postgres.NewClient(db))
+	repo := postgres.NewBuyerStore(postgres.NewClient(db))
 	buyer := &model.Buyer{Name: "Buyer1", Organization: "Org1", ContactInfo: "Contact1"}
 
 	mock.ExpectQuery("INSERT INTO buyers").
@@ -38,14 +29,14 @@ func TestBuyerRepository_Create(t *testing.T) {
 	assert.Equal(t, 1, created.ID)
 }
 
-func TestBuyerRepository_FindByID(t *testing.T) {
+func TestBuyerStore_FindByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewBuyerRepository(postgres.NewClient(db))
+	repo := postgres.NewBuyerStore(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectQuery("SELECT id, name, organization, contact_info FROM buyers WHERE id = \\$1").
@@ -58,14 +49,14 @@ func TestBuyerRepository_FindByID(t *testing.T) {
 	assert.Equal(t, id, found.ID)
 }
 
-func TestBuyerRepository_Delete(t *testing.T) {
+func TestBuyerStore_Delete(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewBuyerRepository(postgres.NewClient(db))
+	repo := postgres.NewBuyerStore(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectExec("UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").

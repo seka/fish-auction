@@ -2,33 +2,21 @@ package postgres_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/stretchr/testify/assert"
 )
 
-type mockFishermanCache struct{}
-
-func (m *mockFishermanCache) Get(ctx context.Context, id int) (*model.Fisherman, error) {
-	return nil, errors.New("cache miss")
-}
-func (m *mockFishermanCache) Set(ctx context.Context, id int, fisherman *model.Fisherman) error {
-	return nil
-}
-func (m *mockFishermanCache) Delete(ctx context.Context, id int) error { return nil }
-
-func TestFishermanRepository_Create(t *testing.T) {
+func TestFishermanStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewFishermanRepository(postgres.NewClient(db))
+	repo := postgres.NewFishermanStore(postgres.NewClient(db))
 	name := "Fisherman A"
 
 	mock.ExpectQuery("INSERT INTO fishermen").
@@ -41,14 +29,14 @@ func TestFishermanRepository_Create(t *testing.T) {
 	assert.Equal(t, name, created.Name)
 }
 
-func TestFishermanRepository_List(t *testing.T) {
+func TestFishermanStore_List(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewFishermanRepository(postgres.NewClient(db))
+	repo := postgres.NewFishermanStore(postgres.NewClient(db))
 
 	mock.ExpectQuery("SELECT id, name FROM fishermen").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).
@@ -60,14 +48,14 @@ func TestFishermanRepository_List(t *testing.T) {
 	assert.Len(t, list, 2)
 }
 
-func TestFishermanRepository_Delete(t *testing.T) {
+func TestFishermanStore_Delete(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewFishermanRepository(postgres.NewClient(db))
+	repo := postgres.NewFishermanStore(postgres.NewClient(db))
 	id := 1
 
 	mock.ExpectExec("UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").

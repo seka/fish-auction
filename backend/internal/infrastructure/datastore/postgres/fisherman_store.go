@@ -12,17 +12,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type fishermanRepository struct {
+type fishermanStore struct {
 	db datastore.Database
 }
 
-func NewFishermanRepository(db datastore.Database) repository.FishermanRepository {
-	return &fishermanRepository{
+func NewFishermanStore(db datastore.Database) repository.FishermanRepository {
+	return &fishermanStore{
 		db: db,
 	}
 }
 
-func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.Fisherman, error) {
+func (r *fishermanStore) Create(ctx context.Context, name string) (*model.Fisherman, error) {
 	e := entity.Fisherman{Name: name}
 	if err := e.Validate(); err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (r *fishermanRepository) Create(ctx context.Context, name string) (*model.F
 	return e.ToModel(), nil
 }
 
-func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, error) {
+func (r *fishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
 	rows, err := r.db.Query(ctx, "SELECT id, name FROM fishermen WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, err
@@ -50,10 +50,10 @@ func (r *fishermanRepository) List(ctx context.Context) ([]model.Fisherman, erro
 		}
 		fishermen = append(fishermen, *e.ToModel())
 	}
-	return fishermen, nil
+	return fishermen, rows.Err()
 }
 
-func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
+func (r *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
 	var e entity.Fisherman
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name FROM fishermen WHERE id = $1",
@@ -69,11 +69,7 @@ func (r *fishermanRepository) FindByID(ctx context.Context, id int) (*model.Fish
 	return e.ToModel(), nil
 }
 
-func (r *fishermanRepository) Delete(ctx context.Context, id int) error {
+func (r *fishermanStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	return err
-}
-
-func (r *fishermanRepository) InvalidateCache(ctx context.Context, id int) error {
-	return nil
 }

@@ -15,15 +15,15 @@ import (
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/errors"
 )
 
-type auctionRepository struct {
+type auctionStore struct {
 	db datastore.Database
 }
 
-func NewAuctionRepository(db datastore.Database) repository.AuctionRepository {
-	return &auctionRepository{db: db}
+func NewAuctionStore(db datastore.Database) repository.AuctionRepository {
+	return &auctionStore{db: db}
 }
 
-func (r *auctionRepository) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
+func (r *auctionStore) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
 	query := `INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
 			  VALUES ($1, $2, $3, $4, $5)
 			  RETURNING id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at`
@@ -42,7 +42,7 @@ func (r *auctionRepository) Create(ctx context.Context, auction *model.Auction) 
 	return &a, nil
 }
 
-func (r *auctionRepository) GetByID(ctx context.Context, id int) (*model.Auction, error) {
+func (r *auctionStore) GetByID(ctx context.Context, id int) (*model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions WHERE id = $1`
 
@@ -58,7 +58,7 @@ func (r *auctionRepository) GetByID(ctx context.Context, id int) (*model.Auction
 	return &a, nil
 }
 
-func (r *auctionRepository) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions`
 
@@ -113,17 +113,17 @@ func (r *auctionRepository) List(ctx context.Context, filters *repository.Auctio
 		}
 		auctions = append(auctions, a)
 	}
-	return auctions, nil
+	return auctions, rows.Err()
 }
 
-func (r *auctionRepository) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
+func (r *auctionStore) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
 	filters := &repository.AuctionFilters{
 		VenueID: &venueID,
 	}
 	return r.List(ctx, filters)
 }
 
-func (r *auctionRepository) Update(ctx context.Context, auction *model.Auction) error {
+func (r *auctionStore) Update(ctx context.Context, auction *model.Auction) error {
 	query := `UPDATE auctions
 			  SET venue_id = $1, auction_date = $2, start_time = $3, end_time = $4, status = $5, updated_at = CURRENT_TIMESTAMP
 			  WHERE id = $6`
@@ -132,7 +132,7 @@ func (r *auctionRepository) Update(ctx context.Context, auction *model.Auction) 
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID)
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		if errors.As(err, &pqErr) && pqErr.Code == dserrors.ErrCodeUniqueViolation {
 			return &apperrors.ConflictError{Message: "Auction already exists for this venue and time"}
 		}
 		return err
@@ -144,7 +144,7 @@ func (r *auctionRepository) Update(ctx context.Context, auction *model.Auction) 
 	return nil
 }
 
-func (r *auctionRepository) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
+func (r *auctionStore) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
 	query := `UPDATE auctions SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`
 
 	rowsAffected, err := r.db.Execute(ctx, query, status, id)
@@ -163,7 +163,7 @@ func (r *auctionRepository) UpdateStatus(ctx context.Context, id int, status mod
 //   - このセリに関連付けられたすべての出品
 //
 // 注意: 出品に入札（transactions）が存在する場合、入札履歴を保護するため削除は失敗します。
-func (r *auctionRepository) Delete(ctx context.Context, id int) error {
+func (r *auctionStore) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM auctions WHERE id = $1`
 	_, err := r.db.Execute(ctx, query, id)
 	return err

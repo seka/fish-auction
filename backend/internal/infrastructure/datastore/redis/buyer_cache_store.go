@@ -10,27 +10,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-// BuyerCache は買い手のキャッシュインターフェース
-type BuyerCache interface {
-	Get(ctx context.Context, id int) (*model.Buyer, error)
-	Set(ctx context.Context, id int, buyer *model.Buyer) error
-	Delete(ctx context.Context, id int) error
-}
-
-type buyerCache struct {
+type buyerCacheStore struct {
 	cache datastore.Cache
 	ttl   time.Duration
 }
 
-// NewBuyerCache は新しいBuyerCacheを作成
-func NewBuyerCache(cache datastore.Cache, ttl time.Duration) BuyerCache {
-	return &buyerCache{
+// NewBuyerCacheStore は新しい BuyerCache を作成
+func NewBuyerCacheStore(cache datastore.Cache, ttl time.Duration) datastore.BuyerCache {
+	return &buyerCacheStore{
 		cache: cache,
 		ttl:   ttl,
 	}
 }
 
-func (c *buyerCache) Get(ctx context.Context, id int) (*model.Buyer, error) {
+func (c *buyerCacheStore) Get(ctx context.Context, id int) (*model.Buyer, error) {
 	key := fmt.Sprintf("buyer:%d", id)
 	data, err := c.cache.Get(ctx, key)
 	if err != nil {
@@ -47,7 +40,7 @@ func (c *buyerCache) Get(ctx context.Context, id int) (*model.Buyer, error) {
 	return &buyer, nil
 }
 
-func (c *buyerCache) Set(ctx context.Context, id int, buyer *model.Buyer) error {
+func (c *buyerCacheStore) Set(ctx context.Context, id int, buyer *model.Buyer) error {
 	key := fmt.Sprintf("buyer:%d", id)
 	data, err := json.Marshal(buyer)
 	if err != nil {
@@ -56,7 +49,7 @@ func (c *buyerCache) Set(ctx context.Context, id int, buyer *model.Buyer) error 
 	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
-func (c *buyerCache) Delete(ctx context.Context, id int) error {
+func (c *buyerCacheStore) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("buyer:%d", id)
 	return c.cache.Delete(ctx, key)
 }

@@ -10,18 +10,18 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type pushRepository struct {
+type pushStore struct {
 	db datastore.Database
 }
 
-// NewPushRepository creates a new instance of PushRepository
-func NewPushRepository(db datastore.Database) repository.PushRepository {
-	return &pushRepository{
+// NewPushStore creates a new instance of PushStore
+func NewPushStore(db datastore.Database) repository.PushRepository {
+	return &pushStore{
 		db: db,
 	}
 }
 
-func (r *pushRepository) SaveSubscription(ctx context.Context, sub *model.PushSubscription) error {
+func (r *pushStore) SaveSubscription(ctx context.Context, sub *model.PushSubscription) error {
 
 	// Upsert subscription based on endpoint
 	query := `
@@ -45,7 +45,7 @@ func (r *pushRepository) SaveSubscription(ctx context.Context, sub *model.PushSu
 	return nil
 }
 
-func (r *pushRepository) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) ([]model.PushSubscription, error) {
+func (r *pushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) ([]model.PushSubscription, error) {
 	query := `
 		SELECT id, buyer_id, endpoint, p256dh, auth, created_at
 		FROM push_subscriptions
@@ -68,10 +68,10 @@ func (r *pushRepository) GetSubscriptionsByBuyerID(ctx context.Context, buyerID 
 		}
 		subs = append(subs, sub)
 	}
-	return subs, nil
+	return subs, rows.Err()
 }
 
-func (r *pushRepository) DeleteSubscription(ctx context.Context, endpoint string) error {
+func (r *pushStore) DeleteSubscription(ctx context.Context, endpoint string) error {
 	query := "DELETE FROM push_subscriptions WHERE endpoint = $1"
 
 	// If endpoint URL is long, Postgres handles text type fine.

@@ -12,14 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPasswordResetRepository_Create(t *testing.T) {
+func TestPasswordResetStore_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
+	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	userID := 1
 	role := "buyer"
 	tokenHash := "hash"
@@ -43,14 +43,14 @@ func TestPasswordResetRepository_Create(t *testing.T) {
 	})
 }
 
-func TestPasswordResetRepository_FindByTokenHash(t *testing.T) {
+func TestPasswordResetStore_FindByTokenHash(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
+	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	tokenHash := "hash"
 	userID := 1
 	role := "buyer"
@@ -86,14 +86,14 @@ func TestPasswordResetRepository_FindByTokenHash(t *testing.T) {
 	})
 }
 
-func TestPasswordResetRepository_DeleteByTokenHash(t *testing.T) {
+func TestPasswordResetStore_DeleteByTokenHash(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
+	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	tokenHash := "hash"
 
 	t.Run("Success", func(t *testing.T) {
@@ -106,14 +106,14 @@ func TestPasswordResetRepository_DeleteByTokenHash(t *testing.T) {
 	})
 }
 
-func TestPasswordResetRepository_DeleteAllByUserID(t *testing.T) {
+func TestPasswordResetStore_DeleteAllByUserID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	repo := postgres.NewPasswordResetRepository(postgres.NewClient(db))
+	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	userID := 1
 	role := "buyer"
 

@@ -9,17 +9,17 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
+	cacheStore "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestFishermanCache_Get(t *testing.T) {
+func TestFishermanCacheStore_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewFishermanCache(cache.NewClient(db), time.Hour)
+	c := cacheStore.NewFishermanCacheStore(cacheStore.NewClient(db), time.Hour)
 	ctx := context.Background()
 
-	t.Run("CacheHit", func(t *testing.T) {
+	t.Run("CacheStoreHit", func(t *testing.T) {
 		fisherman := &model.Fisherman{ID: 1, Name: "Fisherman A"}
 		data, _ := json.Marshal(fisherman)
 		mock.ExpectGet("fisherman:1").SetVal(string(data))
@@ -30,7 +30,7 @@ func TestFishermanCache_Get(t *testing.T) {
 		assert.Equal(t, fisherman.Name, got.Name)
 	})
 
-	t.Run("CacheMiss", func(t *testing.T) {
+	t.Run("CacheStoreMiss", func(t *testing.T) {
 		mock.ExpectGet("fisherman:1").RedisNil()
 
 		got, err := c.Get(ctx, 1)
@@ -47,10 +47,10 @@ func TestFishermanCache_Get(t *testing.T) {
 	})
 }
 
-func TestFishermanCache_Set(t *testing.T) {
+func TestFishermanCacheStore_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := cache.NewFishermanCache(cache.NewClient(db), ttl)
+	c := cacheStore.NewFishermanCacheStore(cacheStore.NewClient(db), ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
@@ -72,9 +72,9 @@ func TestFishermanCache_Set(t *testing.T) {
 	})
 }
 
-func TestFishermanCache_Delete(t *testing.T) {
+func TestFishermanCacheStore_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cache.NewFishermanCache(cache.NewClient(db), time.Hour)
+	c := cacheStore.NewFishermanCacheStore(cacheStore.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
