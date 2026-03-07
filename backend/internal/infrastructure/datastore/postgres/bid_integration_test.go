@@ -32,7 +32,7 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	// 2. Setup Redis (Mock or Real)
 	// Using real redis from docker
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	itemCache := cache.NewItemCacheStore(cache.NewClient(redisClient), 1*time.Minute)
+	itemCache := cache.NewItemStore(cache.NewClient(redisClient), 1*time.Minute)
 
 	repo := postgres.NewItemStore(postgres.NewClient(db))
 
@@ -122,7 +122,7 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 	}
 
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	itemCache := cache.NewItemCacheStore(cache.NewClient(redisClient), 1*time.Minute)
+	itemCache := cache.NewItemStore(cache.NewClient(redisClient), 1*time.Minute)
 	repo := postgres.NewItemStore(postgres.NewClient(db))
 	ctx := context.Background()
 

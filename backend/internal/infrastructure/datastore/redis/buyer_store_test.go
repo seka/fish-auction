@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuyerCacheStore_Get(t *testing.T) {
+func TestBuyerStore_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := redis.NewBuyerCacheStore(redis.NewClient(db), time.Hour)
+	c := redis.NewBuyerStore(redis.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("CacheStoreHit", func(t *testing.T) {
@@ -47,10 +47,10 @@ func TestBuyerCacheStore_Get(t *testing.T) {
 	})
 }
 
-func TestBuyerCacheStore_Set(t *testing.T) {
+func TestBuyerStore_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := redis.NewBuyerCacheStore(redis.NewClient(db), ttl)
+	c := redis.NewBuyerStore(redis.NewClient(db), ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
@@ -72,9 +72,9 @@ func TestBuyerCacheStore_Set(t *testing.T) {
 	})
 }
 
-func TestBuyerCacheStore_Delete(t *testing.T) {
+func TestBuyerStore_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := redis.NewBuyerCacheStore(redis.NewClient(db), time.Hour)
+	c := redis.NewBuyerStore(redis.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {

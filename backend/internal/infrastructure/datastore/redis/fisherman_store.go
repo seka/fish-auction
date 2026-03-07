@@ -10,20 +10,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type fishermanCacheStore struct {
+type fishermanStore struct {
 	cache datastore.Cache
 	ttl   time.Duration
 }
 
-// NewFishermanCacheStore は新しい FishermanCache を作成
-func NewFishermanCacheStore(cache datastore.Cache, ttl time.Duration) datastore.FishermanCache {
-	return &fishermanCacheStore{
+// NewFishermanStore は新しい FishermanStore を作成
+func NewFishermanStore(cache datastore.Cache, ttl time.Duration) datastore.FishermanCache {
+	return &fishermanStore{
 		cache: cache,
 		ttl:   ttl,
 	}
 }
 
-func (c *fishermanCacheStore) Get(ctx context.Context, id int) (*model.Fisherman, error) {
+func (c *fishermanStore) Get(ctx context.Context, id int) (*model.Fisherman, error) {
 	key := fmt.Sprintf("fisherman:%d", id)
 	data, err := c.cache.Get(ctx, key)
 	if err != nil {
@@ -40,7 +40,7 @@ func (c *fishermanCacheStore) Get(ctx context.Context, id int) (*model.Fisherman
 	return &fisherman, nil
 }
 
-func (c *fishermanCacheStore) Set(ctx context.Context, id int, fisherman *model.Fisherman) error {
+func (c *fishermanStore) Set(ctx context.Context, id int, fisherman *model.Fisherman) error {
 	key := fmt.Sprintf("fisherman:%d", id)
 	data, err := json.Marshal(fisherman)
 	if err != nil {
@@ -49,7 +49,7 @@ func (c *fishermanCacheStore) Set(ctx context.Context, id int, fisherman *model.
 	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
-func (c *fishermanCacheStore) Delete(ctx context.Context, id int) error {
+func (c *fishermanStore) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("fisherman:%d", id)
 	return c.cache.Delete(ctx, key)
 }

@@ -136,7 +136,7 @@ func connectRedis(redisAddr string) (*redis.Client, error) {
 
 func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
 	repo := postgres.NewItemStore(r.db)
-	cache := cacheStore.NewItemCacheStore(r.cache, r.cacheTTL)
+	cache := cacheStore.NewItemStore(r.cache, r.cacheTTL)
 	return datastore.NewItemCompositeStore(repo, cache)
 }
 
@@ -146,7 +146,7 @@ func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
 
 func (r *repositoryRegistry) NewBuyerRepository() repository.BuyerRepository {
 	repo := postgres.NewBuyerStore(r.db)
-	cache := cacheStore.NewBuyerCacheStore(r.cache, r.cacheTTL)
+	cache := cacheStore.NewBuyerStore(r.cache, r.cacheTTL)
 	return datastore.NewBuyerCompositeStore(repo, cache)
 }
 
@@ -156,7 +156,7 @@ func (r *repositoryRegistry) NewAuthenticationRepository() repository.Authentica
 
 func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanRepository {
 	repo := postgres.NewFishermanStore(r.db)
-	cache := cacheStore.NewFishermanCacheStore(r.cache, r.cacheTTL)
+	cache := cacheStore.NewFishermanStore(r.cache, r.cacheTTL)
 	return datastore.NewFishermanCompositeStore(repo, cache)
 }
 

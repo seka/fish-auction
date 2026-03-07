@@ -10,20 +10,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type itemCacheStore struct {
+type itemStore struct {
 	cache datastore.Cache
 	ttl   time.Duration
 }
 
-// NewItemCacheStore は新しい ItemCache を作成
-func NewItemCacheStore(cache datastore.Cache, ttl time.Duration) datastore.ItemCache {
-	return &itemCacheStore{
+// NewItemStore は新しい ItemStore を作成
+func NewItemStore(cache datastore.Cache, ttl time.Duration) datastore.ItemCache {
+	return &itemStore{
 		cache: cache,
 		ttl:   ttl,
 	}
 }
 
-func (c *itemCacheStore) Get(ctx context.Context, id int) (*model.AuctionItem, error) {
+func (c *itemStore) Get(ctx context.Context, id int) (*model.AuctionItem, error) {
 	key := fmt.Sprintf("item:%d", id)
 	data, err := c.cache.Get(ctx, key)
 	if err != nil {
@@ -40,7 +40,7 @@ func (c *itemCacheStore) Get(ctx context.Context, id int) (*model.AuctionItem, e
 	return &item, nil
 }
 
-func (c *itemCacheStore) Set(ctx context.Context, id int, item *model.AuctionItem) error {
+func (c *itemStore) Set(ctx context.Context, id int, item *model.AuctionItem) error {
 	key := fmt.Sprintf("item:%d", id)
 	data, err := json.Marshal(item)
 	if err != nil {
@@ -49,7 +49,7 @@ func (c *itemCacheStore) Set(ctx context.Context, id int, item *model.AuctionIte
 	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
-func (c *itemCacheStore) Delete(ctx context.Context, id int) error {
+func (c *itemStore) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("item:%d", id)
 	return c.cache.Delete(ctx, key)
 }

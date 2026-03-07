@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFishermanCacheStore_Get(t *testing.T) {
+func TestFishermanStore_Get(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cacheStore.NewFishermanCacheStore(cacheStore.NewClient(db), time.Hour)
+	c := cacheStore.NewFishermanStore(cacheStore.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("CacheStoreHit", func(t *testing.T) {
@@ -47,10 +47,10 @@ func TestFishermanCacheStore_Get(t *testing.T) {
 	})
 }
 
-func TestFishermanCacheStore_Set(t *testing.T) {
+func TestFishermanStore_Set(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	ttl := time.Hour
-	c := cacheStore.NewFishermanCacheStore(cacheStore.NewClient(db), ttl)
+	c := cacheStore.NewFishermanStore(cacheStore.NewClient(db), ttl)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
@@ -72,9 +72,9 @@ func TestFishermanCacheStore_Set(t *testing.T) {
 	})
 }
 
-func TestFishermanCacheStore_Delete(t *testing.T) {
+func TestFishermanStore_Delete(t *testing.T) {
 	db, mock := redismock.NewClientMock()
-	c := cacheStore.NewFishermanCacheStore(cacheStore.NewClient(db), time.Hour)
+	c := cacheStore.NewFishermanStore(cacheStore.NewClient(db), time.Hour)
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
