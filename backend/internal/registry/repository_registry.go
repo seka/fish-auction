@@ -32,6 +32,7 @@ type Repository interface {
 	NewAdminRepository() repository.AdminRepository // ... other repositories
 	NewPushRepository() repository.PushRepository
 	PasswordReset() repository.PasswordResetRepository
+	NewItemCacheInvalidator() repository.CacheInvalidator
 }
 
 // repositoryRegistry implements the Repository interface
@@ -138,6 +139,10 @@ func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
 	repo := postgres.NewItemStore(r.db)
 	cache := cacheStore.NewItemStore(r.cache, r.cacheTTL)
 	return datastore.NewItemCompositeStore(repo, cache)
+}
+
+func (r *repositoryRegistry) NewItemCacheInvalidator() repository.CacheInvalidator {
+	return r.NewItemRepository().(repository.CacheInvalidator)
 }
 
 func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
