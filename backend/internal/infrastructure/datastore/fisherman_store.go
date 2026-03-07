@@ -7,12 +7,18 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+type FishermanCache interface {
+	Get(ctx context.Context, id int) (*model.Fisherman, error)
+	Set(ctx context.Context, id int, fisherman *model.Fisherman) error
+	Delete(ctx context.Context, id int) error
+}
+
 type fishermanStore struct {
 	db    repository.FishermanRepository
 	cache FishermanCache
 }
 
-func NewFishermanRepository(db repository.FishermanRepository, cache FishermanCache) repository.FishermanRepository {
+func NewFishermanCompositeStore(db repository.FishermanRepository, cache FishermanCache) repository.FishermanRepository {
 	return &fishermanStore{db: db, cache: cache}
 }
 
@@ -47,8 +53,4 @@ func (s *fishermanStore) Delete(ctx context.Context, id int) error {
 	}
 	_ = s.cache.Delete(ctx, id)
 	return nil
-}
-
-func (s *fishermanStore) InvalidateCache(ctx context.Context, id int) error {
-	return s.cache.Delete(ctx, id)
 }

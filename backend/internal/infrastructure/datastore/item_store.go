@@ -7,12 +7,18 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+type ItemCache interface {
+	Get(ctx context.Context, id int) (*model.AuctionItem, error)
+	Set(ctx context.Context, id int, item *model.AuctionItem) error
+	Delete(ctx context.Context, id int) error
+}
+
 type itemStore struct {
 	db    repository.ItemRepository
 	cache ItemCache
 }
 
-func NewItemRepository(db repository.ItemRepository, cache ItemCache) repository.ItemRepository {
+func NewItemCompositeStore(db repository.ItemRepository, cache ItemCache) repository.ItemRepository {
 	return &itemStore{db: db, cache: cache}
 }
 

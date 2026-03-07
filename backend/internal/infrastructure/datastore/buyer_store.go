@@ -7,12 +7,18 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+type BuyerCache interface {
+	Get(ctx context.Context, id int) (*model.Buyer, error)
+	Set(ctx context.Context, id int, buyer *model.Buyer) error
+	Delete(ctx context.Context, id int) error
+}
+
 type buyerStore struct {
 	db    repository.BuyerRepository
 	cache BuyerCache
 }
 
-func NewBuyerRepository(db repository.BuyerRepository, cache BuyerCache) repository.BuyerRepository {
+func NewBuyerCompositeStore(db repository.BuyerRepository, cache BuyerCache) repository.BuyerRepository {
 	return &buyerStore{db: db, cache: cache}
 }
 
@@ -55,8 +61,4 @@ func (s *buyerStore) Delete(ctx context.Context, id int) error {
 	}
 	_ = s.cache.Delete(ctx, id)
 	return nil
-}
-
-func (s *buyerStore) InvalidateCache(ctx context.Context, id int) error {
-	return s.cache.Delete(ctx, id)
 }

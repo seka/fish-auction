@@ -45,9 +45,6 @@ func (m *mockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOr
 func (m *mockItemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
 	return nil
 }
-func (m *mockItemRepository) InvalidateCache(ctx context.Context, id int) error {
-	return nil
-}
 
 func TestGetAuctionItemsUseCase_Execute(t *testing.T) {
 	items := []model.AuctionItem{

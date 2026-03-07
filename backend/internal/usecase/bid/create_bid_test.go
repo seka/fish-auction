@@ -331,9 +331,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 						FishType:  "Aji",
 					}, nil
 				},
-				InvalidateCacheFunc: func(ctx context.Context, id int) error {
-					return nil
-				},
 			}
 
 			mockBidRepo := &mock.MockBidRepository{
@@ -385,7 +382,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBidRepo, mockAuctionRepo, mockPushUseCase, mockTxMgr)
+			mockCacheInv := &mock.MockCacheInvalidator{
+				InvalidateCacheFunc: func(ctx context.Context, id int) error {
+					return nil
+				},
+			}
+
+			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBidRepo, mockAuctionRepo, mockPushUseCase, mockTxMgr, mockCacheInv)
 			created, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr != nil {

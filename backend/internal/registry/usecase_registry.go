@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
@@ -95,12 +96,14 @@ func (u *useCaseRegistry) NewReorderItemsUseCase() item.ReorderItemsUseCase {
 }
 
 func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
+	itemRepo := u.repo.NewItemRepository()
 	return bid.NewCreateBidUseCase(
-		u.repo.NewItemRepository(),
+		itemRepo,
 		u.repo.NewBidRepository(),
 		u.repo.NewAuctionRepository(),
 		u.NewPushNotificationUseCase(),
 		u.repo.NewTransactionManager(),
+		itemRepo.(repository.CacheInvalidator),
 	)
 }
 
