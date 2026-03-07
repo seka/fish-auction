@@ -135,14 +135,18 @@ func connectRedis(redisAddr string) (*redis.Client, error) {
 	return nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
 }
 
-func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
+func (r *repositoryRegistry) newItemCompositeStore() *datastore.ItemCompositeStore {
 	repo := postgres.NewItemStore(r.db)
 	cache := cacheStore.NewItemStore(r.cache, r.cacheTTL)
 	return datastore.NewItemCompositeStore(repo, cache)
 }
 
+func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
+	return r.newItemCompositeStore()
+}
+
 func (r *repositoryRegistry) NewItemCacheInvalidator() repository.CacheInvalidator {
-	return r.NewItemRepository().(repository.CacheInvalidator)
+	return r.newItemCompositeStore()
 }
 
 func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {

@@ -13,16 +13,16 @@ type ItemCache interface {
 	Delete(ctx context.Context, id int) error
 }
 
-type itemStore struct {
+type ItemCompositeStore struct {
 	db    repository.ItemRepository
 	cache ItemCache
 }
 
-func NewItemCompositeStore(db repository.ItemRepository, cache ItemCache) repository.ItemRepository {
-	return &itemStore{db: db, cache: cache}
+func NewItemCompositeStore(db repository.ItemRepository, cache ItemCache) *ItemCompositeStore {
+	return &ItemCompositeStore{db: db, cache: cache}
 }
 
-func (s *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (s *ItemCompositeStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	newItem, err := s.db.Create(ctx, item)
 	if err != nil {
 		return nil, err
@@ -31,15 +31,15 @@ func (s *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model
 	return newItem, nil
 }
 
-func (s *itemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+func (s *ItemCompositeStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	return s.db.List(ctx, status)
 }
 
-func (s *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+func (s *ItemCompositeStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	return s.db.ListByAuction(ctx, auctionID)
 }
 
-func (s *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
+func (s *ItemCompositeStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	if i, err := s.cache.Get(ctx, id); err == nil && i != nil {
 		return i, nil
 	}
@@ -51,7 +51,7 @@ func (s *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 	return item, nil
 }
 
-func (s *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+func (s *ItemCompositeStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	if err := s.db.UpdateStatus(ctx, id, status); err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (s *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemS
 	return nil
 }
 
-func (s *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (s *ItemCompositeStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	updatedItem, err := s.db.Update(ctx, item)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (s *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 	return updatedItem, nil
 }
 
-func (s *itemStore) Delete(ctx context.Context, id int) error {
+func (s *ItemCompositeStore) Delete(ctx context.Context, id int) error {
 	if err := s.db.Delete(ctx, id); err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (s *itemStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (s *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+func (s *ItemCompositeStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	if err := s.db.UpdateSortOrder(ctx, id, sortOrder); err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (s *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) 
 	return nil
 }
 
-func (s *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
+func (s *ItemCompositeStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
 	if err := s.db.Reorder(ctx, auctionID, ids); err != nil {
 		return err
 	}
@@ -94,6 +94,6 @@ func (s *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error
 	return nil
 }
 
-func (s *itemStore) InvalidateCache(ctx context.Context, id int) error {
+func (s *ItemCompositeStore) InvalidateCache(ctx context.Context, id int) error {
 	return s.cache.Delete(ctx, id)
 }
