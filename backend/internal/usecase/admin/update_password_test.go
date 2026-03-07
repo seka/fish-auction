@@ -5,31 +5,32 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Mock for UpdatePassword
 type mockAdminRepositoryForUpdate struct {
-	admin     *entity.Admin
+	admin     *model.Admin
 	findErr   error
 	updateErr error
 }
 
-func (m *mockAdminRepositoryForUpdate) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+func (m *mockAdminRepositoryForUpdate) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	if m.findErr != nil {
 		return nil, m.findErr
 	}
 	if m.admin != nil && m.admin.ID == id {
 		return m.admin, nil
 	}
+	return nil, &apperrors.NotFoundError{Resource: "Admin", ID: id} // Changed return for not found
+}
+func (m *mockAdminRepositoryForUpdate) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForUpdate) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
-	return nil, nil
-}
-func (m *mockAdminRepositoryForUpdate) Create(ctx context.Context, admin *entity.Admin) error {
+func (m *mockAdminRepositoryForUpdate) Create(ctx context.Context, admin *model.Admin) error {
 	return nil
 }
 func (m *mockAdminRepositoryForUpdate) Count(ctx context.Context) (int, error) {
@@ -43,14 +44,14 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 	// Prepare a hashed password
 	password := "correctPassword"
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	adminUser := &entity.Admin{ID: 1, PasswordHash: string(hashed)}
+	adminUser := &model.Admin{ID: 1, PasswordHash: string(hashed)}
 
 	tests := []struct {
 		name            string
 		id              int
 		currentPassword string
 		newPassword     string
-		mockAdmin       *entity.Admin
+		mockAdmin       *model.Admin
 		findErr         error
 		updateErr       error
 		wantErr         bool

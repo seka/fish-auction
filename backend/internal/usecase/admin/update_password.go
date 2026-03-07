@@ -25,9 +25,6 @@ func (uc *updatePasswordUseCase) Execute(ctx context.Context, id int, currentPas
 	if err != nil {
 		return err
 	}
-	if admin == nil {
-		return errors.New("admin not found")
-	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(currentPassword)); err != nil {
 		return errors.New("invalid current password")

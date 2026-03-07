@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
@@ -27,7 +28,7 @@ func (r *adminStore) FindOneByEmail(ctx context.Context, email string) (*model.A
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil, &apperrors.NotFoundError{Resource: "Admin", ID: 0}
 		}
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func (r *adminStore) FindByID(ctx context.Context, id int) (*model.Admin, error)
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil, &apperrors.NotFoundError{Resource: "Admin", ID: id}
 		}
 		return nil, err
 	}
