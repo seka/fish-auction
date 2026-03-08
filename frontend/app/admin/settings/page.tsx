@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Stack, Text, Button, Input } from '@/src/core/ui';
+import { Box, Text, Button, Stack, Input } from '@atoms';
 import { css } from 'styled-system/css';
 
 export default function AdminSettingsPage() {

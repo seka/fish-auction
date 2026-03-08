@@ -20,8 +20,22 @@ describe('AuctionsPage', () => {
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown],
         auctions: [
-          { id: 1, venueId: 1, auctionDate: '2023-01-01', status: 'scheduled', createdAt: '2023-01-01', updatedAt: '2023-01-01' } as unknown,
-          { id: 2, venueId: 1, auctionDate: '2023-01-02', status: 'in_progress', createdAt: '2023-01-01', updatedAt: '2023-01-01' } as unknown,
+          {
+            id: 1,
+            venueId: 1,
+            auctionDate: '2023-01-01',
+            status: 'scheduled',
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          } as unknown,
+          {
+            id: 2,
+            venueId: 1,
+            auctionDate: '2023-01-02',
+            status: 'in_progress',
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          } as unknown,
         ],
         isLoading: false,
         isCreating: false,
@@ -118,7 +132,7 @@ describe('AuctionsPage', () => {
     // Use combobox or find by display value. Since we mocked select to show options:
     // Select is usually implemented with native <select> in this project based on previous file reads?
     // Let's assume standard behavior or use getByRole('combobox').
-    // Wait, the component file uses `Select` from `src/core/ui`.
+    // Wait, the component file uses `Select` from `@atoms`.
     // Let's try finding the select by role or label.
     // Label is 'Admin.Auctions.filter_venue'
 
@@ -139,7 +153,16 @@ describe('AuctionsPage', () => {
     vi.mocked(useAuctionPage).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown],
-        auctions: [{ id: 1, venueId: 1, auctionDate: '2023-01-01', status: 'scheduled', createdAt: '2023-01-01', updatedAt: '2023-01-01' } as unknown],
+        auctions: [
+          {
+            id: 1,
+            venueId: 1,
+            auctionDate: '2023-01-01',
+            status: 'scheduled',
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          } as unknown,
+        ],
         isLoading: false,
         isCreating: false,
         isUpdating: false,
@@ -179,7 +202,16 @@ describe('AuctionsPage', () => {
     vi.mocked(useAuctionPage).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown],
-        auctions: [{ id: 2, venueId: 1, auctionDate: '2023-01-02', status: 'in_progress', createdAt: '2023-01-01', updatedAt: '2023-01-01' } as unknown],
+        auctions: [
+          {
+            id: 2,
+            venueId: 1,
+            auctionDate: '2023-01-02',
+            status: 'in_progress',
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          } as unknown,
+        ],
         isLoading: false,
         isCreating: false,
         isUpdating: false,

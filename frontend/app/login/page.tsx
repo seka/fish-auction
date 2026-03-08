@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from './_hooks/useAuth';
 import { loginSchema, LoginFormData } from '@/src/models/schemas/auth';
 import { css } from 'styled-system/css';
-import { Box, Text, Button, Input, Card, Stack } from '@/src/core/ui';
+import { Box, Text, Button, Input, Card, Stack } from '@atoms';
 import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {

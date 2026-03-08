@@ -1,7 +1,7 @@
 'use client';
 
 import { useVenuePage } from './_hooks/useVenuePage';
-import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { Box, Button, Card, HStack, Stack, Text, Input } from '@atoms';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';

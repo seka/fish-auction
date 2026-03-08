@@ -1,4 +1,4 @@
-import { Box } from '@/src/core/ui';
+import { Box } from '@atoms';
 
 type AdminLayoutTemplateProps = {
   sidebar: React.ReactNode;

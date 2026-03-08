@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { css } from 'styled-system/css';
-import { Box, Stack, Text, Card } from '@/src/core/ui';
+import { Box, Stack, Text, Card } from '@atoms';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { useTranslations } from 'next-intl';
 

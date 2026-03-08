@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, Stack, Text, HStack } from '@/src/core/ui';
+import { Box, Stack, Text, HStack } from '@atoms';
 import { css } from 'styled-system/css';
 
 // 共通のスタイル定義 (Recipe的アプローチ)

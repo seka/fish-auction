@@ -8,7 +8,7 @@ import {
   confirmPasswordReset,
   ResetPasswordConfirmRequest,
 } from '@/src/api/auth_reset';
-import { Box, Button, Text, Stack } from '@/src/core/ui';
+import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
 
 import { Suspense } from 'react';

@@ -15,7 +15,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { isAuctionActive, formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
 import { AUCTION_STATUS_KEYS, ITEM_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
-import { Box, Text, Button, Input, Card, Stack, HStack } from '@/src/core/ui';
+import { Box, Text, Button, Input, Card, Stack, HStack } from '@atoms';
 import { css } from 'styled-system/css';
 
 export default function AuctionDetailPage({ params }: { params: Promise<{ id: string }> }) {

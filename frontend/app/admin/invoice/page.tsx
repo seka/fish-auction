@@ -2,20 +2,8 @@
 
 import { useInvoicePage } from './_hooks/useInvoicePage';
 import { useTranslations } from 'next-intl';
-import {
-  Box,
-  Text,
-  Card,
-  Button,
-  ModalBackdrop,
-  ModalContent,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-} from '@/src/core/ui';
+import { Box, Card, Text, Button } from '@atoms';
+import { ModalBackdrop, ModalContent, Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
 import { css } from 'styled-system/css';
 import { EmptyState } from '../../_components/atoms/EmptyState';
 

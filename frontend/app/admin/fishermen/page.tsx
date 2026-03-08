@@ -1,7 +1,7 @@
 'use client';
 
 import { useFishermanPage } from './_hooks/useFishermanPage';
-import { Box, Stack, HStack, Text, Card, Button, Input } from '@/src/core/ui';
+import { Box, Button, Card, HStack, Stack, Text, Input } from '@atoms';
 import { css } from 'styled-system/css';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { EmptyState } from '../../_components/atoms/EmptyState';

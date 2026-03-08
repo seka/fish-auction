@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Box, HStack, Button, Text } from '@/src/core/ui'; // Button, Text等は src/core/ui からインポート
+import { Box, Button, HStack, Text } from '@atoms';
+// Button, Text等は src/components からインポート
 import { useTranslations } from 'next-intl';
 import { getCurrentBuyer, logoutBuyer } from '@/src/api/buyer_auth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

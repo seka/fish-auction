@@ -1,4 +1,4 @@
-import { Box } from '@/src/core/ui';
+import { Box } from '@atoms';
 import { ToastContainer } from '../atoms/Toast';
 
 type MainLayoutTemplateProps = {

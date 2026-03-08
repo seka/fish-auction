@@ -4,22 +4,8 @@ import { useAuctionPage } from './_hooks/useAuctionPage';
 import Link from 'next/link';
 import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import {
-  Box,
-  Stack,
-  HStack,
-  Text,
-  Card,
-  Button,
-  Input,
-  Select,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-} from '@/src/core/ui';
+import { Box, Stack, HStack, Text, Card, Button, Input, Select } from '@atoms';
+import { Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
 import { css } from 'styled-system/css';
 import { EmptyState } from '../../_components/atoms/EmptyState';
 

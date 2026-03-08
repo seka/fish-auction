@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAuctions } from '@/src/api/auction';
 import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
-import { Box, Stack, HStack, Text, Card } from '@/src/core/ui';
+import { Box, Stack, HStack, Text, Card } from '@atoms';
 import { css } from 'styled-system/css';
 
 import { usePublicVenues } from './_hooks/usePublicVenues';
