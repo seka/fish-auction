@@ -73,3 +73,6 @@ sketch
 # End of https://www.toptal.com/developers/gitignore/api/yarn,nextjs,react
 
 .yarn_cache/
+# Panda CSS
+/src/libs/styled-system/*
+!/src/libs/styled-system/.gitkeep
