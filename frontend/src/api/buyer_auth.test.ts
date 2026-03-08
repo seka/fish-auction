@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getCurrentBuyer, loginBuyer, signupBuyer } from './buyer_auth';
+import { getCurrentBuyer, loginBuyer } from './buyer_auth';
 import { apiClient } from '@/src/core/api/client';
 
 // Mock the apiClient
@@ -29,26 +29,5 @@ describe('Buyer Auth API', () => {
       email: 'test@example.com',
       password: 'password',
     });
-  });
-
-  // Verifying other endpoints based on my investigation
-  // backend/internal/server/server.go:
-  // s.router.HandleFunc("/api/buyers" ... for Create (POST) and List (GET)
-  // s.router.HandleFunc("/api/buyers/login" ...)
-  // But authenticated routes are mounted at:
-  // s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))
-  // And inside buyerMux:
-  // buyerMux.HandleFunc("/me", ...) -> /api/buyer/me
-
-  it('signupBuyer calls plural /api/buyers', async () => {
-    const data = {
-      name: 'test',
-      email: 'test@example.com',
-      password: 'pass',
-      organization: 'org',
-      contact_info: 'info',
-    };
-    await signupBuyer(data);
-    expect(apiClient.post).toHaveBeenCalledWith('/api/buyers', data);
   });
 });

@@ -9,7 +9,6 @@ export const COMMON_TEXT_KEYS = {
   back: 'Common.back',
   login: 'Common.login',
   logout: 'Common.logout',
-  signup: 'Common.signup',
   list: 'Common.list',
   dashboard: 'Common.dashboard',
   home: 'Common.home',

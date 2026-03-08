@@ -25,7 +25,6 @@
     "save": "保存",
     "login": "ログイン",
     "logout": "ログアウト",
-    "signup": "新規登録",
     "list": "一覧",
     "dashboard": "ダッシュボード",
     "home": "ホーム",
@@ -189,9 +188,7 @@
       "password_label": "パスワード",
       "email_placeholder": "メールアドレス",
       "password_placeholder": "パスワード",
-      "no_account": "アカウントをお持ちでない方はこちら",
-      "error_credentials": "名前またはパスワードが間違っています",
-      "signup_link": "アカウントをお持ちでない方はこちら",
+      "error_credentials": "メールアドレスまたはパスワードが間違っています",
       "submit": "ログイン"
     },
     "Auctions": {
@@ -271,8 +268,6 @@
       "email": "メールアドレス",
       "fisherman_name": "漁師名",
       "buyer_name": "中買人名",
-      "buyer_organization": "組織名",
-      "buyer_contact": "連絡先",
       "venue_name": "会場名",
       "auction_date": "開催日",
       "price": "価格",
