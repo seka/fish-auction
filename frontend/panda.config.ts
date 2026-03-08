@@ -88,7 +88,7 @@ export default defineConfig({
   },
 
   // Output directory for generated files
-  outdir: 'styled-system',
+  outdir: 'src/libs/styled-system',
 
   // Configure JSX framework
   jsxFramework: 'react',
