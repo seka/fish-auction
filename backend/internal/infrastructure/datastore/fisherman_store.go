@@ -13,17 +13,24 @@ type FishermanCache interface {
 	Delete(ctx context.Context, id int) error
 }
 
-type fishermanStore struct {
-	db    repository.FishermanRepository
+type FishermanStore interface {
+	Create(ctx context.Context, name string) (*model.Fisherman, error)
+	List(ctx context.Context) ([]model.Fisherman, error)
+	FindByID(ctx context.Context, id int) (*model.Fisherman, error)
+	Delete(ctx context.Context, id int) error
+}
+
+type FishermanCompositeStore struct {
+	store FishermanStore
 	cache FishermanCache
 }
 
-func NewFishermanCompositeStore(db repository.FishermanRepository, cache FishermanCache) repository.FishermanRepository {
-	return &fishermanStore{db: db, cache: cache}
+func NewFishermanCompositeStore(store FishermanStore, cache FishermanCache) repository.FishermanRepository {
+	return &FishermanCompositeStore{store: store, cache: cache}
 }
 
-func (s *fishermanStore) Create(ctx context.Context, name string) (*model.Fisherman, error) {
-	fisherman, err := s.db.Create(ctx, name)
+func (s *FishermanCompositeStore) Create(ctx context.Context, name string) (*model.Fisherman, error) {
+	fisherman, err := s.store.Create(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -31,15 +38,15 @@ func (s *fishermanStore) Create(ctx context.Context, name string) (*model.Fisher
 	return fisherman, nil
 }
 
-func (s *fishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
-	return s.db.List(ctx)
+func (s *FishermanCompositeStore) List(ctx context.Context) ([]model.Fisherman, error) {
+	return s.store.List(ctx)
 }
 
-func (s *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
+func (s *FishermanCompositeStore) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
 	if f, err := s.cache.Get(ctx, id); err == nil && f != nil {
 		return f, nil
 	}
-	fisherman, err := s.db.FindByID(ctx, id)
+	fisherman, err := s.store.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +54,8 @@ func (s *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman
 	return fisherman, nil
 }
 
-func (s *fishermanStore) Delete(ctx context.Context, id int) error {
-	if err := s.db.Delete(ctx, id); err != nil {
+func (s *FishermanCompositeStore) Delete(ctx context.Context, id int) error {
+	if err := s.store.Delete(ctx, id); err != nil {
 		return err
 	}
 	_ = s.cache.Delete(ctx, id)

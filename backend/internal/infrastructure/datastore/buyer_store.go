@@ -13,17 +13,26 @@ type BuyerCache interface {
 	Delete(ctx context.Context, id int) error
 }
 
-type buyerStore struct {
-	db    repository.BuyerRepository
+type BuyerStore interface {
+	Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error)
+	List(ctx context.Context) ([]model.Buyer, error)
+	FindByID(ctx context.Context, id int) (*model.Buyer, error)
+	FindByName(ctx context.Context, name string) (*model.Buyer, error)
+	FindByEmail(ctx context.Context, email string) (*model.Buyer, error)
+	Delete(ctx context.Context, id int) error
+}
+
+type BuyerCompositeStore struct {
+	store BuyerStore
 	cache BuyerCache
 }
 
-func NewBuyerCompositeStore(db repository.BuyerRepository, cache BuyerCache) repository.BuyerRepository {
-	return &buyerStore{db: db, cache: cache}
+func NewBuyerCompositeStore(store BuyerStore, cache BuyerCache) repository.BuyerRepository {
+	return &BuyerCompositeStore{store: store, cache: cache}
 }
 
-func (s *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
-	newBuyer, err := s.db.Create(ctx, buyer)
+func (s *BuyerCompositeStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
+	newBuyer, err := s.store.Create(ctx, buyer)
 	if err != nil {
 		return nil, err
 	}
@@ -31,15 +40,15 @@ func (s *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buy
 	return newBuyer, nil
 }
 
-func (s *buyerStore) List(ctx context.Context) ([]model.Buyer, error) {
-	return s.db.List(ctx)
+func (s *BuyerCompositeStore) List(ctx context.Context) ([]model.Buyer, error) {
+	return s.store.List(ctx)
 }
 
-func (s *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+func (s *BuyerCompositeStore) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
 	if b, err := s.cache.Get(ctx, id); err == nil && b != nil {
 		return b, nil
 	}
-	buyer, err := s.db.FindByID(ctx, id)
+	buyer, err := s.store.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -47,16 +56,16 @@ func (s *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error)
 	return buyer, nil
 }
 
-func (s *buyerStore) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
-	return s.db.FindByName(ctx, name)
+func (s *BuyerCompositeStore) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
+	return s.store.FindByName(ctx, name)
 }
 
-func (s *buyerStore) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
-	return s.db.FindByEmail(ctx, email)
+func (s *BuyerCompositeStore) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+	return s.store.FindByEmail(ctx, email)
 }
 
-func (s *buyerStore) Delete(ctx context.Context, id int) error {
-	if err := s.db.Delete(ctx, id); err != nil {
+func (s *BuyerCompositeStore) Delete(ctx context.Context, id int) error {
+	if err := s.store.Delete(ctx, id); err != nil {
 		return err
 	}
 	_ = s.cache.Delete(ctx, id)

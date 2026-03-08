@@ -41,7 +41,7 @@ func TestAdminStore_FindOneByEmail(t *testing.T) {
 			WillReturnError(sql.ErrNoRows)
 
 		got, err := repo.FindOneByEmail(context.Background(), email)
-		assert.NoError(t, err)
+		assert.Error(t, err)
 		assert.Nil(t, got)
 	})
 }

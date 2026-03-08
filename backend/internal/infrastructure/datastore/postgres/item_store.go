@@ -7,22 +7,23 @@ import (
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type itemStore struct {
+// ItemStore はアイテムに関する DB 操作の実装
+type ItemStore struct {
 	db datastore.Database
 }
 
-func NewItemStore(db datastore.Database) repository.ItemRepository {
-	return &itemStore{
+// NewItemStore は新しいアイテム用 ItemStore を作成
+func NewItemStore(db datastore.Database) *ItemStore {
+	return &ItemStore{
 		db: db,
 	}
 }
 
-func (r *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (r *ItemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
@@ -45,7 +46,7 @@ func (r *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+func (r *ItemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
 	var args []interface{}
 	if status != "" {
@@ -71,7 +72,7 @@ func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionIte
 	return items, rows.Err()
 }
 
-func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+func (r *ItemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
@@ -135,7 +136,7 @@ func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 	return items, rows.Err()
 }
 
-func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
+func (r *ItemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	var e entity.AuctionItem
 	var highestBid sql.NullInt64
 	var highestBidderID sql.NullInt64
@@ -194,12 +195,12 @@ func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+func (r *ItemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	return err
 }
 
-func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (r *ItemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
 		ID:          item.ID,
 		AuctionID:   item.AuctionID,
@@ -234,17 +235,17 @@ func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) Delete(ctx context.Context, id int) error {
+func (r *ItemStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	return err
 }
 
-func (r *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+func (r *ItemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
 	return err
 }
 
-func (r *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
+func (r *ItemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
 	for i, id := range ids {
 		newSortOrder := i + 1
 		_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)

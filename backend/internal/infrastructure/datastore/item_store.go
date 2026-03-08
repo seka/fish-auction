@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
 type ItemCache interface {
@@ -13,17 +12,29 @@ type ItemCache interface {
 	Delete(ctx context.Context, id int) error
 }
 
+type ItemStore interface {
+	Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
+	List(ctx context.Context, status string) ([]model.AuctionItem, error)
+	ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
+	FindByID(ctx context.Context, id int) (*model.AuctionItem, error)
+	UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error
+	Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
+	Delete(ctx context.Context, id int) error
+	UpdateSortOrder(ctx context.Context, id int, sortOrder int) error
+	Reorder(ctx context.Context, auctionID int, ids []int) error
+}
+
 type ItemCompositeStore struct {
-	db    repository.ItemRepository
+	store ItemStore
 	cache ItemCache
 }
 
-func NewItemCompositeStore(db repository.ItemRepository, cache ItemCache) *ItemCompositeStore {
-	return &ItemCompositeStore{db: db, cache: cache}
+func NewItemCompositeStore(store ItemStore, cache ItemCache) *ItemCompositeStore {
+	return &ItemCompositeStore{store: store, cache: cache}
 }
 
 func (s *ItemCompositeStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-	newItem, err := s.db.Create(ctx, item)
+	newItem, err := s.store.Create(ctx, item)
 	if err != nil {
 		return nil, err
 	}
@@ -32,18 +43,18 @@ func (s *ItemCompositeStore) Create(ctx context.Context, item *model.AuctionItem
 }
 
 func (s *ItemCompositeStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	return s.db.List(ctx, status)
+	return s.store.List(ctx, status)
 }
 
 func (s *ItemCompositeStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
-	return s.db.ListByAuction(ctx, auctionID)
+	return s.store.ListByAuction(ctx, auctionID)
 }
 
 func (s *ItemCompositeStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	if i, err := s.cache.Get(ctx, id); err == nil && i != nil {
 		return i, nil
 	}
-	item, err := s.db.FindByID(ctx, id)
+	item, err := s.store.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +63,7 @@ func (s *ItemCompositeStore) FindByID(ctx context.Context, id int) (*model.Aucti
 }
 
 func (s *ItemCompositeStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
-	if err := s.db.UpdateStatus(ctx, id, status); err != nil {
+	if err := s.store.UpdateStatus(ctx, id, status); err != nil {
 		return err
 	}
 	_ = s.cache.Delete(ctx, id)
@@ -60,7 +71,7 @@ func (s *ItemCompositeStore) UpdateStatus(ctx context.Context, id int, status mo
 }
 
 func (s *ItemCompositeStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-	updatedItem, err := s.db.Update(ctx, item)
+	updatedItem, err := s.store.Update(ctx, item)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +80,7 @@ func (s *ItemCompositeStore) Update(ctx context.Context, item *model.AuctionItem
 }
 
 func (s *ItemCompositeStore) Delete(ctx context.Context, id int) error {
-	if err := s.db.Delete(ctx, id); err != nil {
+	if err := s.store.Delete(ctx, id); err != nil {
 		return err
 	}
 	_ = s.cache.Delete(ctx, id)
@@ -77,7 +88,7 @@ func (s *ItemCompositeStore) Delete(ctx context.Context, id int) error {
 }
 
 func (s *ItemCompositeStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
-	if err := s.db.UpdateSortOrder(ctx, id, sortOrder); err != nil {
+	if err := s.store.UpdateSortOrder(ctx, id, sortOrder); err != nil {
 		return err
 	}
 	_ = s.cache.Delete(ctx, id)
@@ -85,7 +96,7 @@ func (s *ItemCompositeStore) UpdateSortOrder(ctx context.Context, id int, sortOr
 }
 
 func (s *ItemCompositeStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
-	if err := s.db.Reorder(ctx, auctionID, ids); err != nil {
+	if err := s.store.Reorder(ctx, auctionID, ids); err != nil {
 		return err
 	}
 	for _, id := range ids {

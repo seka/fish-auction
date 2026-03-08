@@ -13,6 +13,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
@@ -236,6 +237,16 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if idStr, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1) // Using 1 for simplicity
+				if idStr == "invalid" {
+					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
+				}
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 
 			h.GetMyPurchases(w, req)
@@ -339,6 +350,13 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if _, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 			h.GetCurrentBuyer(w, req)
 			if w.Code != tc.wantStatus {
@@ -386,6 +404,16 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if idStr, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+				if idStr == "invalid" {
+					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
+				}
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 			h.GetMyAuctions(w, req)
 			if w.Code != tc.wantStatus {
@@ -448,6 +476,16 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if idStr, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+				if idStr == "invalid" {
+					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
+				}
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 			h.UpdatePassword(w, req)
 			if w.Code != tc.wantStatus {

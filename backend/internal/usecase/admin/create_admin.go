@@ -2,8 +2,10 @@ package admin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -25,7 +27,19 @@ func NewCreateAdminUseCase(adminRepo repository.AdminRepository) CreateAdminUseC
 }
 
 func (u *createAdminUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
-	// 既に管理者が存在するか確認
+	// 既に管理者が存在するか確認 (個別のメールアドレス)
+	existing, err := u.adminRepo.FindOneByEmail(ctx, email)
+	if err != nil {
+		// NotFound 以外はエラーとして扱う
+		var nfErr *apperrors.NotFoundError
+		if !errors.As(err, &nfErr) {
+			return nil, err
+		}
+	} else if existing != nil {
+		return nil, fmt.Errorf("admin with email %s already exists", email)
+	}
+
+	// 全体のカウントチェック (初期管理者のみ許可する場合などのため)
 	count, err := u.adminRepo.Count(ctx)
 	if err != nil {
 		return nil, err

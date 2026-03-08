@@ -12,6 +12,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
@@ -34,7 +35,7 @@ func TestBidHandler_Create(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/bids", bytes.NewReader(body))
 
 		// Inject buyer_id into context (simulating middleware)
-		ctx := context.WithValue(req.Context(), "buyer_id", 1) //nolint:staticcheck
+		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -76,7 +77,7 @@ func TestBidHandler_Create(t *testing.T) {
 		reqBody := dto.CreateBidRequest{ItemID: 10, Price: 500}
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/api/bids", bytes.NewReader(body))
-		ctx := context.WithValue(req.Context(), "buyer_id", 1) //nolint:staticcheck
+		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
