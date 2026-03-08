@@ -21,6 +21,12 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@atoms": ["./src/components/atoms/index.ts"],
+      "@atoms/*": ["./src/components/atoms/*"],
+      "@molecules": ["./src/components/molecules/index.ts"],
+      "@molecules/*": ["./src/components/molecules/*"],
+      "@functionals": ["./src/components/functionals/index.ts"],
+      "@functionals/*": ["./src/components/functionals/*"],
       "@libs/*": ["./src/libs/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }
