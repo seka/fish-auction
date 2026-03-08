@@ -10,12 +10,12 @@ export default defineConfig({
     setupFiles: './vitest.setup.ts',
     alias: {
       '@': path.resolve(__dirname, './'),
-      'styled-system': path.resolve(__dirname, './styled-system'),
+      'styled-system': path.resolve(__dirname, './src/libs/styled-system'),
     },
     coverage: {
       provider: 'v8',
       exclude: [
-        'styled-system/**',
+        'src/libs/styled-system/**',
         'panda.config.ts',
         'postcss.config.mjs',
         'eslint.config.mjs',
