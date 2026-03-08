@@ -8,7 +8,7 @@ export default defineConfig({
   include: ['./app/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
 
   // Exclude node_modules and .next
-  exclude: [],
+  exclude: ['src/libs/styled-system'],
 
   // Theme configuration
   theme: {
