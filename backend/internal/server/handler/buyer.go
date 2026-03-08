@@ -333,17 +333,6 @@ func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			h.List(w, r)
-		case http.MethodPost:
-			h.Create(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
 	mux.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			h.Login(w, r)

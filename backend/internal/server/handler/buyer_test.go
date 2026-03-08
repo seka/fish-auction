@@ -77,7 +77,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/api/buyers", bytes.NewReader(reqBody))
+			req := httptest.NewRequest(http.MethodPost, "/api/admin/buyers", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Create(w, req)
@@ -296,7 +296,7 @@ func TestBuyerHandler_List(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
 			h := handler.NewBuyerHandler(mockReg)
-			req := httptest.NewRequest(http.MethodGet, "/api/buyers", nil)
+			req := httptest.NewRequest(http.MethodGet, "/api/admin/buyers", nil)
 			w := httptest.NewRecorder()
 			h.List(w, req)
 			if w.Code != tc.wantStatus {
@@ -515,10 +515,6 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 	}
 
 	tests := []testCase{
-		{name: "Create_Post", method: http.MethodPost, path: "/api/buyers", wantStatus: http.StatusOK},
-		{name: "List_Get", method: http.MethodGet, path: "/api/buyers", wantStatus: http.StatusOK},
-		{name: "Create_Put", method: http.MethodPut, path: "/api/buyers", wantStatus: http.StatusMethodNotAllowed},
-
 		{name: "Login_Post", method: http.MethodPost, path: "/api/buyers/login", wantStatus: http.StatusOK},
 		{name: "Login_Get", method: http.MethodGet, path: "/api/buyers/login", wantStatus: http.StatusMethodNotAllowed},
 
@@ -562,9 +558,6 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 
 			// Handle Bodies for strict JSON decoders if method matches
 			if tc.method == http.MethodPost || tc.method == http.MethodPut {
-				if tc.path == "/api/buyers" {
-					body, _ = json.Marshal(dto.CreateBuyerRequest{})
-				}
 				if tc.path == "/api/buyers/login" {
 					body, _ = json.Marshal(dto.LoginBuyerRequest{})
 				}
