@@ -231,18 +231,6 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                 >
                   {t('Public.Login.submit')}
                 </Button>
-                <Box textAlign="center">
-                  <Link
-                    href="/signup"
-                    className={css({
-                      fontSize: 'sm',
-                      color: 'indigo.600',
-                      _hover: { color: 'indigo.500' },
-                    })}
-                  >
-                    {t('Public.Login.no_account')}
-                  </Link>
-                </Box>
               </Stack>
             </form>
           </Stack>

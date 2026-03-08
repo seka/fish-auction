@@ -116,17 +116,6 @@ export default function BuyerLoginPage() {
               >
                 パスワードをお忘れの方はこちら
               </Link>
-              <Link
-                href="/signup"
-                className={css({
-                  fontSize: 'sm',
-                  color: 'blue.600',
-                  _hover: { textDecoration: 'underline' },
-                  cursor: 'pointer',
-                })}
-              >
-                {t('Public.Login.signup_link')}
-              </Link>
             </Box>
           </Stack>
         </form>
