@@ -40,11 +40,11 @@ export const registerItem = async (item: RegisterItemParams): Promise<boolean> =
 };
 
 export const getFishermen = async (): Promise<Fisherman[]> => {
-  return apiClient.get<Fisherman[]>('/api/fishermen');
+  return apiClient.get<Fisherman[]>('/api/admin/fishermen');
 };
 
 export const getBuyers = async (): Promise<Buyer[]> => {
-  return apiClient.get<Buyer[]>('/api/buyers');
+  return apiClient.get<Buyer[]>('/api/admin/buyers');
 };
 
 export const deleteFisherman = async (id: number): Promise<void> => {
