@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInvoiceQuery } from '@/src/repositories/invoice';
+import { useInvoiceQuery } from '@/src/hooks/useInvoice';
 import { InvoiceItem } from '@/src/models';
 
 export const useInvoicePage = () => {
