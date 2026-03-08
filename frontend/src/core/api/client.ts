@@ -1,4 +1,4 @@
-import { toCamelCase, toSnakeCase } from '@/src/utils/caseConverter';
+import { toCamelCase, toSnakeCase } from '@/src/core/api/caseConverter';
 
 export class ApiError extends Error {
   constructor(
