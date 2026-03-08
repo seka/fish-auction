@@ -108,13 +108,6 @@ func (s *Server) registerPublicRoutes() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-	s.router.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.buyerHandler.Login(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
 
 	// Public Resources (Read Only)
 	s.router.HandleFunc("/api/items", func(w http.ResponseWriter, r *http.Request) {
