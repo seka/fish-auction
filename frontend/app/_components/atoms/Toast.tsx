@@ -2,7 +2,7 @@
 
 import { Box, HStack, Text } from '@/src/core/ui';
 import { useToast, Toast } from '@/src/hooks/useToast';
-import { css } from '@/styled-system/css';
+import { css } from 'styled-system/css';
 import { useRouter } from 'next/navigation';
 
 export const ToastContainer = () => {

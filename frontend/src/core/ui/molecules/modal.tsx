@@ -1,4 +1,4 @@
-import { styled } from '@/styled-system/jsx';
+import { styled } from 'styled-system/jsx';
 
 // Modal backdrop and container
 export const ModalBackdrop = styled('div', {

@@ -9,7 +9,7 @@ import {
   ResetPasswordConfirmRequest,
 } from '@/src/api/auth_reset';
 import { Box, Button, Text, Stack } from '@/src/core/ui';
-import { css } from '@/styled-system/css';
+import { css } from 'styled-system/css';
 
 import { Suspense } from 'react';
 // ... imports

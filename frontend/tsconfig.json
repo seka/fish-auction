@@ -21,6 +21,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@libs/*": ["./src/libs/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }
   },
