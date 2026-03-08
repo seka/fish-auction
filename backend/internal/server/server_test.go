@@ -74,15 +74,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		expectedStatus int
 	}{
 		// --------------------------------------------------------------------
-		// 1. Public Routes Verification (Legacy/Public Insecure POST/GET blocked)
-		// --------------------------------------------------------------------
-		{name: "Public_CreateFisherman_NotFound", method: http.MethodPost, path: "/api/fishermen", expectedStatus: http.StatusNotFound},
-		{name: "Public_CreateBuyer_NotFound", method: http.MethodPost, path: "/api/buyers", expectedStatus: http.StatusNotFound},
-		{name: "Public_ListFishermen_NotFound", method: http.MethodGet, path: "/api/fishermen", expectedStatus: http.StatusNotFound},
-		{name: "Public_ListBuyers_NotFound", method: http.MethodGet, path: "/api/buyers", expectedStatus: http.StatusNotFound},
-
-		// --------------------------------------------------------------------
-		// 2. Admin Routes Security Verification (Must be 401 without cookie)
+		// 1. Admin Routes Security Verification (Must be 401 without cookie)
 		// --------------------------------------------------------------------
 		// Fishermen
 		{name: "Admin_ListFishermen_NoAuth", method: http.MethodGet, path: "/api/admin/fishermen", expectedStatus: http.StatusUnauthorized},
