@@ -8,6 +8,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './'),
       '@libs': path.resolve(__dirname, './src/libs'),
+      '@atoms': path.resolve(__dirname, './src/components/atoms'),
+      '@molecules': path.resolve(__dirname, './src/components/molecules'),
+      '@functionals': path.resolve(__dirname, './src/components/functionals'),
+      '@organisms': path.resolve(__dirname, './src/components/organisms'),
+      '@templates': path.resolve(__dirname, './src/components/templates'),
       'styled-system': path.resolve(__dirname, './src/libs/styled-system'),
     },
   },
