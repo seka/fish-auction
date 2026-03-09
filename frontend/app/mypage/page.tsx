@@ -3,9 +3,8 @@
 import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import Link from 'next/link';
-import { Box, Text, Button, Card, Stack, HStack, Input } from '@atoms';
+import { Box, Text, Button, Card, Stack, HStack, Input, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
-import { EmptyState } from '../_components/atoms/EmptyState';
 
 import { useMyPage } from './_hooks/useMyPage';
 

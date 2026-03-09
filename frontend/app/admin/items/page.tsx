@@ -2,11 +2,10 @@
 
 import { Suspense } from 'react';
 import { useItemPage } from './_hooks/useItemPage';
-import { Box, Button, Card, HStack, Stack, Text, Input, Select } from '@atoms';
+import { Box, Button, Card, HStack, Stack, Text, Input, Select, EmptyState } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
 import { css } from 'styled-system/css';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
-import { EmptyState } from '@/app/_components/atoms/EmptyState';
 import {
   DndContext,
   closestCenter,

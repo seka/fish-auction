@@ -1,10 +1,9 @@
 'use client';
 
 import { useBuyerPage } from './_hooks/useBuyerPage';
-import { Box, Button, Card, HStack, Stack, Text, Input } from '@atoms';
+import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { css } from 'styled-system/css';
-import { EmptyState } from '../../_components/atoms/EmptyState';
 
 export default function AdminBuyersPage() {
   const { state, form, actions, t } = useBuyerPage();

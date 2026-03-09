@@ -3,8 +3,8 @@ import { Noto_Sans_JP } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
 
-import { PublicNavbar } from './_components/organisms/PublicNavbar';
-import { MainLayoutTemplate } from './_components/templates/MainLayoutTemplate';
+import { PublicNavbar } from '@organisms';
+import { MainLayoutTemplate } from '@templates';
 import { PushInitializer } from '@functionals';
 
 const notoSansJP = Noto_Sans_JP({

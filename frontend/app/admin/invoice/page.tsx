@@ -2,10 +2,9 @@
 
 import { useInvoicePage } from './_hooks/useInvoicePage';
 import { useTranslations } from 'next-intl';
-import { Box, Card, Text, Button } from '@atoms';
 import { ModalBackdrop, ModalContent, Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
+import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
-import { EmptyState } from '../../_components/atoms/EmptyState';
 
 export default function InvoicePage() {
   const t = useTranslations();

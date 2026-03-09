@@ -1,11 +1,10 @@
 'use client';
 
 import { useVenuePage } from './_hooks/useVenuePage';
-import { Box, Button, Card, HStack, Stack, Text, Input } from '@atoms';
+import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
-import { EmptyState } from '../../_components/atoms/EmptyState';
 
 // Textarea component with similar styling to Input
 const Textarea = styled('textarea', {
