@@ -15,6 +15,9 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: 'FISHING AUCTION',
   description: 'FISHING AUCTION System',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 import { NextIntlClientProvider } from 'next-intl';
