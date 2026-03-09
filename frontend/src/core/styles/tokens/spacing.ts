@@ -1,0 +1,15 @@
+export const spacing = {
+  '0': { value: '0' },
+  '0_5': { value: '4px' },
+  '1': { value: '8px' },
+  '1_5': { value: '12px' },
+  '2': { value: '16px' },
+  '2_5': { value: '20px' },
+  '3': { value: '24px' },
+  '4': { value: '32px' },
+  '5': { value: '40px' },
+  '6': { value: '48px' },
+  '8': { value: '64px' },
+  '10': { value: '80px' },
+  '18': { value: '4.5rem' },
+};

@@ -1,0 +1,7 @@
+@layer reset, base, tokens, recipes, utilities;
+
+body {
+  background: var(--colors-background);
+  color: var(--colors-foreground);
+  font-family: var(--fonts-base), Arial, Helvetica, sans-serif;
+}

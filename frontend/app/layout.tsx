@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
-import './globals.css';
+import '@/src/core/styles/globals.css';
 
 import { PublicNavbar } from '@organisms';
 import { MainLayoutTemplate } from '@templates';

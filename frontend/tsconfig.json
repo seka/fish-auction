@@ -21,6 +21,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@assets/*": ["./src/core/assets/*"],
+      "@styles/*": ["./src/core/styles/*"],
       "@atoms": ["./src/components/atoms"],
       "@molecules": ["./src/components/molecules"],
       "@functionals": ["./src/components/functionals"],
