@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 import './globals.css';
-import Providers from './providers';
 
 import { PublicNavbar } from '@organisms';
 import { MainLayoutTemplate } from '@templates';
@@ -22,6 +21,7 @@ export const metadata: Metadata = {
 
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { QueryClientProvider, ToastProvider } from '@functionals';
 
 export default async function RootLayout({
   children,
@@ -35,12 +35,14 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={notoSansJP.className}>
         <NextIntlClientProvider messages={messages}>
-          <Providers>
-            <MainLayoutTemplate navbar={<PublicNavbar />}>
-              <PushInitializer />
-              {children}
-            </MainLayoutTemplate>
-          </Providers>
+          <QueryClientProvider>
+            <ToastProvider>
+              <MainLayoutTemplate navbar={<PublicNavbar />}>
+                <PushInitializer />
+                {children}
+              </MainLayoutTemplate>
+            </ToastProvider>
+          </QueryClientProvider>
         </NextIntlClientProvider>
       </body>
     </html>
