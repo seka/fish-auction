@@ -23,13 +23,16 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const auctionId = Number(id);
 
-  const [selectedItem, setSelectedItem] = useState<AuctionItem | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [loginError, setLoginError] = useState('');
 
   const { auction, items, isLoading, refetchItems } = useAuctionData(auctionId);
   const { submitBid, isLoading: isBidLoading } = useBidMutation();
   const { isLoggedIn, isChecking } = useAuth();
+
+  // Derive selectedItem from items based on selectedItemId
+  const selectedItem = items.find((i: AuctionItem) => i.id === selectedItemId) || null;
 
   // オークションが開催中（入札時間内）かチェック
   const auctionActive = auction ? isAuctionActive(auction) : false;
@@ -50,17 +53,6 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
   } = useForm<BuyerLoginFormData>({
     resolver: zodResolver(buyerLoginSchema),
   });
-
-  const [prevItems, setPrevItems] = useState(items);
-  if (items !== prevItems) {
-    setPrevItems(items);
-    if (selectedItem) {
-      const current = items.find((i) => i.id === selectedItem.id);
-      if (current && current.status !== selectedItem.status) {
-        setSelectedItem(current);
-      }
-    }
-  }
 
   if (isNaN(auctionId)) {
     return <Box>Invalid Auction ID</Box>;
@@ -133,7 +125,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
 
     if (success) {
       setMessage(t('Public.AuctionDetail.success_bid', { item: selectedItem.fishType }));
-      setSelectedItem(null);
+      setSelectedItemId(null);
       reset();
       refetchItems();
       // Clear message after 3 seconds
@@ -373,21 +365,21 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                   </Text>
                 </Box>
               ) : (
-                items.map((item) => (
+                items.map((item: AuctionItem) => (
                   <Card
                     key={item.id}
                     padding="lg"
                     className={css({
                       borderWidth: '2px',
-                      borderColor: selectedItem?.id === item.id ? 'orange.500' : 'gray.200',
-                      bg: selectedItem?.id === item.id ? 'orange.50' : 'white',
+                      borderColor: selectedItemId === item.id ? 'orange.500' : 'gray.200',
+                      bg: selectedItemId === item.id ? 'orange.50' : 'white',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      shadow: selectedItem?.id === item.id ? 'md' : 'none',
-                      transform: selectedItem?.id === item.id ? 'scale(1.01)' : 'none',
+                      shadow: selectedItemId === item.id ? 'md' : 'none',
+                      transform: selectedItemId === item.id ? 'scale(1.01)' : 'none',
                       _hover: { shadow: 'md' },
                     })}
-                    onClick={() => setSelectedItem(item)}
+                    onClick={() => setSelectedItemId(item.id)}
                   >
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                       <HStack spacing="4">
