@@ -7,12 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
+      '@atoms': path.resolve(__dirname, './src/components/atoms/index.ts'),
+      '@molecules': path.resolve(__dirname, './src/components/molecules/index.ts'),
+      '@functionals': path.resolve(__dirname, './src/components/functionals/index.ts'),
+      '@organisms': path.resolve(__dirname, './src/components/organisms/index.ts'),
+      '@templates': path.resolve(__dirname, './src/components/templates/index.ts'),
       '@libs': path.resolve(__dirname, './src/libs'),
-      '@atoms': path.resolve(__dirname, './src/components/atoms'),
-      '@molecules': path.resolve(__dirname, './src/components/molecules'),
-      '@functionals': path.resolve(__dirname, './src/components/functionals'),
-      '@organisms': path.resolve(__dirname, './src/components/organisms'),
-      '@templates': path.resolve(__dirname, './src/components/templates'),
       'styled-system': path.resolve(__dirname, './src/libs/styled-system'),
     },
   },
