@@ -1,4 +1,3 @@
-import { Box } from '@atoms';
 import { Sidebar } from '@organisms';
 import { AdminLayoutTemplate } from '@templates';
 

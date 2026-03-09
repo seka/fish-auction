@@ -3,7 +3,7 @@
 import { useInvoicePage } from './_hooks/useInvoicePage';
 import { useTranslations } from 'next-intl';
 import { ModalBackdrop, ModalContent, Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
-import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
+import { Box, Button, Card, Text, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 
 export default function InvoicePage() {
