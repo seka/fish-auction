@@ -27,6 +27,10 @@
       "@molecules/*": ["./src/components/molecules/*"],
       "@functionals": ["./src/components/functionals/index.ts"],
       "@functionals/*": ["./src/components/functionals/*"],
+      "@organisms": ["./src/components/organisms/index.ts"],
+      "@organisms/*": ["./src/components/organisms/*"],
+      "@templates": ["./src/components/templates/index.ts"],
+      "@templates/*": ["./src/components/templates/*"],
       "@libs/*": ["./src/libs/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }
