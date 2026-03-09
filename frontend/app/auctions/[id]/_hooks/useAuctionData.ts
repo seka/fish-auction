@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAuction, getAuctionItems } from '@/src/api/auction';
+import { AuctionItem } from '@/src/models/auction';
+
+const EMPTY_ITEMS: AuctionItem[] = [];
 
 export const useAuctionData = (auctionId: number) => {
   const { data: auction, isLoading: isAuctionLoading } = useQuery({
@@ -20,7 +23,7 @@ export const useAuctionData = (auctionId: number) => {
 
   return {
     auction,
-    items: items || [],
+    items: items || EMPTY_ITEMS,
     isLoading: isAuctionLoading || isItemsLoading,
     refetchItems,
   };
