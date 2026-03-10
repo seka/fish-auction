@@ -7,27 +7,25 @@ vi.mock('next/navigation', () => ({
   usePathname: vi.fn(() => '/admin'),
 }));
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 describe('Sidebar', () => {
   it('renders all menu items', () => {
     render(<Sidebar />);
 
-    expect(screen.getByText('管理画面')).toBeInTheDocument();
-    expect(screen.getByText('トップに戻る')).toBeInTheDocument();
-    expect(screen.getByText('ダッシュボード')).toBeInTheDocument();
-    expect(screen.getByText('漁師管理')).toBeInTheDocument();
-    // ... and so on
+    expect(screen.getByText('title')).toBeInTheDocument();
+    expect(screen.getByText('back_to_top')).toBeInTheDocument();
+    expect(screen.getByText('dashboard')).toBeInTheDocument();
+    expect(screen.getByText('fishermen')).toBeInTheDocument();
   });
 
   it('highlights active link based on pathname', () => {
-    // Mock implementation is already defaulting to /admin
     render(<Sidebar />);
 
-    // Use a more specific query or check for class presence if possible
-    // Since we can't easily check class names with styled-system in tests without fragility,
-    // we might just verify it renders without crashing for now, or check aria-current if added (it isn't in the code).
-    // However, the component logic sets `isActive` based on path.
-    // Let's at least verify the link exists.
-    const dashboardLink = screen.getByRole('link', { name: /ダッシュボード/ });
+    const dashboardLink = screen.getByRole('link', { name: /dashboard/ });
     expect(dashboardLink).toBeInTheDocument();
     expect(dashboardLink).toHaveAttribute('href', '/admin');
   });

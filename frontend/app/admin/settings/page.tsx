@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Box, Text, Button, Stack, Input } from '@atoms';
 import { css } from 'styled-system/css';
 
 export default function AdminSettingsPage() {
+  const t = useTranslations();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,12 +18,12 @@ export default function AdminSettingsPage() {
     setMessage(null);
 
     if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: '新しいパスワードが一致しません。' });
+      setMessage({ type: 'error', text: t('Validation.password_mismatch') });
       return;
     }
 
     if (newPassword.length < 8) {
-      setMessage({ type: 'error', text: 'パスワードは8文字以上である必要があります。' });
+      setMessage({ type: 'error', text: t('Validation.password_too_short', { min: 8 }) });
       return;
     }
 
@@ -41,10 +43,10 @@ export default function AdminSettingsPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'パスワードの更新に失敗しました。');
+        throw new Error(data.error || t('Validation.password_update_failed'));
       }
 
-      setMessage({ type: 'success', text: 'パスワードを更新しました。' });
+      setMessage({ type: 'success', text: t('Validation.password_updated') });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -64,7 +66,7 @@ export default function AdminSettingsPage() {
         mb="6"
         className={css({ color: 'indigo.900' })}
       >
-        設定
+        {t('Admin.Settings.title')}
       </Text>
 
       <Box bg="white" p="6" borderRadius="lg" shadow="sm" maxW="md">
@@ -75,7 +77,7 @@ export default function AdminSettingsPage() {
           mb="4"
           className={css({ color: 'gray.800' })}
         >
-          パスワード変更
+          {t('Auth.ResetPassword.title')}
         </Text>
 
         {message && (
@@ -105,7 +107,7 @@ export default function AdminSettingsPage() {
                   color: 'gray.700',
                 })}
               >
-                現在のパスワード
+                {t('Validation.field_name.password')}
               </label>
               <Input
                 id="current-password"
@@ -128,7 +130,7 @@ export default function AdminSettingsPage() {
                   color: 'gray.700',
                 })}
               >
-                新しいパスワード
+                {t('Auth.ResetPassword.label_new_password')}
               </label>
               <Input
                 id="new-password"
@@ -152,7 +154,7 @@ export default function AdminSettingsPage() {
                   color: 'gray.700',
                 })}
               >
-                新しいパスワード（確認）
+                {t('Auth.ResetPassword.label_confirm_password')}
               </label>
               <Input
                 id="confirm-password"
@@ -175,7 +177,7 @@ export default function AdminSettingsPage() {
                 _disabled: { opacity: 0.6, cursor: 'not-allowed' },
               })}
             >
-              {isLoading ? '更新中...' : 'パスワードを変更する'}
+              {isLoading ? t('Common.loading') : t('Public.MyPage.submit_password_update')}
             </Button>
           </Stack>
         </form>

@@ -2,7 +2,7 @@
 
 import { useBuyerPage } from './_hooks/useBuyerPage';
 import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 import { css } from 'styled-system/css';
 
 export default function AdminBuyersPage() {
@@ -92,12 +92,12 @@ export default function AdminBuyersPage() {
                     className={css({ color: 'gray.700' })}
                     mb="1"
                   >
-                    Email
+                    {t('Validation.field_name.email')}
                   </Text>
                   <Input
                     type="email"
                     {...form.register('email')}
-                    placeholder="buyer@example.com"
+                    placeholder={t('Common.email')}
                     error={!!form.errors.email}
                     className={css({
                       _focus: { borderColor: 'green.500', ringColor: 'green.500' },
@@ -119,7 +119,7 @@ export default function AdminBuyersPage() {
                     className={css({ color: 'gray.700' })}
                     mb="1"
                   >
-                    Password
+                    {t('Validation.field_name.password')}
                   </Text>
                   <Input
                     type="password"
@@ -146,12 +146,12 @@ export default function AdminBuyersPage() {
                     className={css({ color: 'gray.700' })}
                     mb="1"
                   >
-                    Organization
+                    {t('Validation.field_name.organization')}
                   </Text>
                   <Input
                     type="text"
                     {...form.register('organization')}
-                    placeholder="株式会社魚市場"
+                    placeholder={t('Admin.Buyers.placeholder_name_company')}
                     error={!!form.errors.organization}
                     className={css({
                       _focus: { borderColor: 'green.500', ringColor: 'green.500' },
@@ -173,7 +173,7 @@ export default function AdminBuyersPage() {
                     className={css({ color: 'gray.700' })}
                     mb="1"
                   >
-                    Contact Info
+                    {t('Validation.field_name.contact_info')}
                   </Text>
                   <Input
                     type="text"
@@ -198,7 +198,7 @@ export default function AdminBuyersPage() {
                   className={css({ flex: '1' })}
                   variant="primary"
                 >
-                  {state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
+                  {state.isCreating ? t('Common.loading') : t('Common.register')}
                 </Button>
               </Stack>
             </form>
@@ -215,11 +215,11 @@ export default function AdminBuyersPage() {
             </Box>
             {state.isLoading ? (
               <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>
-                {t(COMMON_TEXT_KEYS.loading)}
+                {t('Common.loading')}
               </Box>
             ) : state.buyers.length === 0 ? (
               <EmptyState
-                message={t(COMMON_TEXT_KEYS.no_data)}
+                message={t('Common.no_data')}
                 icon={
                   <span role="img" aria-label="buyer">
                     👤

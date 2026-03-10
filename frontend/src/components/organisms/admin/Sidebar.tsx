@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Stack, Text, HStack } from '@atoms';
 import { css } from 'styled-system/css';
+import { useTranslations } from 'next-intl';
 
 // 共通のスタイル定義 (Recipe的アプローチ)
 const sidebarItemStyles = {
@@ -90,6 +91,8 @@ const SidebarItem = ({
 };
 
 export const Sidebar = () => {
+  const t = useTranslations('Admin.Sidebar');
+
   return (
     <Box
       w="64"
@@ -109,7 +112,7 @@ export const Sidebar = () => {
           letterSpacing="wider"
           className={css({ color: 'white' })}
         >
-          管理画面
+          {t('title')}
         </Text>
         <Text fontSize="xs" className={css({ color: 'indigo.300' })} mt="1">
           FISHING AUCTION Admin
@@ -118,47 +121,47 @@ export const Sidebar = () => {
 
       <Stack as="nav" mt="6" px="2" spacing="1" flex="1">
         <SidebarItem href="/" icon="↩️">
-          トップに戻る
+          {t('back_to_top')}
         </SidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
         <SidebarItem href="/admin" icon="📊">
-          ダッシュボード
+          {t('dashboard')}
         </SidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
         <SidebarItem href="/admin/fishermen" icon="👨‍🌾">
-          漁師管理
+          {t('fishermen')}
         </SidebarItem>
 
         <SidebarItem href="/admin/buyers" icon="👔">
-          中買人管理
+          {t('buyers')}
         </SidebarItem>
 
         <SidebarItem href="/admin/venues" icon="🏢">
-          会場管理
+          {t('venues')}
         </SidebarItem>
 
         <SidebarItem href="/admin/auctions" icon="📅">
-          セリ管理
+          {t('auctions')}
         </SidebarItem>
 
         <SidebarItem href="/admin/items" icon="🐟">
-          出品管理
+          {t('items')}
         </SidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
         <SidebarItem href="/admin/invoice" icon="💰">
-          請求書発行
+          {t('invoice')}
         </SidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
         <SidebarItem href="/admin/settings" icon="⚙️">
-          設定
+          {t('settings')}
         </SidebarItem>
       </Stack>
 
