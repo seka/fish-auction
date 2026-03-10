@@ -98,6 +98,7 @@
       "list_title": "中買人一覧",
       "name": "氏名",
       "placeholder_name": "例: 鈴木 花子",
+      "placeholder_name_company": "株式会社魚市場",
       "success_register": "中買人を登録しました",
       "fail_register": "登録に失敗しました"
     },
@@ -178,6 +179,18 @@
       "password_placeholder": "パスワード",
       "logging_in": "ログイン中...",
       "error_invalid_password": "パスワードが間違っています"
+    },
+    "Sidebar": {
+      "title": "管理画面",
+      "back_to_top": "トップに戻る",
+      "dashboard": "ダッシュボード",
+      "fishermen": "漁師管理",
+      "buyers": "中買人管理",
+      "venues": "会場管理",
+      "auctions": "セリ管理",
+      "items": "出品管理",
+      "invoice": "請求書発行",
+      "settings": "設定"
     }
   },
   "Public": {
@@ -254,6 +267,37 @@
       }
     }
   },
+  "Auth": {
+    "ResetPassword": {
+      "verify_loading": "検証中...",
+      "invalid_link_title": "無効なリンク",
+      "invalid_link_desc": "このリンクは無効か、有効期限が切れています。\nもう一度パスワード再設定リクエストを行ってください。",
+      "request_page_button": "再設定リクエストページへ",
+      "complete_title": "再設定完了",
+      "complete_desc": "パスワードの再設定が完了しました。\n新しいパスワードでログインしてください。",
+      "login_page_button": "ログインページへ",
+      "admin_login_page_button": "管理者ログインページへ",
+      "new_password_title": "新しいパスワードの設定",
+      "label_new_password": "新しいパスワード",
+      "label_confirm_password": "パスワード（確認）",
+      "submit_change": "パスワードを変更する",
+      "changing": "変更中...",
+      "error_failed": "パスワードの再設定に失敗しました。トークンの有効期限が切れている可能性があります。"
+    },
+    "ForgotPassword": {
+      "title": "パスワードをお忘れの方",
+      "admin_title": "管理者パスワードをお忘れの方",
+      "description": "登録したメールアドレスを入力してください。再設定用のリンクを送信します。",
+      "success_title": "メール送信完了",
+      "success_description": "入力されたメールアドレスにパスワード再設定用のリンクを送信しました（登録がある場合）。\nメールをご確認ください。",
+      "admin_success_description": "入力されたメールアドレスにパスワード再設定用のリンクを送信しました（管理者登録がある場合）。\nメールをご確認ください。",
+      "back_to_login": "ログイン画面に戻る",
+      "back_to_admin_login": "管理者ログイン画面に戻る",
+      "sending": "送信中...",
+      "submit": "送信する",
+      "link_text": "パスワードをお忘れの方はこちら"
+    }
+  },
   "Navbar": {
     "active_auctions": "開催中のセリ一覧",
     "mypage": "マイページ",
@@ -267,6 +311,12 @@
     "invalid_email": "有効なメールアドレスを入力してください",
     "min_length": "{min}文字以上で入力してください",
     "positive_number": "正の数値を入力してください",
+    "password_mismatch": "パスワードが一致しません",
+    "password_too_short": "パスワードは{min}文字以上である必要があります",
+    "password_updated": "パスワードを更新しました",
+    "password_update_failed": "パスワードの更新に失敗しました",
+    "success_password_update": "パスワードを更新しました",
+    "fail_password_update": "パスワードの更新に失敗しました",
     "field_name": {
       "password": "パスワード",
       "email": "メールアドレス",
@@ -277,7 +327,14 @@
       "price": "価格",
       "amount": "数量",
       "fish_type": "魚種",
-      "unit": "単位"
+      "unit": "単位",
+      "organization": "屋号・組織名",
+      "contact_info": "連絡先情報"
     }
+  },
+  "Push": {
+    "prompt_title": "通知を有効にしてください",
+    "prompt_desc": "セリの高値更新情報をリアルタイムで受け取るには通知の許可が必要です。",
+    "enable_button": "通知を有効にする"
   }
 }

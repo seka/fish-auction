@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { css } from 'styled-system/css';
 import { Box, Stack, Text, Card } from '@atoms';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 import { useTranslations } from 'next-intl';
 
 export default function Home() {
@@ -113,12 +113,12 @@ export default function Home() {
               </Box>
               <Box>
                 <Text variant="h2" className={css({ mb: '2' })}>
-                  {t(COMMON_TEXT_KEYS.admin_panel)}
+                  {t('Common.admin_panel')}
                 </Text>
                 <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: t.raw(COMMON_TEXT_KEYS.admin_panel_description),
+                      __html: t.raw('Common.admin_panel_description'),
                     }}
                   />
                 </Text>
@@ -133,7 +133,7 @@ export default function Home() {
                   _groupHover: { transform: 'translateX(4px)' },
                 })}
               >
-                {t(COMMON_TEXT_KEYS.go_to_admin)} <span className={css({ ml: '2' })}>&rarr;</span>
+                {t('Common.go_to_admin')} <span className={css({ ml: '2' })}>&rarr;</span>
               </Box>
             </Stack>
           </Card>
@@ -206,12 +206,12 @@ export default function Home() {
               </Box>
               <Box>
                 <Text variant="h2" className={css({ mb: '2' })}>
-                  {t(COMMON_TEXT_KEYS.auction_venue)}
+                  {t('Common.auction_venue')}
                 </Text>
                 <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: t.raw(COMMON_TEXT_KEYS.auction_venue_description),
+                      __html: t.raw('Common.auction_venue_description'),
                     }}
                   />
                 </Text>
@@ -226,7 +226,7 @@ export default function Home() {
                   _groupHover: { transform: 'translateX(4px)' },
                 })}
               >
-                {t(COMMON_TEXT_KEYS.enter_venue)} <span className={css({ ml: '2' })}>&rarr;</span>
+                {t('Common.enter_venue')} <span className={css({ ml: '2' })}>&rarr;</span>
               </Box>
             </Stack>
           </Card>
