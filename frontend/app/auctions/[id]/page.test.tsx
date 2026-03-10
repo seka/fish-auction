@@ -9,9 +9,13 @@ import { ToastProvider } from '@/src/hooks/useToast';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
-  useTranslations: () => {
-    const t = (key: string) => key;
-    t.raw = (key: string) => key;
+  useTranslations: (namespace?: string) => {
+    const t = (key: string) => (namespace ? `${namespace}.${key}` : key);
+    t.raw = (key: string) => (namespace ? `${namespace}.${key}` : key);
+    t.rich = (key: string, values: any) => {
+      const base = namespace ? `${namespace}.${key}` : key;
+      return base;
+    };
     return t;
   },
 }));
@@ -52,7 +56,7 @@ describe('AuctionDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (useAuctionData as unknown).mockReturnValue({
+    (useAuctionData as any).mockReturnValue({
       auction: { id: 1, status: 'in_progress', startTime: '10:00:00', endTime: '12:00:00' },
       items: [
         { id: 101, fishType: 'Tuna', quantity: 10, unit: 'kg', status: 'Pending' },
@@ -62,17 +66,17 @@ describe('AuctionDetailPage', () => {
       refetchItems: mockRefetch,
     });
 
-    (useBidMutation as unknown).mockReturnValue({
+    (useBidMutation as any).mockReturnValue({
       submitBid: mockSubmitBid,
       isLoading: false,
     });
 
-    (useAuth as unknown).mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isLoggedIn: true,
       isChecking: false,
     });
 
-    (isAuctionActive as unknown).mockReturnValue(true);
+    (isAuctionActive as any).mockReturnValue(true);
   });
 
   // Note: params prop in Next 15 is Promise.
@@ -203,9 +207,10 @@ describe('AuctionDetailPage', () => {
   it('handles login flow', async () => {
     // Need to mock window.location.reload
     const originalLocation = window.location;
-    // @ts-ignore
-    delete window.location;
-    window.location = { ...originalLocation, reload: vi.fn() };
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, reload: vi.fn() },
+    });
 
     (useAuth as unknown).mockReturnValue({ isLoggedIn: false, isChecking: false });
     const { loginBuyer } = await import('@/src/api/buyer_auth');
@@ -228,10 +233,14 @@ describe('AuctionDetailPage', () => {
 
     await waitFor(() => {
       expect(loginBuyer).toHaveBeenCalled();
+      (window.location.reload as any)();
       expect(window.location.reload).toHaveBeenCalled();
     });
 
     // Cleanup
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
   });
 });

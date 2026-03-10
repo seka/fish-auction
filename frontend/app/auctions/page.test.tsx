@@ -10,7 +10,8 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
 }));
 
 vi.mock('./_hooks/usePublicVenues', () => ({
@@ -24,20 +25,20 @@ vi.mock('@/src/api/auction', () => ({
 describe('AuctionsListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (usePublicVenues as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ venues: [{ id: 1, name: 'Venue A' }] });
+    (usePublicVenues as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ venues: [{ id: 1, name: 'Venue A' }] });
   });
 
   it('renders loading state', () => {
-    (useQuery as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ data: undefined, isLoading: true });
+    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ data: undefined, isLoading: true });
     render(<AuctionsListPage />);
     expect(screen.getByText('読み込み中...')).toBeInTheDocument();
   });
 
   it('renders empty state when no auctions', () => {
-    (useQuery as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ data: [], isLoading: false });
+    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ data: [], isLoading: false });
     render(<AuctionsListPage />);
     expect(screen.getByText('Public.Auctions.no_auctions')).toBeInTheDocument();
   });
@@ -61,8 +62,8 @@ describe('AuctionsListPage', () => {
         venueId: 1,
       },
     ];
-    (useQuery as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ data: mockAuctions, isLoading: false });
+    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ data: mockAuctions, isLoading: false });
 
     render(<AuctionsListPage />);
 
@@ -96,8 +97,8 @@ describe('AuctionsListPage', () => {
         venueId: 1,
       }, // Should be second (earlier than 2023-12-05)
     ];
-    (useQuery as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ data: mockAuctions, isLoading: false });
+    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ data: mockAuctions, isLoading: false });
     render(<AuctionsListPage />);
 
     screen.getAllByRole('link');
@@ -128,8 +129,8 @@ describe('AuctionsListPage', () => {
   });
 
   it('resolves and displays venue name', () => {
-    (usePublicVenues as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ venues: [{ id: 99, name: 'Special Venue' }] });
+    (usePublicVenues as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ venues: [{ id: 99, name: 'Special Venue' }] });
     const mockAuctions = [
       {
         id: 1,
@@ -140,8 +141,8 @@ describe('AuctionsListPage', () => {
         venueId: 99,
       },
     ];
-    (useQuery as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ data: mockAuctions, isLoading: false });
+    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ data: mockAuctions, isLoading: false });
     render(<AuctionsListPage />);
 
     expect(screen.getByText('Special Venue')).toBeInTheDocument();
@@ -166,8 +167,8 @@ describe('AuctionsListPage', () => {
         venueId: 1,
       },
     ];
-    (useQuery as any // eslint-disable-line @typescript-eslint/no-explicit-any
-).mockReturnValue({ data: mockAuctions, isLoading: false });
+    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .mockReturnValue({ data: mockAuctions, isLoading: false });
     render(<AuctionsListPage />);
 
     expect(screen.getByText(/AuctionStatus.cancelled/)).toBeInTheDocument();

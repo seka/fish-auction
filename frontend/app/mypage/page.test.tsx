@@ -3,10 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MyPage from './page';
 import { useMyPage } from './_hooks/useMyPage';
 
-
 // Mocks
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
 }));
 
 vi.mock('./_hooks/useMyPage', () => ({
@@ -46,11 +46,16 @@ describe('MyPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useMyPage).mockReturnValue(defaultMockValues as unknown as ReturnType<typeof useMyPage>);
+    vi.mocked(useMyPage).mockReturnValue(
+      defaultMockValues as unknown as ReturnType<typeof useMyPage>,
+    );
   });
 
   it('renders loading state', () => {
-    vi.mocked(useMyPage).mockReturnValue({ ...defaultMockValues, isLoading: true } as unknown as ReturnType<typeof useMyPage>);
+    vi.mocked(useMyPage).mockReturnValue({
+      ...defaultMockValues,
+      isLoading: true,
+    } as unknown as ReturnType<typeof useMyPage>);
     render(<MyPage />);
     expect(screen.getByText('読み込み中...')).toBeInTheDocument();
   });
@@ -115,10 +120,10 @@ describe('MyPage', () => {
     } as unknown as ReturnType<typeof useMyPage>);
     render(<MyPage />);
 
-    expect(screen.getByText('パスワード変更')).toBeInTheDocument();
-    expect(screen.getByText('現在のパスワード')).toBeInTheDocument();
-    expect(screen.getByText('新しいパスワード')).toBeInTheDocument();
-    expect(screen.getByText('新しいパスワード（確認）')).toBeInTheDocument();
+    expect(screen.getByText('Public.MyPage.password_change_title')).toBeInTheDocument();
+    expect(screen.getByText('Validation.field_name.password')).toBeInTheDocument();
+    expect(screen.getByText('Auth.ResetPassword.label_new_password')).toBeInTheDocument();
+    expect(screen.getByText('Auth.ResetPassword.label_confirm_password')).toBeInTheDocument();
   });
 
   it('calls logout', () => {
@@ -130,7 +135,7 @@ describe('MyPage', () => {
 
   it('updates active tab when clicked', () => {
     render(<MyPage />);
-    const settingsTab = screen.getByText('設定');
+    const settingsTab = screen.getByText('Public.MyPage.settings');
     fireEvent.click(settingsTab);
     expect(mockSetActiveTab).toHaveBeenCalledWith('settings');
   });
@@ -143,27 +148,27 @@ describe('MyPage', () => {
     render(<MyPage />);
 
     const currentPasswordInput = screen
-      .getByText('現在のパスワード')
+      .getByText('Validation.field_name.password')
       .closest('div')
       ?.querySelector('input');
     fireEvent.change(currentPasswordInput!, { target: { value: 'current123' } });
     expect(mockSetCurrentPassword).toHaveBeenCalledWith('current123');
 
     const newPasswordInput = screen
-      .getByText('新しいパスワード')
+      .getByText('Auth.ResetPassword.label_new_password')
       .closest('div')
       ?.querySelector('input');
     fireEvent.change(newPasswordInput!, { target: { value: 'password123' } });
     expect(mockSetNewPassword).toHaveBeenCalledWith('password123');
 
     const confirmPasswordInput = screen
-      .getByText('新しいパスワード（確認）')
+      .getByText('Auth.ResetPassword.label_confirm_password')
       .closest('div')
       ?.querySelector('input');
     fireEvent.change(confirmPasswordInput!, { target: { value: 'password123' } });
     expect(mockSetConfirmPassword).toHaveBeenCalledWith('password123');
 
-    const submitButton = screen.getByText('パスワードを変更する');
+    const submitButton = screen.getByText('Public.MyPage.submit_password_update');
     fireEvent.submit(submitButton.closest('form')!);
     expect(mockHandleUpdatePassword).toHaveBeenCalled();
   });

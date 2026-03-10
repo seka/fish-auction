@@ -6,6 +6,12 @@ import AdminSettingsPage from './page';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
+}));
+
 describe('AdminSettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -13,24 +19,26 @@ describe('AdminSettingsPage', () => {
 
   it('renders form', () => {
     render(<AdminSettingsPage />);
-    expect(screen.getByText('設定')).toBeInTheDocument();
-    expect(screen.getByLabelText('現在のパスワード')).toBeInTheDocument();
+    expect(screen.getByText('Admin.Settings.title')).toBeInTheDocument();
+    expect(screen.getByLabelText('Validation.field_name.password')).toBeInTheDocument();
   });
 
   it('shows error if passwords match', async () => {
     render(<AdminSettingsPage />);
 
-    fireEvent.change(screen.getByLabelText('新しいパスワード'), {
+    fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_new_password'), {
       target: { value: 'password123' },
     });
-    fireEvent.change(screen.getByLabelText('新しいパスワード（確認）'), {
+    fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_confirm_password'), {
       target: { value: 'password456' },
     });
 
-    const form = screen.getByRole('button', { name: 'パスワードを変更する' }).closest('form');
+    const form = screen
+      .getByRole('button', { name: 'Public.MyPage.submit_password_update' })
+      .closest('form');
     fireEvent.submit(form!);
 
-    expect(await screen.findByText('新しいパスワードが一致しません。')).toBeInTheDocument();
+    expect(await screen.findByText('Validation.password_mismatch')).toBeInTheDocument();
   });
 
   it('calls API on valid submission', async () => {
@@ -42,20 +50,24 @@ describe('AdminSettingsPage', () => {
     // Check if there are multiple matches. '新しいパスワード' might match '新しいパスワード（確認）' partially?
     // Let's use exact: true which is default but maybe there's whitespace.
 
-    fireEvent.change(screen.getByLabelText('現在のパスワード'), { target: { value: 'oldpass' } });
-    fireEvent.change(screen.getByLabelText('新しいパスワード'), {
+    fireEvent.change(screen.getByLabelText('Validation.field_name.password'), {
+      target: { value: 'oldpass' },
+    });
+    fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_new_password'), {
       target: { value: 'newpassword123' },
     });
-    fireEvent.change(screen.getByLabelText('新しいパスワード（確認）'), {
+    fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_confirm_password'), {
       target: { value: 'newpassword123' },
     });
 
-    const form = screen.getByRole('button', { name: 'パスワードを変更する' }).closest('form');
+    const form = screen
+      .getByRole('button', { name: 'Public.MyPage.submit_password_update' })
+      .closest('form');
     fireEvent.submit(form!);
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/proxy/api/admin/password', expect.any(Object));
-      expect(screen.getByText('パスワードを更新しました。')).toBeInTheDocument();
+      expect(screen.getByText('Validation.password_updated')).toBeInTheDocument();
     });
   });
 });
