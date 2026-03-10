@@ -6,16 +6,20 @@ export interface Venue {
   createdAt: string;
 }
 
+export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+
 export interface Auction {
   id: number;
   venueId: number;
   auctionDate: string;
   startTime?: string;
   endTime?: string;
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  status: AuctionStatus;
   createdAt: string;
   updatedAt: string;
 }
+
+export type ItemStatus = 'Pending' | 'Sold' | 'Unsold' | 'Bidding';
 
 export interface AuctionItem {
   id: number;
@@ -24,7 +28,7 @@ export interface AuctionItem {
   fishType: string;
   quantity: number;
   unit: string;
-  status: string;
+  status: ItemStatus;
   highestBid?: number;
   highestBidderId?: number;
   highestBidderName?: string;

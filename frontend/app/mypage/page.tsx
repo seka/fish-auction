@@ -1,9 +1,10 @@
 'use client';
 
-import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
+import { AuctionStatus } from '@/src/models/auction';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import Link from 'next/link';
 import { Box, Text, Button, Card, Stack, HStack, Input, EmptyState } from '@atoms';
+import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 
 import { useMyPage } from './_hooks/useMyPage';
@@ -111,7 +112,7 @@ export default function MyPage() {
               onClick={() => setActiveTab('settings')}
               className={css({ transition: 'all 0.2s', _hover: { color: 'indigo.600' } })}
             >
-              設定
+              {t('Public.MyPage.settings')}
             </Box>
           </HStack>
         </Box>
@@ -206,7 +207,7 @@ export default function MyPage() {
               mb="4"
               className={css({ color: 'gray.800' })}
             >
-              パスワード変更
+              {t('Public.MyPage.password_change_title')}
             </Text>
 
             {message && (
@@ -234,7 +235,7 @@ export default function MyPage() {
                     fontWeight="medium"
                     className={css({ color: 'gray.700' })}
                   >
-                    現在のパスワード
+                    {t('Validation.field_name.password')}
                   </Text>
                   <Input
                     type="password"
@@ -254,7 +255,7 @@ export default function MyPage() {
                     fontWeight="medium"
                     className={css({ color: 'gray.700' })}
                   >
-                    新しいパスワード
+                    {t('Auth.ResetPassword.label_new_password')}
                   </Text>
                   <Input
                     type="password"
@@ -275,7 +276,7 @@ export default function MyPage() {
                     fontWeight="medium"
                     className={css({ color: 'gray.700' })}
                   >
-                    新しいパスワード（確認）
+                    {t('Auth.ResetPassword.label_confirm_password')}
                   </Text>
                   <Input
                     type="password"
@@ -297,7 +298,9 @@ export default function MyPage() {
                     _disabled: { opacity: 0.6, cursor: 'not-allowed' },
                   })}
                 >
-                  {isPasswordUpdating ? '更新中...' : 'パスワードを変更する'}
+                  {isPasswordUpdating
+                    ? t('Public.MyPage.updating')
+                    : t('Public.MyPage.submit_password_update')}
                 </Button>
               </Stack>
             </form>
@@ -348,31 +351,7 @@ export default function MyPage() {
                           >
                             {t('Public.MyPage.auction_id')} #{auction.id}
                           </Box>
-                          <Box
-                            px="3"
-                            py="1"
-                            borderRadius="full"
-                            fontSize="xs"
-                            fontWeight="bold"
-                            bg={
-                              auction.status === 'in_progress'
-                                ? 'orange.100'
-                                : auction.status === 'completed'
-                                  ? 'gray.100'
-                                  : 'blue.100'
-                            }
-                            color={
-                              auction.status === 'in_progress'
-                                ? 'orange.700'
-                                : auction.status === 'completed'
-                                  ? 'gray.700'
-                                  : 'blue.700'
-                            }
-                          >
-                            {auction.status === 'in_progress'
-                              ? t(AUCTION_STATUS_KEYS['in_progress'])
-                              : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus])}
-                          </Box>
+                          <AuctionStatusBadge status={auction.status as AuctionStatus} />
                         </HStack>
                         <Text
                           fontSize="lg"

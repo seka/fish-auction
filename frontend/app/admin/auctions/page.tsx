@@ -2,7 +2,6 @@
 
 import { useAuctionPage } from './_hooks/useAuctionPage';
 import Link from 'next/link';
-import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
 import {
   Box,
@@ -15,52 +14,11 @@ import {
   EmptyState,
   Select, // Added Select back as it's used in the code
 } from '@atoms';
-import { Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
+import { Table, Thead, Tbody, Tr, Th, Td, AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 
 export default function AuctionsPage() {
   const { state, actions, form, t } = useAuctionPage();
-
-  const getStatusBadge = (status: string) => {
-    const baseStyle = {
-      fontSize: 'xs',
-      fontWeight: 'medium',
-      px: '2.5',
-      py: '0.5',
-      borderRadius: 'md',
-    };
-    const statusKey = status as AuctionStatus;
-    const label = AUCTION_STATUS_KEYS[statusKey] ? t(AUCTION_STATUS_KEYS[statusKey]) : status;
-
-    switch (status) {
-      case 'scheduled':
-        return (
-          <span className={css(baseStyle, { bg: 'blue.100', color: 'blue.800' })}>{label}</span>
-        );
-      case 'in_progress':
-        return (
-          <span
-            className={css(baseStyle, {
-              bg: 'orange.100',
-              color: 'orange.800',
-              animation: 'pulse 2s infinite',
-            })}
-          >
-            🔥 {label}
-          </span>
-        );
-      case 'completed':
-        return (
-          <span className={css(baseStyle, { bg: 'green.100', color: 'green.800' })}>{label}</span>
-        );
-      case 'cancelled':
-        return <span className={css(baseStyle, { bg: 'red.100', color: 'red.800' })}>{label}</span>;
-      default:
-        return (
-          <span className={css(baseStyle, { bg: 'gray.100', color: 'gray.800' })}>{label}</span>
-        );
-    }
-  };
 
   return (
     <Box maxW="5xl" mx="auto" p="6">
@@ -307,7 +265,9 @@ export default function AuctionsPage() {
                               {venue?.name || `ID: ${auction.venueId}`}
                             </Text>
                           </Td>
-                          <Td>{getStatusBadge(auction.status)}</Td>
+                          <Td>
+                            <AuctionStatusBadge status={auction.status} />
+                          </Td>
                           <Td className={css({ textAlign: 'right' })}>
                             <HStack justify="end" spacing="2">
                               {auction.status === 'scheduled' && (

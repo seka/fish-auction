@@ -212,7 +212,11 @@
       "date": "開催日",
       "view_detail": "詳細を見る",
       "no_participating": "参加中のセリはありません",
-      "no_history": "購入履歴はありません"
+      "no_history": "購入履歴はありません",
+      "settings": "設定",
+      "password_change_title": "パスワード変更",
+      "submit_password_update": "パスワードを変更する",
+      "updating": "更新中..."
     },
     "AuctionDetail": {
       "back_to_list": "一覧へ",

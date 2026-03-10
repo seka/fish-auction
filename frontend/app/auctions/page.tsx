@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getAuctions } from '@/src/api/auction';
-import { AUCTION_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card } from '@atoms';
+import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 
 import { usePublicVenues } from './_hooks/usePublicVenues';
@@ -51,52 +51,6 @@ export default function AuctionsListPage() {
       }) || [];
 
   const getVenueName = (id: number) => venues?.find((v) => v.id === id)?.name || `ID: ${id}`;
-
-  // Helper functions for status styles
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return 'orange.500';
-      case 'scheduled':
-        return 'blue.500';
-      case 'completed':
-        return 'gray.500';
-      case 'cancelled':
-        return 'red.500';
-      default:
-        return 'gray.200';
-    }
-  };
-
-  const getStatusBg = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return 'orange.100';
-      case 'scheduled':
-        return 'blue.100';
-      case 'completed':
-        return 'gray.100';
-      case 'cancelled':
-        return 'red.100';
-      default:
-        return 'gray.100';
-    }
-  };
-
-  const getStatusTextColor = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return 'orange.800';
-      case 'scheduled':
-        return 'blue.800';
-      case 'completed':
-        return 'gray.800';
-      case 'cancelled':
-        return 'red.800';
-      default:
-        return 'gray.800';
-    }
-  };
 
   return (
     <Box maxW="7xl" mx="auto" px={{ base: '4', md: '8' }} py="8">
@@ -167,25 +121,11 @@ export default function AuctionsListPage() {
                   })}
                 >
                   {/* Status Badge Strip */}
-                  <Box bg={getStatusColor(auction.status)} h="2" w="full" />
+                  <Box bg="indigo.600" h="1" w="full" />
 
                   <Box p="6">
                     <HStack justify="between" mb="4">
-                      <span
-                        className={css({
-                          fontSize: 'xs',
-                          fontWeight: 'bold',
-                          px: '2.5',
-                          py: '1',
-                          borderRadius: 'full',
-                          bg: getStatusBg(auction.status),
-                          color: getStatusTextColor(auction.status),
-                        })}
-                      >
-                        {auction.status === 'in_progress'
-                          ? '🔥 ' + t(AUCTION_STATUS_KEYS['in_progress'])
-                          : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus] || 'scheduled')}
-                      </span>
+                      <AuctionStatusBadge status={auction.status} />
                       <Text fontSize="sm" className={css({ color: 'gray.500' })}>
                         {auction.auctionDate}
                       </Text>

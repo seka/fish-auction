@@ -13,9 +13,9 @@ import { useAuctionData } from './_hooks/useAuctionData';
 import { useBidMutation } from './_hooks/useBidMutation';
 import { useAuth } from '@/src/hooks/useAuth';
 import { isAuctionActive, formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
-import { AUCTION_STATUS_KEYS, ITEM_STATUS_KEYS, AuctionStatus } from '@/src/core/assets/status';
 import { useTranslations } from 'next-intl';
 import { Box, Text, Button, Input, Card, Stack, HStack } from '@atoms';
+import { AuctionStatusBadge, ItemStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 
 export default function AuctionDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,7 +32,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
   const { isLoggedIn, isChecking } = useAuth();
 
   // Derive selectedItem from items based on selectedItemId
-  const selectedItem = items.find((i: AuctionItem) => i.id === selectedItemId) || null;
+  const selectedItem = items?.find((i: AuctionItem) => i.id === selectedItemId) || null;
 
   // オークションが開催中（入札時間内）かチェック
   const auctionActive = auction ? isAuctionActive(auction) : false;
@@ -251,22 +251,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
               >
                 &larr; {t('Public.AuctionDetail.back_to_list')}
               </Link>
-              <Box
-                px="3"
-                py="1"
-                borderRadius="full"
-                fontSize="sm"
-                fontWeight="bold"
-                bg={auction.status === 'in_progress' ? 'orange.100' : 'blue.100'}
-                color={auction.status === 'in_progress' ? 'orange.700' : 'blue.700'}
-                className={
-                  auction.status === 'in_progress' ? css({ animation: 'pulse 2s infinite' }) : ''
-                }
-              >
-                {auction.status === 'in_progress'
-                  ? '🔥 ' + t(AUCTION_STATUS_KEYS['in_progress'])
-                  : t(AUCTION_STATUS_KEYS[auction.status as AuctionStatus])}
-              </Box>
+              <AuctionStatusBadge status={auction.status} />
             </HStack>
             <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
               {t('Public.AuctionDetail.auction_venue_title', { id: auction.id })}
@@ -437,22 +422,7 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                           )}
                         </Box>
                       </HStack>
-                      <Box
-                        px="4"
-                        py="2"
-                        borderRadius="full"
-                        fontSize="sm"
-                        fontWeight="bold"
-                        bg={item.status === 'Pending' ? 'green.100' : 'gray.100'}
-                        color={item.status === 'Pending' ? 'green.800' : 'gray.600'}
-                        shadow="sm"
-                      >
-                        {item.status === 'Pending'
-                          ? t(ITEM_STATUS_KEYS['Pending'])
-                          : ITEM_STATUS_KEYS[item.status]
-                            ? t(ITEM_STATUS_KEYS[item.status])
-                            : item.status}
-                      </Box>
+                      <ItemStatusBadge status={item.status} />
                     </Box>
                   </Card>
                 ))
@@ -503,10 +473,12 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                         {selectedItem.quantity} {selectedItem.unit}
                       </Text>
                       <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="2">
-                        {t('Public.AuctionDetail.status', {
-                          status: ITEM_STATUS_KEYS[selectedItem.status]
-                            ? t(ITEM_STATUS_KEYS[selectedItem.status])
-                            : selectedItem.status,
+                        {t.rich('Public.AuctionDetail.status', {
+                          status: (chunks) => (
+                            <>
+                              {chunks} <ItemStatusBadge status={selectedItem.status} />
+                            </>
+                          ),
                         })}
                       </Text>
                       {selectedItem.highestBid && (

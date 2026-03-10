@@ -1,4 +1,5 @@
 import { apiClient } from '@/src/core/api/client';
+import { AuctionStatus } from '@/src/models/auction';
 
 export interface Purchase {
   id: number;
@@ -19,7 +20,7 @@ export interface AuctionSummary {
   auctionDate: string;
   startTime: string | null;
   endTime: string | null;
-  status: string;
+  status: AuctionStatus;
   createdAt: string;
   updatedAt: string;
 }
