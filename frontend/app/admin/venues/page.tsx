@@ -2,7 +2,7 @@
 
 import { useVenuePage } from './_hooks/useVenuePage';
 import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
@@ -155,15 +155,15 @@ export default function AdminVenuesPage() {
                   >
                     {state.editingVenue
                       ? state.isUpdating
-                        ? t(COMMON_TEXT_KEYS.loading)
-                        : t(COMMON_TEXT_KEYS.update)
+                        ? t('Common.loading')
+                        : t('Common.update')
                       : state.isCreating
-                        ? t(COMMON_TEXT_KEYS.loading)
-                        : t(COMMON_TEXT_KEYS.register)}
+                        ? t('Common.loading')
+                        : t('Common.register')}
                   </Button>
                   {state.editingVenue && (
                     <Button type="button" onClick={actions.onCancelEdit} variant="outline">
-                      {t(COMMON_TEXT_KEYS.cancel)}
+                      {t('Common.cancel')}
                     </Button>
                   )}
                 </HStack>
@@ -182,11 +182,11 @@ export default function AdminVenuesPage() {
             </Box>
             {state.isLoading ? (
               <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>
-                {t(COMMON_TEXT_KEYS.loading)}
+                {t('Common.loading')}
               </Box>
             ) : state.venues.length === 0 ? (
               <EmptyState
-                message={t(COMMON_TEXT_KEYS.no_data)}
+                message={t('Common.no_data')}
                 icon={
                   <span role="img" aria-label="venue">
                     📍
@@ -227,7 +227,7 @@ export default function AdminVenuesPage() {
                       </Box>
                       <HStack spacing="2">
                         <Button size="sm" variant="outline" onClick={() => actions.onEdit(venue)}>
-                          {t(COMMON_TEXT_KEYS.edit)}
+                          {t('Common.edit')}
                         </Button>
                         <Button
                           size="sm"
@@ -238,7 +238,7 @@ export default function AdminVenuesPage() {
                           })}
                           onClick={() => actions.onDelete(venue.id)}
                         >
-                          {t(COMMON_TEXT_KEYS.delete)}
+                          {t('Common.delete')}
                         </Button>
                       </HStack>
                     </HStack>

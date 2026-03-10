@@ -5,7 +5,7 @@ import { useItemPage } from './_hooks/useItemPage';
 import { Box, Button, Card, HStack, Stack, Text, Input, Select, EmptyState } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
 import { css } from 'styled-system/css';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 import {
   DndContext,
   closestCenter,
@@ -83,7 +83,7 @@ function SortableRow({ item, fisherman, onEdit, onDelete, isDeleting, t }: Sorta
       <Td className={css({ textAlign: 'right' })}>
         <HStack justify="end" spacing="2">
           <Button size="sm" variant="outline" onClick={() => onEdit(item)}>
-            {t(COMMON_TEXT_KEYS.edit)}
+            {t('Common.edit')}
           </Button>
           <Button
             size="sm"
@@ -91,7 +91,7 @@ function SortableRow({ item, fisherman, onEdit, onDelete, isDeleting, t }: Sorta
             onClick={() => onDelete(item.id)}
             disabled={isDeleting}
           >
-            {t(COMMON_TEXT_KEYS.delete)}
+            {t('Common.delete')}
           </Button>
         </HStack>
       </Td>
@@ -284,10 +284,10 @@ function ItemsPageContent() {
                     variant="primary"
                   >
                     {state.isCreating || state.isUpdating
-                      ? t(COMMON_TEXT_KEYS.loading)
+                      ? t('Common.loading')
                       : state.editingItem
-                        ? t(COMMON_TEXT_KEYS.save)
-                        : t(COMMON_TEXT_KEYS.register)}
+                        ? t('Common.save')
+                        : t('Common.register')}
                   </Button>
                   {state.editingItem && (
                     <Button
@@ -296,7 +296,7 @@ function ItemsPageContent() {
                       width="full"
                       variant="outline"
                     >
-                      {t(COMMON_TEXT_KEYS.cancel)}
+                      {t('Common.cancel')}
                     </Button>
                   )}
                 </HStack>
@@ -345,7 +345,7 @@ function ItemsPageContent() {
 
             {state.isItemsLoading && state.items.length === 0 ? (
               <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>
-                {t(COMMON_TEXT_KEYS.loading)}
+                {t('Common.loading')}
               </Box>
             ) : !state.filterAuctionId ? (
               <Box p="10" textAlign="center">
@@ -355,7 +355,7 @@ function ItemsPageContent() {
               </Box>
             ) : state.items.length === 0 ? (
               <EmptyState
-                message={t(COMMON_TEXT_KEYS.no_data)}
+                message={t('Common.no_data')}
                 icon={
                   <span role="img" aria-label="item">
                     🐟

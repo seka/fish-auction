@@ -2,7 +2,7 @@
 
 import { useAuctionPage } from './_hooks/useAuctionPage';
 import Link from 'next/link';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 import {
   Box,
   Button,
@@ -164,15 +164,15 @@ export default function AuctionsPage() {
                   >
                     {state.editingAuction
                       ? state.isUpdating
-                        ? t(COMMON_TEXT_KEYS.loading)
-                        : t(COMMON_TEXT_KEYS.update)
+                        ? t('Common.loading')
+                        : t('Common.update')
                       : state.isCreating
-                        ? t(COMMON_TEXT_KEYS.loading)
-                        : t(COMMON_TEXT_KEYS.register)}
+                        ? t('Common.loading')
+                        : t('Common.register')}
                   </Button>
                   {state.editingAuction && (
                     <Button type="button" onClick={actions.onCancelEdit} variant="outline">
-                      {t(COMMON_TEXT_KEYS.cancel)}
+                      {t('Common.cancel')}
                     </Button>
                   )}
                 </HStack>
@@ -220,11 +220,11 @@ export default function AuctionsPage() {
             </Box>
             {state.isLoading ? (
               <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>
-                {t(COMMON_TEXT_KEYS.loading)}
+                {t('Common.loading')}
               </Box>
             ) : state.auctions.length === 0 ? (
               <EmptyState
-                message={t(COMMON_TEXT_KEYS.no_data)}
+                message={t('Common.no_data')}
                 icon={
                   <span role="img" aria-label="auction">
                     🏷️
@@ -317,7 +317,7 @@ export default function AuctionsPage() {
                                 variant="outline"
                                 onClick={() => actions.onEdit(auction)}
                               >
-                                {t(COMMON_TEXT_KEYS.edit)}
+                                {t('Common.edit')}
                               </Button>
                               <Button
                                 size="sm"
@@ -328,7 +328,7 @@ export default function AuctionsPage() {
                                 })}
                                 onClick={() => actions.onDelete(auction.id)}
                               >
-                                {t(COMMON_TEXT_KEYS.delete)}
+                                {t('Common.delete')}
                               </Button>
                             </HStack>
                           </Td>

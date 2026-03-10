@@ -6,7 +6,8 @@ import { useAuctionPage } from './_hooks/useAuctionPage';
 // Mock hook
 vi.mock('./_hooks/useAuctionPage');
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
 }));
 
 describe('AuctionsPage', () => {

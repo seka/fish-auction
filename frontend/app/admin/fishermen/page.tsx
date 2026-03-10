@@ -3,7 +3,7 @@
 import { useFishermanPage } from './_hooks/useFishermanPage';
 import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 
 export default function AdminFishermenPage() {
   const { state, form, actions, t } = useFishermanPage();
@@ -87,7 +87,7 @@ export default function AdminFishermenPage() {
                   className={css({ flex: '1' })}
                   variant="primary"
                 >
-                  {state.isCreating ? t(COMMON_TEXT_KEYS.loading) : t(COMMON_TEXT_KEYS.register)}
+                  {state.isCreating ? t('Common.loading') : t('Common.register')}
                 </Button>
               </Stack>
             </form>
@@ -104,11 +104,11 @@ export default function AdminFishermenPage() {
             </Box>
             {state.isLoading ? (
               <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>
-                {t(COMMON_TEXT_KEYS.loading)}
+                {t('Common.loading')}
               </Box>
             ) : state.fishermen.length === 0 ? (
               <EmptyState
-                message={t(COMMON_TEXT_KEYS.no_data)}
+                message={t('Common.no_data')}
                 icon={
                   <span role="img" aria-label="fisherman">
                     🎣
