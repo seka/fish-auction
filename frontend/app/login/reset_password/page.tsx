@@ -3,18 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  verifyResetToken,
-  confirmPasswordReset,
-  ResetPasswordConfirmRequest,
-} from '@/src/api/auth_reset';
+import { confirmPasswordReset, verifyResetToken, ResetPasswordConfirmRequest } from '@/src/api/auth_reset';
 import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
+import { useTranslations } from 'next-intl';
 
 import { Suspense } from 'react';
 // ... imports
 
 function ResetPasswordForm() {
+  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -61,14 +59,14 @@ function ResetPasswordForm() {
     } catch (error) {
       console.error('Failed to reset password', error);
       // Handle error (show message)
-      alert('パスワードの再設定に失敗しました。トークンの有効期限が切れている可能性があります。');
+      alert(t('Auth.ResetPassword.error_failed'));
     }
   };
 
   if (isVerifying) {
     return (
       <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-        <Text>検証中...</Text>
+        <Text>{t('Auth.ResetPassword.verify_loading')}</Text>
       </Box>
     );
   }
@@ -90,11 +88,10 @@ function ResetPasswordForm() {
             mb="6"
             className={css({ color: 'red.600', fontWeight: 'bold' })}
           >
-            無効なリンク
+            {t('Auth.ResetPassword.invalid_link_title')}
           </Text>
           <Text textAlign="center" className={css({ color: 'gray.600' })}>
-            このリンクは無効か、有効期限が切れています。
-            もう一度パスワード再設定リクエストを行ってください。
+            {t('Auth.ResetPassword.invalid_link_desc')}
           </Text>
           <Button
             mt="6"
@@ -102,7 +99,7 @@ function ResetPasswordForm() {
             variant="secondary"
             onClick={() => router.push('/login/forgot_password')}
           >
-            再設定リクエストページへ
+            {t('Auth.ResetPassword.request_page_button')}
           </Button>
         </Box>
       </Box>
@@ -126,13 +123,13 @@ function ResetPasswordForm() {
             mb="6"
             className={css({ color: 'primary.600', fontWeight: 'bold' })}
           >
-            再設定完了
+            {t('Auth.ResetPassword.complete_title')}
           </Text>
           <Text textAlign="center" className={css({ color: 'gray.600' })}>
-            パスワードの再設定が完了しました。 新しいパスワードでログインしてください。
+            {t('Auth.ResetPassword.complete_desc')}
           </Text>
           <Button mt="6" w="full" onClick={() => router.push('/login/buyer')}>
-            ログインページへ
+            {t('Auth.ResetPassword.login_page_button')}
           </Button>
         </Box>
       </Box>
@@ -155,7 +152,7 @@ function ResetPasswordForm() {
           mb="6"
           className={css({ color: 'primary.600', fontWeight: 'bold' })}
         >
-          新しいパスワードの設定
+          {t('Auth.ResetPassword.new_password_title')}
         </Text>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -169,13 +166,13 @@ function ResetPasswordForm() {
                   color: 'gray.700',
                 })}
               >
-                新しいパスワード
+                {t('Auth.ResetPassword.label_new_password')}
               </label>
               <input
                 type="password"
                 {...register('new_password', {
-                  required: 'パスワードを入力してください',
-                  minLength: { value: 8, message: '8文字以上で入力してください' },
+                  required: t('Validation.required', { field: t('Common.password') }),
+                  minLength: { value: 8, message: t('Validation.min_length', { min: 8 }) },
                 })}
                 className={css({
                   w: 'full',
@@ -207,12 +204,12 @@ function ResetPasswordForm() {
                   color: 'gray.700',
                 })}
               >
-                パスワード（確認）
+                {t('Auth.ResetPassword.label_confirm_password')}
               </label>
               <input
                 type="password"
                 {...register('confirm_password', {
-                  validate: (value) => value === newPassword || 'パスワードが一致しません',
+                  validate: (value) => value === newPassword || t('Validation.password_mismatch'),
                 })}
                 className={css({
                   w: 'full',
@@ -236,7 +233,7 @@ function ResetPasswordForm() {
             </Box>
 
             <Button type="submit" w="full" disabled={isSubmitting}>
-              {isSubmitting ? '変更中...' : 'パスワードを変更する'}
+              {isSubmitting ? t('Auth.ResetPassword.changing') : t('Auth.ResetPassword.submit_change')}
             </Button>
           </Stack>
         </form>

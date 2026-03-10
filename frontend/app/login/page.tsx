@@ -105,7 +105,7 @@ export default function LoginPage() {
                   mb: '2',
                 })}
               >
-                パスワードをお忘れの方はこちら
+                {t('Auth.ForgotPassword.link_text')}
               </Link>
             </Box>
           </Stack>

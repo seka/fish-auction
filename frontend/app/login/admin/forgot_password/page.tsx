@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import { requestAdminPasswordReset, ResetPasswordRequest } from '@/src/api/admin_auth_reset';
 import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
+import { useTranslations } from 'next-intl';
 
 export default function AdminForgotPasswordPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const {
@@ -43,14 +45,13 @@ export default function AdminForgotPasswordPage() {
             mb="6"
             className={css({ color: 'indigo.700', fontWeight: 'bold' })}
           >
-            メール送信完了
+            {t('Auth.ForgotPassword.success_title')}
           </Text>
           <Text textAlign="center" className={css({ color: 'gray.600' })}>
-            入力されたメールアドレスにパスワード再設定用のリンクを送信しました（管理者登録がある場合）。
-            メールをご確認ください。
+            {t('Auth.ForgotPassword.admin_success_description')}
           </Text>
           <Button mt="6" w="full" variant="secondary" onClick={() => router.push('/login')}>
-            管理者ログイン画面に戻る
+            {t('Auth.ForgotPassword.back_to_admin_login')}
           </Button>
         </Box>
       </Box>
@@ -73,10 +74,10 @@ export default function AdminForgotPasswordPage() {
           mb="6"
           className={css({ color: 'indigo.700', fontWeight: 'bold' })}
         >
-          管理者パスワードをお忘れの方
+          {t('Auth.ForgotPassword.admin_title')}
         </Text>
         <Text mb="6" className={css({ color: 'gray.600', textAlign: 'center' })}>
-          登録したメールアドレスを入力してください。再設定用のリンクを送信します。
+          {t('Auth.ForgotPassword.description')}
         </Text>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -90,14 +91,14 @@ export default function AdminForgotPasswordPage() {
                   color: 'gray.700',
                 })}
               >
-                メールアドレス
+                {t('Common.email')}
               </label>
               <input
                 {...register('email', {
-                  required: 'メールアドレスを入力してください',
+                  required: t('Validation.required', { field: t('Common.email') }),
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: '有効なメールアドレスを入力してください',
+                    message: t('Validation.invalid_email'),
                   },
                 })}
                 className={css({
@@ -123,7 +124,7 @@ export default function AdminForgotPasswordPage() {
             </Box>
 
             <Button type="submit" w="full" disabled={isSubmitting} variant="primary">
-              {isSubmitting ? '送信中...' : '送信する'}
+              {isSubmitting ? t('Auth.ForgotPassword.sending') : t('Auth.ForgotPassword.submit')}
             </Button>
 
             <Button
@@ -132,7 +133,7 @@ export default function AdminForgotPasswordPage() {
               onClick={() => router.push('/login')}
               style={{ border: 'none' }}
             >
-              キャンセル
+              {t('Common.cancel')}
             </Button>
           </Stack>
         </form>
