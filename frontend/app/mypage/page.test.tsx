@@ -57,7 +57,7 @@ describe('MyPage', () => {
       isLoading: true,
     } as unknown as ReturnType<typeof useMyPage>);
     render(<MyPage />);
-    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+    expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
 
   it('renders initial state (purchases tab)', () => {

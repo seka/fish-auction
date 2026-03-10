@@ -88,7 +88,7 @@ describe('useMyPage', () => {
 
     expect(result.current.message).toEqual({
       type: 'error',
-      text: '新しいパスワードが一致しません。',
+      text: 'Validation.password_mismatch',
     });
 
     // Short password scenario
@@ -103,7 +103,7 @@ describe('useMyPage', () => {
 
     expect(result.current.message).toEqual({
       type: 'error',
-      text: 'パスワードは8文字以上である必要があります。',
+      text: 'Validation.min_length',
     });
   });
 

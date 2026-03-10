@@ -33,7 +33,7 @@ describe('AuctionsListPage', () => {
     (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
       .mockReturnValue({ data: undefined, isLoading: true });
     render(<AuctionsListPage />);
-    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+    expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
 
   it('renders empty state when no auctions', () => {
@@ -68,7 +68,7 @@ describe('AuctionsListPage', () => {
     render(<AuctionsListPage />);
 
     expect(screen.getAllByText(/Venue A/).length).toBeGreaterThan(0);
-    expect(screen.getByText('🔥 AuctionStatus.in_progress')).toBeInTheDocument(); // Mock translation key
+    expect(screen.getByText('AuctionStatus.in_progress')).toBeInTheDocument(); // Mock translation key
   });
   it('sorts auctions correctly (in_progress first, then date)', () => {
     const mockAuctions = [
@@ -118,7 +118,7 @@ describe('AuctionsListPage', () => {
       .getAllByRole('link')
       .filter((link) => link.getAttribute('href')?.startsWith('/auctions/'));
 
-    expect(cards[0]).toHaveTextContent('🔥'); // ID 2
+    expect(cards[0]).toHaveTextContent('AuctionStatus.in_progress'); // ID 2
     // Next should be ID 3 (2023-12-01) vs ID 1 (2023-12-05).
     // Sorting logic: if status not 'in_progress', sort by date+time ascending.
     // 2023-12-01 < 2023-12-05. So ID 3 should come before ID 1.

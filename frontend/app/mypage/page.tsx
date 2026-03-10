@@ -1,7 +1,7 @@
 'use client';
 
 import { AuctionStatus } from '@/src/models/auction';
-import { COMMON_TEXT_KEYS } from '@/src/core/assets/text';
+
 import Link from 'next/link';
 import { Box, Text, Button, Card, Stack, HStack, Input, EmptyState } from '@atoms';
 import { AuctionStatusBadge } from '@molecules';
@@ -33,7 +33,7 @@ export default function MyPage() {
     return (
       <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
         <Text fontSize="xl" className={css({ color: 'gray.700' })}>
-          読み込み中...
+          {t('Common.loading')}
         </Text>
       </Box>
     );
@@ -46,10 +46,10 @@ export default function MyPage() {
         <HStack justify="between" alignItems="center" mb="8">
           <Box>
             <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
-              {t(COMMON_TEXT_KEYS.mypage)}
+              {t('Common.mypage')}
             </Text>
             <Text className={css({ color: 'gray.500' })} mt="1">
-              {t(COMMON_TEXT_KEYS.mypage_description)}
+              {t('Common.mypage_description')}
             </Text>
           </Box>
           <HStack spacing="4">
@@ -61,13 +61,13 @@ export default function MyPage() {
                 fontWeight: 'medium',
               })}
             >
-              {t(COMMON_TEXT_KEYS.auction_list)}
+              {t('Common.auction_list')}
             </Link>
             <Button
               onClick={handleLogout}
               className={css({ bg: 'gray.600', _hover: { bg: 'gray.700' }, color: 'white' })}
             >
-              {t(COMMON_TEXT_KEYS.logout)}
+              {t('Common.logout')}
             </Button>
           </HStack>
         </HStack>
@@ -319,7 +319,7 @@ export default function MyPage() {
                   </span>
                 }
                 action={{
-                  label: t(COMMON_TEXT_KEYS.auction_list),
+                  label: t('Common.auction_list'),
                   onClick: () => (window.location.href = '/auctions'),
                 }}
               />

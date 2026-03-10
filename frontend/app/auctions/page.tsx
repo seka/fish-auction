@@ -24,7 +24,7 @@ export default function AuctionsListPage() {
     return (
       <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
         <Text fontSize="xl" color="muted">
-          読み込み中...
+          {t('Common.loading')}
         </Text>
       </Box>
     );

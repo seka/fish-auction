@@ -43,12 +43,15 @@ export const useMyPage = () => {
     setMessage(null);
 
     if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: '新しいパスワードが一致しません。' });
+      setMessage({ type: 'error', text: t('Validation.password_mismatch') });
       return;
     }
 
     if (newPassword.length < 8) {
-      setMessage({ type: 'error', text: 'パスワードは8文字以上である必要があります。' });
+      setMessage({
+        type: 'error',
+        text: t('Validation.min_length', { field: t('Common.password'), min: 8 }),
+      });
       return;
     }
 
@@ -68,10 +71,10 @@ export const useMyPage = () => {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'パスワードの更新に失敗しました。');
+        throw new Error(data.error || t('Validation.fail_password_update'));
       }
 
-      setMessage({ type: 'success', text: 'パスワードを更新しました。' });
+      setMessage({ type: 'success', text: t('Validation.success_password_update') });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');

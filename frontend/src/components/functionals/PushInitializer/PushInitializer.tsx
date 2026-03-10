@@ -2,9 +2,11 @@
 
 import { css } from 'styled-system/css';
 import { useSetup } from './useSetup';
+import { useTranslations } from 'next-intl';
 
 export const PushInitializer = () => {
   const { shouldShowPrompt, subscribeToPush } = useSetup();
+  const t = useTranslations('Push');
 
   if (!shouldShowPrompt) {
     return null;
@@ -33,10 +35,10 @@ export const PushInitializer = () => {
         <span className={css({ fontSize: 'xl' })}>🔔</span>
         <div className={css({ display: 'flex', flexDirection: 'column', gap: '1' })}>
           <p className={css({ fontSize: 'sm', fontWeight: 'bold', color: 'gray.800' })}>
-            通知を有効にしてください
+            {t('prompt_title')}
           </p>
           <p className={css({ fontSize: 'xs', color: 'gray.600', lineHeight: '1.4' })}>
-            セリの高値更新情報をリアルタイムで受け取るには通知の許可が必要です。
+            {t('prompt_desc')}
           </p>
         </div>
       </div>
@@ -56,7 +58,7 @@ export const PushInitializer = () => {
           textAlign: 'center',
         })}
       >
-        通知を有効にする
+        {t('enable_button')}
       </button>
     </div>
   );
