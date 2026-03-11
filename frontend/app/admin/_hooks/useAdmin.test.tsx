@@ -46,8 +46,7 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterFisherman', () => {
     it('calls registerFisherman API on mutate', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (registerFisherman as any).mockResolvedValueOnce({ id: 1, name: 'Fisherman 1' });
+      vi.mocked(registerFisherman).mockResolvedValueOnce(true);
 
       const { result } = renderHook(() => useRegisterFisherman(), { wrapper });
 
@@ -60,8 +59,7 @@ describe('useAdmin Hooks', () => {
   describe('useFishermen', () => {
     it('fetches fishermen', async () => {
       const mockData = [{ id: 1, name: 'Fisherman 1' }];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (getFishermen as any).mockResolvedValueOnce(mockData);
+      vi.mocked(getFishermen).mockResolvedValueOnce(mockData);
 
       const { result } = renderHook(() => useFishermen(), { wrapper });
 
@@ -73,12 +71,17 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterBuyer', () => {
     it('calls registerBuyer API on mutate', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (registerBuyer as any).mockResolvedValueOnce({ id: 2, name: 'Buyer 1' });
+      vi.mocked(registerBuyer).mockResolvedValueOnce(true);
 
       const { result } = renderHook(() => useRegisterBuyer(), { wrapper });
 
-      await result.current.registerBuyer({ name: 'Buyer 1' } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      await result.current.registerBuyer({
+        name: 'Buyer 1',
+        email: 'buyer1@example.com',
+        password: 'password123',
+        organization: 'Org 1',
+        contactInfo: 'Contact 1',
+      });
 
       expect(registerBuyer).toHaveBeenCalledWith({ name: 'Buyer 1' });
     });
@@ -87,8 +90,7 @@ describe('useAdmin Hooks', () => {
   describe('useBuyers', () => {
     it('fetches buyers', async () => {
       const mockData = [{ id: 2, name: 'Buyer 1' }];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (getBuyers as any).mockResolvedValueOnce(mockData);
+      vi.mocked(getBuyers).mockResolvedValueOnce(mockData);
 
       const { result } = renderHook(() => useBuyers(), { wrapper });
 
@@ -100,13 +102,18 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterItem', () => {
     it('calls registerItem API on mutate and invalidates queries', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (registerItem as any).mockResolvedValueOnce({ id: 100, name: 'Item 1' });
+      vi.mocked(registerItem).mockResolvedValueOnce(true);
       const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
       const { result } = renderHook(() => useRegisterItem(), { wrapper });
 
-      await result.current.registerItem({ name: 'Item 1', start_price: 100 } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+      await result.current.registerItem({
+        auctionId: 1,
+        fishermanId: 1,
+        fishType: 'Item 1',
+        quantity: 100,
+        unit: 'kg',
+      });
 
       expect(registerItem).toHaveBeenCalledWith(expect.objectContaining({ name: 'Item 1' }));
 

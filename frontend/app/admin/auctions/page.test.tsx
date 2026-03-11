@@ -14,12 +14,17 @@ describe('AuctionsPage', () => {
   const mockOnSubmit = vi.fn((e) => e.preventDefault());
   const mockRegister = vi.fn();
   const mockOnStatusChange = vi.fn();
+  const tMock = Object.assign((key: string) => key, {
+    rich: vi.fn(),
+    markup: vi.fn(),
+    raw: vi.fn(),
+    has: vi.fn(),
+  });
 
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.mocked(useAuctionPage).mockReturnValue({
       state: {
-        venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown],
+        venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
           {
             id: 1,
@@ -28,7 +33,7 @@ describe('AuctionsPage', () => {
             status: 'scheduled',
             createdAt: '2023-01-01',
             updatedAt: '2023-01-01',
-          } as unknown,
+          },
           {
             id: 2,
             venueId: 1,
@@ -36,7 +41,7 @@ describe('AuctionsPage', () => {
             status: 'in_progress',
             createdAt: '2023-01-01',
             updatedAt: '2023-01-01',
-          } as unknown,
+          },
         ],
         isLoading: false,
         isCreating: false,
@@ -50,7 +55,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      },
+      } as unknown as ReturnType<typeof useAuctionPage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -59,8 +64,8 @@ describe('AuctionsPage', () => {
         onCancelEdit: vi.fn(),
         onDelete: vi.fn(),
       },
-      t: ((key: string) => key) as unknown,
-    } as unknown as ReturnType<typeof useAuctionPage>);
+      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+    });
   });
 
   it('renders form and list', () => {
@@ -101,8 +106,8 @@ describe('AuctionsPage', () => {
     vi.mocked(useAuctionPage).mockReturnValue({
       state: {
         venues: [
-          { id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown,
-          { id: 2, name: 'Venue 2', createdAt: '2023-01-01' } as unknown,
+          { id: 1, name: 'Venue 1', createdAt: '2023-01-01' },
+          { id: 2, name: 'Venue 2', createdAt: '2023-01-01' },
         ],
         auctions: [],
         isLoading: false,
@@ -117,7 +122,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      },
+      } as unknown as ReturnType<typeof useAuctionPage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -126,8 +131,8 @@ describe('AuctionsPage', () => {
         onCancelEdit: vi.fn(),
         onDelete: vi.fn(),
       },
-      t: ((key: string) => key) as unknown,
-    } as unknown as ReturnType<typeof useAuctionPage>);
+      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+    });
 
     render(<AuctionsPage />);
     // Use combobox or find by display value. Since we mocked select to show options:
@@ -153,7 +158,7 @@ describe('AuctionsPage', () => {
 
     vi.mocked(useAuctionPage).mockReturnValue({
       state: {
-        venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown],
+        venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
           {
             id: 1,
@@ -162,7 +167,7 @@ describe('AuctionsPage', () => {
             status: 'scheduled',
             createdAt: '2023-01-01',
             updatedAt: '2023-01-01',
-          } as unknown,
+          },
         ],
         isLoading: false,
         isCreating: false,
@@ -176,7 +181,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      },
+      } as unknown as ReturnType<typeof useAuctionPage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -185,8 +190,8 @@ describe('AuctionsPage', () => {
         onEdit: mockOnEdit,
         onCancelEdit: vi.fn(),
       },
-      t: ((key: string) => key) as unknown,
-    } as unknown as ReturnType<typeof useAuctionPage>);
+      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+    });
 
     render(<AuctionsPage />);
 
@@ -202,7 +207,7 @@ describe('AuctionsPage', () => {
   it('calls status change (finish)', () => {
     vi.mocked(useAuctionPage).mockReturnValue({
       state: {
-        venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' } as unknown],
+        venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
           {
             id: 2,
@@ -211,7 +216,7 @@ describe('AuctionsPage', () => {
             status: 'in_progress',
             createdAt: '2023-01-01',
             updatedAt: '2023-01-01',
-          } as unknown,
+          },
         ],
         isLoading: false,
         isCreating: false,
@@ -225,7 +230,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      },
+      } as unknown as ReturnType<typeof useAuctionPage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -234,8 +239,8 @@ describe('AuctionsPage', () => {
         onEdit: vi.fn(),
         onCancelEdit: vi.fn(),
       },
-      t: ((key: string) => key) as unknown,
-    } as unknown as ReturnType<typeof useAuctionPage>);
+      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+    });
 
     render(<AuctionsPage />);
     const finishButton = screen.getByText('Admin.Auctions.finish');
