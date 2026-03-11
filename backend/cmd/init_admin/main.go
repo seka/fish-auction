@@ -33,7 +33,7 @@ func main() {
 		log.Fatalf("Failed to ping DB: %v", err)
 	}
 
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
 	ctx := context.Background()
 
@@ -47,12 +47,10 @@ func main() {
 		return
 	}
 
-	fmt.Println("No admin users found. Creating default admin...")
-
 	email := "admin@example.com"
 	password := "admin-password"
 
-	if err := uc.Execute(ctx, email, password); err != nil {
+	if _, err = uc.Execute(ctx, email, password); err != nil {
 		log.Fatalf("Failed to create admin: %v", err)
 	}
 

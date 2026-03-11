@@ -101,22 +101,6 @@ func (s *Server) registerPublicRoutes() {
 	s.authResetHandler.RegisterRoutes(s.router)
 	s.adminAuthResetHandler.RegisterRoutes(s.router)
 
-	// Users Registration (List Only Publicly)
-	s.router.HandleFunc("/api/fishermen", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.fishermanHandler.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	s.router.HandleFunc("/api/buyers", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.buyerHandler.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
 	s.router.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			s.buyerHandler.Login(w, r)
@@ -187,10 +171,12 @@ func (s *Server) registerAdminRoutes() {
 	adminSub.HandleFunc("/items/{id:[0-9]+}/sort-order", s.itemHandler.UpdateSortOrder).Methods(http.MethodPut)
 
 	// Fishermen
+	adminSub.HandleFunc("/fishermen", s.fishermanHandler.List).Methods(http.MethodGet)
 	adminSub.HandleFunc("/fishermen", s.fishermanHandler.Create).Methods(http.MethodPost)
 	adminSub.HandleFunc("/fishermen/{id:[0-9]+}", s.fishermanHandler.Delete).Methods(http.MethodDelete)
 
 	// Buyers
+	adminSub.HandleFunc("/buyers", s.buyerHandler.List).Methods(http.MethodGet)
 	adminSub.HandleFunc("/buyers", s.buyerHandler.Create).Methods(http.MethodPost)
 	adminSub.HandleFunc("/buyers/{id:[0-9]+}", s.buyerHandler.Delete).Methods(http.MethodDelete)
 
@@ -273,8 +259,9 @@ func (s *Server) Start(addr string) error {
 		addr = ":8080"
 	}
 	s.httpServer = &http.Server{
-		Addr:    addr,
-		Handler: s.router,
+		Addr:              addr,
+		Handler:           s.router,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {

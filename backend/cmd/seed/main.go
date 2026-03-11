@@ -79,7 +79,7 @@ func main() {
 
 	// Create Default Admin
 	fmt.Println("Creating default admin...")
-	repo := postgres.NewAdminRepository(db)
+	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
 	ctx := context.Background()
 
@@ -91,7 +91,7 @@ func main() {
 	} else {
 		email := "admin@example.com"
 		password := "admin-password"
-		if err := uc.Execute(ctx, email, password); err != nil {
+		if _, err = uc.Execute(ctx, email, password); err != nil {
 			log.Fatalf("Failed to create admin: %v", err)
 		}
 		fmt.Printf("Successfully created default admin user: %s\n", email)

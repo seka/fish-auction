@@ -41,7 +41,7 @@ func (m *AdminAuthMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		// Set admin ID in context
-		ctx := context.WithValue(r.Context(), "admin_id", adminID)
+		ctx := context.WithValue(r.Context(), AdminIDKey, adminID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

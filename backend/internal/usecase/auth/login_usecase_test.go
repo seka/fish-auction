@@ -5,27 +5,28 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type mockAdminRepository struct {
-	admin *entity.Admin
+	admin *model.Admin
 	err   error
 }
 
-func (m *mockAdminRepository) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+func (m *mockAdminRepository) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
 	if m.admin != nil && m.admin.ID == id {
 		return m.admin, nil
 	}
-	return nil, nil
+	return nil, &apperrors.NotFoundError{Resource: "Admin", ID: id}
 }
 
-func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -33,10 +34,10 @@ func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) 
 	if m.admin != nil && m.admin.Email == email {
 		return m.admin, nil
 	}
-	return nil, nil // Not found
+	return nil, &apperrors.NotFoundError{Resource: "Admin", ID: 0}
 }
 
-func (m *mockAdminRepository) Create(ctx context.Context, admin *entity.Admin) error {
+func (m *mockAdminRepository) Create(ctx context.Context, admin *model.Admin) error {
 	return nil
 }
 
@@ -52,7 +53,7 @@ func TestLoginUseCase_Execute(t *testing.T) {
 	// Generate a valid has for "admin-password"
 	hash, _ := bcrypt.GenerateFromPassword([]byte("admin-password"), bcrypt.MinCost)
 
-	validAdmin := &entity.Admin{
+	validAdmin := &model.Admin{
 		Email:        "admin@example.com",
 		PasswordHash: string(hash),
 	}
@@ -61,7 +62,7 @@ func TestLoginUseCase_Execute(t *testing.T) {
 		name      string
 		email     string
 		password  string
-		mockAdmin *entity.Admin
+		mockAdmin *model.Admin
 		mockErr   error
 		wantFound bool
 		wantErr   bool

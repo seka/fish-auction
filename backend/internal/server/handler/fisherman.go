@@ -73,12 +73,4 @@ func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/fishermen", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-}
+func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {}

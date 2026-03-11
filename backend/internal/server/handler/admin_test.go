@@ -10,6 +10,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
@@ -34,6 +35,11 @@ func TestAdminHandler_UpdatePassword(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPut, "/api/admin/password", bytes.NewReader(body))
 		req.AddCookie(&http.Cookie{Name: "admin_session", Value: "authenticated"})
 		req.AddCookie(&http.Cookie{Name: "admin_id", Value: "1"})
+
+		// Inject into context
+		ctx := context.WithValue(req.Context(), middleware.AdminIDKey, 1)
+		req = req.WithContext(ctx)
+
 		w := httptest.NewRecorder()
 
 		h.UpdatePassword(w, req)

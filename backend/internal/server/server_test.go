@@ -74,19 +74,13 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		expectedStatus int
 	}{
 		// --------------------------------------------------------------------
-		// 1. Public Routes Verification (Legacy/Public Insecure POST blocked)
-		// --------------------------------------------------------------------
-		{name: "Public_CreateFisherman_Blocked", method: http.MethodPost, path: "/api/fishermen", expectedStatus: http.StatusMethodNotAllowed},
-		{name: "Public_CreateBuyer_Blocked", method: http.MethodPost, path: "/api/buyers", expectedStatus: http.StatusMethodNotAllowed},
-		{name: "Public_ListFishermen_Allowed", method: http.MethodGet, path: "/api/fishermen", expectedStatus: http.StatusOK},
-		{name: "Public_ListBuyers_Allowed", method: http.MethodGet, path: "/api/buyers", expectedStatus: http.StatusOK},
-
-		// --------------------------------------------------------------------
-		// 2. Admin Routes Security Verification (Must be 401 without cookie)
+		// 1. Admin Routes Security Verification (Must be 401 without cookie)
 		// --------------------------------------------------------------------
 		// Fishermen
+		{name: "Admin_ListFishermen_NoAuth", method: http.MethodGet, path: "/api/admin/fishermen", expectedStatus: http.StatusUnauthorized},
 		{name: "Admin_CreateFisherman_NoAuth", method: http.MethodPost, path: "/api/admin/fishermen", expectedStatus: http.StatusUnauthorized},
 		// Buyers
+		{name: "Admin_ListBuyers_NoAuth", method: http.MethodGet, path: "/api/admin/buyers", expectedStatus: http.StatusUnauthorized},
 		{name: "Admin_CreateBuyer_NoAuth", method: http.MethodPost, path: "/api/admin/buyers", expectedStatus: http.StatusUnauthorized},
 		// Items
 		{name: "Admin_CreateItem_NoAuth", method: http.MethodPost, path: "/api/admin/items", expectedStatus: http.StatusUnauthorized},
@@ -131,6 +125,24 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			name:           "Admin_UpdateAuctionStatus_Authorized",
 			method:         http.MethodPatch,
 			path:           "/api/admin/auctions/1/status",
+			cookieName:     "admin_session",
+			cookieValue:    "authenticated",
+			expectedStatus: http.StatusOK,
+		},
+		// List Fishermen (Admin)
+		{
+			name:           "Admin_ListFishermen_Authorized",
+			method:         http.MethodGet,
+			path:           "/api/admin/fishermen",
+			cookieName:     "admin_session",
+			cookieValue:    "authenticated",
+			expectedStatus: http.StatusOK,
+		},
+		// List Buyers (Admin)
+		{
+			name:           "Admin_ListBuyers_Authorized",
+			method:         http.MethodGet,
+			path:           "/api/admin/buyers",
 			cookieName:     "admin_session",
 			cookieValue:    "authenticated",
 			expectedStatus: http.StatusOK,

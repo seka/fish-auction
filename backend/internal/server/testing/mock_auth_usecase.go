@@ -3,14 +3,14 @@ package testing
 import (
 	"context"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
 type MockLoginUseCase struct {
-	ExecuteFunc func(ctx context.Context, email, password string) (*entity.Admin, error)
+	ExecuteFunc func(ctx context.Context, email, password string) (*model.Admin, error)
 }
 
-func (m *MockLoginUseCase) Execute(ctx context.Context, email, password string) (*entity.Admin, error) {
+func (m *MockLoginUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, email, password)
 	}

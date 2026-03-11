@@ -35,7 +35,7 @@ func (m *BuyerAuthMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		// Set buyer ID in context
-		ctx := context.WithValue(r.Context(), "buyer_id", buyerID)
+		ctx := context.WithValue(r.Context(), BuyerIDKey, buyerID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

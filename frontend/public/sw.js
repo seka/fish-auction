@@ -1,4 +1,4 @@
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
     self.skipWaiting();
 });
 
@@ -17,7 +17,7 @@ self.addEventListener('push', function (event) {
     let data = {};
     try {
         data = event.data.json();
-    } catch (e) {
+    } catch {
         data = { title: 'New Notification', body: event.data.text() };
     }
 

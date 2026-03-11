@@ -1,0 +1,13 @@
+package datastore
+
+import (
+	"context"
+	"time"
+)
+
+// Cache defines the generic interface for low-level cache operations
+type Cache interface {
+	Get(ctx context.Context, key string) ([]byte, error)
+	Set(ctx context.Context, key string, value any, ttl time.Duration) error
+	Delete(ctx context.Context, key string) error
+}

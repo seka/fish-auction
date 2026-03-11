@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestVenueRepository_Delete_Conflict_Integration tests actual DB behavior
+// TestVenueStore_Delete_Conflict_Integration tests actual DB behavior
 // usage: go test -v -tags=integration ./internal/infrastructure/datastore/postgres/venue_delete_integration_test.go
-func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
+func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
 	// 1. Connect to DB
 	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -27,7 +27,7 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 		t.Skip("Skipping integration test: DB ping failed: ", err)
 	}
 
-	repo := postgres.NewVenueRepository(db)
+	repo := postgres.NewVenueStore(postgres.NewClient(db))
 
 	// 2. Setup Data
 	ctx := context.Background()
@@ -42,7 +42,7 @@ func TestVenueRepository_Delete_Conflict_Integration(t *testing.T) {
 	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 	now := time.Now().In(jst)
 	err = db.QueryRow(`
-		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) 
+		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
 	`, createdVenue.ID, now, now.Add(1*time.Hour), now).Scan(&auctionID)
 	assert.NoError(t, err)

@@ -4,13 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"log"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
+	cacheStore "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/seka/fish-auction/backend/migrations"
 )
 
@@ -27,134 +32,163 @@ type Repository interface {
 	NewAdminRepository() repository.AdminRepository // ... other repositories
 	NewPushRepository() repository.PushRepository
 	PasswordReset() repository.PasswordResetRepository
+	NewItemCacheInvalidator() repository.CacheInvalidator
 }
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db       *sql.DB
-	cache    *redis.Client
+	db       datastore.Database
+	cache    datastore.Cache
 	cacheTTL time.Duration
 }
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(connStr, redisAddr string, cacheTTL time.Duration) (Repository, *sql.DB, error) {
-	// Connect to database with retry
+func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
+	db, err := connectDB(cfg.DBConnectionURL())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := runMigrations(db); err != nil {
+		db.Close()
+		return nil, nil, err
+	}
+
+	redisClient, err := connectRedis(cfg.RedisAddr)
+	if err != nil {
+		db.Close()
+		return nil, nil, err
+	}
+
+	return &repositoryRegistry{
+		db:       postgres.NewClient(db),
+		cache:    cacheStore.NewClient(redisClient),
+		cacheTTL: cfg.CacheTTL,
+	}, db, nil
+}
+
+func connectDB(postgresAddr string) (*sql.DB, error) {
 	var db *sql.DB
 	var err error
 
-	for i := 0; i < 10; i++ {
-		db, err = sql.Open("postgres", connStr)
+	for range 10 {
+		db, err = sql.Open("postgres", postgresAddr)
 		if err == nil {
 			err = db.Ping()
 		}
 		if err == nil {
-			break
+			return db, nil
 		}
 		log.Printf("Failed to connect to DB: %v. Retrying in 2s...", err)
 		time.Sleep(2 * time.Second)
 	}
 
+	return nil, fmt.Errorf("could not connect to database after retries: %w", err)
+}
+
+func runMigrations(db *sql.DB) error {
+	entries, err := fs.ReadDir(migrations.FS, ".")
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not connect to database after retries: %w", err)
+		return fmt.Errorf("failed to read migrations directory: %w", err)
 	}
 
-	// Run migrations
-	migrationFiles := []string{
-		"001_init.sql",
+	var migrationFiles []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".sql") {
+			migrationFiles = append(migrationFiles, entry.Name())
+		}
 	}
+	sort.Strings(migrationFiles)
 
 	for _, file := range migrationFiles {
+		log.Printf("Applying migration: %s", file)
 		migrationSQL, err := migrations.FS.ReadFile(file)
 		if err != nil {
-			db.Close()
-			return nil, nil, fmt.Errorf("failed to read migration file %s: %w", file, err)
+			return fmt.Errorf("failed to read migration file %s: %w", file, err)
 		}
 
 		_, err = db.Exec(string(migrationSQL))
 		if err != nil {
-			// Check if error is due to table already existing or similar, depending on driver.
-			// For now, we propagate the error as it's critical for consistency.
-			// If 002 was already applied manually, 002 might fail if it's not idempotent.
-			// But we assume standard migration behavior or manual intervention if needed.
-			// Given the environment, simplest is to try running.
-			log.Printf("Migration %s failed (might be already applied): %v", file, err)
-			// We continue, but ideally we should have a proper migration tool.
+			log.Printf("Migration %s potential issue: %v", file, err)
 		}
 	}
+	return nil
+}
 
-	// ... (Redis connection code matches existing)
-
-	// Connect to Redis
+func connectRedis(redisAddr string) (*redis.Client, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
 	})
 
 	var redisErr error
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		redisErr = redisClient.Ping(context.Background()).Err()
 		if redisErr == nil {
-			break
+			return redisClient, nil
 		}
 		log.Printf("Failed to connect to Redis: %v. Retrying in 2s...", redisErr)
 		time.Sleep(2 * time.Second)
 	}
 
-	if redisErr != nil {
-		db.Close()
-		return nil, nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
-	}
+	redisClient.Close()
+	return nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
+}
 
-	return &repositoryRegistry{
-		db:       db,
-		cache:    redisClient,
-		cacheTTL: cacheTTL,
-	}, db, nil
+func (r *repositoryRegistry) newItemCompositeStore() *datastore.ItemCompositeStore {
+	repo := postgres.NewItemStore(r.db)
+	cache := cacheStore.NewItemStore(r.cache, r.cacheTTL)
+	return datastore.NewItemCompositeStore(repo, cache)
 }
 
 func (r *repositoryRegistry) NewItemRepository() repository.ItemRepository {
-	itemCache := cache.NewItemCache(r.cache, r.cacheTTL)
-	return postgres.NewItemRepository(r.db, itemCache)
+	return r.newItemCompositeStore()
+}
+
+func (r *repositoryRegistry) NewItemCacheInvalidator() repository.CacheInvalidator {
+	return r.newItemCompositeStore()
 }
 
 func (r *repositoryRegistry) NewBidRepository() repository.BidRepository {
-	return postgres.NewBidRepository(r.db)
+	return postgres.NewBidStore(r.db)
 }
 
 func (r *repositoryRegistry) NewBuyerRepository() repository.BuyerRepository {
-	buyerCache := cache.NewBuyerCache(r.cache, r.cacheTTL)
-	return postgres.NewBuyerRepository(r.db, buyerCache)
+	repo := postgres.NewBuyerStore(r.db)
+	cache := cacheStore.NewBuyerStore(r.cache, r.cacheTTL)
+	return datastore.NewBuyerCompositeStore(repo, cache)
 }
 
 func (r *repositoryRegistry) NewAuthenticationRepository() repository.AuthenticationRepository {
-	return postgres.NewAuthenticationRepository(r.db)
+	return postgres.NewAuthenticationStore(r.db)
 }
 
 func (r *repositoryRegistry) NewFishermanRepository() repository.FishermanRepository {
-	fishermanCache := cache.NewFishermanCache(r.cache, r.cacheTTL)
-	return postgres.NewFishermanRepository(r.db, fishermanCache)
+	repo := postgres.NewFishermanStore(r.db)
+	cache := cacheStore.NewFishermanStore(r.cache, r.cacheTTL)
+	return datastore.NewFishermanCompositeStore(repo, cache)
 }
 
 func (r *repositoryRegistry) NewTransactionManager() repository.TransactionManager {
-	return postgres.NewTransactionManager(r.db)
+	return r.db.TransactionManager()
 }
 
 func (r *repositoryRegistry) NewVenueRepository() repository.VenueRepository {
-	return postgres.NewVenueRepository(r.db)
+	return postgres.NewVenueStore(r.db)
 }
 
 func (r *repositoryRegistry) NewAuctionRepository() repository.AuctionRepository {
-	return postgres.NewAuctionRepository(r.db)
+	return postgres.NewAuctionStore(r.db)
 }
 
 func (r *repositoryRegistry) NewAdminRepository() repository.AdminRepository {
-	return postgres.NewAdminRepository(r.db)
+	return postgres.NewAdminStore(r.db)
 }
 
 func (r *repositoryRegistry) NewPushRepository() repository.PushRepository {
-	return postgres.NewPushRepository(r.db)
+	return postgres.NewPushStore(r.db)
 }
 
 func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository {
-	return postgres.NewPasswordResetRepository(r.db)
+	return postgres.NewPasswordResetStore(r.db)
 }

@@ -5,32 +5,32 @@ import { getVenues } from '@/src/api/venue';
 
 // Mocks
 vi.mock('@/src/api/venue', () => ({
-    getVenues: vi.fn(),
+  getVenues: vi.fn(),
 }));
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            retry: false,
-        },
+  defaultOptions: {
+    queries: {
+      retry: false,
     },
+  },
 });
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client= { queryClient } > { children } </QueryClientProvider>
+  <QueryClientProvider client={queryClient}> {children} </QueryClientProvider>
 );
 
 describe('usePublicVenues', () => {
-    it('fetches venues', async () => {
-        const mockVenues = [{ id: 1, name: 'Venue A' }];
-        (getVenues as any).mockResolvedValue(mockVenues);
+  it('fetches venues', async () => {
+    const mockVenues = [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }];
+    vi.mocked(getVenues).mockResolvedValue(mockVenues);
 
-        const { result } = renderHook(() => usePublicVenues(), { wrapper });
+    const { result } = renderHook(() => usePublicVenues(), { wrapper });
 
-        await waitFor(() => {
-            expect(result.current.venues).toEqual(mockVenues);
-        });
+    await waitFor(() => {
+      expect(result.current.venues).toEqual(mockVenues);
     });
+  });
 });

@@ -6,94 +6,103 @@ import { useFishermanPage } from './_hooks/useFishermanPage';
 // Mock hook
 vi.mock('./_hooks/useFishermanPage');
 vi.mock('next-intl', () => ({
-    useTranslations: () => (key: string) => key,
+  useTranslations: () => (key: string) => key,
 }));
 
 describe('AdminFishermenPage', () => {
-    const mockOnSubmit = vi.fn((e) => e.preventDefault());
-    const mockRegister = vi.fn();
+  const mockOnSubmit = vi.fn((e) => e.preventDefault());
+  const mockRegister = vi.fn();
+  const tMock = Object.assign((key: string) => key, {
+    rich: vi.fn(),
+    markup: vi.fn(),
+    raw: vi.fn(),
+    has: vi.fn(),
+  });
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        (useFishermanPage as any).mockReturnValue({
-            state: {
-                fishermen: [
-                    { id: 1, name: 'Fisherman 1' },
-                    { id: 2, name: 'Fisherman 2' },
-                ],
-                isLoading: false,
-                isCreating: false,
-                message: '',
-            },
-            form: {
-                register: mockRegister,
-                errors: {},
-            },
-            actions: {
-                onSubmit: mockOnSubmit,
-                onDelete: vi.fn(),
-            },
-            t: (key: string) => key,
-        });
-    });
+  beforeEach(() => {
+    vi.clearAllMocks();
 
-    it('renders titles and form', () => {
-        render(<AdminFishermenPage />);
-        expect(screen.getByText('Admin.Fishermen.title')).toBeInTheDocument();
-        expect(screen.getByText('Admin.Fishermen.register_title')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Admin.Fishermen.placeholder_name')).toBeInTheDocument();
+    vi.mocked(useFishermanPage).mockReturnValue({
+      state: {
+        fishermen: [
+          { id: 1, name: 'Fisherman 1' },
+          { id: 2, name: 'Fisherman 2' },
+        ],
+        isLoading: false,
+        isCreating: false,
+        isDeleting: false,
+        message: '',
+      },
+      form: {
+        register: mockRegister,
+        errors: { name: undefined },
+      } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      actions: {
+        onSubmit: mockOnSubmit,
+        onDelete: vi.fn(),
+      },
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
+  });
 
-    it('renders list of fishermen', () => {
-        render(<AdminFishermenPage />);
-        expect(screen.getByText('Fisherman 1')).toBeInTheDocument();
-        expect(screen.getByText('Fisherman 2')).toBeInTheDocument();
-    });
+  it('renders titles and form', () => {
+    render(<AdminFishermenPage />);
+    expect(screen.getByText('Admin.Fishermen.title')).toBeInTheDocument();
+    expect(screen.getByText('Admin.Fishermen.register_title')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Admin.Fishermen.placeholder_name')).toBeInTheDocument();
+  });
 
-    it('shows loading state', () => {
-        (useFishermanPage as any).mockReturnValue({
-            state: { fishermen: [], isLoading: true },
-            form: { register: mockRegister, errors: {} },
-            actions: { onSubmit: mockOnSubmit },
-            t: (key: string) => key,
-        });
-        render(<AdminFishermenPage />);
-        expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
-    });
+  it('renders list of fishermen', () => {
+    render(<AdminFishermenPage />);
+    expect(screen.getByText('Fisherman 1')).toBeInTheDocument();
+    expect(screen.getByText('Fisherman 2')).toBeInTheDocument();
+  });
 
-    it('shows empty state', () => {
-        (useFishermanPage as any).mockReturnValue({
-            state: { fishermen: [], isLoading: false },
-            form: { register: mockRegister, errors: {} },
-            actions: { onSubmit: mockOnSubmit },
-            t: (key: string) => key,
-        });
-        render(<AdminFishermenPage />);
-        expect(screen.getByText('Common.no_data')).toBeInTheDocument();
+  it('shows loading state', () => {
+    vi.mocked(useFishermanPage).mockReturnValue({
+      state: { fishermen: [], isLoading: true, isCreating: false, isDeleting: false, message: '' },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
+    render(<AdminFishermenPage />);
+    expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
+  });
 
-    it('submits form', () => {
-        render(<AdminFishermenPage />);
-        const button = screen.getByRole('button', { name: 'Common.register' });
-        fireEvent.click(button);
-        expect(mockOnSubmit).toHaveBeenCalled();
+  it('shows empty state', () => {
+    vi.mocked(useFishermanPage).mockReturnValue({
+      state: { fishermen: [], isLoading: false, isCreating: false, isDeleting: false, message: '' },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
+    render(<AdminFishermenPage />);
+    expect(screen.getByText('Common.no_data')).toBeInTheDocument();
+  });
 
-    it('calls delete action', () => {
-        const mockOnDelete = vi.fn();
-        (useFishermanPage as any).mockReturnValue({
-            state: {
-                fishermen: [{ id: 1, name: 'Fisherman 1' }],
-                isLoading: false,
-                isCreating: false,
-                isDeleting: false,
-            },
-            form: { register: mockRegister, errors: {} },
-            actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
-            t: (key: string) => key,
-        });
-        render(<AdminFishermenPage />);
-        fireEvent.click(screen.getAllByText('Common.delete')[0]);
-        expect(mockOnDelete).toHaveBeenCalledWith(1);
+  it('submits form', () => {
+    render(<AdminFishermenPage />);
+    const button = screen.getByRole('button', { name: 'Common.register' });
+    fireEvent.click(button);
+    expect(mockOnSubmit).toHaveBeenCalled();
+  });
+
+  it('calls delete action', () => {
+    const mockOnDelete = vi.fn();
+    vi.mocked(useFishermanPage).mockReturnValue({
+      state: {
+        fishermen: [{ id: 1, name: 'Fisherman 1' }],
+        isLoading: false,
+        isCreating: false,
+        isDeleting: false,
+        message: '',
+      },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
+    render(<AdminFishermenPage />);
+    fireEvent.click(screen.getAllByText('Common.delete')[0]);
+    expect(mockOnDelete).toHaveBeenCalledWith(1);
+  });
 });

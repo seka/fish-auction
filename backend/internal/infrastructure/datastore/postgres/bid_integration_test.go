@@ -8,15 +8,15 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
-	cache "github.com/seka/fish-auction/backend/internal/infrastructure/cache/redis"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
+	cache "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// TestItemRepository_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
+// TestItemStore_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
 // This is critical for CreateBidUseCase validation.
-func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
+func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	// 1. Connect to DB
 	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -32,9 +32,9 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	// 2. Setup Redis (Mock or Real)
 	// Using real redis from docker
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	itemCache := cache.NewItemCache(redisClient, 1*time.Minute)
+	itemCache := cache.NewItemStore(cache.NewClient(redisClient), 1*time.Minute)
 
-	repo := postgres.NewItemRepository(db, itemCache)
+	repo := postgres.NewItemStore(postgres.NewClient(db))
 
 	// Setup Data
 	ctx := context.Background()
@@ -50,7 +50,7 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	// Auction
 	var auctionID int
 	err = db.QueryRow(`
-		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) 
+		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
 	`, venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
 	assert.NoError(t, err)
@@ -108,7 +108,7 @@ func TestItemRepository_FindByID_IncludesHighestBid(t *testing.T) {
 	db.Exec("DELETE FROM buyers WHERE id = $1", buyerID)
 }
 
-func TestItemRepository_FindByID_NoBids(t *testing.T) {
+func TestItemStore_FindByID_NoBids(t *testing.T) {
 	// 1. Connect
 	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -122,8 +122,8 @@ func TestItemRepository_FindByID_NoBids(t *testing.T) {
 	}
 
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	itemCache := cache.NewItemCache(redisClient, 1*time.Minute)
-	repo := postgres.NewItemRepository(db, itemCache)
+	itemCache := cache.NewItemStore(cache.NewClient(redisClient), 1*time.Minute)
+	repo := postgres.NewItemStore(postgres.NewClient(db))
 	ctx := context.Background()
 
 	// 2. Setup Data (No Transaction this time)

@@ -6,18 +6,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/stretchr/testify/mock"
 )
 
 type mockAdminRepoForReqPwd struct {
-	admin *entity.Admin
+	admin *model.Admin
 	err   error
 }
 
-func (m *mockAdminRepoForReqPwd) Create(ctx context.Context, admin *entity.Admin) error { return nil }
-func (m *mockAdminRepoForReqPwd) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+func (m *mockAdminRepoForReqPwd) Create(ctx context.Context, admin *model.Admin) error { return nil }
+func (m *mockAdminRepoForReqPwd) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -26,7 +26,7 @@ func (m *mockAdminRepoForReqPwd) FindOneByEmail(ctx context.Context, email strin
 	}
 	return nil, nil
 }
-func (m *mockAdminRepoForReqPwd) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+func (m *mockAdminRepoForReqPwd) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	return nil, nil
 }
 func (m *mockAdminRepoForReqPwd) UpdatePassword(ctx context.Context, id int, password string) error {
@@ -67,12 +67,12 @@ func (m *mockEmailServiceForReqPwd) SendBuyerPasswordReset(ctx context.Context, 
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
-	validAdmin := &entity.Admin{ID: 1, Email: "test@example.com"}
+	validAdmin := &model.Admin{ID: 1, Email: "test@example.com"}
 
 	tests := []struct {
 		name        string
 		email       string
-		mockAdmin   *entity.Admin
+		mockAdmin   *model.Admin
 		mockFindErr error
 		mockRandErr error
 		mockDelErr  error
@@ -135,19 +135,6 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 			adminRepo := &mockAdminRepoForReqPwd{admin: tt.mockAdmin, err: tt.mockFindErr}
 			pwdResetRepo := &mockPwdResetRepoForReqPwd{}
-			if tt.mockCreErr != nil {
-				pwdResetRepo.On("DeleteAllByUserID", mock.Anything, mock.Anything, mock.Anything).Return(tt.mockDelErr) // Assuming clean up runs first? No, actually DeleteAll is called.
-				// Logic: DeleteAll then Create.
-				// If DeleteAll fails, Create isn't called? Reference logic:
-				/*
-					if err := u.pwdResetRepo.DeleteAllByUserID(ctx, admin.ID, "admin"); err != nil { return fmt.Errorf("failed to delete old tokens: %w", err) }
-					if err = u.pwdResetRepo.Create(...) ...
-				*/
-				// But previously the mock verified based on struct fields. Now with testify/mock, we must set expectations consistent with the code flow.
-			}
-
-			// To simplify, let's just allow any calls or set up specific ones based on test case.
-			// The original test table had mockDelErr and mockCreErr.
 
 			if tt.mockFindErr == nil && tt.mockAdmin != nil {
 				// Happy path for finding admin.

@@ -27,7 +27,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateFishermanRequest{Name: "Tuna Corp"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/fishermen", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -48,7 +48,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateFishermanRequest{Name: "Tuna Corp"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/fishermen", bytes.NewReader(body))
+		req := httptest.NewRequest(http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -69,7 +69,7 @@ func TestFishermanHandler_List(t *testing.T) {
 		mockReg := &mock.MockRegistry{ListFishermenUC: mockListUC}
 		h := handler.NewFishermanHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/fishermen", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/admin/fishermen", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -81,35 +81,15 @@ func TestFishermanHandler_List(t *testing.T) {
 }
 
 func TestFishermanHandler_RegisterRoutes(t *testing.T) {
-	t.Run("MethodNotAllowed_PUT", func(t *testing.T) {
-		mockReg := &mock.MockRegistry{}
-		h := handler.NewFishermanHandler(mockReg)
-		mux := http.NewServeMux()
-		h.RegisterRoutes(mux)
-
-		req := httptest.NewRequest(http.MethodPut, "/api/fishermen", nil)
-		w := httptest.NewRecorder()
-
-		mux.ServeHTTP(w, req)
-
-		if w.Code != http.StatusMethodNotAllowed {
-			t.Errorf("expected status 405, got %d", w.Code)
-		}
-	})
-
-	t.Run("MethodNotAllowed_POST", func(t *testing.T) {
-		mockReg := &mock.MockRegistry{}
-		h := handler.NewFishermanHandler(mockReg)
-		mux := http.NewServeMux()
-		h.RegisterRoutes(mux)
-
-		req := httptest.NewRequest(http.MethodPost, "/api/fishermen", nil)
-		w := httptest.NewRecorder()
-
-		mux.ServeHTTP(w, req)
-
-		if w.Code != http.StatusMethodNotAllowed {
-			t.Errorf("expected status 405, got %d", w.Code)
-		}
-	})
+	mockReg := &mock.MockRegistry{}
+	h := handler.NewFishermanHandler(mockReg)
+	mux := http.NewServeMux()
+	h.RegisterRoutes(mux)
+	// RegisterRoutes is now empty, so any request should be 404
+	req := httptest.NewRequest(http.MethodGet, "/api/fishermen", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected 404, got %d", w.Code)
+	}
 }

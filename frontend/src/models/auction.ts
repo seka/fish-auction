@@ -1,40 +1,44 @@
 export interface Venue {
-    id: number;
-    name: string;
-    location?: string;
-    description?: string;
-    createdAt: string;
+  id: number;
+  name: string;
+  location?: string;
+  description?: string;
+  createdAt: string;
 }
+
+export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface Auction {
-    id: number;
-    venueId: number;
-    auctionDate: string;
-    startTime?: string;
-    endTime?: string;
-    status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-    createdAt: string;
-    updatedAt: string;
+  id: number;
+  venueId: number;
+  auctionDate: string;
+  startTime?: string;
+  endTime?: string;
+  status: AuctionStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
+export type ItemStatus = 'Pending' | 'Sold' | 'Unsold' | 'Bidding';
+
 export interface AuctionItem {
-    id: number;
-    auctionId: number;
-    fishermanId: number;
-    fishType: string;
-    quantity: number;
-    unit: string;
-    status: string;
-    highestBid?: number;
-    highestBidderId?: number;
-    highestBidderName?: string;
-    sortOrder: number;
-    createdAt: string;
-    deletedAt?: string;
+  id: number;
+  auctionId: number;
+  fishermanId: number;
+  fishType: string;
+  quantity: number;
+  unit: string;
+  status: ItemStatus;
+  highestBid?: number;
+  highestBidderId?: number;
+  highestBidderName?: string;
+  sortOrder: number;
+  createdAt: string;
+  deletedAt?: string;
 }
 
 export interface Bid {
-    itemId: number;
-    buyerId: number;
-    price: number;
+  itemId: number;
+  buyerId: number;
+  price: number;
 }

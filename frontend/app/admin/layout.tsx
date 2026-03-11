@@ -1,10 +1,6 @@
-import { Sidebar } from './_components/organisms/Sidebar';
-import { AdminLayoutTemplate } from './_components/templates/AdminLayoutTemplate';
+import { Sidebar } from '@organisms';
+import { AdminLayoutTemplate } from '@templates';
 
-export default function AdminLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return <AdminLayoutTemplate sidebar={<Sidebar />}>{children}</AdminLayoutTemplate>;
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return <AdminLayoutTemplate sidebar={<Sidebar />}>{children}</AdminLayoutTemplate>;
 }

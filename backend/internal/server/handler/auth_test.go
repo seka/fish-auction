@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
@@ -17,8 +17,8 @@ import (
 func TestAuthHandler_Login(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockLoginUC := &mock.MockLoginUseCase{
-			ExecuteFunc: func(ctx context.Context, email, password string) (*entity.Admin, error) {
-				return &entity.Admin{ID: 1, Email: email}, nil
+			ExecuteFunc: func(ctx context.Context, email, password string) (*model.Admin, error) {
+				return &model.Admin{ID: 1, Email: email}, nil
 			},
 		}
 		mockReg := &mock.MockRegistry{LoginUC: mockLoginUC}
@@ -57,7 +57,7 @@ func TestAuthHandler_Login(t *testing.T) {
 
 	t.Run("InvalidCredentials", func(t *testing.T) {
 		mockLoginUC := &mock.MockLoginUseCase{
-			ExecuteFunc: func(ctx context.Context, email, password string) (*entity.Admin, error) {
+			ExecuteFunc: func(ctx context.Context, email, password string) (*model.Admin, error) {
 				return nil, nil // Returns nil, nil for invalid credentials (as per implementation inspection)
 			},
 		}

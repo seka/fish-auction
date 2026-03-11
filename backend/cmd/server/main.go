@@ -10,6 +10,22 @@ import (
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 )
 
+type handlers struct {
+	health         *handler.HealthHandler
+	fisherman      *handler.FishermanHandler
+	buyer          *handler.BuyerHandler
+	item           *handler.ItemHandler
+	bid            *handler.BidHandler
+	invoice        *handler.InvoiceHandler
+	auth           *handler.AuthHandler
+	venue          *handler.VenueHandler
+	auction        *handler.AuctionHandler
+	admin          *handler.AdminHandler
+	authReset      *handler.AuthResetHandler
+	adminAuthReset *handler.AdminAuthResetHandler
+	push           *handler.PushHandler
+}
+
 func main() {
 	// Load Config
 	cfg, err := config.Load()
@@ -18,15 +34,17 @@ func main() {
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	connStr := cfg.DBConnectionURL()
-	repoReg, db, err := registry.NewRepositoryRegistry(connStr, cfg.RedisAddr, cfg.CacheTTL)
+	repoReg, db, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
+	// Initialize Service Registry
+	serviceReg := registry.NewServiceRegistry(cfg)
+
 	// Initialize UseCase Registry
-	useCaseReg := registry.NewUseCaseRegistry(repoReg, cfg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg)
 
 	// Initialize Handlers
 	handlers := buildHandlers(useCaseReg)
@@ -52,22 +70,6 @@ func main() {
 	if err := srv.Start(cfg.ServerAddress); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
-}
-
-type handlers struct {
-	health         *handler.HealthHandler
-	fisherman      *handler.FishermanHandler
-	buyer          *handler.BuyerHandler
-	item           *handler.ItemHandler
-	bid            *handler.BidHandler
-	invoice        *handler.InvoiceHandler
-	auth           *handler.AuthHandler
-	venue          *handler.VenueHandler
-	auction        *handler.AuctionHandler
-	admin          *handler.AdminHandler
-	authReset      *handler.AuthResetHandler
-	adminAuthReset *handler.AdminAuthResetHandler
-	push           *handler.PushHandler
 }
 
 func buildHandlers(reg registry.UseCase) *handlers {

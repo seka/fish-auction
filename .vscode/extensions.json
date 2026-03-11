@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "golang.go",
+    "ms-azuretools.vscode-docker",
+    "editorconfig.editorconfig",
+    "golang.golangci-lint"
+  ]
+}

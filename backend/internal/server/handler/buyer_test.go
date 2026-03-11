@@ -13,6 +13,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
@@ -76,7 +77,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/api/buyers", bytes.NewReader(reqBody))
+			req := httptest.NewRequest(http.MethodPost, "/api/admin/buyers", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Create(w, req)
@@ -236,6 +237,16 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if idStr, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1) // Using 1 for simplicity
+				if idStr == "invalid" {
+					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
+				}
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 
 			h.GetMyPurchases(w, req)
@@ -285,7 +296,7 @@ func TestBuyerHandler_List(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
 			h := handler.NewBuyerHandler(mockReg)
-			req := httptest.NewRequest(http.MethodGet, "/api/buyers", nil)
+			req := httptest.NewRequest(http.MethodGet, "/api/admin/buyers", nil)
 			w := httptest.NewRecorder()
 			h.List(w, req)
 			if w.Code != tc.wantStatus {
@@ -339,6 +350,13 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if _, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 			h.GetCurrentBuyer(w, req)
 			if w.Code != tc.wantStatus {
@@ -386,6 +404,16 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if idStr, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+				if idStr == "invalid" {
+					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
+				}
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 			h.GetMyAuctions(w, req)
 			if w.Code != tc.wantStatus {
@@ -448,6 +476,16 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 			for k, v := range tc.cookies {
 				req.AddCookie(&http.Cookie{Name: k, Value: v})
 			}
+
+			// Inject into context if buyer_id cookie exists
+			if idStr, ok := tc.cookies["buyer_id"]; ok {
+				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+				if idStr == "invalid" {
+					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
+				}
+				req = req.WithContext(ctx)
+			}
+
 			w := httptest.NewRecorder()
 			h.UpdatePassword(w, req)
 			if w.Code != tc.wantStatus {
@@ -477,10 +515,6 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 	}
 
 	tests := []testCase{
-		{name: "Create_Post", method: http.MethodPost, path: "/api/buyers", wantStatus: http.StatusOK},
-		{name: "List_Get", method: http.MethodGet, path: "/api/buyers", wantStatus: http.StatusOK},
-		{name: "Create_Put", method: http.MethodPut, path: "/api/buyers", wantStatus: http.StatusMethodNotAllowed},
-
 		{name: "Login_Post", method: http.MethodPost, path: "/api/buyers/login", wantStatus: http.StatusOK},
 		{name: "Login_Get", method: http.MethodGet, path: "/api/buyers/login", wantStatus: http.StatusMethodNotAllowed},
 
@@ -524,9 +558,6 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 
 			// Handle Bodies for strict JSON decoders if method matches
 			if tc.method == http.MethodPost || tc.method == http.MethodPut {
-				if tc.path == "/api/buyers" {
-					body, _ = json.Marshal(dto.CreateBuyerRequest{})
-				}
 				if tc.path == "/api/buyers/login" {
 					body, _ = json.Marshal(dto.LoginBuyerRequest{})
 				}

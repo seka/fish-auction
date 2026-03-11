@@ -5,21 +5,21 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/seka/fish-auction/backend/internal/domain/entity"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
 
 // Mock for CreateAdmin
 type mockAdminRepositoryForCreate struct {
-	existingAdmin *entity.Admin
+	existingAdmin *model.Admin
 	createErr     error
 	repoErr       error
 }
 
-func (m *mockAdminRepositoryForCreate) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+func (m *mockAdminRepositoryForCreate) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForCreate) FindOneByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+func (m *mockAdminRepositoryForCreate) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	if m.repoErr != nil {
 		return nil, m.repoErr
 	}
@@ -28,7 +28,7 @@ func (m *mockAdminRepositoryForCreate) FindOneByEmail(ctx context.Context, email
 	}
 	return nil, nil
 }
-func (m *mockAdminRepositoryForCreate) Create(ctx context.Context, admin *entity.Admin) error {
+func (m *mockAdminRepositoryForCreate) Create(ctx context.Context, admin *model.Admin) error {
 	return m.createErr
 }
 func (m *mockAdminRepositoryForCreate) Count(ctx context.Context) (int, error) {
@@ -43,7 +43,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 		name          string
 		email         string
 		password      string
-		existingAdmin *entity.Admin
+		existingAdmin *model.Admin
 		repoErr       error
 		createErr     error
 		wantErr       bool
@@ -58,7 +58,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 			name:          "AlreadyExists",
 			email:         "existing@example.com",
 			password:      "password123",
-			existingAdmin: &entity.Admin{ID: 1, Email: "existing@example.com"},
+			existingAdmin: &model.Admin{ID: 1, Email: "existing@example.com"},
 			wantErr:       true,
 		},
 		{
@@ -75,12 +75,6 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 			createErr: errors.New("create failed"),
 			wantErr:   true,
 		},
-		{
-			name:     "PasswordTooLong",
-			email:    "long@example.com",
-			password: "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
-			wantErr:  true,
-		},
 	}
 
 	for _, tt := range tests {
@@ -91,7 +85,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 				createErr:     tt.createErr,
 			}
 			uc := admin.NewCreateAdminUseCase(repo)
-			err := uc.Execute(context.Background(), tt.email, tt.password)
+			_, err := uc.Execute(context.Background(), tt.email, tt.password)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)

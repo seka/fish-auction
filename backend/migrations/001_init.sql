@@ -102,6 +102,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_set_item_sort_order ON auction_items;
 CREATE TRIGGER trigger_set_item_sort_order
 BEFORE INSERT ON auction_items
 FOR EACH ROW

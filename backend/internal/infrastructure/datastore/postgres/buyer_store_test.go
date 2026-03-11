@@ -1,0 +1,68 @@
+package postgres_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestBuyerStore_Create(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewBuyerStore(postgres.NewClient(db))
+	buyer := &model.Buyer{Name: "Buyer1", Organization: "Org1", ContactInfo: "Contact1"}
+
+	mock.ExpectQuery("INSERT INTO buyers").
+		WithArgs(buyer.Name, buyer.Organization, buyer.ContactInfo).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+	created, err := repo.Create(context.Background(), buyer)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, created.ID)
+}
+
+func TestBuyerStore_FindByID(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewBuyerStore(postgres.NewClient(db))
+	id := 1
+
+	mock.ExpectQuery("SELECT id, name, organization, contact_info FROM buyers WHERE id = \\$1").
+		WithArgs(id).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "organization", "contact_info"}).
+			AddRow(1, "Buyer1", "Org1", "Contact1"))
+
+	found, err := repo.FindByID(context.Background(), id)
+	assert.NoError(t, err)
+	assert.Equal(t, id, found.ID)
+}
+
+func TestBuyerStore_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	repo := postgres.NewBuyerStore(postgres.NewClient(db))
+	id := 1
+
+	mock.ExpectExec("UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = \\$1").
+		WithArgs(id).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err = repo.Delete(context.Background(), id)
+	assert.NoError(t, err)
+}

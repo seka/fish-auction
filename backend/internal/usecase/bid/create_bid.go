@@ -19,11 +19,12 @@ type CreateBidUseCase interface {
 
 // createBidUseCase は入札作成処理を扱います
 type createBidUseCase struct {
-	itemRepo    repository.ItemRepository
-	bidRepo     repository.BidRepository
-	auctionRepo repository.AuctionRepository
-	pushUseCase notification.PushNotificationUseCase
-	txMgr       repository.TransactionManager
+	itemRepo     repository.ItemRepository
+	bidRepo      repository.BidRepository
+	auctionRepo  repository.AuctionRepository
+	pushUseCase  notification.PushNotificationUseCase
+	txMgr        repository.TransactionManager
+	itemCacheInv repository.CacheInvalidator
 }
 
 // NewCreateBidUseCase は CreateBidUseCase の新しいインスタンスを作成します
@@ -33,20 +34,22 @@ func NewCreateBidUseCase(
 	auctionRepo repository.AuctionRepository,
 	pushUseCase notification.PushNotificationUseCase,
 	txMgr repository.TransactionManager,
+	itemCacheInv repository.CacheInvalidator,
 ) CreateBidUseCase {
 	return &createBidUseCase{
-		itemRepo:    itemRepo,
-		bidRepo:     bidRepo,
-		auctionRepo: auctionRepo,
-		pushUseCase: pushUseCase,
-		txMgr:       txMgr,
+		itemRepo:     itemRepo,
+		bidRepo:      bidRepo,
+		auctionRepo:  auctionRepo,
+		pushUseCase:  pushUseCase,
+		txMgr:        txMgr,
+		itemCacheInv: itemCacheInv,
 	}
 }
 
 // Execute は新しい入札を作成します
 func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 	// 入札前にキャッシュを無効化して最新情報を取得する
-	_ = uc.itemRepo.InvalidateCache(ctx, bid.ItemID)
+	_ = uc.itemCacheInv.InvalidateCache(ctx, bid.ItemID)
 
 	// 商品を取得して auction_id を見つける
 	item, err := uc.itemRepo.FindByID(ctx, bid.ItemID)
@@ -141,7 +144,7 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 
 	if err == nil {
 		// 入札成功後にキャッシュを無効化（フロントエンドからの次回の取得で最新情報が見えるようにする）
-		_ = uc.itemRepo.InvalidateCache(ctx, bid.ItemID)
+		_ = uc.itemCacheInv.InvalidateCache(ctx, bid.ItemID)
 
 		// 高値更新通知の送信
 		// 前の最高入札者がいて、現在の入札者と異なる場合に通知
