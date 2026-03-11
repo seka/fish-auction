@@ -274,7 +274,6 @@ describe('AuctionDetailPage', () => {
 
     await waitFor(() => {
       expect(loginBuyer).toHaveBeenCalled();
-      window.location.reload();
       expect(window.location.reload).toHaveBeenCalled();
     });
 
