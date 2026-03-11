@@ -29,13 +29,30 @@ describe('useAuctionData', () => {
   });
 
   it('fetches auction and items', async () => {
-    const mockAuction = { id: 1, status: 'scheduled' };
-    const mockItems = [{ id: 101, name: 'Tuna' }];
+    const mockAuction = {
+      id: 1,
+      venueId: 1,
+      auctionDate: '2026-03-11',
+      status: 'scheduled' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const mockItems = [
+      {
+        id: 101,
+        auctionId: 1,
+        fishermanId: 1,
+        fishType: 'Tuna',
+        quantity: 10,
+        unit: 'kg',
+        status: 'Pending' as const,
+        sortOrder: 1,
+        createdAt: new Date().toISOString(),
+      },
+    ];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (getAuction as any).mockResolvedValueOnce(mockAuction);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (getAuctionItems as any).mockResolvedValueOnce(mockItems);
+    vi.mocked(getAuction).mockResolvedValueOnce(mockAuction);
+    vi.mocked(getAuctionItems).mockResolvedValueOnce(mockItems);
 
     const { result } = renderHook(() => useAuctionData(1), { wrapper });
 

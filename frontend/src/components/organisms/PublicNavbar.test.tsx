@@ -45,8 +45,7 @@ describe('PublicNavbar', () => {
       getQueryData: vi.fn(),
       invalidateQueries: vi.fn(),
       clear: vi.fn(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    } as unknown as ReturnType<typeof useQueryClient>);
     vi.mocked(usePathname).mockReturnValue('/');
   });
 
@@ -59,8 +58,23 @@ describe('PublicNavbar', () => {
     error: null,
     status: 'success',
     refetch: vi.fn(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+    isPending: false,
+    isPlaceholderData: false,
+    isRefetching: false,
+    isStale: false,
+    dataUpdatedAt: 0,
+    errorUpdatedAt: 0,
+    failureCount: 0,
+    failureReason: null,
+    isFetched: true,
+    isFetchedAfterMount: true,
+    isInitialLoading: false,
+    isLoadingError: false,
+    isPaused: false,
+    isRefetchError: false,
+    fetchStatus: 'idle',
+    promise: Promise.resolve(data),
+  } as unknown as UseQueryResult<Buyer | null, Error>);
 
   it('renders correctly when not logged in', () => {
     vi.mocked(useQuery).mockReturnValue(mockQuerySuccess(null));

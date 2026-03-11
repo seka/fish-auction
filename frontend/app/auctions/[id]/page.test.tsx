@@ -12,7 +12,7 @@ vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => {
     const t = (key: string) => (namespace ? `${namespace}.${key}` : key);
     t.raw = (key: string) => (namespace ? `${namespace}.${key}` : key);
-    t.rich = (key: string, values: any) => {
+    t.rich = (key: string, _values: Record<string, unknown>) => {
       const base = namespace ? `${namespace}.${key}` : key;
       return base;
     };
@@ -24,7 +24,6 @@ vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react')>();
   return {
     ...actual,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     use: (_: unknown) => {
       // Unwrapping promise for params
       // In test environment, we can just return a resolved object if passed as promise
@@ -114,7 +113,7 @@ describe('AuctionDetailPage', () => {
 
   it('renders loading state', () => {
     vi.mocked(useAuctionData).mockReturnValue({
-      auction: null,
+      auction: undefined,
       items: [],
       isLoading: true,
       refetchItems: vi.fn(),
@@ -207,7 +206,7 @@ describe('AuctionDetailPage', () => {
 
   it('renders no data when auction not found', () => {
     vi.mocked(useAuctionData).mockReturnValue({
-      auction: null,
+      auction: undefined,
       items: [],
       isLoading: false,
       refetchItems: vi.fn(),

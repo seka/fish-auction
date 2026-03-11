@@ -24,9 +24,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('usePublicVenues', () => {
   it('fetches venues', async () => {
-    const mockVenues = [{ id: 1, name: 'Venue A' }];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (getVenues as any).mockResolvedValue(mockVenues);
+    const mockVenues = [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }];
+    vi.mocked(getVenues).mockResolvedValue(mockVenues);
 
     const { result } = renderHook(() => usePublicVenues(), { wrapper });
 

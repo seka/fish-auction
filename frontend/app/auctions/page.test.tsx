@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionsListPage from './page';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { usePublicVenues } from './_hooks/usePublicVenues';
+import { Auction } from '@/src/models';
 
 // Mocks
 vi.mock('@tanstack/react-query', () => ({
@@ -25,20 +26,31 @@ vi.mock('@/src/api/auction', () => ({
 describe('AuctionsListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (usePublicVenues as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ venues: [{ id: 1, name: 'Venue A' }] });
+    vi.mocked(usePublicVenues).mockReturnValue({
+      venues: [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }],
+    });
   });
 
   it('renders loading state', () => {
-    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ data: undefined, isLoading: true });
+    vi.mocked(useQuery).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isFetching: true,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Auction[], Error>);
     render(<AuctionsListPage />);
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
 
   it('renders empty state when no auctions', () => {
-    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ data: [], isLoading: false });
+    vi.mocked(useQuery).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Auction[], Error>);
     render(<AuctionsListPage />);
     expect(screen.getByText('Public.Auctions.no_auctions')).toBeInTheDocument();
   });
@@ -52,6 +64,8 @@ describe('AuctionsListPage', () => {
         startTime: '10:00:00',
         endTime: '12:00:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 2,
@@ -60,10 +74,17 @@ describe('AuctionsListPage', () => {
         startTime: '10:00:00',
         endTime: '12:00:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     ];
-    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ data: mockAuctions, isLoading: false });
+    vi.mocked(useQuery).mockReturnValue({
+      data: mockAuctions,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Auction[], Error>);
 
     render(<AuctionsListPage />);
 
@@ -79,6 +100,8 @@ describe('AuctionsListPage', () => {
         startTime: '10:00',
         endTime: '12:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 2,
@@ -87,6 +110,8 @@ describe('AuctionsListPage', () => {
         startTime: '10:00',
         endTime: '12:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }, // Should be first
       {
         id: 3,
@@ -95,10 +120,17 @@ describe('AuctionsListPage', () => {
         startTime: '10:00',
         endTime: '12:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }, // Should be second (earlier than 2023-12-05)
     ];
-    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ data: mockAuctions, isLoading: false });
+    vi.mocked(useQuery).mockReturnValue({
+      data: mockAuctions,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Auction[], Error>);
     render(<AuctionsListPage />);
 
     screen.getAllByRole('link');
@@ -129,8 +161,9 @@ describe('AuctionsListPage', () => {
   });
 
   it('resolves and displays venue name', () => {
-    (usePublicVenues as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ venues: [{ id: 99, name: 'Special Venue' }] });
+    vi.mocked(usePublicVenues).mockReturnValue({
+      venues: [{ id: 99, name: 'Special Venue', createdAt: new Date().toISOString() }],
+    });
     const mockAuctions = [
       {
         id: 1,
@@ -139,10 +172,17 @@ describe('AuctionsListPage', () => {
         startTime: '10:00',
         endTime: '12:00',
         venueId: 99,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     ];
-    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ data: mockAuctions, isLoading: false });
+    vi.mocked(useQuery).mockReturnValue({
+      data: mockAuctions,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Auction[], Error>);
     render(<AuctionsListPage />);
 
     expect(screen.getByText('Special Venue')).toBeInTheDocument();
@@ -157,6 +197,8 @@ describe('AuctionsListPage', () => {
         startTime: '10:00',
         endTime: '12:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 2,
@@ -165,10 +207,17 @@ describe('AuctionsListPage', () => {
         startTime: '10:00',
         endTime: '12:00',
         venueId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     ];
-    (useQuery as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .mockReturnValue({ data: mockAuctions, isLoading: false });
+    vi.mocked(useQuery).mockReturnValue({
+      data: mockAuctions,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as UseQueryResult<Auction[], Error>);
     render(<AuctionsListPage />);
 
     expect(screen.getByText(/AuctionStatus.cancelled/)).toBeInTheDocument();
