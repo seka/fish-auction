@@ -26,7 +26,8 @@ describe('LoginPage', () => {
     vi.mocked(useLogin).mockReturnValue({
       login: mockLogin,
       isLoading: false,
-    } as unknown);
+      error: null,
+    });
   });
 
   it('renders login form', () => {

@@ -56,27 +56,56 @@ describe('AuctionDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (useAuctionData as any).mockReturnValue({
-      auction: { id: 1, status: 'in_progress', startTime: '10:00:00', endTime: '12:00:00' },
+    vi.mocked(useAuctionData).mockReturnValue({
+      auction: {
+        id: 1,
+        venueId: 1,
+        auctionDate: '2026-03-11',
+        startTime: '10:00:00',
+        endTime: '12:00:00',
+        status: 'in_progress',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
       items: [
-        { id: 101, fishType: 'Tuna', quantity: 10, unit: 'kg', status: 'Pending' },
-        { id: 102, fishType: 'Salmon', quantity: 5, unit: 'kg', status: 'Sold' },
+        {
+          id: 101,
+          auctionId: 1,
+          fishermanId: 1,
+          fishType: 'Tuna',
+          quantity: 10,
+          unit: 'kg',
+          status: 'Pending',
+          sortOrder: 1,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 102,
+          auctionId: 1,
+          fishermanId: 1,
+          fishType: 'Salmon',
+          quantity: 5,
+          unit: 'kg',
+          status: 'Sold',
+          sortOrder: 2,
+          createdAt: new Date().toISOString(),
+        },
       ],
       isLoading: false,
       refetchItems: mockRefetch,
     });
 
-    (useBidMutation as any).mockReturnValue({
+    vi.mocked(useBidMutation).mockReturnValue({
       submitBid: mockSubmitBid,
       isLoading: false,
     });
 
-    (useAuth as any).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue({
       isLoggedIn: true,
       isChecking: false,
     });
 
-    (isAuctionActive as any).mockReturnValue(true);
+    vi.mocked(isAuctionActive).mockReturnValue(true);
   });
 
   // Note: params prop in Next 15 is Promise.
@@ -84,7 +113,12 @@ describe('AuctionDetailPage', () => {
   const params = Promise.resolve({ id: '1' });
 
   it('renders loading state', () => {
-    (useAuctionData as unknown).mockReturnValue({ isLoading: true });
+    vi.mocked(useAuctionData).mockReturnValue({
+      auction: null,
+      items: [],
+      isLoading: true,
+      refetchItems: vi.fn(),
+    });
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -94,7 +128,7 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders login form if not logged in', () => {
-    (useAuth as unknown).mockReturnValue({ isLoggedIn: false, isChecking: false });
+    vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: false });
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -162,7 +196,7 @@ describe('AuctionDetailPage', () => {
     });
   });
   it('renders checking state', () => {
-    (useAuth as unknown).mockReturnValue({ isLoggedIn: false, isChecking: true });
+    vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: true });
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -172,7 +206,12 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders no data when auction not found', () => {
-    (useAuctionData as unknown).mockReturnValue({ auction: null, isLoading: false });
+    vi.mocked(useAuctionData).mockReturnValue({
+      auction: null,
+      items: [],
+      isLoading: false,
+      refetchItems: vi.fn(),
+    });
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -192,7 +231,7 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders out of hours message when auction is inactive', () => {
-    (isAuctionActive as unknown).mockReturnValue(false);
+    vi.mocked(isAuctionActive).mockReturnValue(false);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -212,9 +251,12 @@ describe('AuctionDetailPage', () => {
       value: { ...originalLocation, reload: vi.fn() },
     });
 
-    (useAuth as unknown).mockReturnValue({ isLoggedIn: false, isChecking: false });
+    vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: false });
     const { loginBuyer } = await import('@/src/api/buyer_auth');
-    (loginBuyer as unknown).mockResolvedValue({ id: 1 });
+    vi.mocked(loginBuyer).mockResolvedValue({
+      id: 1,
+      name: 'Buyer',
+    });
 
     render(
       <ToastProvider>
@@ -233,7 +275,7 @@ describe('AuctionDetailPage', () => {
 
     await waitFor(() => {
       expect(loginBuyer).toHaveBeenCalled();
-      (window.location.reload as any)();
+      window.location.reload();
       expect(window.location.reload).toHaveBeenCalled();
     });
 
