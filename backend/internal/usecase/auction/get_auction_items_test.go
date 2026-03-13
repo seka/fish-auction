@@ -21,6 +21,9 @@ func (m *mockItemRepository) Create(ctx context.Context, item *model.AuctionItem
 func (m *mockItemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	return nil, nil
 }
+func (m *mockItemRepository) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
+	return nil, nil
+}
 func (m *mockItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	return nil, nil
 }

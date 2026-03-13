@@ -20,6 +20,9 @@ func (m *mockAuctionRepoForDelete) Create(ctx context.Context, a *model.Auction)
 func (m *mockAuctionRepoForDelete) GetByID(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
+func (m *mockAuctionRepoForDelete) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	return nil, nil
+}
 func (m *mockAuctionRepoForDelete) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
 }

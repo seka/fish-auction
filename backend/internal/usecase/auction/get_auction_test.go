@@ -29,6 +29,9 @@ func (m *mockAuctionRepoForGet) GetByID(ctx context.Context, id int) (*model.Auc
 	}
 	return nil, nil
 }
+func (m *mockAuctionRepoForGet) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	return m.GetByID(ctx, id)
+}
 func (m *mockAuctionRepoForGet) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
 }

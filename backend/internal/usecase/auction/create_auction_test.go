@@ -28,6 +28,9 @@ func (m *mockAuctionRepoForCreate) Create(ctx context.Context, a *model.Auction)
 func (m *mockAuctionRepoForCreate) GetByID(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
+func (m *mockAuctionRepoForCreate) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	return nil, nil
+}
 func (m *mockAuctionRepoForCreate) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	// Actually interface compliance check:
 	// repository.AuctionRepository uses repository.AuctionFilters.

@@ -20,6 +20,9 @@ func (m *mockAuctionRepoForStatusUpdate) Create(ctx context.Context, a *model.Au
 func (m *mockAuctionRepoForStatusUpdate) GetByID(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
+func (m *mockAuctionRepoForStatusUpdate) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	return nil, nil
+}
 func (m *mockAuctionRepoForStatusUpdate) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
 }

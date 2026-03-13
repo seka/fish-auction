@@ -12,6 +12,7 @@ type MockItemRepository struct {
 	ListFunc            func(ctx context.Context, status string) ([]model.AuctionItem, error)
 	ListByAuctionFunc   func(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 	FindByIDFunc        func(ctx context.Context, id int) (*model.AuctionItem, error)
+	FindByIDWithLockFunc func(ctx context.Context, id int) (*model.AuctionItem, error)
 	UpdateFunc          func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 	DeleteFunc          func(ctx context.Context, id int) error
 	UpdateStatusFunc    func(ctx context.Context, id int, status model.ItemStatus) error
@@ -33,6 +34,10 @@ func (m *MockItemRepository) ListByAuction(ctx context.Context, auctionID int) (
 
 func (m *MockItemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	return m.FindByIDFunc(ctx, id)
+}
+
+func (m *MockItemRepository) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
+	return m.FindByIDWithLockFunc(ctx, id)
 }
 
 func (m *MockItemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {

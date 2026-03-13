@@ -315,7 +315,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			txCalled := false
 
 			mockItemRepo := &mock.MockItemRepository{
-				FindByIDFunc: func(ctx context.Context, id int) (*model.AuctionItem, error) {
+				FindByIDWithLockFunc: func(ctx context.Context, id int) (*model.AuctionItem, error) {
 					if tt.listItemsErr != nil {
 						return nil, tt.listItemsErr
 					}
@@ -349,13 +349,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			mockAuctionRepo := &mock.MockAuctionRepository{
-				GetByIDFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+				GetByIDWithLockFunc: func(ctx context.Context, id int) (*model.Auction, error) {
 					if tt.getAuctionErr != nil {
 						return nil, tt.getAuctionErr
 					}
-					// Only return mockAuction if it's set.
-					// If getAuctionErr is set, this might not be reached depending on implementation logic order.
-					// Tests above with getAuctionErr set expect error.
 					return tt.mockAuction, nil
 				},
 				UpdateFunc: func(ctx context.Context, auction *model.Auction) error {
