@@ -20,6 +20,7 @@ type AuctionFilters struct {
 type AuctionRepository interface {
 	Create(ctx context.Context, auction *model.Auction) (*model.Auction, error)
 	GetByID(ctx context.Context, id int) (*model.Auction, error)
+	GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error)
 	List(ctx context.Context, filters *AuctionFilters) ([]model.Auction, error)
 	ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error)
 	Update(ctx context.Context, auction *model.Auction) error
