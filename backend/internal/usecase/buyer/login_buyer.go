@@ -26,12 +26,11 @@ type loginBuyerUseCase struct {
 	authRepo  repository.AuthenticationRepository
 }
 
+var _ LoginBuyerUseCase = (*loginBuyerUseCase)(nil)
+
 // NewLoginBuyerUseCase creates a new instance of LoginBuyerUseCase
-func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) LoginBuyerUseCase {
-	return &loginBuyerUseCase{
-		buyerRepo: buyerRepo,
-		authRepo:  authRepo,
-	}
+func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) *loginBuyerUseCase {
+	return &loginBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo}
 }
 
 // Execute authenticates a buyer

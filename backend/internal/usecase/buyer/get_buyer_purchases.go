@@ -15,7 +15,9 @@ type getBuyerPurchasesUseCase struct {
 	bidRepo repository.BidRepository
 }
 
-func NewGetBuyerPurchasesUseCase(bidRepo repository.BidRepository) GetBuyerPurchasesUseCase {
+var _ GetBuyerPurchasesUseCase = (*getBuyerPurchasesUseCase)(nil)
+
+func NewGetBuyerPurchasesUseCase(bidRepo repository.BidRepository) *getBuyerPurchasesUseCase {
 	return &getBuyerPurchasesUseCase{
 		bidRepo: bidRepo,
 	}

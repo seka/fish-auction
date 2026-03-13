@@ -17,8 +17,10 @@ type getAuctionItemsUseCase struct {
 	itemRepo repository.ItemRepository
 }
 
+var _ GetAuctionItemsUseCase = (*getAuctionItemsUseCase)(nil)
+
 // NewGetAuctionItemsUseCase creates a new instance of GetAuctionItemsUseCase
-func NewGetAuctionItemsUseCase(itemRepo repository.ItemRepository) GetAuctionItemsUseCase {
+func NewGetAuctionItemsUseCase(itemRepo repository.ItemRepository) *getAuctionItemsUseCase {
 	return &getAuctionItemsUseCase{itemRepo: itemRepo}
 }
 

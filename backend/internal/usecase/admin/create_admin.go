@@ -21,8 +21,10 @@ type createAdminUseCase struct {
 	adminRepo repository.AdminRepository
 }
 
+var _ CreateAdminUseCase = (*createAdminUseCase)(nil)
+
 // NewCreateAdminUseCase creates a new instance of CreateAdminUseCase
-func NewCreateAdminUseCase(adminRepo repository.AdminRepository) CreateAdminUseCase {
+func NewCreateAdminUseCase(adminRepo repository.AdminRepository) *createAdminUseCase {
 	return &createAdminUseCase{adminRepo: adminRepo}
 }
 

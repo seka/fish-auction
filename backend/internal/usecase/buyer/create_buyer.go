@@ -19,12 +19,11 @@ type createBuyerUseCase struct {
 	authRepo  repository.AuthenticationRepository
 }
 
+var _ CreateBuyerUseCase = (*createBuyerUseCase)(nil)
+
 // NewCreateBuyerUseCase creates a new instance of CreateBuyerUseCase
-func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) CreateBuyerUseCase {
-	return &createBuyerUseCase{
-		buyerRepo: buyerRepo,
-		authRepo:  authRepo,
-	}
+func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) *createBuyerUseCase {
+	return &createBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo}
 }
 
 // Execute creates a new buyer with authentication

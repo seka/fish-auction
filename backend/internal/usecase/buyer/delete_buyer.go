@@ -10,11 +10,14 @@ type DeleteBuyerUseCase interface {
 	Execute(ctx context.Context, id int) error
 }
 
+var _ DeleteBuyerUseCase = (*deleteBuyerUseCase)(nil)
+
 type deleteBuyerUseCase struct {
 	repo repository.BuyerRepository
 }
 
-func NewDeleteBuyerUseCase(repo repository.BuyerRepository) DeleteBuyerUseCase {
+// NewDeleteBuyerUseCase creates a new instance of DeleteBuyerUseCase
+func NewDeleteBuyerUseCase(repo repository.BuyerRepository) *deleteBuyerUseCase {
 	return &deleteBuyerUseCase{repo: repo}
 }
 

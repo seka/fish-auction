@@ -12,13 +12,16 @@ type GetBuyerUseCase interface {
 }
 
 type getBuyerUseCase struct {
-	repo repository.BuyerRepository
+	buyerRepo repository.BuyerRepository
 }
 
-func NewGetBuyerUseCase(repo repository.BuyerRepository) GetBuyerUseCase {
-	return &getBuyerUseCase{repo: repo}
+var _ GetBuyerUseCase = (*getBuyerUseCase)(nil)
+
+// NewGetBuyerUseCase creates a new instance of GetBuyerUseCase
+func NewGetBuyerUseCase(buyerRepo repository.BuyerRepository) *getBuyerUseCase {
+	return &getBuyerUseCase{buyerRepo: buyerRepo}
 }
 
 func (uc *getBuyerUseCase) Execute(ctx context.Context, id int) (*model.Buyer, error) {
-	return uc.repo.FindByID(ctx, id)
+	return uc.buyerRepo.FindByID(ctx, id)
 }

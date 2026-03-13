@@ -17,9 +17,11 @@ type getAuctionUseCase struct {
 	repo repository.AuctionRepository
 }
 
+var _ GetAuctionUseCase = (*getAuctionUseCase)(nil)
+
 // NewGetAuctionUseCase creates a new instance of GetAuctionUseCase
-func NewGetAuctionUseCase(repo repository.AuctionRepository) GetAuctionUseCase {
-	return &getAuctionUseCase{repo: repo}
+func NewGetAuctionUseCase(auctionRepo repository.AuctionRepository) *getAuctionUseCase {
+	return &getAuctionUseCase{repo: auctionRepo}
 }
 
 // Execute gets an auction by ID

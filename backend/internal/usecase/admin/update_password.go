@@ -12,11 +12,14 @@ type UpdatePasswordUseCase interface {
 	Execute(ctx context.Context, id int, currentPassword, newPassword string) error
 }
 
+var _ UpdatePasswordUseCase = (*updatePasswordUseCase)(nil)
+
 type updatePasswordUseCase struct {
 	adminRepo repository.AdminRepository
 }
 
-func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository) UpdatePasswordUseCase {
+// NewUpdatePasswordUseCase creates a new instance of UpdatePasswordUseCase
+func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository) *updatePasswordUseCase {
 	return &updatePasswordUseCase{adminRepo: adminRepo}
 }
 

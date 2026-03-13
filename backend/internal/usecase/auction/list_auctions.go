@@ -17,9 +17,11 @@ type listAuctionsUseCase struct {
 	repo repository.AuctionRepository
 }
 
+var _ ListAuctionsUseCase = (*listAuctionsUseCase)(nil)
+
 // NewListAuctionsUseCase creates a new instance of ListAuctionsUseCase
-func NewListAuctionsUseCase(repo repository.AuctionRepository) ListAuctionsUseCase {
-	return &listAuctionsUseCase{repo: repo}
+func NewListAuctionsUseCase(auctionRepo repository.AuctionRepository) *listAuctionsUseCase {
+	return &listAuctionsUseCase{repo: auctionRepo}
 }
 
 // Execute lists auctions with optional filters

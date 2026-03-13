@@ -17,9 +17,11 @@ type listBuyersUseCase struct {
 	repo repository.BuyerRepository
 }
 
+var _ ListBuyersUseCase = (*listBuyersUseCase)(nil)
+
 // NewListBuyersUseCase creates a new instance of ListBuyersUseCase
-func NewListBuyersUseCase(repo repository.BuyerRepository) ListBuyersUseCase {
-	return &listBuyersUseCase{repo: repo}
+func NewListBuyersUseCase(buyerRepo repository.BuyerRepository) *listBuyersUseCase {
+	return &listBuyersUseCase{repo: buyerRepo}
 }
 
 // Execute lists all buyers

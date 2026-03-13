@@ -21,10 +21,13 @@ type resetPasswordUseCase struct {
 	authRepo     repository.AuthenticationRepository
 }
 
+var _ ResetPasswordUseCase = (*resetPasswordUseCase)(nil)
+
+// NewResetPasswordUseCase creates a new instance of ResetPasswordUseCase
 func NewResetPasswordUseCase(
 	pwdResetRepo repository.PasswordResetRepository,
 	authRepo repository.AuthenticationRepository,
-) ResetPasswordUseCase {
+) *resetPasswordUseCase {
 	return &resetPasswordUseCase{
 		pwdResetRepo: pwdResetRepo,
 		authRepo:     authRepo,

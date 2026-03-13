@@ -20,16 +20,18 @@ type updateAuctionStatusUseCase struct {
 	pushUseCase notification.PushNotificationUseCase
 }
 
+var _ UpdateAuctionStatusUseCase = (*updateAuctionStatusUseCase)(nil)
+
 // NewUpdateAuctionStatusUseCase creates a new instance of UpdateAuctionStatusUseCase
 func NewUpdateAuctionStatusUseCase(
 	auctionRepo repository.AuctionRepository,
 	buyerRepo repository.BuyerRepository,
-	pushUseCase notification.PushNotificationUseCase,
-) UpdateAuctionStatusUseCase {
+	pushNotification notification.PushNotificationUseCase,
+) *updateAuctionStatusUseCase {
 	return &updateAuctionStatusUseCase{
-		auctionRepo: auctionRepo,
-		buyerRepo:   buyerRepo,
-		pushUseCase: pushUseCase,
+		auctionRepo:      auctionRepo,
+		buyerRepo:        buyerRepo,
+		pushUseCase: pushNotification,
 	}
 }
 

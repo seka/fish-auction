@@ -20,8 +20,10 @@ type loginUseCase struct {
 	adminRepo repository.AdminRepository
 }
 
+var _ LoginUseCase = (*loginUseCase)(nil)
+
 // NewLoginUseCase creates a new instance of LoginUseCase
-func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
+func NewLoginUseCase(adminRepo repository.AdminRepository) *loginUseCase {
 	return &loginUseCase{adminRepo: adminRepo}
 }
 

@@ -24,11 +24,14 @@ type requestPasswordResetUseCase struct {
 	emailService service.AdminEmailService
 }
 
+var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
+
+// NewRequestPasswordResetUseCase creates a new instance of RequestPasswordResetUseCase
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.AdminEmailService,
-) RequestPasswordResetUseCase {
+) *requestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,

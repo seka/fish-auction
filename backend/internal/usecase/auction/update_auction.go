@@ -17,8 +17,10 @@ type updateAuctionUseCase struct {
 	repo repository.AuctionRepository
 }
 
+var _ UpdateAuctionUseCase = (*updateAuctionUseCase)(nil)
+
 // NewUpdateAuctionUseCase creates a new instance of UpdateAuctionUseCase
-func NewUpdateAuctionUseCase(repo repository.AuctionRepository) UpdateAuctionUseCase {
+func NewUpdateAuctionUseCase(repo repository.AuctionRepository) *updateAuctionUseCase {
 	return &updateAuctionUseCase{repo: repo}
 }
 

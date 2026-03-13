@@ -16,8 +16,10 @@ type deleteAuctionUseCase struct {
 	repo repository.AuctionRepository
 }
 
+var _ DeleteAuctionUseCase = (*deleteAuctionUseCase)(nil)
+
 // NewDeleteAuctionUseCase creates a new instance of DeleteAuctionUseCase
-func NewDeleteAuctionUseCase(repo repository.AuctionRepository) DeleteAuctionUseCase {
+func NewDeleteAuctionUseCase(repo repository.AuctionRepository) *deleteAuctionUseCase {
 	return &deleteAuctionUseCase{repo: repo}
 }
 
