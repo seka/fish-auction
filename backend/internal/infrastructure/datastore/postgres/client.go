@@ -12,8 +12,10 @@ type client struct {
 	db *sql.DB
 }
 
+var _ datastore.Database = (*client)(nil)
+
 // NewClient creates a new Database implementation
-func NewClient(db *sql.DB) datastore.Database {
+func NewClient(db *sql.DB) *client {
 	return &client{db: db}
 }
 

@@ -12,8 +12,10 @@ type cache struct {
 	client *goredis.Client
 }
 
+var _ datastore.Cache = (*cache)(nil)
+
 // NewClient creates a new Cache implementation using Redis
-func NewClient(client *goredis.Client) datastore.Cache {
+func NewClient(client *goredis.Client) *cache {
 	return &cache{client: client}
 }
 

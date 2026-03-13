@@ -15,8 +15,10 @@ type transactionManager struct {
 	db *sql.DB
 }
 
+var _ repository.TransactionManager = (*transactionManager)(nil)
+
 // NewTransactionManager creates a new transaction manager
-func NewTransactionManager(db *sql.DB) repository.TransactionManager {
+func NewTransactionManager(db *sql.DB) *transactionManager {
 	return &transactionManager{db: db}
 }
 
