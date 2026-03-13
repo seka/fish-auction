@@ -81,7 +81,8 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := buyer.NewCreateBuyerUseCase(buyerRepo, authRepo)
+			txMgr := &mock.MockTransactionManager{}
+			uc := buyer.NewCreateBuyerUseCase(buyerRepo, authRepo, txMgr)
 			got, err := uc.Execute(context.Background(), tt.input, "test@example.com", tt.password, "org", "contact")
 
 			if tt.wantErr != nil {

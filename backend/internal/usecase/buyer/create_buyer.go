@@ -17,13 +17,14 @@ type CreateBuyerUseCase interface {
 type createBuyerUseCase struct {
 	buyerRepo repository.BuyerRepository
 	authRepo  repository.AuthenticationRepository
+	txMgr     repository.TransactionManager
 }
 
 var _ CreateBuyerUseCase = (*createBuyerUseCase)(nil)
 
 // NewCreateBuyerUseCase creates a new instance of CreateBuyerUseCase
-func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) *createBuyerUseCase {
-	return &createBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo}
+func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository, txMgr repository.TransactionManager) *createBuyerUseCase {
+	return &createBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo, txMgr: txMgr}
 }
 
 // Execute creates a new buyer with authentication
@@ -34,29 +35,38 @@ func (uc *createBuyerUseCase) Execute(ctx context.Context, name, email, password
 		return nil, err
 	}
 
-	// Create buyer
-	buyer := &model.Buyer{
-		Name:         name,
-		Organization: organization,
-		ContactInfo:  contactInfo,
-	}
+	var createdBuyer *model.Buyer
+	err = uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Create buyer
+		buyer := &model.Buyer{
+			Name:         name,
+			Organization: organization,
+			ContactInfo:  contactInfo,
+		}
 
-	createdBuyer, err := uc.buyerRepo.Create(ctx, buyer)
+		buyerResult, err := uc.buyerRepo.Create(txCtx, buyer)
+		if err != nil {
+			return err
+		}
+		createdBuyer = buyerResult
+
+		// Create authentication
+		auth := &model.Authentication{
+			BuyerID:      createdBuyer.ID,
+			Email:        email,
+			PasswordHash: string(hashedPassword),
+			AuthType:     "password",
+		}
+
+		_, err = uc.authRepo.Create(txCtx, auth)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		return nil, err
-	}
-
-	// Create authentication
-	auth := &model.Authentication{
-		BuyerID:      createdBuyer.ID,
-		Email:        email,
-		PasswordHash: string(hashedPassword),
-		AuthType:     "password",
-	}
-
-	_, err = uc.authRepo.Create(ctx, auth)
-	if err != nil {
-		// TODO: Consider rollback or compensation logic here
 		return nil, err
 	}
 
