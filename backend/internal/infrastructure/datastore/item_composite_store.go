@@ -17,6 +17,7 @@ type ItemStore interface {
 	List(ctx context.Context, status string) ([]model.AuctionItem, error)
 	ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 	FindByID(ctx context.Context, id int) (*model.AuctionItem, error)
+	FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error)
 	UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error
 	Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 	Delete(ctx context.Context, id int) error
@@ -59,6 +60,16 @@ func (s *ItemCompositeStore) FindByID(ctx context.Context, id int) (*model.Aucti
 		return nil, err
 	}
 	_ = s.cache.Set(ctx, id, item)
+	return item, nil
+}
+
+func (s *ItemCompositeStore) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
+	// 悲観的ロックを行う場合はキャッシュをバイパスする
+	item, err := s.store.FindByIDWithLock(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	// ロック取得後の値でキャッシュは更新しない（トランザクション終了後に別の場所で無効化されるため）
 	return item, nil
 }
 

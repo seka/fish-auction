@@ -61,6 +61,22 @@ func (r *auctionStore) GetByID(ctx context.Context, id int) (*model.Auction, err
 	return &a, nil
 }
 
+func (r *auctionStore) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
+			  FROM auctions WHERE id = $1 FOR UPDATE`
+
+	var a model.Auction
+	err := r.db.QueryRow(ctx, query, id).
+		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.NotFoundError{Resource: "Auction", ID: id}
+		}
+		return nil, err
+	}
+	return &a, nil
+}
+
 func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions`

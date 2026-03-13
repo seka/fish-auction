@@ -194,6 +194,66 @@ func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 	return e.ToModel(), nil
 }
 
+func (r *itemStore) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
+	var e entity.AuctionItem
+	var highestBid sql.NullInt64
+	var highestBidderID sql.NullInt64
+	var highestBidderName sql.NullString
+
+	query := `
+		SELECT
+			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
+			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
+			t_max.max_price as highest_bid,
+			t_max.buyer_id as highest_bidder_id,
+			b.name as highest_bidder_name
+		FROM auction_items ai
+		LEFT JOIN (
+			SELECT
+				t1.item_id,
+				MAX(t1.price) as max_price,
+				(SELECT t2.buyer_id FROM transactions t2
+				 WHERE t2.item_id = t1.item_id
+				 ORDER BY t2.price DESC, t2.created_at ASC
+				 LIMIT 1) as buyer_id
+			FROM transactions t1
+			WHERE t1.item_id = $1
+			GROUP BY t1.item_id
+		) t_max ON ai.id = t_max.item_id
+		LEFT JOIN buyers b ON t_max.buyer_id = b.id
+		WHERE ai.id = $1
+		FOR UPDATE OF ai
+	`
+
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
+		&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+		&e.SortOrder,
+		&highestBid, &highestBidderID, &highestBidderName,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.NotFoundError{Resource: "Item", ID: id}
+		}
+		return nil, err
+	}
+
+	if highestBid.Valid {
+		bid := int(highestBid.Int64)
+		e.HighestBid = &bid
+	}
+	if highestBidderID.Valid {
+		bidderID := int(highestBidderID.Int64)
+		e.HighestBidderID = &bidderID
+	}
+	if highestBidderName.Valid {
+		e.HighestBidderName = &highestBidderName.String
+	}
+
+	return e.ToModel(), nil
+}
+
 func (r *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	return err
