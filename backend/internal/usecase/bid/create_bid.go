@@ -50,91 +50,45 @@ func NewCreateBidUseCase(
 
 // Execute は新しい入札を作成します
 func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
-	// 入札前にキャッシュを無効化して最新情報を取得する
-	_ = uc.itemCacheInv.InvalidateCache(ctx, bid.ItemID)
-
-	// 商品を取得して auction_id を見つける
-	item, err := uc.itemRepo.FindByID(ctx, bid.ItemID)
-	if err != nil {
-		return nil, err
-	}
-
-	if item == nil {
-		return nil, &errors.ValidationError{
-			Field:   "item_id",
-			Message: "item not found",
-		}
-	}
-
-	// 入札上乗せ額の検証
-	currentPrice := 0
-	if item.HighestBid != nil {
-		currentPrice = *item.HighestBid
-	}
-	minIncrement := getMinimumBidIncrement(currentPrice)
-	if bid.Price < currentPrice+minIncrement {
-		return nil, &errors.ValidationError{
-			Field:   "price",
-			Message: fmt.Sprintf("Bid price must be at least %d", currentPrice+minIncrement),
-		}
-	}
-
-	// オークション情報を取得して入札期間をチェック
-	auction, err := uc.auctionRepo.GetByID(ctx, item.AuctionID)
-	if err != nil {
-		return nil, err
-	}
-
-	// オークションが入札時間内かどうかチェック
-	if auction.StartTime != nil && auction.EndTime != nil {
-		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-		now := time.Now().In(jst)
-
-		// 開始日時と終了日時を作成
-		startDateTime := time.Date(
-			auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
-			auction.StartTime.Hour(), auction.StartTime.Minute(), auction.StartTime.Second(), 0, jst,
-		)
-		endDateTime := time.Date(
-			auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
-			auction.EndTime.Hour(), auction.EndTime.Minute(), auction.EndTime.Second(), 0, jst,
-		)
-
-		if now.Before(startDateTime) || now.After(endDateTime) {
-			return nil, &errors.ValidationError{
-				Field: "auction_time",
-				Message: fmt.Sprintf("Bidding is not allowed outside auction hours (%02d:%02d - %02d:%02d)",
-					auction.StartTime.Hour(), auction.StartTime.Minute(),
-					auction.EndTime.Hour(), auction.EndTime.Minute()),
-			}
-		}
-
-		// 自動延長: 終了5分前に入札があった場合、5分延長する
-		const extensionThreshold = 5 * time.Minute
-		const extensionDuration = 5 * time.Minute
-
-		if endDateTime.Sub(now) <= extensionThreshold {
-			newEndTime := endDateTime.Add(extensionDuration)
-			// 現在の実装では、DBは時間（HH:mm:ss）のみを考慮する設計上の制約がある可能性があります。
-			// 本来であれば日付を跨ぐ場合に日付フィールドも更新すべきですが、
-			// 現状のMVP/プロトタイプ実装として、終了時間の時間部分のみを更新します。
-			// ※ 23:59:59 を超えて延長する場合の挙動については別途検討が必要です。
-
-			// 厳密には、基となる time オブジェクトを更新すべきです。
-			newEndTimePure := time.Date(0, 1, 1, newEndTime.Hour(), newEndTime.Minute(), newEndTime.Second(), 0, jst)
-			auction.EndTime = &newEndTimePure
-
-			if err := uc.auctionRepo.Update(ctx, auction); err != nil {
-				// 延長通知に失敗した場合でも、入札の整合性を保つためエラーとします。
-				return nil, fmt.Errorf("failed to extend auction: %w", err)
-			}
-		}
-	}
-
 	var result *model.Bid
+	var lockedItem *model.AuctionItem
 
-	err = uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
-		// 入札レコードを作成
+	err := uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+		// 1. ロックを取得して最新の商品情報を取得
+		item, err := uc.itemRepo.FindByIDWithLock(txCtx, bid.ItemID)
+		if err != nil {
+			return err
+		}
+		if item == nil {
+			return &errors.ValidationError{
+				Field:   "item_id",
+				Message: "item not found",
+			}
+		}
+		lockedItem = item
+
+		// 2. 入札価格の検証
+		if err := uc.validateBidPrice(item, bid.Price); err != nil {
+			return err
+		}
+
+		// 3. オークション情報を取得（必要に応じてロック）して入札期間をチェック
+		auction, err := uc.auctionRepo.GetByIDWithLock(txCtx, item.AuctionID)
+		if err != nil {
+			return err
+		}
+
+		// 4. 入札期間のチェック
+		if err := uc.validateAuctionPeriod(auction); err != nil {
+			return err
+		}
+
+		// 5. 自動延長処理
+		if err := uc.extendAuctionIfNeeded(txCtx, auction); err != nil {
+			return err
+		}
+
+		// 6. 入札レコードを作成
 		created, err := uc.bidRepo.Create(txCtx, bid)
 		if err != nil {
 			return err
@@ -144,35 +98,108 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 		return nil
 	})
 
-	if err == nil {
-		// 入札成功後にキャッシュを無効化（フロントエンドからの次回の取得で最新情報が見えるようにする）
-		_ = uc.itemCacheInv.InvalidateCache(ctx, bid.ItemID)
+	if err != nil {
+		return nil, err
+	}
 
-		// 高値更新通知の送信
-		// 前の最高入札者がいて、現在の入札者と異なる場合に通知
-		if item.HighestBidderID != nil && *item.HighestBidderID != bid.BuyerID {
-			log.Printf("Outbid detected. Sending notification to previous bidder (ID: %d). Current bidder (ID: %d)", *item.HighestBidderID, bid.BuyerID)
-			payload := map[string]interface{}{
-				"title": "高値更新されました",
-				"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price),
-				"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
-			}
-			// 非同期で送信してもよいが、ここではシンプルに呼び出し
-			// エラーはログ出力のみとし、入札処理自体を失敗させない
-			_ = uc.pushUseCase.SendNotification(ctx, *item.HighestBidderID, payload)
-		} else {
-			if item.HighestBidderID == nil {
-				log.Printf("No previous bidder for item %d. Skip notification.", item.ID)
-			} else if *item.HighestBidderID == bid.BuyerID {
-				log.Printf("Current bidder %d is the same as previous bidder. Skip notification.", bid.BuyerID)
-			}
+	// 7. 入札成功後の後処理（トランザクション外）
+	uc.invalidateCache(ctx, result.ItemID)
+	uc.notifyOutbid(ctx, result, lockedItem)
+
+	return result, nil
+}
+
+func (uc *createBidUseCase) validateBidPrice(item *model.AuctionItem, bidPrice int) error {
+	currentPrice := 0
+	if item.HighestBid != nil {
+		currentPrice = *item.HighestBid
+	}
+
+	minIncrement := uc.getMinimumBidIncrement(currentPrice)
+	if bidPrice < currentPrice+minIncrement {
+		return &errors.ValidationError{
+			Field:   "price",
+			Message: fmt.Sprintf("Bid price must be at least %d", currentPrice+minIncrement),
+		}
+	}
+	return nil
+}
+
+func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error {
+	if auction.StartTime == nil || auction.EndTime == nil {
+		return nil
+	}
+
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
+
+	startDateTime := time.Date(
+		auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
+		auction.StartTime.Hour(), auction.StartTime.Minute(), auction.StartTime.Second(), 0, jst,
+	)
+	endDateTime := time.Date(
+		auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
+		auction.EndTime.Hour(), auction.EndTime.Minute(), auction.EndTime.Second(), 0, jst,
+	)
+
+	if now.Before(startDateTime) || now.After(endDateTime) {
+		return &errors.ValidationError{
+			Field: "auction_time",
+			Message: fmt.Sprintf("Bidding is not allowed outside auction hours (%02d:%02d - %02d:%02d)",
+				auction.StartTime.Hour(), auction.StartTime.Minute(),
+				auction.EndTime.Hour(), auction.EndTime.Minute()),
+		}
+	}
+	return nil
+}
+
+func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *model.Auction) error {
+	if auction.StartTime == nil || auction.EndTime == nil {
+		return nil
+	}
+
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
+
+	endDateTime := time.Date(
+		auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
+		auction.EndTime.Hour(), auction.EndTime.Minute(), auction.EndTime.Second(), 0, jst,
+	)
+
+	// 自動延長ロジック
+	const extensionThreshold = 5 * time.Minute
+	const extensionDuration = 5 * time.Minute
+
+	if endDateTime.Sub(now) <= extensionThreshold {
+		newEndTime := endDateTime.Add(extensionDuration)
+		newEndTimePure := time.Date(0, 1, 1, newEndTime.Hour(), newEndTime.Minute(), newEndTime.Second(), 0, jst)
+		auction.EndTime = &newEndTimePure
+
+		if err := uc.auctionRepo.Update(ctx, auction); err != nil {
+			return fmt.Errorf("failed to extend auction: %w", err)
 		}
 	}
 
-	return result, err
+	return nil
 }
 
-func getMinimumBidIncrement(currentPrice int) int {
+func (uc *createBidUseCase) invalidateCache(ctx context.Context, itemID int) {
+	_ = uc.itemCacheInv.InvalidateCache(ctx, itemID)
+}
+
+func (uc *createBidUseCase) notifyOutbid(ctx context.Context, bid *model.Bid, item *model.AuctionItem) {
+	if item.HighestBidderID != nil && *item.HighestBidderID != bid.BuyerID {
+		log.Printf("Outbid detected. Sending notification to previous bidder (ID: %d). Current bidder (ID: %d)", *item.HighestBidderID, bid.BuyerID)
+		payload := map[string]interface{}{
+			"title": "高値更新されました",
+			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price),
+			"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
+		}
+		_ = uc.pushUseCase.SendNotification(ctx, *item.HighestBidderID, payload)
+	}
+}
+
+func (uc *createBidUseCase) getMinimumBidIncrement(currentPrice int) int {
 	if currentPrice < 1000 {
 		return 100
 	}
