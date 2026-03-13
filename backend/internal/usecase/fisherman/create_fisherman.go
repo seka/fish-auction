@@ -17,8 +17,10 @@ type createFishermanUseCase struct {
 	repo repository.FishermanRepository
 }
 
+var _ CreateFishermanUseCase = (*createFishermanUseCase)(nil)
+
 // NewCreateFishermanUseCase creates a new instance of CreateFishermanUseCase
-func NewCreateFishermanUseCase(repo repository.FishermanRepository) CreateFishermanUseCase {
+func NewCreateFishermanUseCase(repo repository.FishermanRepository) *createFishermanUseCase {
 	return &createFishermanUseCase{repo: repo}
 }
 

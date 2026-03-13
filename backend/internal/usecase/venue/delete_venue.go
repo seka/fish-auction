@@ -16,8 +16,10 @@ type deleteVenueUseCase struct {
 	repo repository.VenueRepository
 }
 
+var _ DeleteVenueUseCase = (*deleteVenueUseCase)(nil)
+
 // NewDeleteVenueUseCase creates a new instance of DeleteVenueUseCase
-func NewDeleteVenueUseCase(repo repository.VenueRepository) DeleteVenueUseCase {
+func NewDeleteVenueUseCase(repo repository.VenueRepository) *deleteVenueUseCase {
 	return &deleteVenueUseCase{repo: repo}
 }
 

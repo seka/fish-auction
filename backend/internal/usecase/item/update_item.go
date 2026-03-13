@@ -11,11 +11,14 @@ type UpdateItemUseCase interface {
 	Execute(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 }
 
+var _ UpdateItemUseCase = (*updateItemUseCase)(nil)
+
 type updateItemUseCase struct {
 	repo repository.ItemRepository
 }
 
-func NewUpdateItemUseCase(repo repository.ItemRepository) UpdateItemUseCase {
+// NewUpdateItemUseCase creates a new instance of UpdateItemUseCase
+func NewUpdateItemUseCase(repo repository.ItemRepository) *updateItemUseCase {
 	return &updateItemUseCase{repo: repo}
 }
 

@@ -10,14 +10,15 @@ type ReorderItemsUseCase interface {
 	Execute(ctx context.Context, auctionID int, ids []int) error
 }
 
+var _ ReorderItemsUseCase = (*reorderItemsUseCase)(nil)
+
 type reorderItemsUseCase struct {
 	itemRepo repository.ItemRepository
 }
 
-func NewReorderItemsUseCase(itemRepo repository.ItemRepository) ReorderItemsUseCase {
-	return &reorderItemsUseCase{
-		itemRepo: itemRepo,
-	}
+// NewReorderItemsUseCase creates a new instance of ReorderItemsUseCase
+func NewReorderItemsUseCase(itemRepo repository.ItemRepository) *reorderItemsUseCase {
+	return &reorderItemsUseCase{itemRepo: itemRepo}
 }
 
 func (u *reorderItemsUseCase) Execute(ctx context.Context, auctionID int, ids []int) error {

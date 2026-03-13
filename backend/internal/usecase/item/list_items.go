@@ -17,8 +17,10 @@ type listItemsUseCase struct {
 	repo repository.ItemRepository
 }
 
+var _ ListItemsUseCase = (*listItemsUseCase)(nil)
+
 // NewListItemsUseCase creates a new instance of ListItemsUseCase
-func NewListItemsUseCase(repo repository.ItemRepository) ListItemsUseCase {
+func NewListItemsUseCase(repo repository.ItemRepository) *listItemsUseCase {
 	return &listItemsUseCase{repo: repo}
 }
 

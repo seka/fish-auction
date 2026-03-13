@@ -18,8 +18,12 @@ type listInvoicesUseCase struct {
 }
 
 // NewListInvoicesUseCase creates a new instance of ListInvoicesUseCase
-func NewListInvoicesUseCase(bidRepo repository.BidRepository) ListInvoicesUseCase {
-	return &listInvoicesUseCase{bidRepo: bidRepo}
+var _ ListInvoicesUseCase = (*listInvoicesUseCase)(nil)
+
+func NewListInvoicesUseCase(bidRepo repository.BidRepository) *listInvoicesUseCase {
+	return &listInvoicesUseCase{
+		bidRepo: bidRepo,
+	}
 }
 
 // Execute lists all invoices grouped by buyer

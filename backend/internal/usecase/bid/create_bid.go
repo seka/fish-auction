@@ -27,7 +27,9 @@ type createBidUseCase struct {
 	itemCacheInv repository.CacheInvalidator
 }
 
-// NewCreateBidUseCase は CreateBidUseCase の新しいインスタンスを作成します
+var _ CreateBidUseCase = (*createBidUseCase)(nil)
+
+// NewCreateBidUseCase creates a new instance of CreateBidUseCase
 func NewCreateBidUseCase(
 	itemRepo repository.ItemRepository,
 	bidRepo repository.BidRepository,
@@ -35,7 +37,7 @@ func NewCreateBidUseCase(
 	pushUseCase notification.PushNotificationUseCase,
 	txMgr repository.TransactionManager,
 	itemCacheInv repository.CacheInvalidator,
-) CreateBidUseCase {
+) *createBidUseCase {
 	return &createBidUseCase{
 		itemRepo:     itemRepo,
 		bidRepo:      bidRepo,

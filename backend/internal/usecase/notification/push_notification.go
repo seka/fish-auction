@@ -20,14 +20,13 @@ type pushNotificationUseCase struct {
 	pushNotificationService service.PushNotificationService
 }
 
-// NewPushNotificationUseCase creates a new instance
-func NewPushNotificationUseCase(
-	repo repository.PushRepository,
-	pushNotificationService service.PushNotificationService,
-) PushNotificationUseCase {
+var _ PushNotificationUseCase = (*pushNotificationUseCase)(nil)
+
+// NewPushNotificationUseCase creates a new instance of PushNotificationUseCase
+func NewPushNotificationUseCase(repo repository.PushRepository, pushService service.PushNotificationService) *pushNotificationUseCase {
 	return &pushNotificationUseCase{
 		repo:                    repo,
-		pushNotificationService: pushNotificationService,
+		pushNotificationService: pushService,
 	}
 }
 

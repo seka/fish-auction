@@ -17,8 +17,10 @@ type createVenueUseCase struct {
 	repo repository.VenueRepository
 }
 
+var _ CreateVenueUseCase = (*createVenueUseCase)(nil)
+
 // NewCreateVenueUseCase creates a new instance of CreateVenueUseCase
-func NewCreateVenueUseCase(repo repository.VenueRepository) CreateVenueUseCase {
+func NewCreateVenueUseCase(repo repository.VenueRepository) *createVenueUseCase {
 	return &createVenueUseCase{repo: repo}
 }
 

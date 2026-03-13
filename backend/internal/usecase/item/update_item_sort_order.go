@@ -10,11 +10,14 @@ type UpdateItemSortOrderUseCase interface {
 	Execute(ctx context.Context, id int, sortOrder int) error
 }
 
+var _ UpdateItemSortOrderUseCase = (*updateItemSortOrderUseCase)(nil)
+
 type updateItemSortOrderUseCase struct {
 	repo repository.ItemRepository
 }
 
-func NewUpdateItemSortOrderUseCase(repo repository.ItemRepository) UpdateItemSortOrderUseCase {
+// NewUpdateItemSortOrderUseCase creates a new instance of UpdateItemSortOrderUseCase
+func NewUpdateItemSortOrderUseCase(repo repository.ItemRepository) *updateItemSortOrderUseCase {
 	return &updateItemSortOrderUseCase{repo: repo}
 }
 

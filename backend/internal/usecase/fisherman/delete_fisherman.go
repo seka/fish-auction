@@ -10,11 +10,14 @@ type DeleteFishermanUseCase interface {
 	Execute(ctx context.Context, id int) error
 }
 
+var _ DeleteFishermanUseCase = (*deleteFishermanUseCase)(nil)
+
 type deleteFishermanUseCase struct {
 	repo repository.FishermanRepository
 }
 
-func NewDeleteFishermanUseCase(repo repository.FishermanRepository) DeleteFishermanUseCase {
+// NewDeleteFishermanUseCase creates a new instance of DeleteFishermanUseCase
+func NewDeleteFishermanUseCase(repo repository.FishermanRepository) *deleteFishermanUseCase {
 	return &deleteFishermanUseCase{repo: repo}
 }
 
