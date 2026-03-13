@@ -61,7 +61,7 @@ type useCaseRegistry struct {
 }
 
 // NewUseCaseRegistry creates a new UseCase registry
-func NewUseCaseRegistry(repo Repository, service Service) UseCase {
+func NewUseCaseRegistry(repo Repository, service Service) *useCaseRegistry {
 	return &useCaseRegistry{
 		repo:    repo,
 		service: service,

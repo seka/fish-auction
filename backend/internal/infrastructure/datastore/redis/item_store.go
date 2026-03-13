@@ -16,7 +16,7 @@ type itemStore struct {
 }
 
 // NewItemStore は新しい ItemStore を作成
-func NewItemStore(cache datastore.Cache, ttl time.Duration) datastore.ItemCache {
+func NewItemStore(cache datastore.Cache, ttl time.Duration) *itemStore {
 	return &itemStore{
 		cache: cache,
 		ttl:   ttl,

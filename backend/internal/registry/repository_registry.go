@@ -44,7 +44,7 @@ type repositoryRegistry struct {
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
+func NewRepositoryRegistry(cfg *config.Config) (*repositoryRegistry, *sql.DB, error) {
 	db, err := connectDB(cfg.DBConnectionURL())
 	if err != nil {
 		return nil, nil, err

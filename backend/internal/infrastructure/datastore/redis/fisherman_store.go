@@ -16,7 +16,7 @@ type fishermanStore struct {
 }
 
 // NewFishermanStore は新しい FishermanStore を作成
-func NewFishermanStore(cache datastore.Cache, ttl time.Duration) datastore.FishermanCache {
+func NewFishermanStore(cache datastore.Cache, ttl time.Duration) *fishermanStore {
 	return &fishermanStore{
 		cache: cache,
 		ttl:   ttl,

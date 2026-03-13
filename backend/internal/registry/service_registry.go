@@ -24,7 +24,7 @@ type serviceRegistry struct {
 }
 
 // NewServiceRegistry creates a new Service registry
-func NewServiceRegistry(cfg *config.Config) Service {
+func NewServiceRegistry(cfg *config.Config) *serviceRegistry {
 	loader, err := templates.NewTemplateLoader()
 	if err != nil {
 		panic(fmt.Sprintf("failed to load templates: %v", err))

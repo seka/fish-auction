@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
 type FishermanCache interface {
@@ -25,7 +24,7 @@ type FishermanCompositeStore struct {
 	cache FishermanCache
 }
 
-func NewFishermanCompositeStore(store FishermanStore, cache FishermanCache) repository.FishermanRepository {
+func NewFishermanCompositeStore(store FishermanStore, cache FishermanCache) *FishermanCompositeStore {
 	return &FishermanCompositeStore{store: store, cache: cache}
 }
 

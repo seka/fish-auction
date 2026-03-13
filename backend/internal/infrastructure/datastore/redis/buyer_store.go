@@ -16,7 +16,7 @@ type buyerStore struct {
 }
 
 // NewBuyerStore は新しい BuyerStore を作成
-func NewBuyerStore(cache datastore.Cache, ttl time.Duration) datastore.BuyerCache {
+func NewBuyerStore(cache datastore.Cache, ttl time.Duration) *buyerStore {
 	return &buyerStore{
 		cache: cache,
 		ttl:   ttl,
