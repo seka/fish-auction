@@ -7,24 +7,27 @@ import (
 	"net/smtp"
 
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 )
 
 var adminSendMailFunc = smtp.SendMail
 
-type AdminEmailService struct {
+type adminEmailService struct {
 	cfg            *config.Config
 	templateLoader templates.TemplateProvider
 }
 
-func NewAdminEmailService(cfg *config.Config, loader templates.TemplateProvider) *AdminEmailService {
-	return &AdminEmailService{
+var _ service.AdminEmailService = (*adminEmailService)(nil)
+
+func NewAdminEmailService(cfg *config.Config, loader templates.TemplateProvider) *adminEmailService {
+	return &adminEmailService{
 		cfg:            cfg,
 		templateLoader: loader,
 	}
 }
 
-func (s *AdminEmailService) send(to, subject, body string) error {
+func (s *adminEmailService) send(to, subject, body string) error {
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
@@ -36,7 +39,7 @@ func (s *AdminEmailService) send(to, subject, body string) error {
 	return adminSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
-func (s *AdminEmailService) SendAdminPasswordReset(ctx context.Context, to, url string) error {
+func (s *adminEmailService) SendAdminPasswordReset(ctx context.Context, to, url string) error {
 	tmpl := s.templateLoader.Get("admin_password_reset.txt")
 	if tmpl == nil {
 		return fmt.Errorf("template admin_password_reset.txt not found")

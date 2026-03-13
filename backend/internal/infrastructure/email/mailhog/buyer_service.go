@@ -7,24 +7,27 @@ import (
 	"net/smtp"
 
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 )
 
 var buyerSendMailFunc = smtp.SendMail
 
-type BuyerEmailService struct {
+type buyerEmailService struct {
 	cfg            *config.Config
 	templateLoader templates.TemplateProvider
 }
 
-func NewBuyerEmailService(cfg *config.Config, loader templates.TemplateProvider) *BuyerEmailService {
-	return &BuyerEmailService{
+var _ service.BuyerEmailService = (*buyerEmailService)(nil)
+
+func NewBuyerEmailService(cfg *config.Config, loader templates.TemplateProvider) *buyerEmailService {
+	return &buyerEmailService{
 		cfg:            cfg,
 		templateLoader: loader,
 	}
 }
 
-func (s *BuyerEmailService) send(to, subject, body string) error {
+func (s *buyerEmailService) send(to, subject, body string) error {
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
@@ -36,7 +39,7 @@ func (s *BuyerEmailService) send(to, subject, body string) error {
 	return buyerSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
-func (s *BuyerEmailService) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
+func (s *buyerEmailService) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
 	tmpl := s.templateLoader.Get("buyer_password_reset.txt")
 	if tmpl == nil {
 		return fmt.Errorf("template buyer_password_reset.txt not found")

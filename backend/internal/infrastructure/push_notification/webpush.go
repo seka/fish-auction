@@ -18,8 +18,10 @@ type webpushNotificationService struct {
 	cfg *config.Config
 }
 
+var _ service.PushNotificationService = (*webpushNotificationService)(nil)
+
 // NewWebpushService creates a new PushNotificationService implementation using webpush-go
-func NewWebpushService(cfg *config.Config) service.PushNotificationService {
+func NewWebpushService(cfg *config.Config) *webpushNotificationService {
 	return &webpushNotificationService{
 		cfg: cfg,
 	}
