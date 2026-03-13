@@ -13,11 +13,15 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
+// Ensure authenticationStore implements repository.AuthenticationRepository.
+var _ repository.AuthenticationRepository = (*authenticationStore)(nil)
+
 type authenticationStore struct {
 	db datastore.Database
 }
 
-func NewAuthenticationStore(db datastore.Database) repository.AuthenticationRepository {
+// NewAuthenticationStore creates a new instance of AuthenticationRepository
+func NewAuthenticationStore(db datastore.Database) *authenticationStore {
 	return &authenticationStore{
 		db: db,
 	}

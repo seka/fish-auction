@@ -10,11 +10,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
+var _ repository.PasswordResetRepository = (*passwordResetStore)(nil)
+
 type passwordResetStore struct {
 	db datastore.Database
 }
 
-func NewPasswordResetStore(db datastore.Database) repository.PasswordResetRepository {
+// NewPasswordResetStore creates a new instance of PasswordResetRepository
+func NewPasswordResetStore(db datastore.Database) *passwordResetStore {
 	return &passwordResetStore{db: db}
 }
 

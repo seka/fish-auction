@@ -14,11 +14,11 @@ type pushStore struct {
 	db datastore.Database
 }
 
-// NewPushStore creates a new instance of PushStore
-func NewPushStore(db datastore.Database) repository.PushRepository {
-	return &pushStore{
-		db: db,
-	}
+var _ repository.PushRepository = (*pushStore)(nil)
+
+// NewPushStore creates a new instance of PushRepository
+func NewPushStore(db datastore.Database) *pushStore {
+	return &pushStore{db: db}
 }
 
 func (r *pushStore) SaveSubscription(ctx context.Context, sub *model.PushSubscription) error {

@@ -13,7 +13,11 @@ type bidStore struct {
 	db datastore.Database
 }
 
-func NewBidStore(db datastore.Database) repository.BidRepository {
+// Ensure bidStore implements repository.BidRepository
+var _ repository.BidRepository = (*bidStore)(nil)
+
+// NewBidStore creates a new instance of BidRepository
+func NewBidStore(db datastore.Database) *bidStore {
 	return &bidStore{db: db}
 }
 

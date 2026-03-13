@@ -15,8 +15,10 @@ type adminStore struct {
 	db datastore.Database
 }
 
-// NewAdminStore creates a new instance of AdminStore
-func NewAdminStore(db datastore.Database) repository.AdminRepository {
+var _ repository.AdminRepository = (*adminStore)(nil)
+
+// NewAdminStore creates a new instance of AdminRepository
+func NewAdminStore(db datastore.Database) *adminStore {
 	return &adminStore{db: db}
 }
 

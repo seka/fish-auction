@@ -15,11 +15,14 @@ import (
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/errors"
 )
 
+var _ repository.AuctionRepository = (*auctionStore)(nil)
+
 type auctionStore struct {
 	db datastore.Database
 }
 
-func NewAuctionStore(db datastore.Database) repository.AuctionRepository {
+// NewAuctionStore creates a new instance of AuctionRepository
+func NewAuctionStore(db datastore.Database) *auctionStore {
 	return &auctionStore{db: db}
 }
 

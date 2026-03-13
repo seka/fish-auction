@@ -11,11 +11,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
+var _ repository.VenueRepository = (*venueStore)(nil)
+
 type venueStore struct {
 	db datastore.Database
 }
 
-func NewVenueStore(db datastore.Database) repository.VenueRepository {
+// NewVenueStore creates a new instance of VenueRepository
+func NewVenueStore(db datastore.Database) *venueStore {
 	return &venueStore{db: db}
 }
 
