@@ -23,7 +23,7 @@ func NewBuyerStore(db datastore.Database) *buyerStore {
 	return &buyerStore{db: db}
 }
 
-func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) { // Changed receiver type
+func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
 	e := entity.Buyer{
 		Name:         buyer.Name,
 		Organization: buyer.Organization,
