@@ -110,7 +110,7 @@ func runMigrations(db *sql.DB) error {
 
 		_, err = db.Exec(string(migrationSQL))
 		if err != nil {
-			log.Printf("Migration %s potential issue: %v", file, err)
+			return fmt.Errorf("failed to apply migration %s: %w", file, err)
 		}
 	}
 	return nil

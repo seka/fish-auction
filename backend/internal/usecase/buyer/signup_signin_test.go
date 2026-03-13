@@ -75,7 +75,8 @@ func TestSignupAndSigninFlow(t *testing.T) {
 		},
 	}
 
-	createUC := buyer.NewCreateBuyerUseCase(buyerRepo, authRepo)
+	txMgr := &mock.MockTransactionManager{}
+	createUC := buyer.NewCreateBuyerUseCase(buyerRepo, authRepo, txMgr)
 	loginUC := buyer.NewLoginBuyerUseCase(buyerRepo, authRepo)
 
 	ctx := context.Background()

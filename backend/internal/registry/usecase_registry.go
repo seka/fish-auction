@@ -107,7 +107,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 }
 
 func (u *useCaseRegistry) NewCreateBuyerUseCase() buyer.CreateBuyerUseCase {
-	return buyer.NewCreateBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository())
+	return buyer.NewCreateBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository(), u.repo.NewTransactionManager())
 }
 
 func (u *useCaseRegistry) NewListBuyersUseCase() buyer.ListBuyersUseCase {
