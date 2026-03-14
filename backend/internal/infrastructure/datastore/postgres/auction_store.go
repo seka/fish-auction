@@ -40,7 +40,7 @@ func (r *auctionStore) Create(ctx context.Context, auction *model.Auction) (*mod
 		if errors.As(err, &pqErr) && pqErr.Code == dserrors.ErrCodeUniqueViolation {
 			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to create auction: %w", err)
 	}
 	return &a, nil
 }
@@ -56,7 +56,7 @@ func (r *auctionStore) GetByID(ctx context.Context, id int) (*model.Auction, err
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &apperrors.NotFoundError{Resource: "Auction", ID: id}
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to get auction by ID: %w", err)
 	}
 	return &a, nil
 }
@@ -72,7 +72,7 @@ func (r *auctionStore) GetByIDWithLock(ctx context.Context, id int) (*model.Auct
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &apperrors.NotFoundError{Resource: "Auction", ID: id}
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to get auction by ID with lock: %w", err)
 	}
 	return &a, nil
 }
@@ -120,7 +120,7 @@ func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list auctions: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -128,11 +128,14 @@ func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 	for rows.Next() {
 		var a model.Auction
 		if err := rows.Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan auction row: %w", err)
 		}
 		auctions = append(auctions, a)
 	}
-	return auctions, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate auction rows: %w", err)
+	}
+	return auctions, nil
 }
 
 func (r *auctionStore) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
@@ -154,7 +157,7 @@ func (r *auctionStore) Update(ctx context.Context, auction *model.Auction) error
 		if errors.As(err, &pqErr) && pqErr.Code == dserrors.ErrCodeUniqueViolation {
 			return &apperrors.ConflictError{Message: "Auction already exists for this venue and time"}
 		}
-		return err
+		return fmt.Errorf("failed to update auction: %w", err)
 	}
 
 	if rowsAffected == 0 {
@@ -168,7 +171,7 @@ func (r *auctionStore) UpdateStatus(ctx context.Context, id int, status model.Au
 
 	rowsAffected, err := r.db.Execute(ctx, query, status, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update auction status: %w", err)
 	}
 
 	if rowsAffected == 0 {
@@ -185,5 +188,8 @@ func (r *auctionStore) UpdateStatus(ctx context.Context, id int, status model.Au
 func (r *auctionStore) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM auctions WHERE id = $1`
 	_, err := r.db.Execute(ctx, query, id)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to delete auction: %w", err)
+	}
+	return nil
 }

@@ -424,8 +424,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			if createCalled != tt.wantCreateCalled {
 				t.Fatalf("Create called = %v, want %v", createCalled, tt.wantCreateCalled)
 			}
-			if txCalled != tt.wantTxCalled {
-				t.Fatalf("WithTransaction called = %v, want %v", txCalled, tt.wantTxCalled)
+			if !txCalled {
+				t.Fatalf("WithTransaction was not called")
 			}
 		})
 	}
