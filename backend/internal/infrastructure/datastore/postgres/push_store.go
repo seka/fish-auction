@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	// Added import
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
 type pushStore struct {
@@ -40,7 +40,7 @@ func (r *pushStore) SaveSubscription(ctx context.Context, sub *model.PushSubscri
 	).Scan(&sub.ID, &sub.CreatedAt)
 
 	if err != nil {
-		return fmt.Errorf("failed to save subscription: %w", err)
+		return fmt.Errorf("failed to save subscription: %w", dserrors.HandleError(err, "PushSubscription", 0, "SaveSubscription"))
 	}
 	return nil
 }
@@ -54,7 +54,7 @@ func (r *pushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) 
 
 	rows, err := r.db.Query(ctx, query, buyerID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list subscriptions: %w", err)
+		return nil, fmt.Errorf("failed to list subscriptions: %w", dserrors.HandleError(err, "PushSubscription", buyerID, "GetSubscriptionsByBuyerID"))
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -64,11 +64,11 @@ func (r *pushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) 
 		if err := rows.Scan(
 			&sub.ID, &sub.BuyerID, &sub.Endpoint, &sub.P256dh, &sub.Auth, &sub.CreatedAt,
 		); err != nil {
-			return nil, fmt.Errorf("failed to scan subscription: %w", err)
+			return nil, fmt.Errorf("failed to scan subscription: %w", dserrors.HandleError(err, "PushSubscription", buyerID, "GetSubscriptionsByBuyerID"))
 		}
 		subs = append(subs, sub)
 	}
-	return subs, rows.Err()
+	return subs, dserrors.HandleError(rows.Err(), "PushSubscription", buyerID, "GetSubscriptionsByBuyerID")
 }
 
 func (r *pushStore) DeleteSubscription(ctx context.Context, endpoint string) error {
@@ -80,7 +80,7 @@ func (r *pushStore) DeleteSubscription(ctx context.Context, endpoint string) err
 
 	_, err := r.db.Execute(ctx, query, endpoint)
 	if err != nil {
-		return fmt.Errorf("failed to delete subscription: %w", err)
+		return fmt.Errorf("failed to delete subscription: %w", dserrors.HandleError(err, "PushSubscription", 0, "DeleteSubscription"))
 	}
 	return nil
 }

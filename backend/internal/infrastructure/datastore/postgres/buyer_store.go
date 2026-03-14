@@ -2,13 +2,10 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-
-	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
@@ -37,7 +34,7 @@ func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buy
 		"INSERT INTO buyers (name, organization, contact_info) VALUES ($1, $2, $3) RETURNING id",
 		e.Name, e.Organization, e.ContactInfo).Scan(&e.ID)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Buyer", 0, "Create")
 	}
 	buyer.ID = e.ID
 	return buyer, nil
@@ -46,7 +43,7 @@ func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buy
 func (r *buyerStore) List(ctx context.Context) ([]model.Buyer, error) {
 	rows, err := r.db.Query(ctx, "SELECT id, name, organization, contact_info FROM buyers WHERE deleted_at IS NULL")
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Buyer", 0, "List")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -58,7 +55,7 @@ func (r *buyerStore) List(ctx context.Context) ([]model.Buyer, error) {
 		}
 		buyers = append(buyers, *e.ToModel())
 	}
-	return buyers, rows.Err()
+	return buyers, dserrors.HandleError(rows.Err(), "Buyer", 0, "List")
 }
 
 func (r *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
@@ -68,10 +65,7 @@ func (r *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error)
 		id,
 	).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Buyer", ID: id}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Buyer", id, "FindByID")
 	}
 
 	return e.ToModel(), nil
@@ -84,10 +78,7 @@ func (r *buyerStore) FindByName(ctx context.Context, name string) (*model.Buyer,
 		name,
 	).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Buyer", ID: 0} // ID unknown
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Buyer", 0, "FindByName")
 	}
 	return e.ToModel(), nil
 }
@@ -102,16 +93,15 @@ func (r *buyerStore) FindByEmail(ctx context.Context, email string) (*model.Buye
 	`
 	err := r.db.QueryRow(ctx, query, email).Scan(&e.ID, &e.Name, &e.Organization, &e.ContactInfo)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			// No buyer found with this email
-			return nil, &apperrors.NotFoundError{Resource: "Buyer", ID: 0}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Buyer", 0, "FindByEmail")
 	}
 	return e.ToModel(), nil
 }
 
 func (r *buyerStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Buyer", id, "Delete")
+	}
+	return nil
 }

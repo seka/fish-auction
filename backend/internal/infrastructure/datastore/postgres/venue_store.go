@@ -2,13 +2,12 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
 var _ repository.VenueRepository = (*venueStore)(nil)
@@ -30,7 +29,7 @@ func (r *venueStore) Create(ctx context.Context, venue *model.Venue) (*model.Ven
 	err := r.db.QueryRow(ctx, query, venue.Name, venue.Location, venue.Description).
 		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Venue", 0, "Create")
 	}
 	return &v, nil
 }
@@ -42,10 +41,7 @@ func (r *venueStore) GetByID(ctx context.Context, id int) (*model.Venue, error) 
 	err := r.db.QueryRow(ctx, query, id).
 		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt, &v.DeletedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Venue", ID: id}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Venue", id, "GetByID")
 	}
 	return &v, nil
 }
@@ -55,7 +51,7 @@ func (r *venueStore) List(ctx context.Context) ([]model.Venue, error) {
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Venue", 0, "List")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -67,7 +63,7 @@ func (r *venueStore) List(ctx context.Context) ([]model.Venue, error) {
 		}
 		venues = append(venues, v)
 	}
-	return venues, rows.Err()
+	return venues, dserrors.HandleError(rows.Err(), "Venue", 0, "List")
 }
 
 func (r *venueStore) Update(ctx context.Context, venue *model.Venue) error {
@@ -75,7 +71,7 @@ func (r *venueStore) Update(ctx context.Context, venue *model.Venue) error {
 
 	rowsAffected, err := r.db.Execute(ctx, query, venue.Name, venue.Location, venue.Description, venue.ID)
 	if err != nil {
-		return err
+		return dserrors.HandleError(err, "Venue", venue.ID, "Update")
 	}
 
 	if rowsAffected == 0 {
@@ -90,7 +86,7 @@ func (r *venueStore) Delete(ctx context.Context, id int) error {
 
 	rowsAffected, err := r.db.Execute(ctx, query, id)
 	if err != nil {
-		return err
+		return dserrors.HandleError(err, "Venue", id, "Delete")
 	}
 
 	if rowsAffected == 0 {

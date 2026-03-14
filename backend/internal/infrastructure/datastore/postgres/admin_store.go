@@ -2,13 +2,10 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-
-	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
 type adminStore struct {
@@ -29,10 +26,7 @@ func (r *adminStore) FindOneByEmail(ctx context.Context, email string) (*model.A
 	admin := &model.Admin{}
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Admin", ID: 0}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Admin", 0, "FindOneByEmail")
 	}
 	return admin, nil
 }
@@ -44,10 +38,7 @@ func (r *adminStore) FindByID(ctx context.Context, id int) (*model.Admin, error)
 	admin := &model.Admin{}
 	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Admin", ID: id}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Admin", id, "FindByID")
 	}
 	return admin, nil
 }
@@ -55,7 +46,10 @@ func (r *adminStore) FindByID(ctx context.Context, id int) (*model.Admin, error)
 func (r *adminStore) Create(ctx context.Context, admin *model.Admin) error {
 	query := `INSERT INTO admins (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
 	err := r.db.QueryRow(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Admin", 0, "Create")
+	}
+	return nil
 }
 
 func (r *adminStore) Count(ctx context.Context) (int, error) {
@@ -63,7 +57,7 @@ func (r *adminStore) Count(ctx context.Context) (int, error) {
 	query := `SELECT COUNT(*) FROM admins`
 	err := r.db.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
-		return 0, err
+		return 0, dserrors.HandleError(err, "Admin", 0, "Count")
 	}
 	return count, nil
 }
@@ -71,5 +65,8 @@ func (r *adminStore) Count(ctx context.Context) (int, error) {
 func (r *adminStore) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
 	query := `UPDATE admins SET password_hash = $1 WHERE id = $2`
 	_, err := r.db.Execute(ctx, query, passwordHash, id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Admin", id, "UpdatePassword")
+	}
+	return nil
 }

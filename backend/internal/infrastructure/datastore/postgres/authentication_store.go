@@ -2,14 +2,12 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"time"
 
-	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
@@ -48,7 +46,7 @@ func (r *authenticationStore) Create(ctx context.Context, auth *model.Authentica
 		 RETURNING id, created_at, updated_at`,
 		e.BuyerID, e.Email, e.PasswordHash, e.AuthType).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Authentication", 0, "Create")
 	}
 	return e.ToModel(), nil
 }
@@ -61,10 +59,7 @@ func (r *authenticationStore) FindByEmail(ctx context.Context, email string) (*m
 		email,
 	).Scan(&e.ID, &e.BuyerID, &e.Email, &e.PasswordHash, &e.AuthType, &e.FailedAttempts, &e.LockedUntil, &e.LastLoginAt, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Authentication", ID: 0}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Authentication", 0, "FindByEmail")
 	}
 	return e.ToModel(), nil
 }
@@ -77,10 +72,7 @@ func (r *authenticationStore) FindByBuyerID(ctx context.Context, buyerID int) (*
 		buyerID,
 	).Scan(&e.ID, &e.BuyerID, &e.Email, &e.PasswordHash, &e.AuthType, &e.FailedAttempts, &e.LockedUntil, &e.LastLoginAt, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Authentication", ID: buyerID}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Authentication", buyerID, "FindByBuyerID")
 	}
 	return e.ToModel(), nil
 }
@@ -91,7 +83,10 @@ func (r *authenticationStore) UpdateLoginSuccess(ctx context.Context, id int, lo
 		 SET last_login_at = $1, failed_attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
 		 WHERE id = $2`,
 		loginAt, id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Authentication", id, "UpdateLoginSuccess")
+	}
+	return nil
 }
 
 func (r *authenticationStore) IncrementFailedAttempts(ctx context.Context, id int) error {
@@ -100,7 +95,10 @@ func (r *authenticationStore) IncrementFailedAttempts(ctx context.Context, id in
 		 SET failed_attempts = failed_attempts + 1, updated_at = CURRENT_TIMESTAMP
 		 WHERE id = $1`,
 		id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Authentication", id, "IncrementFailedAttempts")
+	}
+	return nil
 }
 
 func (r *authenticationStore) ResetFailedAttempts(ctx context.Context, id int) error {
@@ -109,7 +107,10 @@ func (r *authenticationStore) ResetFailedAttempts(ctx context.Context, id int) e
 		 SET failed_attempts = 0, updated_at = CURRENT_TIMESTAMP
 		 WHERE id = $1`,
 		id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Authentication", id, "ResetFailedAttempts")
+	}
+	return nil
 }
 
 func (r *authenticationStore) LockAccount(ctx context.Context, id int, until time.Time) error {
@@ -118,7 +119,10 @@ func (r *authenticationStore) LockAccount(ctx context.Context, id int, until tim
 		 SET locked_until = $1, updated_at = CURRENT_TIMESTAMP
 		 WHERE id = $2`,
 		until, id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Authentication", id, "LockAccount")
+	}
+	return nil
 }
 
 func (r *authenticationStore) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
@@ -127,5 +131,8 @@ func (r *authenticationStore) UpdatePassword(ctx context.Context, buyerID int, p
 		 SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
 		 WHERE buyer_id = $2`,
 		passwordHash, buyerID)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Authentication", buyerID, "UpdatePassword")
+	}
+	return nil
 }

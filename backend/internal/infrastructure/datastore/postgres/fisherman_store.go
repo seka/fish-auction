@@ -2,13 +2,10 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-
-	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
@@ -31,7 +28,7 @@ func (r *fishermanStore) Create(ctx context.Context, name string) (*model.Fisher
 
 	err := r.db.QueryRow(ctx, "INSERT INTO fishermen (name) VALUES ($1) RETURNING id, name", name).Scan(&e.ID, &e.Name)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Fisherman", 0, "Create")
 	}
 	return e.ToModel(), nil
 }
@@ -39,7 +36,7 @@ func (r *fishermanStore) Create(ctx context.Context, name string) (*model.Fisher
 func (r *fishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
 	rows, err := r.db.Query(ctx, "SELECT id, name FROM fishermen WHERE deleted_at IS NULL")
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Fisherman", 0, "List")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -51,7 +48,7 @@ func (r *fishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
 		}
 		fishermen = append(fishermen, *e.ToModel())
 	}
-	return fishermen, rows.Err()
+	return fishermen, dserrors.HandleError(rows.Err(), "Fisherman", 0, "List")
 }
 
 func (r *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
@@ -61,10 +58,7 @@ func (r *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman
 		id,
 	).Scan(&e.ID, &e.Name)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Fisherman", ID: id}
-		}
-		return nil, err
+		return nil, dserrors.HandleError(err, "Fisherman", id, "FindByID")
 	}
 
 	return e.ToModel(), nil
@@ -72,5 +66,8 @@ func (r *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman
 
 func (r *fishermanStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
-	return err
+	if err != nil {
+		return dserrors.HandleError(err, "Fisherman", id, "Delete")
+	}
+	return nil
 }

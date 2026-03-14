@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
@@ -37,7 +38,7 @@ func (r *bidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, erro
 		bid.ItemID, bid.BuyerID, bid.Price,
 	).Scan(&e.ID, &e.ItemID, &e.BuyerID, &e.Price, &e.CreatedAt)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Bid", 0, "Create")
 	}
 	return e.ToModel(), nil
 }
@@ -50,7 +51,7 @@ func (r *bidStore) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error
 		GROUP BY b.id, b.name
 	`)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Invoice", 0, "ListInvoices")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -72,7 +73,7 @@ func (r *bidStore) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error
 			TotalAmount: totalAmount,
 		})
 	}
-	return invoices, rows.Err()
+	return invoices, dserrors.HandleError(rows.Err(), "Invoice", 0, "ListInvoices")
 }
 
 func (r *bidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
@@ -95,7 +96,7 @@ func (r *bidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]m
 		ORDER BY t.created_at DESC
 	`, buyerID)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Purchase", buyerID, "ListPurchasesByBuyerID")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -118,7 +119,7 @@ func (r *bidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]m
 		}
 		purchases = append(purchases, p)
 	}
-	return purchases, rows.Err()
+	return purchases, dserrors.HandleError(rows.Err(), "Purchase", buyerID, "ListPurchasesByBuyerID")
 }
 
 func (r *bidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
@@ -139,7 +140,7 @@ func (r *bidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]mo
 		ORDER BY a.auction_date DESC, a.created_at DESC
 	`, buyerID)
 	if err != nil {
-		return nil, err
+		return nil, dserrors.HandleError(err, "Auction", buyerID, "ListAuctionsByBuyerID")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -160,5 +161,5 @@ func (r *bidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]mo
 		}
 		auctions = append(auctions, a)
 	}
-	return auctions, rows.Err()
+	return auctions, dserrors.HandleError(rows.Err(), "Auction", buyerID, "ListAuctionsByBuyerID")
 }
