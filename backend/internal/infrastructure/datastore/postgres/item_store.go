@@ -309,6 +309,16 @@ func (r *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) 
 }
 
 func (r *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
+	txMgr := r.db.TransactionManager()
+	if txMgr != nil {
+		return txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+			return r.doReorder(txCtx, auctionID, ids)
+		})
+	}
+	return r.doReorder(ctx, auctionID, ids)
+}
+
+func (r *itemStore) doReorder(ctx context.Context, auctionID int, ids []int) error {
 	for i, id := range ids {
 		newSortOrder := i + 1
 		_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
