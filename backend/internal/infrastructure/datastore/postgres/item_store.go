@@ -3,13 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
 
-	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
@@ -41,7 +39,7 @@ func (r *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model
 		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
 	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create item: %w", err)
+		return nil, dserrors.HandleError(err, "Item", nil, "failed to create item")
 	}
 	return e.ToModel(), nil
 }
@@ -57,7 +55,7 @@ func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionIte
 
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list items: %w", err)
+		return nil, dserrors.HandleError(err, "Item", nil, "failed to list items")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -65,12 +63,12 @@ func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionIte
 	for rows.Next() {
 		var e entity.AuctionItem
 		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt, &e.DeletedAt); err != nil {
-			return nil, fmt.Errorf("failed to scan item row: %w", err)
+			return nil, dserrors.HandleError(err, "Item", nil, "failed to scan item row")
 		}
 		items = append(items, *e.ToModel())
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate item rows: %w", err)
+		return nil, dserrors.HandleError(err, "Item", nil, "failed to iterate item rows")
 	}
 	return items, nil
 }
@@ -102,7 +100,7 @@ func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 
 	rows, err := r.db.Query(ctx, query, auctionID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list items by auction: %w", err)
+		return nil, dserrors.HandleError(err, "Item", nil, "failed to list items by auction")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -119,7 +117,7 @@ func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 			&e.SortOrder,
 			&highestBid, &highestBidderID, &highestBidderName,
 		); err != nil {
-			return nil, fmt.Errorf("failed to scan item row: %w", err)
+			return nil, dserrors.HandleError(err, "Item", nil, "failed to scan item row")
 		}
 
 		if highestBid.Valid {
@@ -137,7 +135,7 @@ func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 		items = append(items, *e.ToModel())
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate item rows: %w", err)
+		return nil, dserrors.HandleError(err, "Item", nil, "failed to iterate item rows")
 	}
 	return items, nil
 }
@@ -180,10 +178,7 @@ func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Item", ID: id}
-		}
-		return nil, fmt.Errorf("failed to find item by ID: %w", err)
+		return nil, dserrors.HandleError(err, "Item", id, "failed to find item by ID")
 	}
 
 	if highestBid.Valid {
@@ -240,10 +235,7 @@ func (r *itemStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auctio
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Item", ID: id}
-		}
-		return nil, fmt.Errorf("failed to find item by ID with lock: %w", err)
+		return nil, dserrors.HandleError(err, "Item", id, "failed to find item by ID with lock")
 	}
 
 	if highestBid.Valid {
@@ -264,7 +256,7 @@ func (r *itemStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auctio
 func (r *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	if err != nil {
-		return fmt.Errorf("failed to update item status: %w", err)
+		return dserrors.HandleError(err, "Item", id, "failed to update item status")
 	}
 	return nil
 }
@@ -294,10 +286,7 @@ func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 		Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Item", ID: e.ID}
-		}
-		return nil, fmt.Errorf("failed to update item: %w", err)
+		return nil, dserrors.HandleError(err, "Item", e.ID, "failed to update item")
 	}
 
 	return e.ToModel(), nil
@@ -306,7 +295,7 @@ func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 func (r *itemStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	if err != nil {
-		return fmt.Errorf("failed to delete item: %w", err)
+		return dserrors.HandleError(err, "Item", id, "failed to delete item")
 	}
 	return nil
 }
@@ -314,7 +303,7 @@ func (r *itemStore) Delete(ctx context.Context, id int) error {
 func (r *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
 	if err != nil {
-		return fmt.Errorf("failed to update item sort order: %w", err)
+		return dserrors.HandleError(err, "Item", id, "failed to update item sort order")
 	}
 	return nil
 }
@@ -324,7 +313,7 @@ func (r *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error
 		newSortOrder := i + 1
 		_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2 AND auction_id = $3", newSortOrder, id, auctionID)
 		if err != nil {
-			return fmt.Errorf("failed to update item sort order during reorder: %w", err)
+			return dserrors.HandleError(err, "Item", id, "failed to update item sort order during reorder")
 		}
 	}
 	return nil

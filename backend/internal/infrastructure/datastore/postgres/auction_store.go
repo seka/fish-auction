@@ -2,17 +2,14 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
-	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/errors"
+	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
 var _ repository.AuctionRepository = (*auctionStore)(nil)
@@ -36,11 +33,10 @@ func (r *auctionStore) Create(ctx context.Context, auction *model.Auction) (*mod
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status).
 		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == dserrors.ErrCodeUniqueViolation {
+		if dserrors.IsUniqueViolation(err) {
 			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
 		}
-		return nil, fmt.Errorf("failed to create auction: %w", err)
+		return nil, dserrors.HandleError(err, "Auction", nil, "failed to create auction")
 	}
 	return &a, nil
 }
@@ -53,10 +49,7 @@ func (r *auctionStore) GetByID(ctx context.Context, id int) (*model.Auction, err
 	err := r.db.QueryRow(ctx, query, id).
 		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Auction", ID: id}
-		}
-		return nil, fmt.Errorf("failed to get auction by ID: %w", err)
+		return nil, dserrors.HandleError(err, "Auction", id, "failed to get auction by ID")
 	}
 	return &a, nil
 }
@@ -69,10 +62,7 @@ func (r *auctionStore) GetByIDWithLock(ctx context.Context, id int) (*model.Auct
 	err := r.db.QueryRow(ctx, query, id).
 		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &apperrors.NotFoundError{Resource: "Auction", ID: id}
-		}
-		return nil, fmt.Errorf("failed to get auction by ID with lock: %w", err)
+		return nil, dserrors.HandleError(err, "Auction", id, "failed to get auction by ID with lock")
 	}
 	return &a, nil
 }
@@ -120,7 +110,7 @@ func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list auctions: %w", err)
+		return nil, dserrors.HandleError(err, "Auction", nil, "failed to list auctions")
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -128,12 +118,12 @@ func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 	for rows.Next() {
 		var a model.Auction
 		if err := rows.Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt); err != nil {
-			return nil, fmt.Errorf("failed to scan auction row: %w", err)
+			return nil, dserrors.HandleError(err, "Auction", nil, "failed to scan auction row")
 		}
 		auctions = append(auctions, a)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate auction rows: %w", err)
+		return nil, dserrors.HandleError(err, "Auction", nil, "failed to iterate auction rows")
 	}
 	return auctions, nil
 }
@@ -153,11 +143,10 @@ func (r *auctionStore) Update(ctx context.Context, auction *model.Auction) error
 	rowsAffected, err := r.db.Execute(ctx, query,
 		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID)
 	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == dserrors.ErrCodeUniqueViolation {
+		if dserrors.IsUniqueViolation(err) {
 			return &apperrors.ConflictError{Message: "Auction already exists for this venue and time"}
 		}
-		return fmt.Errorf("failed to update auction: %w", err)
+		return dserrors.HandleError(err, "Auction", auction.ID, "failed to update auction")
 	}
 
 	if rowsAffected == 0 {
@@ -171,7 +160,7 @@ func (r *auctionStore) UpdateStatus(ctx context.Context, id int, status model.Au
 
 	rowsAffected, err := r.db.Execute(ctx, query, status, id)
 	if err != nil {
-		return fmt.Errorf("failed to update auction status: %w", err)
+		return dserrors.HandleError(err, "Auction", id, "failed to update auction status")
 	}
 
 	if rowsAffected == 0 {
@@ -189,7 +178,7 @@ func (r *auctionStore) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM auctions WHERE id = $1`
 	_, err := r.db.Execute(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("failed to delete auction: %w", err)
+		return dserrors.HandleError(err, "Auction", id, "failed to delete auction")
 	}
 	return nil
 }
