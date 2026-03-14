@@ -22,7 +22,7 @@ func (m *mockVenueRepoForCreate) Create(ctx context.Context, v *model.Venue) (*m
 	v.ID = 1
 	return v, nil
 }
-func (m *mockVenueRepoForCreate) GetByID(ctx context.Context, id int) (*model.Venue, error) {
+func (m *mockVenueRepoForCreate) FindByID(ctx context.Context, id int) (*model.Venue, error) {
 	return nil, nil
 }
 func (m *mockVenueRepoForCreate) List(ctx context.Context) ([]model.Venue, error) {

@@ -10,8 +10,8 @@ import (
 // MockAuctionRepository is a mock implementation of repository.AuctionRepository
 type MockAuctionRepository struct {
 	CreateFunc       func(ctx context.Context, auction *model.Auction) (*model.Auction, error)
-	GetByIDFunc      func(ctx context.Context, id int) (*model.Auction, error)
-	GetByIDWithLockFunc func(ctx context.Context, id int) (*model.Auction, error)
+	FindByIDFunc      func(ctx context.Context, id int) (*model.Auction, error)
+	FindByIDWithLockFunc func(ctx context.Context, id int) (*model.Auction, error)
 	ListFunc         func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error)
 	ListByVenueFunc  func(ctx context.Context, venueID int) ([]model.Auction, error)
 	UpdateFunc       func(ctx context.Context, auction *model.Auction) error
@@ -26,16 +26,16 @@ func (m *MockAuctionRepository) Create(ctx context.Context, auction *model.Aucti
 	return nil, nil
 }
 
-func (m *MockAuctionRepository) GetByID(ctx context.Context, id int) (*model.Auction, error) {
-	if m.GetByIDFunc != nil {
-		return m.GetByIDFunc(ctx, id)
+func (m *MockAuctionRepository) FindByID(ctx context.Context, id int) (*model.Auction, error) {
+	if m.FindByIDFunc != nil {
+		return m.FindByIDFunc(ctx, id)
 	}
 	return nil, nil
 }
 
-func (m *MockAuctionRepository) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
-	if m.GetByIDWithLockFunc != nil {
-		return m.GetByIDWithLockFunc(ctx, id)
+func (m *MockAuctionRepository) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	if m.FindByIDWithLockFunc != nil {
+		return m.FindByIDWithLockFunc(ctx, id)
 	}
 	return nil, nil
 }

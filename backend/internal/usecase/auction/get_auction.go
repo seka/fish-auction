@@ -26,7 +26,7 @@ func NewGetAuctionUseCase(auctionRepo repository.AuctionRepository) *getAuctionU
 
 // Execute gets an auction by ID
 func (uc *getAuctionUseCase) Execute(ctx context.Context, id int) (*model.Auction, error) {
-	auction, err := uc.repo.GetByID(ctx, id)
+	auction, err := uc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}

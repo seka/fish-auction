@@ -25,10 +25,10 @@ func (m *mockAuctionRepoForCreate) Create(ctx context.Context, a *model.Auction)
 	a.ID = 1
 	return a, nil
 }
-func (m *mockAuctionRepoForCreate) GetByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForCreate) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForCreate) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForCreate) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
 func (m *mockAuctionRepoForCreate) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {

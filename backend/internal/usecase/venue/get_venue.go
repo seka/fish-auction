@@ -26,5 +26,5 @@ func NewGetVenueUseCase(repo repository.VenueRepository) *getVenueUseCase {
 
 // Execute gets a venue by ID
 func (uc *getVenueUseCase) Execute(ctx context.Context, id int) (*model.Venue, error) {
-	return uc.repo.GetByID(ctx, id)
+	return uc.repo.FindByID(ctx, id)
 }

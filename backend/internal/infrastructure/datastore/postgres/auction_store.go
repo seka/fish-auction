@@ -41,7 +41,7 @@ func (r *auctionStore) Create(ctx context.Context, auction *model.Auction) (*mod
 	return &a, nil
 }
 
-func (r *auctionStore) GetByID(ctx context.Context, id int) (*model.Auction, error) {
+func (r *auctionStore) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions WHERE id = $1`
 
@@ -54,7 +54,7 @@ func (r *auctionStore) GetByID(ctx context.Context, id int) (*model.Auction, err
 	return &a, nil
 }
 
-func (r *auctionStore) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (r *auctionStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions WHERE id = $1 FOR UPDATE`
 

@@ -17,10 +17,10 @@ type mockAuctionRepoForDelete struct {
 func (m *mockAuctionRepoForDelete) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForDelete) GetByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForDelete) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForDelete) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForDelete) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
 func (m *mockAuctionRepoForDelete) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {

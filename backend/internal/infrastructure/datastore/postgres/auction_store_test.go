@@ -42,7 +42,7 @@ func TestAuctionStore_Create(t *testing.T) {
 	assert.Equal(t, 1, created.ID)
 }
 
-func TestAuctionStore_GetByID(t *testing.T) {
+func TestAuctionStore_FindByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -60,7 +60,7 @@ func TestAuctionStore_GetByID(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "auction_date", "start_time", "end_time", "status", "created_at", "updated_at"}).
 			AddRow(1, 1, date, start, end, "scheduled", time.Now(), time.Now()))
 
-	got, err := repo.GetByID(context.Background(), id)
+	got, err := repo.FindByID(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, id, got.ID)
 }

@@ -71,7 +71,7 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 		}
 
 		// 3. オークション情報を取得（必要に応じてロック）して入札期間をチェック
-		auction, err := uc.auctionRepo.GetByIDWithLock(txCtx, item.AuctionID)
+		auction, err := uc.auctionRepo.FindByIDWithLock(txCtx, item.AuctionID)
 		if err != nil {
 			return err
 		}

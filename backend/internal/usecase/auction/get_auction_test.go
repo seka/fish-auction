@@ -20,7 +20,7 @@ type mockAuctionRepoForGet struct {
 func (m *mockAuctionRepoForGet) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForGet) GetByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForGet) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -29,8 +29,8 @@ func (m *mockAuctionRepoForGet) GetByID(ctx context.Context, id int) (*model.Auc
 	}
 	return nil, nil
 }
-func (m *mockAuctionRepoForGet) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
-	return m.GetByID(ctx, id)
+func (m *mockAuctionRepoForGet) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+	return m.FindByID(ctx, id)
 }
 func (m *mockAuctionRepoForGet) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
@@ -66,7 +66,7 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 			id:      99,
 			mockAuc: nil,
 			wantNil: true,
-			// When mock returns nil, nil, usecase `auction, err := uc.repo.GetByID` gets nil, nil.
+			// When mock returns nil, nil, usecase `auction, err := uc.repo.FindByID` gets nil, nil.
 			// Then `if auction.ShouldBeCompleted()` panics on nil.
 			// The UseCase assumes repo returns (nil, error) on failure or always returns struct?
 			// Actually typical Go pattern: (nil, ErrNotFound).

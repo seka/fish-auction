@@ -34,14 +34,14 @@ func (r *venueStore) Create(ctx context.Context, venue *model.Venue) (*model.Ven
 	return &v, nil
 }
 
-func (r *venueStore) GetByID(ctx context.Context, id int) (*model.Venue, error) {
+func (r *venueStore) FindByID(ctx context.Context, id int) (*model.Venue, error) {
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE id = $1`
 
 	var v model.Venue
 	err := r.db.QueryRow(ctx, query, id).
 		Scan(&v.ID, &v.Name, &v.Location, &v.Description, &v.CreatedAt, &v.DeletedAt)
 	if err != nil {
-		return nil, dserrors.HandleError(err, "Venue", id, "GetByID")
+		return nil, dserrors.HandleError(err, "Venue", id, "FindByID")
 	}
 	return &v, nil
 }

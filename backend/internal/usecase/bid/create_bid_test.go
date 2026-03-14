@@ -349,7 +349,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			mockAuctionRepo := &mock.MockAuctionRepository{
-				GetByIDWithLockFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+				FindByIDWithLockFunc: func(ctx context.Context, id int) (*model.Auction, error) {
 					if tt.getAuctionErr != nil {
 						return nil, tt.getAuctionErr
 					}

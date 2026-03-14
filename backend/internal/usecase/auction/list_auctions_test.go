@@ -19,10 +19,10 @@ type mockAuctionRepository struct {
 func (m *mockAuctionRepository) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepository) GetByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepository) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepository) GetByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepository) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	return nil, nil
 }
 func (m *mockAuctionRepository) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {

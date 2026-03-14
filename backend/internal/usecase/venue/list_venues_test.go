@@ -17,7 +17,7 @@ type mockVenueRepository struct {
 func (m *mockVenueRepository) Create(ctx context.Context, venue *model.Venue) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepository) GetByID(ctx context.Context, id int) (*model.Venue, error) {
+func (m *mockVenueRepository) FindByID(ctx context.Context, id int) (*model.Venue, error) {
 	return nil, nil
 }
 func (m *mockVenueRepository) List(ctx context.Context) ([]model.Venue, error) {

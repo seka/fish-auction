@@ -16,7 +16,7 @@ type mockVenueRepoForDelete struct {
 func (m *mockVenueRepoForDelete) Create(ctx context.Context, v *model.Venue) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForDelete) GetByID(ctx context.Context, id int) (*model.Venue, error) {
+func (m *mockVenueRepoForDelete) FindByID(ctx context.Context, id int) (*model.Venue, error) {
 	return nil, nil
 }
 func (m *mockVenueRepoForDelete) List(ctx context.Context) ([]model.Venue, error) { return nil, nil }

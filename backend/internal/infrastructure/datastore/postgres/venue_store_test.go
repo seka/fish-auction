@@ -50,7 +50,7 @@ func TestVenueStore_List(t *testing.T) {
 	assert.Len(t, list, 1)
 }
 
-func TestVenueStore_GetByID_NotFound(t *testing.T) {
+func TestVenueStore_FindByID_NotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -66,7 +66,7 @@ func TestVenueStore_GetByID_NotFound(t *testing.T) {
 
 	// The store returns nil, nil or specific error depending on implementation.
 	// Looking at implementation: it returns (nil, &apperrors.NotFoundError)
-	_, err = repo.GetByID(context.Background(), id)
+	_, err = repo.FindByID(context.Background(), id)
 	assert.Error(t, err)
 }
 
