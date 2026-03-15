@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -31,15 +32,18 @@ func (r *AuctionStore) Create(ctx context.Context, auction *model.Auction) (*mod
 			  RETURNING id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at`
 
 	var a model.Auction
+	var auctionDate time.Time
+	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query,
-		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status).
-		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+		auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
+		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		if dserrors.IsUniqueViolation(err) {
-			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.AuctionDate.Format("2006-01-02"))}
+			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.Period.AuctionDate.Format("2006-01-02"))}
 		}
 		return nil, dserrors.HandleError(err, "Auction", nil, "failed to create auction")
 	}
+	a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
 	return &a, nil
 }
 
@@ -49,11 +53,14 @@ func (r *AuctionStore) FindByID(ctx context.Context, id int) (*model.Auction, er
 			  FROM auctions WHERE id = $1`
 
 	var a model.Auction
+	var auctionDate time.Time
+	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query, id).
-		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Auction", id, "failed to get auction by ID")
 	}
+	a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
 	return &a, nil
 }
 
@@ -63,11 +70,14 @@ func (r *AuctionStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auc
 			  FROM auctions WHERE id = $1 FOR UPDATE`
 
 	var a model.Auction
+	var auctionDate time.Time
+	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query, id).
-		Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Auction", id, "failed to get auction by ID with lock")
 	}
+	a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
 	return &a, nil
 }
 
@@ -121,9 +131,12 @@ func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 	var auctions []model.Auction
 	for rows.Next() {
 		var a model.Auction
-		if err := rows.Scan(&a.ID, &a.VenueID, &a.AuctionDate, &a.StartTime, &a.EndTime, &a.Status, &a.CreatedAt, &a.UpdatedAt); err != nil {
+		var auctionDate time.Time
+		var startTime, endTime *time.Time
+		if err := rows.Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt); err != nil {
 			return nil, dserrors.HandleError(err, "Auction", nil, "failed to scan auction row")
 		}
+		a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
 		auctions = append(auctions, a)
 	}
 	if err := rows.Err(); err != nil {
@@ -147,7 +160,7 @@ func (r *AuctionStore) Update(ctx context.Context, auction *model.Auction) error
 			  WHERE id = $6`
 
 	rowsAffected, err := r.db.Execute(ctx, query,
-		auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID)
+		auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status, auction.ID)
 	if err != nil {
 		if dserrors.IsUniqueViolation(err) {
 			return &apperrors.ConflictError{Message: "Auction already exists for this venue and time"}

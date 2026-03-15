@@ -111,11 +111,11 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	if item.HighestBid == nil {
 		t.Log("FAILURE REPRODUCED: HighestBid is nil")
 		t.Fail()
-	} else if *item.HighestBid != 1000 {
-		t.Logf("FAILURE: HighestBid expected 1000, got %d", *item.HighestBid)
+	} else if item.HighestBid.Amount() != 1000 {
+		t.Logf("FAILURE: HighestBid expected 1000, got %d", item.HighestBid.Amount())
 		t.Fail()
 	} else {
-		t.Logf("SUCCESS: HighestBid is %d", *item.HighestBid)
+		t.Logf("SUCCESS: HighestBid is %d", item.HighestBid.Amount())
 	}
 
 	// Cleanup
@@ -177,7 +177,7 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 	} else {
 		assert.NotNil(t, item)
 		if item.HighestBid != nil {
-			t.Logf("FAILURE: Expected nil HighestBid, got %d", *item.HighestBid)
+			t.Logf("FAILURE: Expected nil HighestBid, got %d", item.HighestBid.Amount())
 			t.Fail()
 		}
 	}

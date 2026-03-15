@@ -59,6 +59,11 @@ func (e *AuctionItem) Validate() error {
 }
 
 func (e *AuctionItem) ToModel() *model.AuctionItem {
+	var highestBid *model.BidPrice
+	if e.HighestBid != nil {
+		bp := model.NewBidPrice(*e.HighestBid)
+		highestBid = &bp
+	}
 	return &model.AuctionItem{
 		ID:                e.ID,
 		AuctionID:         e.AuctionID,
@@ -67,7 +72,7 @@ func (e *AuctionItem) ToModel() *model.AuctionItem {
 		Quantity:          e.Quantity,
 		Unit:              e.Unit,
 		Status:            e.Status,
-		HighestBid:        e.HighestBid,
+		HighestBid:        highestBid,
 		HighestBidderID:   e.HighestBidderID,
 		HighestBidderName: e.HighestBidderName,
 		SortOrder:         e.SortOrder,

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -29,7 +30,7 @@ func (r *BidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, erro
 	e := entity.Bid{
 		ItemID:  bid.ItemID,
 		BuyerID: bid.BuyerID,
-		Price:   bid.Price,
+		Price:   bid.Price.Amount(),
 	}
 	if err := e.Validate(); err != nil {
 		return nil, err
@@ -37,7 +38,7 @@ func (r *BidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, erro
 
 	err := r.db.QueryRow(ctx,
 		"INSERT INTO transactions (item_id, buyer_id, price) VALUES ($1, $2, $3) RETURNING id, item_id, buyer_id, price, created_at",
-		bid.ItemID, bid.BuyerID, bid.Price,
+		bid.ItemID, bid.BuyerID, bid.Price.Amount(),
 	).Scan(&e.ID, &e.ItemID, &e.BuyerID, &e.Price, &e.CreatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Bid", 0, "Create")
@@ -152,18 +153,21 @@ func (r *BidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]mo
 	var auctions []model.Auction
 	for rows.Next() {
 		var a model.Auction
+		var auctionDate time.Time
+		var startTime, endTime *time.Time
 		if err := rows.Scan(
 			&a.ID,
 			&a.VenueID,
-			&a.AuctionDate,
-			&a.StartTime,
-			&a.EndTime,
+			&auctionDate,
+			&startTime,
+			&endTime,
 			&a.Status,
 			&a.CreatedAt,
 			&a.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
+		a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
 		auctions = append(auctions, a)
 	}
 	return auctions, dserrors.HandleError(rows.Err(), "Auction", buyerID, "ListAuctionsByBuyerID")

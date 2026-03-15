@@ -22,13 +22,13 @@ func TestBidStore_Create(t *testing.T) {
 	bid := &model.Bid{
 		ItemID:  101,
 		BuyerID: 1,
-		Price:   1500,
+		Price:   model.NewBidPrice(1500),
 	}
 
 	mock.ExpectQuery("INSERT INTO transactions").
 		WithArgs(bid.ItemID, bid.BuyerID, bid.Price.Amount()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "item_id", "buyer_id", "price", "created_at"}).
-			AddRow(1, bid.ItemID, bid.BuyerID, bid.Price, time.Now()))
+			AddRow(1, bid.ItemID, bid.BuyerID, bid.Price.Amount(), time.Now()))
 
 	created, err := repo.Create(context.Background(), bid)
 	assert.NoError(t, err)

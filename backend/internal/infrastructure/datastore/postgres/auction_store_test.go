@@ -25,15 +25,13 @@ func TestAuctionStore_Create(t *testing.T) {
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	auction := &model.Auction{
-		VenueID:     1,
-		AuctionDate: date,
-		StartTime:   &start,
-		EndTime:     &end,
-		Status:      model.AuctionStatusScheduled,
+		VenueID: 1,
+		Status:  model.AuctionStatusScheduled,
+		Period:  model.NewAuctionPeriod(date, &start, &end),
 	}
 
 	mock.ExpectQuery("INSERT INTO auctions").
-		WithArgs(auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status).
+		WithArgs(auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "auction_date", "start_time", "end_time", "status", "created_at", "updated_at"}).
 			AddRow(1, 1, date, start, end, "scheduled", time.Now(), time.Now()))
 
@@ -114,16 +112,14 @@ func TestAuctionStore_Update(t *testing.T) {
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	auction := &model.Auction{
-		ID:          1,
-		VenueID:     1,
-		AuctionDate: date,
-		StartTime:   &start,
-		EndTime:     &end,
-		Status:      model.AuctionStatusCompleted,
+		ID:      1,
+		VenueID: 1,
+		Status:  model.AuctionStatusCompleted,
+		Period:  model.NewAuctionPeriod(date, &start, &end),
 	}
 
 	mock.ExpectExec("UPDATE auctions SET").
-		WithArgs(auction.VenueID, auction.AuctionDate, auction.StartTime, auction.EndTime, auction.Status, auction.ID).
+		WithArgs(auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status, auction.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.Update(context.Background(), auction)

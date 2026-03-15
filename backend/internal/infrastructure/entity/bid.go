@@ -42,7 +42,7 @@ func (e *Bid) ToModel() *model.Bid {
 		ID:        e.ID,
 		ItemID:    e.ItemID,
 		BuyerID:   e.BuyerID,
-		Price:     e.Price,
+		Price:     model.NewBidPrice(e.Price),
 		CreatedAt: e.CreatedAt,
 	}
 }

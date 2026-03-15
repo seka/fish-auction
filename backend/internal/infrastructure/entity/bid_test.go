@@ -118,7 +118,7 @@ func TestBid_ToModel(t *testing.T) {
 	if modelBid.BuyerID != bid.BuyerID {
 		t.Errorf("expected BuyerID %d, got %d", bid.BuyerID, modelBid.BuyerID)
 	}
-	if modelBid.Price != bid.Price {
-		t.Errorf("expected Price %d, got %d", bid.Price, modelBid.Price)
+	if modelBid.Price.Amount() != bid.Price {
+		t.Errorf("expected Price %d, got %d", bid.Price, modelBid.Price.Amount())
 	}
 }
