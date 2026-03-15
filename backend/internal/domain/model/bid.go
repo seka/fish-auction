@@ -1,11 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Bid struct {
 	ID        int
 	ItemID    int
 	BuyerID   int
-	Price     int
+	Price     BidPrice
 	CreatedAt time.Time
 }
