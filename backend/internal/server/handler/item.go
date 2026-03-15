@@ -197,6 +197,11 @@ func (h *ItemHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ItemHandler) toResponse(item *model.AuctionItem) dto.ItemResponse {
+	var highestBid *int
+	if item.HighestBid != nil {
+		amt := item.HighestBid.Amount()
+		highestBid = &amt
+	}
 	return dto.ItemResponse{
 		ID:                item.ID,
 		AuctionID:         item.AuctionID,
@@ -205,7 +210,7 @@ func (h *ItemHandler) toResponse(item *model.AuctionItem) dto.ItemResponse {
 		Quantity:          item.Quantity,
 		Unit:              item.Unit,
 		Status:            item.Status.String(),
-		HighestBid:        item.HighestBid,
+		HighestBid:        highestBid,
 		HighestBidderID:   item.HighestBidderID,
 		HighestBidderName: item.HighestBidderName,
 		SortOrder:         item.SortOrder,

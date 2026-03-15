@@ -10,7 +10,7 @@ type AuctionItem struct {
 	Quantity          int
 	Unit              string
 	Status            ItemStatus
-	HighestBid        *int
+	HighestBid        *BidPrice
 	HighestBidderID   *int
 	HighestBidderName *string
 	SortOrder         int

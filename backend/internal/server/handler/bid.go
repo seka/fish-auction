@@ -53,7 +53,7 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 	bid := &model.Bid{
 		ItemID:  req.ItemID,
 		BuyerID: buyerID,
-		Price:   req.Price,
+		Price:   model.NewBidPrice(req.Price),
 	}
 
 	if _, err := h.createUseCase.Execute(r.Context(), bid); err != nil {

@@ -77,11 +77,9 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	auction := &model.Auction{
-		VenueID:     req.VenueID,
-		AuctionDate: auctionDate,
-		StartTime:   parseTime(req.StartTime),
-		EndTime:     parseTime(req.EndTime),
-		Status:      model.AuctionStatus(req.Status),
+		VenueID: req.VenueID,
+		Status:  model.AuctionStatus(req.Status),
+		Period:  model.NewAuctionPeriod(auctionDate, parseTime(req.StartTime), parseTime(req.EndTime)),
 	}
 
 	if auction.Status == "" {
@@ -97,9 +95,9 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	resp := dto.AuctionResponse{
 		ID:          created.ID,
 		VenueID:     created.VenueID,
-		AuctionDate: created.AuctionDate.Format("2006-01-02"),
-		StartTime:   formatTime(created.StartTime),
-		EndTime:     formatTime(created.EndTime),
+		AuctionDate: created.Period.AuctionDate.Format("2006-01-02"),
+		StartTime:   formatTime(created.Period.StartAt),
+		EndTime:     formatTime(created.Period.EndAt),
 		Status:      string(created.Status),
 		CreatedAt:   created.CreatedAt,
 		UpdatedAt:   created.UpdatedAt,
@@ -144,9 +142,9 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 		resp[i] = dto.AuctionResponse{
 			ID:          a.ID,
 			VenueID:     a.VenueID,
-			AuctionDate: a.AuctionDate.Format("2006-01-02"),
-			StartTime:   formatTime(a.StartTime),
-			EndTime:     formatTime(a.EndTime),
+			AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
+			StartTime:   formatTime(a.Period.StartAt),
+			EndTime:     formatTime(a.Period.EndAt),
 			Status:      string(a.Status),
 			CreatedAt:   a.CreatedAt,
 			UpdatedAt:   a.UpdatedAt,
@@ -186,9 +184,9 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	resp := dto.AuctionResponse{
 		ID:          a.ID,
 		VenueID:     a.VenueID,
-		AuctionDate: a.AuctionDate.Format("2006-01-02"),
-		StartTime:   formatTime(a.StartTime),
-		EndTime:     formatTime(a.EndTime),
+		AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
+		StartTime:   formatTime(a.Period.StartAt),
+		EndTime:     formatTime(a.Period.EndAt),
 		Status:      string(a.Status),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
@@ -215,6 +213,11 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 
 	resp := make([]dto.ItemResponse, len(items))
 	for i, item := range items {
+		var highestBid *int
+		if item.HighestBid != nil {
+			amt := item.HighestBid.Amount()
+			highestBid = &amt
+		}
 		resp[i] = dto.ItemResponse{
 			ID:                item.ID,
 			AuctionID:         item.AuctionID,
@@ -223,7 +226,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 			Quantity:          item.Quantity,
 			Unit:              item.Unit,
 			Status:            item.Status.String(),
-			HighestBid:        item.HighestBid,
+			HighestBid:        highestBid,
 			HighestBidderID:   item.HighestBidderID,
 			HighestBidderName: item.HighestBidderName,
 			SortOrder:         item.SortOrder,
@@ -257,12 +260,10 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	auction := &model.Auction{
-		ID:          id,
-		VenueID:     req.VenueID,
-		AuctionDate: auctionDate,
-		StartTime:   parseTime(req.StartTime),
-		EndTime:     parseTime(req.EndTime),
-		Status:      model.AuctionStatus(req.Status),
+		ID:      id,
+		VenueID: req.VenueID,
+		Status:  model.AuctionStatus(req.Status),
+		Period:  model.NewAuctionPeriod(auctionDate, parseTime(req.StartTime), parseTime(req.EndTime)),
 	}
 
 	if err := h.updateUseCase.Execute(r.Context(), auction); err != nil {

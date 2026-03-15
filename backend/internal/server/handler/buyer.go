@@ -266,19 +266,19 @@ func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
 	resp := make([]dto.AuctionResponse, len(auctions))
 	for i, a := range auctions {
 		var startTime, endTime *string
-		if a.StartTime != nil {
-			s := a.StartTime.Format("15:04:05")
+		if a.Period.StartAt != nil {
+			s := a.Period.StartAt.Format("15:04:05")
 			startTime = &s
 		}
-		if a.EndTime != nil {
-			e := a.EndTime.Format("15:04:05")
+		if a.Period.EndAt != nil {
+			e := a.Period.EndAt.Format("15:04:05")
 			endTime = &e
 		}
 
 		resp[i] = dto.AuctionResponse{
 			ID:          a.ID,
 			VenueID:     a.VenueID,
-			AuctionDate: a.AuctionDate.Format("2006-01-02"),
+			AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
 			StartTime:   startTime,
 			EndTime:     endTime,
 			Status:      string(a.Status),
