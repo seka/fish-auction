@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 // AuctionStatus represents the status of an auction
 type AuctionStatus string
@@ -24,14 +26,12 @@ func (s AuctionStatus) IsValid() bool {
 
 // Auction represents an auction event (セリイベント)
 type Auction struct {
-	ID          int
-	VenueID     int
-	AuctionDate time.Time
-	StartTime   *time.Time
-	EndTime     *time.Time
-	Status      AuctionStatus
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID        int
+	VenueID   int
+	Period    AuctionPeriod
+	Status    AuctionStatus
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // ShouldBeCompleted checks if the auction should be completed based on time
@@ -40,27 +40,20 @@ func (a *Auction) ShouldBeCompleted() bool {
 		return false
 	}
 
-	// Use JST
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	now := time.Now().In(jst)
-
-	// Truncate auction date to day (00:00:00)
-	// Treat AuctionDate as JST date
-	auctionDate := time.Date(a.AuctionDate.Year(), a.AuctionDate.Month(), a.AuctionDate.Day(), 0, 0, 0, 0, jst)
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+	tz := NewTimeZone(LocationJST)
+	now := tz.Now()
 
 	// If auction date is in the past
+	today := now.Truncate(24 * time.Hour)
+	auctionDate := a.Period.AuctionDate.Truncate(24 * time.Hour)
 	if auctionDate.Before(today) {
 		return true
 	}
 
-	// If auction date is today, check end time
-	if auctionDate.Equal(today) && a.EndTime != nil {
-		endDateTime := time.Date(
-			auctionDate.Year(), auctionDate.Month(), auctionDate.Day(),
-			a.EndTime.Hour(), a.EndTime.Minute(), a.EndTime.Second(), 0, jst,
-		)
-		if now.After(endDateTime) {
+	// If auction date is today, check end time using AuctionPeriod method
+	if auctionDate.Equal(today) {
+		end := a.Period.GetEndDateTime()
+		if end != nil && now.After(*end) {
 			return true
 		}
 	}
