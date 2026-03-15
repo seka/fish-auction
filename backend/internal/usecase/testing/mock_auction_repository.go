@@ -9,14 +9,14 @@ import (
 
 // MockAuctionRepository is a mock implementation of repository.AuctionRepository
 type MockAuctionRepository struct {
-	CreateFunc       func(ctx context.Context, auction *model.Auction) (*model.Auction, error)
-	FindByIDFunc      func(ctx context.Context, id int) (*model.Auction, error)
+	CreateFunc           func(ctx context.Context, auction *model.Auction) (*model.Auction, error)
+	FindByIDFunc         func(ctx context.Context, id int) (*model.Auction, error)
 	FindByIDWithLockFunc func(ctx context.Context, id int) (*model.Auction, error)
-	ListFunc         func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error)
-	ListByVenueFunc  func(ctx context.Context, venueID int) ([]model.Auction, error)
-	UpdateFunc       func(ctx context.Context, auction *model.Auction) error
-	UpdateStatusFunc func(ctx context.Context, id int, status model.AuctionStatus) error
-	DeleteFunc       func(ctx context.Context, id int) error
+	ListFunc             func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error)
+	ListByVenueFunc      func(ctx context.Context, venueID int) ([]model.Auction, error)
+	UpdateFunc           func(ctx context.Context, auction *model.Auction) error
+	UpdateStatusFunc     func(ctx context.Context, id int, status model.AuctionStatus) error
+	DeleteFunc           func(ctx context.Context, id int) error
 }
 
 func (m *MockAuctionRepository) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {

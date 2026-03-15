@@ -30,8 +30,8 @@ func NewUpdateAuctionStatusUseCase(
 	pushNotification notification.PushNotificationUseCase,
 ) *updateAuctionStatusUseCase {
 	return &updateAuctionStatusUseCase{
-		auctionRepo:      auctionRepo,
-		buyerRepo:        buyerRepo,
+		auctionRepo: auctionRepo,
+		buyerRepo:   buyerRepo,
 		pushUseCase: pushNotification,
 	}
 }

@@ -89,10 +89,9 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 			name: "UpdateStatusError",
 			id:   1,
 			mockAuc: &model.Auction{
-				ID:        1,
-				Status:    model.AuctionStatusInProgress,
-				EndTime:   timePtr(time.Now().Add(-1 * time.Hour)),
-				StartTime: timePtr(time.Now().Add(-2 * time.Hour)),
+				ID:     1,
+				Status: model.AuctionStatusInProgress,
+				Period: model.NewAuctionPeriod(time.Now(), timePtr(time.Now().Add(-2*time.Hour)), timePtr(time.Now().Add(-1*time.Hour))),
 			},
 			mockUpdateStatusErr: errors.New("update failed"),
 			wantErr:             true,

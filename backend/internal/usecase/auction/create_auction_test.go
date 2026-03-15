@@ -56,9 +56,9 @@ func (m *mockAuctionRepoForCreate) Delete(ctx context.Context, id int) error { r
 
 func TestCreateAuctionUseCase_Execute(t *testing.T) {
 	validAuction := &model.Auction{
-		VenueID:     1,
-		AuctionDate: time.Now(),
-		Status:      model.AuctionStatusScheduled,
+		VenueID: 1,
+		Status:  model.AuctionStatusScheduled,
+		Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
 	}
 
 	tests := []struct {

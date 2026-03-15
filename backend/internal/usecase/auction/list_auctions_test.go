@@ -50,8 +50,8 @@ func TestListAuctionsUseCase_Execute(t *testing.T) {
 	pastDate := time.Now().In(jst).AddDate(0, 0, -1)
 
 	auctions := []model.Auction{
-		{ID: 1, Status: model.AuctionStatusScheduled},
-		{ID: 2, Status: model.AuctionStatusInProgress, AuctionDate: pastDate}, // Should be completed logic?
+		{ID: 1, Status: model.AuctionStatusScheduled, Period: model.NewAuctionPeriod(time.Now(), nil, nil)},
+		{ID: 2, Status: model.AuctionStatusInProgress, Period: model.NewAuctionPeriod(pastDate, nil, nil)},
 	}
 
 	tests := []struct {

@@ -109,71 +109,47 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 	return result, nil
 }
 
-func (uc *createBidUseCase) validateBidPrice(item *model.AuctionItem, bidPrice int) error {
-	currentPrice := 0
+func (uc *createBidUseCase) validateBidPrice(item *model.AuctionItem, bidPrice model.BidPrice) error {
+	currentPrice := model.NewBidPrice(0)
 	if item.HighestBid != nil {
 		currentPrice = *item.HighestBid
 	}
 
-	minIncrement := uc.getMinimumBidIncrement(currentPrice)
-	if bidPrice < currentPrice+minIncrement {
+	minIncrement := currentPrice.CalculateMinIncrement()
+	if bidPrice.LessThan(currentPrice.Add(minIncrement)) {
 		return &errors.ValidationError{
 			Field:   "price",
-			Message: fmt.Sprintf("Bid price must be at least %d", currentPrice+minIncrement),
+			Message: fmt.Sprintf("Bid price must be at least %d", currentPrice.Add(minIncrement).Amount()),
 		}
 	}
 	return nil
 }
 
 func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error {
-	if auction.StartTime == nil || auction.EndTime == nil {
-		return nil
-	}
-
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	now := time.Now().In(jst)
-
-	startDateTime := time.Date(
-		auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
-		auction.StartTime.Hour(), auction.StartTime.Minute(), auction.StartTime.Second(), 0, jst,
-	)
-	endDateTime := time.Date(
-		auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
-		auction.EndTime.Hour(), auction.EndTime.Minute(), auction.EndTime.Second(), 0, jst,
-	)
-
-	if now.Before(startDateTime) || now.After(endDateTime) {
+	tz := model.NewTimeZone(model.LocationJST)
+	now := tz.Now()
+	if !auction.Period.IsBiddingOpen(now) {
+		start := auction.Period.GetStartDateTime()
+		end := auction.Period.GetEndDateTime()
 		return &errors.ValidationError{
 			Field: "auction_time",
 			Message: fmt.Sprintf("Bidding is not allowed outside auction hours (%02d:%02d - %02d:%02d)",
-				auction.StartTime.Hour(), auction.StartTime.Minute(),
-				auction.EndTime.Hour(), auction.EndTime.Minute()),
+				start.Hour(), start.Minute(),
+				end.Hour(), end.Minute()),
 		}
 	}
 	return nil
 }
 
 func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *model.Auction) error {
-	if auction.StartTime == nil || auction.EndTime == nil {
-		return nil
-	}
+	tz := model.NewTimeZone(model.LocationJST)
+	now := tz.Now()
 
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	now := time.Now().In(jst)
-
-	endDateTime := time.Date(
-		auction.AuctionDate.Year(), auction.AuctionDate.Month(), auction.AuctionDate.Day(),
-		auction.EndTime.Hour(), auction.EndTime.Minute(), auction.EndTime.Second(), 0, jst,
-	)
-
-	// 自動延長ロジック
 	const extensionThreshold = 5 * time.Minute
 	const extensionDuration = 5 * time.Minute
 
-	if endDateTime.Sub(now) <= extensionThreshold {
-		newEndTime := endDateTime.Add(extensionDuration)
-		newEndTimePure := time.Date(0, 1, 1, newEndTime.Hour(), newEndTime.Minute(), newEndTime.Second(), 0, jst)
-		auction.EndTime = &newEndTimePure
+	if auction.Period.ShouldExtend(now, extensionThreshold) {
+		auction.Period = auction.Period.Extend(extensionDuration)
 
 		if err := uc.auctionRepo.Update(ctx, auction); err != nil {
 			return fmt.Errorf("failed to extend auction: %w", err)
@@ -192,22 +168,9 @@ func (uc *createBidUseCase) notifyOutbid(ctx context.Context, bid *model.Bid, it
 		log.Printf("Outbid detected. Sending notification to previous bidder (ID: %d). Current bidder (ID: %d)", *item.HighestBidderID, bid.BuyerID)
 		payload := map[string]interface{}{
 			"title": "高値更新されました",
-			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price),
+			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price.Amount()),
 			"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
 		}
 		_ = uc.pushUseCase.SendNotification(ctx, *item.HighestBidderID, payload)
 	}
-}
-
-func (uc *createBidUseCase) getMinimumBidIncrement(currentPrice int) int {
-	if currentPrice < 1000 {
-		return 100
-	}
-	if currentPrice < 10000 {
-		return 500
-	}
-	if currentPrice < 100000 {
-		return 1000
-	}
-	return 5000
 }
