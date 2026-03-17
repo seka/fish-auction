@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListInvoicesUseCase defines the interface for listing invoices
+// ListInvoicesUseCase defines the interface for listing invoices.
 type ListInvoicesUseCase interface {
+	// Execute lists all invoices.
 	Execute(ctx context.Context) ([]model.InvoiceItem, error)
 }
 

@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// CreateVenueUseCase defines the interface for creating venues
+// CreateVenueUseCase defines the interface for creating venues.
 type CreateVenueUseCase interface {
+	// Execute creates a new venue.
 	Execute(ctx context.Context, venue *model.Venue) (*model.Venue, error)
 }
 

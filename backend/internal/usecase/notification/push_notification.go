@@ -9,9 +9,11 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
-// PushNotificationUseCase defines the interface for push notifications
+// PushNotificationUseCase defines the interface for push notifications.
 type PushNotificationUseCase interface {
+	// Subscribe saves a push subscription for a buyer.
 	Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error
+	// SendNotification sends a notification to a buyer.
 	SendNotification(ctx context.Context, buyerID int, payload any) error
 }
 

@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListVenuesUseCase defines the interface for listing venues
+// ListVenuesUseCase defines the interface for listing venues.
 type ListVenuesUseCase interface {
+	// Execute lists all venues.
 	Execute(ctx context.Context) ([]model.Venue, error)
 }
 

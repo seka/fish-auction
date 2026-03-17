@@ -12,8 +12,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
-// CreateBidUseCase は入札作成のインターフェースを定義します
+// CreateBidUseCase defines the interface for creating a bid.
 type CreateBidUseCase interface {
+	// Execute creates a new bid.
 	Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error)
 }
 
