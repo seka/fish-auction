@@ -8,18 +8,19 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type cache struct {
+// Client implements datastore.Cache using Redis.
+type Client struct {
 	client *goredis.Client
 }
 
-var _ datastore.Cache = (*cache)(nil)
+var _ datastore.Cache = (*Client)(nil)
 
-// NewClient creates a new Cache implementation using Redis
-func NewClient(client *goredis.Client) *cache {
-	return &cache{client: client}
+// NewClient creates a new Client instance.
+func NewClient(client *goredis.Client) *Client {
+	return &Client{client: client}
 }
 
-func (c *cache) Get(ctx context.Context, key string) ([]byte, error) {
+func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == goredis.Nil {
 		return nil, nil // キャッシュミス
@@ -27,10 +28,10 @@ func (c *cache) Get(ctx context.Context, key string) ([]byte, error) {
 	return data, err
 }
 
-func (c *cache) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
+func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	return c.client.Set(ctx, key, value, ttl).Err()
 }
 
-func (c *cache) Delete(ctx context.Context, key string) error {
+func (c *Client) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }

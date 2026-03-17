@@ -16,7 +16,7 @@ func TestBidStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewBidStore(postgres.NewClient(db))
 	bid := &model.Bid{
@@ -26,7 +26,7 @@ func TestBidStore_Create(t *testing.T) {
 	}
 
 	mock.ExpectQuery("INSERT INTO transactions").
-		WithArgs(bid.ItemID, bid.BuyerID, bid.Price).
+		WithArgs(bid.ItemID, bid.BuyerID, bid.Price.Amount()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "item_id", "buyer_id", "price", "created_at"}).
 			AddRow(1, bid.ItemID, bid.BuyerID, bid.Price, time.Now()))
 
@@ -40,7 +40,7 @@ func TestBidStore_ListPurchasesByBuyerID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewBidStore(postgres.NewClient(db))
 	buyerID := 1

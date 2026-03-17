@@ -8,18 +8,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type client struct {
+// Client implements datastore.Database using sql.DB.
+type Client struct {
 	db *sql.DB
 }
 
-var _ datastore.Database = (*client)(nil)
+var _ datastore.Database = (*Client)(nil)
 
-// NewClient creates a new Database implementation
-func NewClient(db *sql.DB) *client {
-	return &client{db: db}
+// NewClient creates a new Client instance.
+func NewClient(db *sql.DB) *Client {
+	return &Client{db: db}
 }
 
-func (d *client) Query(ctx context.Context, query string, args ...any) (datastore.Rows, error) {
+// Query executes a query that returns multiple rows.
+func (d *Client) Query(ctx context.Context, query string, args ...any) (datastore.Rows, error) {
 	var rows *sql.Rows
 	var err error
 
@@ -35,14 +37,16 @@ func (d *client) Query(ctx context.Context, query string, args ...any) (datastor
 	return &rowsWrapper{rows: rows}, nil
 }
 
-func (d *client) QueryRow(ctx context.Context, query string, args ...any) datastore.Row {
+// QueryRow executes a query that is expected to return at most one row.
+func (d *Client) QueryRow(ctx context.Context, query string, args ...any) datastore.Row {
 	if tx, ok := GetTx(ctx); ok {
 		return tx.QueryRowContext(ctx, query, args...)
 	}
 	return d.db.QueryRowContext(ctx, query, args...)
 }
 
-func (d *client) Execute(ctx context.Context, query string, args ...any) (int64, error) {
+// Execute executes a query without returning any rows.
+func (d *Client) Execute(ctx context.Context, query string, args ...any) (int64, error) {
 	var res sql.Result
 	var err error
 
@@ -58,11 +62,13 @@ func (d *client) Execute(ctx context.Context, query string, args ...any) (int64,
 	return res.RowsAffected()
 }
 
-func (d *client) TransactionManager() repository.TransactionManager {
+// TransactionManager returns a new transaction manager.
+func (d *Client) TransactionManager() repository.TransactionManager {
 	return NewTransactionManager(d.db)
 }
 
-func (d *client) Close() error {
+// Close closes the database connection.
+func (d *Client) Close() error {
 	return d.db.Close()
 }
 

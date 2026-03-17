@@ -16,7 +16,7 @@ func TestAuthenticationStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuthenticationStore(postgres.NewClient(db))
 	auth := &model.Authentication{
@@ -41,7 +41,7 @@ func TestAuthenticationStore_FindByEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuthenticationStore(postgres.NewClient(db))
 	email := "buyer@example.com"
@@ -61,7 +61,7 @@ func TestAuthenticationStore_UpdatePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuthenticationStore(postgres.NewClient(db))
 	buyerID := 1

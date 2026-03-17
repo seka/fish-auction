@@ -27,7 +27,7 @@ func NewWebpushService(cfg *config.Config) *webpushNotificationService {
 	}
 }
 
-func (s *webpushNotificationService) Send(ctx context.Context, sub *model.PushSubscription, payload any) error {
+func (s *webpushNotificationService) Send(_ context.Context, sub *model.PushSubscription, payload any) error {
 	message, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
@@ -51,7 +51,7 @@ func (s *webpushNotificationService) Send(ctx context.Context, sub *model.PushSu
 	if err != nil {
 		return fmt.Errorf("failed to send push notification: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	log.Printf("Push notification sent to %s, status: %d", sub.Endpoint, resp.StatusCode)
 

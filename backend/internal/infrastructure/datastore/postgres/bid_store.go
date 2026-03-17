@@ -10,19 +10,21 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type bidStore struct {
+// BidStore implements repository.BidRepository using PostgreSQL.
+type BidStore struct {
 	db datastore.Database
 }
 
-// Ensure bidStore implements repository.BidRepository
-var _ repository.BidRepository = (*bidStore)(nil)
+// Ensure BidStore implements repository.BidRepository
+var _ repository.BidRepository = (*BidStore)(nil)
 
-// NewBidStore creates a new instance of BidRepository.
-func NewBidStore(db datastore.Database) *bidStore {
-	return &bidStore{db: db}
+// NewBidStore creates a new instance of BidRepository
+func NewBidStore(db datastore.Database) *BidStore {
+	return &BidStore{db: db}
 }
 
-func (r *bidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+// Create stores a new bid transaction.
+func (r *BidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 
 	e := entity.Bid{
 		ItemID:  bid.ItemID,
@@ -43,7 +45,8 @@ func (r *bidStore) Create(ctx context.Context, bid *model.Bid) (*model.Bid, erro
 	return e.ToModel(), nil
 }
 
-func (r *bidStore) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
+// ListInvoices returns a list of invoice items based on bidding transactions.
+func (r *BidStore) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT b.id, b.name, SUM(t.price) as total_price
 		FROM transactions t
@@ -76,7 +79,8 @@ func (r *bidStore) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error
 	return invoices, dserrors.HandleError(rows.Err(), "Invoice", 0, "ListInvoices")
 }
 
-func (r *bidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
+// ListPurchasesByBuyerID returns all purchases for a specific buyer.
+func (r *BidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT
 			t.id,
@@ -122,7 +126,8 @@ func (r *bidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]m
 	return purchases, dserrors.HandleError(rows.Err(), "Purchase", buyerID, "ListPurchasesByBuyerID")
 }
 
-func (r *bidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
+// ListAuctionsByBuyerID returns all auctions in which a specific buyer participated.
+func (r *BidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT DISTINCT
 			a.id,

@@ -15,7 +15,7 @@ func TestBuyerStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewBuyerStore(postgres.NewClient(db))
 	buyer := &model.Buyer{Name: "Buyer1", Organization: "Org1", ContactInfo: "Contact1"}
@@ -34,7 +34,7 @@ func TestBuyerStore_FindByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewBuyerStore(postgres.NewClient(db))
 	id := 1
@@ -54,7 +54,7 @@ func TestBuyerStore_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewBuyerStore(postgres.NewClient(db))
 	id := 1

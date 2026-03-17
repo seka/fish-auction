@@ -39,7 +39,7 @@ func (s *adminEmailService) send(to, subject, body string) error {
 	return adminSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
-func (s *adminEmailService) SendAdminPasswordReset(ctx context.Context, to, url string) error {
+func (s *adminEmailService) SendAdminPasswordReset(_ context.Context, to, url string) error {
 	tmpl := s.templateLoader.Get("admin_password_reset.txt")
 	if tmpl == nil {
 		return fmt.Errorf("template admin_password_reset.txt not found")

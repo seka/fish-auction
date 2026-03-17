@@ -14,18 +14,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func getTestDBConnStr() string {
+	return "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
+}
+
 // TestItemStore_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
 // This is critical for CreateBidUseCase validation.
 func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	// 1. Connect to DB
-	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
+	connStr := getTestDBConnStr()
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		t.Skip("Skipping integration test: DB connection failed: ", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		t.Skip("Skipping integration test: DB ping failed: ", err)
 	}
 
@@ -39,45 +43,60 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	// Setup Data
 	ctx := context.Background()
 
-	// Ensure cache is clear for this itemID before test
-	// We don't know itemID yet, so we'll clear after creation or just rely on new ID.
+	// Force cleanup
+	_, _ = db.ExecContext(ctx, "TRUNCATE public.venues, public.auctions, public.fishermen, public.buyers, public.auction_items, public.transactions CASCADE")
+
+	tx, err := db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	require.NoError(t, err)
+	defer func() { _ = tx.Rollback() }()
 
 	// Venue
 	var venueID int
-	err = db.QueryRow("INSERT INTO venues (name) VALUES ('Bid Test Venue') RETURNING id").Scan(&venueID)
-	assert.NoError(t, err)
+	err = tx.QueryRowContext(ctx, "INSERT INTO public.venues (name) VALUES ('Bid Test Venue') RETURNING id").Scan(&venueID)
+	require.NoError(t, err)
 
 	// Auction
 	var auctionID int
-	err = db.QueryRow(`
-		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
+	err = tx.QueryRowContext(ctx, `
+		INSERT INTO public.auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
 	`, venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	// Fisherman
+	// User (Fisherman)
 	var fishermanID int
-	err = db.QueryRow("INSERT INTO fishermen (name) VALUES ('Bid Test Fisherman') RETURNING id").Scan(&fishermanID)
-	assert.NoError(t, err)
+	err = tx.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('Bid Test Fisherman', 'FISHERMAN', CURRENT_TIMESTAMP) RETURNING id").Scan(&fishermanID)
+	require.NoError(t, err)
+
+	// Fisherman Profile (optional but good practice if table exists)
+	_, _ = tx.ExecContext(ctx, "INSERT INTO public.fishermen (id, name) VALUES ($1, 'Bid Test Fisherman')", fishermanID)
 
 	// Item
 	var itemID int
-	err = db.QueryRow(`
-		INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+	t.Logf("DEBUG: bid_integration: fishermanID=%d, auctionID=%d", fishermanID, auctionID)
+	err = tx.QueryRowContext(ctx, `
+		INSERT INTO public.auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
 		VALUES ($1, $2, 'Katsuo', 10, 'kg', 'Pending', 1) RETURNING id
 	`, fishermanID, auctionID).Scan(&itemID)
 	require.NoError(t, err)
 
-	// Clear cache for this new item just in case
-	itemCache.Delete(ctx, itemID)
+	err = tx.Commit()
+	require.NoError(t, err)
 
-	// Buyer
+	// Clear cache for this new item just in case
+	_ = itemCache.Delete(ctx, itemID)
+
+	// User (Buyer)
 	var buyerID int
-	err = db.QueryRow("INSERT INTO buyers (name) VALUES ('Bid Test Buyer') RETURNING id").Scan(&buyerID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('Bid Test Buyer', 'BUYER', CURRENT_TIMESTAMP) RETURNING id").Scan(&buyerID)
+	require.NoError(t, err)
+
+	// Buyer profile
+	_, err = db.ExecContext(ctx, "INSERT INTO public.buyers (id, name) VALUES ($1, 'Bid Test Buyer')", buyerID)
 	assert.NoError(t, err)
 
 	// Transaction (The First Bid: 1000)
-	_, err = db.Exec(`
+	_, err = db.ExecContext(ctx, `
 		INSERT INTO transactions (item_id, buyer_id, price)
 		VALUES ($1, $2, 1000)
 	`, itemID, buyerID)
@@ -100,24 +119,24 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	}
 
 	// Cleanup
-	db.Exec("DELETE FROM transactions WHERE item_id = $1", itemID)
-	db.Exec("DELETE FROM auction_items WHERE id = $1", itemID)
-	db.Exec("DELETE FROM fishermen WHERE id = $1", fishermanID)
-	db.Exec("DELETE FROM auctions WHERE id = $1", auctionID)
-	db.Exec("DELETE FROM venues WHERE id = $1", venueID)
-	db.Exec("DELETE FROM buyers WHERE id = $1", buyerID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM transactions WHERE item_id = $1", itemID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM auction_items WHERE id = $1", itemID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM fishermen WHERE id = $1", fishermanID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM auctions WHERE id = $1", auctionID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM venues WHERE id = $1", venueID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM buyers WHERE id = $1", buyerID)
 }
 
 func TestItemStore_FindByID_NoBids(t *testing.T) {
 	// 1. Connect
-	connStr := "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
+	connStr := getTestDBConnStr()
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		t.Skip("Skipping integration test: DB connection failed: ", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		t.Skip("Skipping integration test: DB ping failed: ", err)
 	}
 
@@ -126,22 +145,28 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 	repo := postgres.NewItemStore(postgres.NewClient(db))
 	ctx := context.Background()
 
-	// 2. Setup Data (No Transaction this time)
+	// Force cleanup
+	_, _ = db.ExecContext(ctx, "TRUNCATE venues, auctions, fishermen, buyers, auction_items, transactions CASCADE")
 	var venueID int
-	db.QueryRow("INSERT INTO venues (name) VALUES ('NoBid Venue') RETURNING id").Scan(&venueID)
+	_ = db.QueryRowContext(ctx, "INSERT INTO venues (name) VALUES ('NoBid Venue') RETURNING id").Scan(&venueID)
 
 	var auctionID int
-	db.QueryRow("INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id", venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
+	_ = db.QueryRowContext(ctx, "INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id", venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
 
+	// User (Fisherman)
 	var fishermanID int
-	db.QueryRow("INSERT INTO fishermen (name) VALUES ('NoBid Fisherman') RETURNING id").Scan(&fishermanID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('NoBid Fisherman', 'FISHERMAN', CURRENT_TIMESTAMP) RETURNING id").Scan(&fishermanID)
+	require.NoError(t, err)
+
+	// Fisherman profile (optional)
+	_, _ = db.ExecContext(ctx, "INSERT INTO public.fishermen (id, name) VALUES ($1, 'NoBid Fisherman')", fishermanID)
 
 	var itemID int
-	err = db.QueryRow("INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order) VALUES ($1, $2, 'Iwashi', 50, 'kg', 'Pending', 1) RETURNING id", fishermanID, auctionID).Scan(&itemID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order) VALUES ($1, $2, 'Iwashi', 50, 'kg', 'Pending', 1) RETURNING id", fishermanID, auctionID).Scan(&itemID)
 	require.NoError(t, err)
 
 	// Clear cache
-	itemCache.Delete(ctx, itemID)
+	_ = itemCache.Delete(ctx, itemID)
 
 	// 3. Test FindByID (Expectation: Success, HighestBid is nil)
 	item, err := repo.FindByID(ctx, itemID)
@@ -154,14 +179,12 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 		if item.HighestBid != nil {
 			t.Logf("FAILURE: Expected nil HighestBid, got %d", *item.HighestBid)
 			t.Fail()
-		} else {
-			t.Log("SUCCESS: HighestBid is nil as expected")
 		}
 	}
 
 	// Cleanup
-	db.Exec("DELETE FROM auction_items WHERE id = $1", itemID)
-	db.Exec("DELETE FROM fishermen WHERE id = $1", fishermanID)
-	db.Exec("DELETE FROM auctions WHERE id = $1", auctionID)
-	db.Exec("DELETE FROM venues WHERE id = $1", venueID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM auction_items WHERE id = $1", itemID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM fishermen WHERE id = $1", fishermanID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM auctions WHERE id = $1", auctionID)
+	_, _ = db.ExecContext(context.Background(), "DELETE FROM venues WHERE id = $1", venueID)
 }

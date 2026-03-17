@@ -14,7 +14,7 @@ func TestFishermanStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewFishermanStore(postgres.NewClient(db))
 	name := "Fisherman A"
@@ -34,7 +34,7 @@ func TestFishermanStore_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewFishermanStore(postgres.NewClient(db))
 
@@ -53,7 +53,7 @@ func TestFishermanStore_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewFishermanStore(postgres.NewClient(db))
 	id := 1

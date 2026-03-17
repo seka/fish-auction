@@ -10,18 +10,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-type fishermanStore struct {
+// FishermanStore implements repository.FishermanRepository using PostgreSQL.
+type FishermanStore struct {
 	db datastore.Database
 }
 
-var _ repository.FishermanRepository = (*fishermanStore)(nil)
+var _ repository.FishermanRepository = (*FishermanStore)(nil)
 
-// NewFishermanStore creates a new instance of FishermanRepository.
-func NewFishermanStore(db datastore.Database) *fishermanStore {
-	return &fishermanStore{db: db}
+// NewFishermanStore creates a new instance of FishermanRepository
+func NewFishermanStore(db datastore.Database) *FishermanStore {
+	return &FishermanStore{db: db}
 }
 
-func (r *fishermanStore) Create(ctx context.Context, name string) (*model.Fisherman, error) {
+// Create stores a new fisherman.
+func (r *FishermanStore) Create(ctx context.Context, name string) (*model.Fisherman, error) {
 	e := entity.Fisherman{Name: name}
 	if err := e.Validate(); err != nil {
 		return nil, err
@@ -34,7 +36,8 @@ func (r *fishermanStore) Create(ctx context.Context, name string) (*model.Fisher
 	return e.ToModel(), nil
 }
 
-func (r *fishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
+// List returns all active fishermen.
+func (r *FishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
 	rows, err := r.db.Query(ctx, "SELECT id, name FROM fishermen WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Fisherman", 0, "List")
@@ -52,7 +55,8 @@ func (r *fishermanStore) List(ctx context.Context) ([]model.Fisherman, error) {
 	return fishermen, dserrors.HandleError(rows.Err(), "Fisherman", 0, "List")
 }
 
-func (r *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
+// FindByID returns a fisherman by its ID.
+func (r *FishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman, error) {
 	var e entity.Fisherman
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name FROM fishermen WHERE id = $1",
@@ -65,7 +69,8 @@ func (r *fishermanStore) FindByID(ctx context.Context, id int) (*model.Fisherman
 	return e.ToModel(), nil
 }
 
-func (r *fishermanStore) Delete(ctx context.Context, id int) error {
+// Delete marks a fisherman as deleted.
+func (r *FishermanStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE fishermen SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	if err != nil {
 		return dserrors.HandleError(err, "Fisherman", id, "Delete")

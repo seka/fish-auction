@@ -10,18 +10,20 @@ import (
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
-var _ repository.VenueRepository = (*venueStore)(nil)
+var _ repository.VenueRepository = (*VenueStore)(nil)
 
-type venueStore struct {
+// VenueStore implements repository.VenueRepository using PostgreSQL.
+type VenueStore struct {
 	db datastore.Database
 }
 
-// NewVenueStore creates a new instance of VenueRepository.
-func NewVenueStore(db datastore.Database) *venueStore {
-	return &venueStore{db: db}
+// NewVenueStore creates a new instance of VenueRepository
+func NewVenueStore(db datastore.Database) *VenueStore {
+	return &VenueStore{db: db}
 }
 
-func (r *venueStore) Create(ctx context.Context, venue *model.Venue) (*model.Venue, error) {
+// Create stores a new venue.
+func (r *VenueStore) Create(ctx context.Context, venue *model.Venue) (*model.Venue, error) {
 	query := `INSERT INTO venues (name, location, description) VALUES ($1, $2, $3)
 			  RETURNING id, name, location, description, created_at`
 
@@ -34,7 +36,8 @@ func (r *venueStore) Create(ctx context.Context, venue *model.Venue) (*model.Ven
 	return &v, nil
 }
 
-func (r *venueStore) FindByID(ctx context.Context, id int) (*model.Venue, error) {
+// FindByID returns a venue by its ID.
+func (r *VenueStore) FindByID(ctx context.Context, id int) (*model.Venue, error) {
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE id = $1`
 
 	var v model.Venue
@@ -46,7 +49,8 @@ func (r *venueStore) FindByID(ctx context.Context, id int) (*model.Venue, error)
 	return &v, nil
 }
 
-func (r *venueStore) List(ctx context.Context) ([]model.Venue, error) {
+// List returns all active venues.
+func (r *VenueStore) List(ctx context.Context) ([]model.Venue, error) {
 	query := `SELECT id, name, location, description, created_at, deleted_at FROM venues WHERE deleted_at IS NULL ORDER BY created_at DESC`
 
 	rows, err := r.db.Query(ctx, query)
@@ -69,7 +73,8 @@ func (r *venueStore) List(ctx context.Context) ([]model.Venue, error) {
 	return venues, nil
 }
 
-func (r *venueStore) Update(ctx context.Context, venue *model.Venue) error {
+// Update updates an existing venue.
+func (r *VenueStore) Update(ctx context.Context, venue *model.Venue) error {
 	query := `UPDATE venues SET name = $1, location = $2, description = $3 WHERE id = $4 AND deleted_at IS NULL`
 
 	rowsAffected, err := r.db.Execute(ctx, query, venue.Name, venue.Location, venue.Description, venue.ID)
@@ -84,7 +89,8 @@ func (r *venueStore) Update(ctx context.Context, venue *model.Venue) error {
 }
 
 // Delete は会場を論理削除します。
-func (r *venueStore) Delete(ctx context.Context, id int) error {
+// Delete marks a venue as deleted.
+func (r *VenueStore) Delete(ctx context.Context, id int) error {
 	query := `UPDATE venues SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`
 
 	rowsAffected, err := r.db.Execute(ctx, query, id)

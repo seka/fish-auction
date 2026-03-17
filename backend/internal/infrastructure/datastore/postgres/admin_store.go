@@ -1,3 +1,4 @@
+// Package postgres provides repository implementations using PostgreSQL.
 package postgres
 
 import (
@@ -9,18 +10,20 @@ import (
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
-type adminStore struct {
+// AdminStore implements repository.AdminRepository using PostgreSQL.
+type AdminStore struct {
 	db datastore.Database
 }
 
-var _ repository.AdminRepository = (*adminStore)(nil)
+var _ repository.AdminRepository = (*AdminStore)(nil)
 
-// NewAdminStore creates a new instance of AdminRepository.
-func NewAdminStore(db datastore.Database) *adminStore {
-	return &adminStore{db: db}
+// NewAdminStore creates a new instance of AdminRepository
+func NewAdminStore(db datastore.Database) *AdminStore {
+	return &AdminStore{db: db}
 }
 
-func (r *adminStore) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+// FindOneByEmail returns an admin by its email.
+func (r *AdminStore) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE email = $1`
 	row := r.db.QueryRow(ctx, query, email)
 
@@ -32,7 +35,8 @@ func (r *adminStore) FindOneByEmail(ctx context.Context, email string) (*model.A
 	return admin, nil
 }
 
-func (r *adminStore) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+// FindByID returns an admin by its ID.
+func (r *AdminStore) FindByID(ctx context.Context, id int) (*model.Admin, error) {
 	query := `SELECT id, email, password_hash, created_at FROM admins WHERE id = $1`
 	row := r.db.QueryRow(ctx, query, id)
 
@@ -44,7 +48,8 @@ func (r *adminStore) FindByID(ctx context.Context, id int) (*model.Admin, error)
 	return admin, nil
 }
 
-func (r *adminStore) Create(ctx context.Context, admin *model.Admin) error {
+// Create stores a new admin.
+func (r *AdminStore) Create(ctx context.Context, admin *model.Admin) error {
 	query := `INSERT INTO admins (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
 	err := r.db.QueryRow(ctx, query, admin.Email, admin.PasswordHash).Scan(&admin.ID, &admin.CreatedAt)
 	if err != nil {
@@ -53,7 +58,8 @@ func (r *adminStore) Create(ctx context.Context, admin *model.Admin) error {
 	return nil
 }
 
-func (r *adminStore) Count(ctx context.Context) (int, error) {
+// Count returns the total number of admins.
+func (r *AdminStore) Count(ctx context.Context) (int, error) {
 	var count int
 	query := `SELECT COUNT(*) FROM admins`
 	err := r.db.QueryRow(ctx, query).Scan(&count)
@@ -63,7 +69,8 @@ func (r *adminStore) Count(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (r *adminStore) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
+// UpdatePassword updates the password hash of an admin.
+func (r *AdminStore) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
 	query := `UPDATE admins SET password_hash = $1 WHERE id = $2`
 	_, err := r.db.Execute(ctx, query, passwordHash, id)
 	if err != nil {

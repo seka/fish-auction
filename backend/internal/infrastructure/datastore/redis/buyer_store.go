@@ -10,20 +10,21 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
-type buyerStore struct {
+// BuyerStore implements a cache store for buyers in Redis.
+type BuyerStore struct {
 	cache datastore.Cache
 	ttl   time.Duration
 }
 
-// NewBuyerStore は新しい BuyerStore を作成
-func NewBuyerStore(cache datastore.Cache, ttl time.Duration) *buyerStore {
-	return &buyerStore{
+// NewBuyerStore creates a new BuyerStore instance.
+func NewBuyerStore(cache datastore.Cache, ttl time.Duration) *BuyerStore {
+	return &BuyerStore{
 		cache: cache,
 		ttl:   ttl,
 	}
 }
 
-func (c *buyerStore) Get(ctx context.Context, id int) (*model.Buyer, error) {
+func (c *BuyerStore) Get(ctx context.Context, id int) (*model.Buyer, error) {
 	key := fmt.Sprintf("buyer:%d", id)
 	data, err := c.cache.Get(ctx, key)
 	if err != nil {
@@ -40,7 +41,7 @@ func (c *buyerStore) Get(ctx context.Context, id int) (*model.Buyer, error) {
 	return &buyer, nil
 }
 
-func (c *buyerStore) Set(ctx context.Context, id int, buyer *model.Buyer) error {
+func (c *BuyerStore) Set(ctx context.Context, id int, buyer *model.Buyer) error {
 	key := fmt.Sprintf("buyer:%d", id)
 	data, err := json.Marshal(buyer)
 	if err != nil {
@@ -49,7 +50,7 @@ func (c *buyerStore) Set(ctx context.Context, id int, buyer *model.Buyer) error 
 	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
-func (c *buyerStore) Delete(ctx context.Context, id int) error {
+func (c *BuyerStore) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("buyer:%d", id)
 	return c.cache.Delete(ctx, key)
 }

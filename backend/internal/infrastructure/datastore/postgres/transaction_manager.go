@@ -11,19 +11,20 @@ import (
 // txKey is used to store transaction in context
 type txKey struct{}
 
-type transactionManager struct {
+// TransactionManager implements repository.TransactionManager.
+type TransactionManager struct {
 	db *sql.DB
 }
 
-var _ repository.TransactionManager = (*transactionManager)(nil)
+var _ repository.TransactionManager = (*TransactionManager)(nil)
 
-// NewTransactionManager creates a new transaction manager
-func NewTransactionManager(db *sql.DB) *transactionManager {
-	return &transactionManager{db: db}
+// NewTransactionManager creates a new TransactionManager instance.
+func NewTransactionManager(db *sql.DB) *TransactionManager {
+	return &TransactionManager{db: db}
 }
 
 // WithTransaction executes the given function within a database transaction
-func (tm *transactionManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
+func (tm *TransactionManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
 	tx, err := tm.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err

@@ -1,3 +1,4 @@
+ // Package entity defines data access layer entities.
 package entity
 
 import (

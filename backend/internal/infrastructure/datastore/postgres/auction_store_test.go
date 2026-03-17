@@ -17,7 +17,7 @@ func TestAuctionStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -47,7 +47,7 @@ func TestAuctionStore_FindByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1
@@ -70,7 +70,7 @@ func TestAuctionStore_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -106,7 +106,7 @@ func TestAuctionStore_Update(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -135,7 +135,7 @@ func TestAuctionStore_UpdateStatus(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1
@@ -154,7 +154,7 @@ func TestAuctionStore_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1

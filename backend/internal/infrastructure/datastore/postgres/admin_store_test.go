@@ -17,7 +17,7 @@ func TestAdminStore_FindOneByEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	email := "admin@example.com"
@@ -51,7 +51,7 @@ func TestAdminStore_FindByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	id := 1
@@ -75,7 +75,7 @@ func TestAdminStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	admin := &model.Admin{Email: "admin@example.com", PasswordHash: "hashed"}
@@ -98,7 +98,7 @@ func TestAdminStore_UpdatePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	id := 1

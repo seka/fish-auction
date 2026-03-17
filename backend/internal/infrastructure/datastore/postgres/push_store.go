@@ -10,18 +10,20 @@ import (
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
-type pushStore struct {
+// PushStore implements repository.PushRepository.
+type PushStore struct {
 	db datastore.Database
 }
 
-var _ repository.PushRepository = (*pushStore)(nil)
+var _ repository.PushRepository = (*PushStore)(nil)
 
-// NewPushStore creates a new instance of PushRepository.
-func NewPushStore(db datastore.Database) *pushStore {
-	return &pushStore{db: db}
+// NewPushStore creates a new PushStore instance.
+func NewPushStore(db datastore.Database) *PushStore {
+	return &PushStore{db: db}
 }
 
-func (r *pushStore) SaveSubscription(ctx context.Context, sub *model.PushSubscription) error {
+// SaveSubscription stores or updates a push subscription.
+func (r *PushStore) SaveSubscription(ctx context.Context, sub *model.PushSubscription) error {
 
 	// Upsert subscription based on endpoint
 	query := `
@@ -45,7 +47,8 @@ func (r *pushStore) SaveSubscription(ctx context.Context, sub *model.PushSubscri
 	return nil
 }
 
-func (r *pushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) ([]model.PushSubscription, error) {
+// GetSubscriptionsByBuyerID returns all push subscriptions for a buyer.
+func (r *PushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) ([]model.PushSubscription, error) {
 	query := `
 		SELECT id, buyer_id, endpoint, p256dh, auth, created_at
 		FROM push_subscriptions
@@ -74,7 +77,8 @@ func (r *pushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) 
 	return subs, nil
 }
 
-func (r *pushStore) DeleteSubscription(ctx context.Context, endpoint string) error {
+// DeleteSubscription removes a push subscription by its endpoint.
+func (r *PushStore) DeleteSubscription(ctx context.Context, endpoint string) error {
 	query := "DELETE FROM push_subscriptions WHERE endpoint = $1"
 
 	// If endpoint URL is long, Postgres handles text type fine.

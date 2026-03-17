@@ -12,18 +12,20 @@ import (
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
 )
 
-var _ repository.AuctionRepository = (*auctionStore)(nil)
+var _ repository.AuctionRepository = (*AuctionStore)(nil)
 
-type auctionStore struct {
+// AuctionStore implements repository.AuctionRepository using PostgreSQL.
+type AuctionStore struct {
 	db datastore.Database
 }
 
-// NewAuctionStore creates a new instance of AuctionRepository.
-func NewAuctionStore(db datastore.Database) *auctionStore {
-	return &auctionStore{db: db}
+// NewAuctionStore creates a new instance of AuctionRepository
+func NewAuctionStore(db datastore.Database) *AuctionStore {
+	return &AuctionStore{db: db}
 }
 
-func (r *auctionStore) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
+// Create stores a new auction.
+func (r *AuctionStore) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
 	query := `INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
 			  VALUES ($1, $2, $3, $4, $5)
 			  RETURNING id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at`
@@ -41,7 +43,8 @@ func (r *auctionStore) Create(ctx context.Context, auction *model.Auction) (*mod
 	return &a, nil
 }
 
-func (r *auctionStore) FindByID(ctx context.Context, id int) (*model.Auction, error) {
+// FindByID returns an auction by its ID.
+func (r *AuctionStore) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions WHERE id = $1`
 
@@ -54,7 +57,8 @@ func (r *auctionStore) FindByID(ctx context.Context, id int) (*model.Auction, er
 	return &a, nil
 }
 
-func (r *auctionStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+// FindByIDWithLock returns an auction by its ID with a lock.
+func (r *AuctionStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions WHERE id = $1 FOR UPDATE`
 
@@ -67,7 +71,8 @@ func (r *auctionStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auc
 	return &a, nil
 }
 
-func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+// List returns a list of auctions based on the given filters.
+func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
 			  FROM auctions`
 
@@ -99,7 +104,6 @@ func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 		if filters.EndDate != nil {
 			conditions = append(conditions, fmt.Sprintf("auction_date <= $%d", argIndex))
 			args = append(args, *filters.EndDate)
-			argIndex++
 		}
 	}
 
@@ -128,14 +132,16 @@ func (r *auctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 	return auctions, nil
 }
 
-func (r *auctionStore) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
+// ListByVenue returns a list of auctions for the given venue ID.
+func (r *AuctionStore) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
 	filters := &repository.AuctionFilters{
 		VenueID: &venueID,
 	}
 	return r.List(ctx, filters)
 }
 
-func (r *auctionStore) Update(ctx context.Context, auction *model.Auction) error {
+// Update updates an existing auction.
+func (r *AuctionStore) Update(ctx context.Context, auction *model.Auction) error {
 	query := `UPDATE auctions
 			  SET venue_id = $1, auction_date = $2, start_time = $3, end_time = $4, status = $5, updated_at = CURRENT_TIMESTAMP
 			  WHERE id = $6`
@@ -155,7 +161,8 @@ func (r *auctionStore) Update(ctx context.Context, auction *model.Auction) error
 	return nil
 }
 
-func (r *auctionStore) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
+// UpdateStatus updates the status of an auction.
+func (r *AuctionStore) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
 	query := `UPDATE auctions SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`
 
 	rowsAffected, err := r.db.Execute(ctx, query, status, id)
@@ -174,7 +181,7 @@ func (r *auctionStore) UpdateStatus(ctx context.Context, id int, status model.Au
 //   - このセリに関連付けられたすべての出品
 //
 // 注意: 出品に入札（transactions）が存在する場合、入札履歴を保護するため削除は失敗します。
-func (r *auctionStore) Delete(ctx context.Context, id int) error {
+func (r *AuctionStore) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM auctions WHERE id = $1`
 	_, err := r.db.Execute(ctx, query, id)
 	if err != nil {

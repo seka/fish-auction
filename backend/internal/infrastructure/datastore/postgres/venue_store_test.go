@@ -17,7 +17,7 @@ func TestVenueStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	venue := &model.Venue{Name: "Venue A", Location: "Loc A", Description: "Desc A"}
@@ -37,7 +37,7 @@ func TestVenueStore_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewVenueStore(postgres.NewClient(db))
 
@@ -55,7 +55,7 @@ func TestVenueStore_FindByID_NotFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	id := 99
@@ -75,7 +75,7 @@ func TestVenueStore_Update(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	venue := &model.Venue{ID: 1, Name: "Venue Updated", Location: "Loc Updated", Description: "Desc Updated"}
@@ -103,7 +103,7 @@ func TestVenueStore_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewVenueStore(postgres.NewClient(db))
 	id := 1

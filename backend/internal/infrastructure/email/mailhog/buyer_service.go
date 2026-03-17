@@ -39,7 +39,7 @@ func (s *buyerEmailService) send(to, subject, body string) error {
 	return buyerSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
-func (s *buyerEmailService) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
+func (s *buyerEmailService) SendBuyerPasswordReset(_ context.Context, to, url string) error {
 	tmpl := s.templateLoader.Get("buyer_password_reset.txt")
 	if tmpl == nil {
 		return fmt.Errorf("template buyer_password_reset.txt not found")

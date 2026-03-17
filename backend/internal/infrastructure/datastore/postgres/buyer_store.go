@@ -10,19 +10,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-// buyerStore はバイヤーに関する DB 操作の実装
-type buyerStore struct {
+// BuyerStore implements repository.BuyerRepository using PostgreSQL.
+type BuyerStore struct {
 	db datastore.Database
 }
 
-var _ repository.BuyerRepository = (*buyerStore)(nil)
+var _ repository.BuyerRepository = (*BuyerStore)(nil)
 
-// NewBuyerStore は新しいバイヤー用 BuyerStore を作成
-func NewBuyerStore(db datastore.Database) *buyerStore {
-	return &buyerStore{db: db}
+// NewBuyerStore creates a new instance of BuyerRepository
+func NewBuyerStore(db datastore.Database) *BuyerStore {
+	return &BuyerStore{db: db}
 }
 
-func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
+// Create stores a new buyer.
+func (r *BuyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
 	e := entity.Buyer{
 		Name:         buyer.Name,
 		Organization: buyer.Organization,
@@ -42,7 +43,8 @@ func (r *buyerStore) Create(ctx context.Context, buyer *model.Buyer) (*model.Buy
 	return buyer, nil
 }
 
-func (r *buyerStore) List(ctx context.Context) ([]model.Buyer, error) {
+// List returns all active buyers.
+func (r *BuyerStore) List(ctx context.Context) ([]model.Buyer, error) {
 	rows, err := r.db.Query(ctx, "SELECT id, name, organization, contact_info FROM buyers WHERE deleted_at IS NULL")
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Buyer", 0, "List")
@@ -60,7 +62,8 @@ func (r *buyerStore) List(ctx context.Context) ([]model.Buyer, error) {
 	return buyers, dserrors.HandleError(rows.Err(), "Buyer", 0, "List")
 }
 
-func (r *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+// FindByID returns a buyer by its ID.
+func (r *BuyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
 	var e entity.Buyer
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name, organization, contact_info FROM buyers WHERE id = $1",
@@ -73,7 +76,8 @@ func (r *buyerStore) FindByID(ctx context.Context, id int) (*model.Buyer, error)
 	return e.ToModel(), nil
 }
 
-func (r *buyerStore) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
+// FindByName returns a buyer by its name.
+func (r *BuyerStore) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
 	var e entity.Buyer
 	err := r.db.QueryRow(ctx,
 		"SELECT id, name, organization, contact_info FROM buyers WHERE name = $1 AND deleted_at IS NULL",
@@ -85,7 +89,8 @@ func (r *buyerStore) FindByName(ctx context.Context, name string) (*model.Buyer,
 	return e.ToModel(), nil
 }
 
-func (r *buyerStore) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+// FindByEmail returns a buyer by its authentication email.
+func (r *BuyerStore) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
 	var e entity.Buyer
 	query := `
 		SELECT b.id, b.name, b.organization, b.contact_info
@@ -100,7 +105,8 @@ func (r *buyerStore) FindByEmail(ctx context.Context, email string) (*model.Buye
 	return e.ToModel(), nil
 }
 
-func (r *buyerStore) Delete(ctx context.Context, id int) error {
+// Delete marks a buyer as deleted.
+func (r *BuyerStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE buyers SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	if err != nil {
 		return dserrors.HandleError(err, "Buyer", id, "Delete")

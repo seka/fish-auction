@@ -14,21 +14,23 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-// Ensure authenticationStore implements repository.AuthenticationRepository.
-var _ repository.AuthenticationRepository = (*authenticationStore)(nil)
+// Ensure AuthenticationStore implements repository.AuthenticationRepository.
+var _ repository.AuthenticationRepository = (*AuthenticationStore)(nil)
 
-type authenticationStore struct {
+// AuthenticationStore implements repository.AuthenticationRepository using PostgreSQL.
+type AuthenticationStore struct {
 	db datastore.Database
 }
 
-// NewAuthenticationStore creates a new instance of AuthenticationRepository.
-func NewAuthenticationStore(db datastore.Database) *authenticationStore {
-	return &authenticationStore{
+// NewAuthenticationStore creates a new instance of AuthenticationRepository
+func NewAuthenticationStore(db datastore.Database) *AuthenticationStore {
+	return &AuthenticationStore{
 		db: db,
 	}
 }
 
-func (r *authenticationStore) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
+// Create stores a new authentication record.
+func (r *AuthenticationStore) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
 	e := entity.Authentication{
 		BuyerID:      auth.BuyerID,
 		Email:        auth.Email,
@@ -54,7 +56,8 @@ func (r *authenticationStore) Create(ctx context.Context, auth *model.Authentica
 	return e.ToModel(), nil
 }
 
-func (r *authenticationStore) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
+// FindByEmail returns an authentication record by its email.
+func (r *AuthenticationStore) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
 	var e entity.Authentication
 	err := r.db.QueryRow(ctx,
 		`SELECT id, buyer_id, email, password_hash, auth_type, failed_attempts, locked_until, last_login_at, created_at, updated_at
@@ -70,7 +73,8 @@ func (r *authenticationStore) FindByEmail(ctx context.Context, email string) (*m
 	return e.ToModel(), nil
 }
 
-func (r *authenticationStore) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
+// FindByBuyerID returns an authentication record by its buyer ID.
+func (r *AuthenticationStore) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
 	var e entity.Authentication
 	err := r.db.QueryRow(ctx,
 		`SELECT id, buyer_id, email, password_hash, auth_type, failed_attempts, locked_until, last_login_at, created_at, updated_at
@@ -86,7 +90,8 @@ func (r *authenticationStore) FindByBuyerID(ctx context.Context, buyerID int) (*
 	return e.ToModel(), nil
 }
 
-func (r *authenticationStore) UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error {
+// UpdateLoginSuccess updates the record upon a successful login.
+func (r *AuthenticationStore) UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET last_login_at = $1, failed_attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
@@ -98,7 +103,8 @@ func (r *authenticationStore) UpdateLoginSuccess(ctx context.Context, id int, lo
 	return nil
 }
 
-func (r *authenticationStore) IncrementFailedAttempts(ctx context.Context, id int) error {
+// IncrementFailedAttempts increments the count of failed login attempts.
+func (r *AuthenticationStore) IncrementFailedAttempts(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET failed_attempts = failed_attempts + 1, updated_at = CURRENT_TIMESTAMP
@@ -110,7 +116,8 @@ func (r *authenticationStore) IncrementFailedAttempts(ctx context.Context, id in
 	return nil
 }
 
-func (r *authenticationStore) ResetFailedAttempts(ctx context.Context, id int) error {
+// ResetFailedAttempts resets the count of failed login attempts.
+func (r *AuthenticationStore) ResetFailedAttempts(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET failed_attempts = 0, updated_at = CURRENT_TIMESTAMP
@@ -122,7 +129,8 @@ func (r *authenticationStore) ResetFailedAttempts(ctx context.Context, id int) e
 	return nil
 }
 
-func (r *authenticationStore) LockAccount(ctx context.Context, id int, until time.Time) error {
+// LockAccount locks an account until the specified time.
+func (r *AuthenticationStore) LockAccount(ctx context.Context, id int, until time.Time) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET locked_until = $1, updated_at = CURRENT_TIMESTAMP
@@ -134,7 +142,8 @@ func (r *authenticationStore) LockAccount(ctx context.Context, id int, until tim
 	return nil
 }
 
-func (r *authenticationStore) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
+// UpdatePassword updates the password hash for a buyer.
+func (r *AuthenticationStore) UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE authentications
 		 SET password_hash = $1, updated_at = CURRENT_TIMESTAMP

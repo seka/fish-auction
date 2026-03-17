@@ -11,19 +11,20 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
-// itemStore はアイテムに関する DB 操作の実装
-type itemStore struct {
+// ItemStore implements repository.ItemRepository using PostgreSQL.
+type ItemStore struct {
 	db datastore.Database
 }
 
-var _ repository.ItemRepository = (*itemStore)(nil)
+var _ repository.ItemRepository = (*ItemStore)(nil)
 
-// NewItemStore は新しいアイテム用 ItemStore を作成
-func NewItemStore(db datastore.Database) *itemStore {
-	return &itemStore{db: db}
+// NewItemStore creates a new instance of ItemRepository.
+func NewItemStore(db datastore.Database) *ItemStore {
+	return &ItemStore{db: db}
 }
 
-func (r *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+// Create stores a new auction item.
+func (r *ItemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
@@ -46,7 +47,8 @@ func (r *itemStore) Create(ctx context.Context, item *model.AuctionItem) (*model
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+// List returns all auction items with the given status.
+func (r *ItemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
 	var args []interface{}
 	if status != "" {
@@ -75,7 +77,8 @@ func (r *itemStore) List(ctx context.Context, status string) ([]model.AuctionIte
 	return items, nil
 }
 
-func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+// ListByAuction returns all auction items for the given auction ID.
+func (r *ItemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
@@ -142,7 +145,8 @@ func (r *itemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 	return items, nil
 }
 
-func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
+// FindByID returns an auction item by its ID.
+func (r *ItemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	var e entity.AuctionItem
 	var highestBid sql.NullInt64
 	var highestBidderID sql.NullInt64
@@ -198,7 +202,8 @@ func (r *itemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
+// FindByIDWithLock returns an auction item by its ID with a lock.
+func (r *ItemStore) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
 	var e entity.AuctionItem
 	var highestBid sql.NullInt64
 	var highestBidderID sql.NullInt64
@@ -255,7 +260,8 @@ func (r *itemStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auctio
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+// UpdateStatus updates the status of an auction item.
+func (r *ItemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
 	if err != nil {
 		return dserrors.HandleError(err, "Item", id, "failed to update item status")
@@ -263,7 +269,8 @@ func (r *itemStore) UpdateStatus(ctx context.Context, id int, status model.ItemS
 	return nil
 }
 
-func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+// Update updates an existing auction item.
+func (r *ItemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
 		ID:          item.ID,
 		AuctionID:   item.AuctionID,
@@ -294,7 +301,8 @@ func (r *itemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 	return e.ToModel(), nil
 }
 
-func (r *itemStore) Delete(ctx context.Context, id int) error {
+// Delete marks an auction item as deleted.
+func (r *ItemStore) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1", id)
 	if err != nil {
 		return dserrors.HandleError(err, "Item", id, "failed to delete item")
@@ -302,7 +310,8 @@ func (r *itemStore) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+// UpdateSortOrder updates the sort order of an auction item.
+func (r *ItemStore) UpdateSortOrder(ctx context.Context, id, sortOrder int) error {
 	_, err := r.db.Execute(ctx, "UPDATE auction_items SET sort_order = $1 WHERE id = $2", sortOrder, id)
 	if err != nil {
 		return dserrors.HandleError(err, "Item", id, "failed to update item sort order")
@@ -310,7 +319,8 @@ func (r *itemStore) UpdateSortOrder(ctx context.Context, id int, sortOrder int) 
 	return nil
 }
 
-func (r *itemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
+// Reorder reorders multiple auction items for a given auction.
+func (r *ItemStore) Reorder(ctx context.Context, auctionID int, ids []int) error {
 	txMgr := r.db.TransactionManager()
 	if txMgr == nil {
 		return dserrors.HandleError(nil, "Item", nil, "transaction manager is not available")

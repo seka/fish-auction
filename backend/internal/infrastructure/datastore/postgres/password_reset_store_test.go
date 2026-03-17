@@ -17,7 +17,7 @@ func TestPasswordResetStore_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	userID := 1
@@ -48,7 +48,7 @@ func TestPasswordResetStore_FindByTokenHash(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	tokenHash := "hash"
@@ -91,7 +91,7 @@ func TestPasswordResetStore_DeleteByTokenHash(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	tokenHash := "hash"
@@ -111,7 +111,7 @@ func TestPasswordResetStore_DeleteAllByUserID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewPasswordResetStore(postgres.NewClient(db))
 	userID := 1
