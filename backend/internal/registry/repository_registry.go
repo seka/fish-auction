@@ -44,20 +44,20 @@ type repositoryRegistry struct {
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(cfg *config.Config) (*repositoryRegistry, *sql.DB, error) {
+func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
 	db, err := connectDB(cfg.DBConnectionURL())
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if err := runMigrations(db); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, nil, err
 	}
 
 	redisClient, err := connectRedis(cfg.RedisAddr)
 	if err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, nil, err
 	}
 
@@ -75,7 +75,7 @@ func connectDB(postgresAddr string) (*sql.DB, error) {
 	for range 10 {
 		db, err = sql.Open("postgres", postgresAddr)
 		if err == nil {
-			err = db.Ping()
+			err = db.PingContext(context.Background())
 		}
 		if err == nil {
 			return db, nil
@@ -108,7 +108,7 @@ func runMigrations(db *sql.DB) error {
 			return fmt.Errorf("failed to read migration file %s: %w", file, err)
 		}
 
-		_, err = db.Exec(string(migrationSQL))
+		_, err = db.ExecContext(context.Background(), string(migrationSQL))
 		if err != nil {
 			return fmt.Errorf("failed to apply migration %s: %w", file, err)
 		}
@@ -131,7 +131,7 @@ func connectRedis(redisAddr string) (*redis.Client, error) {
 		time.Sleep(2 * time.Second)
 	}
 
-	redisClient.Close()
+	_ = redisClient.Close()
 	return nil, fmt.Errorf("could not connect to redis after retries: %w", redisErr)
 }
 
