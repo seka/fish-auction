@@ -6,7 +6,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// DeleteFishermanUseCase defines the interface for deleting a fisherman.
 type DeleteFishermanUseCase interface {
+	// Execute deletes a fisherman by ID.
 	Execute(ctx context.Context, id int) error
 }
 

@@ -8,8 +8,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// CreateBuyerUseCase defines the interface for creating buyers
+// CreateBuyerUseCase defines the interface for creating a buyer.
 type CreateBuyerUseCase interface {
+	// Execute creates a new buyer with authentication.
 	Execute(ctx context.Context, name, email, password, organization, contactInfo string) (*model.Buyer, error)
 }
 
