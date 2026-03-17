@@ -31,6 +31,8 @@ linters-settings:
     rules:
       - name: exported
         disabled: true
+      - name: package-comments
+        disabled: true
   gocritic:
     enabled-tags:
       - diagnostic
