@@ -14,28 +14,44 @@ describe('AdminVenuesPage', () => {
   const mockRegister = vi.fn();
   const mockOnEdit = vi.fn();
   const mockOnDelete = vi.fn();
+  const tMock = Object.assign((key: string) => key, {
+    rich: vi.fn(),
+    markup: vi.fn(),
+    raw: vi.fn(),
+    has: vi.fn(),
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useVenuePage as any).mockReturnValue({
+    vi.mocked(useVenuePage).mockReturnValue({
       state: {
-        venues: [{ id: 1, name: 'Venue 1', location: 'Loc 1', description: 'Desc 1' }],
+        venues: [
+          {
+            id: 1,
+            name: 'Venue 1',
+            location: 'Loc 1',
+            description: 'Desc 1',
+            createdAt: new Date().toISOString(),
+          },
+        ],
         isLoading: false,
         isCreating: false,
+        isUpdating: false,
+        isDeleting: false,
         message: '',
         editingVenue: null,
       },
       form: {
         register: mockRegister,
         errors: {},
-      },
+      } as unknown as ReturnType<typeof useVenuePage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onEdit: mockOnEdit,
+        onCancelEdit: vi.fn(),
         onDelete: mockOnDelete,
       },
-      t: (key: string) => key,
+      t: tMock as unknown as ReturnType<typeof useVenuePage>['t'],
     });
   });
 

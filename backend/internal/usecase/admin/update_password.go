@@ -8,7 +8,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// UpdatePasswordUseCase defines the interface for updating an admin password.
 type UpdatePasswordUseCase interface {
+	// Execute updates the admin password for the given ID.
 	Execute(ctx context.Context, id int, currentPassword, newPassword string) error
 }
 
@@ -18,7 +20,7 @@ type updatePasswordUseCase struct {
 	adminRepo repository.AdminRepository
 }
 
-// NewUpdatePasswordUseCase creates a new instance of UpdatePasswordUseCase
+// NewUpdatePasswordUseCase creates a new UpdatePasswordUseCase instance.
 func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository) *updatePasswordUseCase {
 	return &updatePasswordUseCase{adminRepo: adminRepo}
 }

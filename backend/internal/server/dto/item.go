@@ -3,6 +3,7 @@ package dto
 import "time"
 
 // Item DTOs
+// CreateItemRequest represents the request body for creating an item.
 type CreateItemRequest struct {
 	AuctionID   int    `json:"auction_id"`
 	FishermanID int    `json:"fisherman_id"`
@@ -11,6 +12,7 @@ type CreateItemRequest struct {
 	Unit        string `json:"unit"`
 }
 
+// UpdateItemRequest represents the request body for updating an item.
 type UpdateItemRequest struct {
 	AuctionID   int    `json:"auction_id"`
 	FishermanID int    `json:"fisherman_id"`
@@ -20,14 +22,17 @@ type UpdateItemRequest struct {
 	Status      string `json:"status"`
 }
 
+// UpdateItemSortOrderRequest represents the request body for updating an item's sort order.
 type UpdateItemSortOrderRequest struct {
 	SortOrder int `json:"sort_order"`
 }
 
+// ReorderItemsRequest represents the request body for reordering items.
 type ReorderItemsRequest struct {
 	IDs []int `json:"ids"`
 }
 
+// ItemResponse represents the response body for an item.
 type ItemResponse struct {
 	ID                int       `json:"id"`
 	AuctionID         int       `json:"auction_id"`

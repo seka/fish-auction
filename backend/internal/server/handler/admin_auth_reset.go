@@ -8,18 +8,21 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
 
+// AdminAuthResetHandler handles HTTP requests related to admin password resets.
 type AdminAuthResetHandler struct {
 	requestUseCase admin.RequestPasswordResetUseCase
 	resetUseCase   admin.ResetPasswordUseCase
 }
 
-func NewAdminAuthResetHandler(uc registry.UseCase) *AdminAuthResetHandler {
+// NewAdminAuthResetHandler creates a new AdminAuthResetHandler instance.
+func NewAdminAuthResetHandler(r registry.UseCase) *AdminAuthResetHandler {
 	return &AdminAuthResetHandler{
-		requestUseCase: uc.NewRequestAdminPasswordResetUseCase(),
-		resetUseCase:   uc.NewResetAdminPasswordUseCase(),
+		requestUseCase: r.NewRequestAdminPasswordResetUseCase(),
+		resetUseCase:   r.NewResetAdminPasswordUseCase(),
 	}
 }
 
+// RequestReset handles the admin password reset request.
 func (h *AdminAuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email string `json:"email"`
@@ -74,6 +77,7 @@ func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Requ
 	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
 }
 
+// RegisterRoutes registers the admin password reset handler routes to the given mux.
 func (h *AdminAuthResetHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/admin/password-reset/request", h.RequestReset)
 	mux.HandleFunc("POST /api/admin/password-reset/verify", h.VerifyToken)

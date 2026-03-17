@@ -10,8 +10,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// LoginUseCase defines the interface for user authentication
+// LoginUseCase defines the interface for user authentication.
 type LoginUseCase interface {
+	// Execute authenticates a user with the provided email and password.
 	Execute(ctx context.Context, email, password string) (*model.Admin, error)
 }
 

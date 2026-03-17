@@ -18,7 +18,11 @@ const eslintConfig = defineConfig([
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
+      }],
       '@typescript-eslint/ban-ts-comment': 'off',
       'react/no-unescaped-entities': 'off',
       '@next/next/no-img-element': 'off',

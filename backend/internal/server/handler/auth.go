@@ -12,14 +12,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 )
 
+// AuthHandler handles HTTP requests related to authentication.
 type AuthHandler struct {
 	loginUseCase auth.LoginUseCase
 }
 
+// NewAuthHandler creates a new AuthHandler instance.
 func NewAuthHandler(r registry.UseCase) *AuthHandler {
 	return &AuthHandler{loginUseCase: r.NewLoginUseCase()}
 }
 
+// Login handles the login request.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -65,6 +68,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Logout handles the logout request.
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin_session",
@@ -87,6 +91,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// RegisterRoutes registers the auth handler routes to the given mux.
 func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {

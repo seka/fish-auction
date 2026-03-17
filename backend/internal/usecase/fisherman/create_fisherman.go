@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// CreateFishermanUseCase defines the interface for creating fishermen
+// CreateFishermanUseCase defines the interface for creating a fisherman.
 type CreateFishermanUseCase interface {
+	// Execute creates a new fisherman.
 	Execute(ctx context.Context, name string) (*model.Fisherman, error)
 }
 

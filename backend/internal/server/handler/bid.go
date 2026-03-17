@@ -13,11 +13,13 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
 )
 
+// BidHandler handles HTTP requests related to bids.
 type BidHandler struct {
 	createUseCase       bid.CreateBidUseCase
 	listInvoicesUseCase invoice.ListInvoicesUseCase
 }
 
+// NewBidHandler creates a new BidHandler instance.
 func NewBidHandler(r registry.UseCase) *BidHandler {
 	return &BidHandler{
 		createUseCase:       r.NewCreateBidUseCase(),
@@ -25,6 +27,7 @@ func NewBidHandler(r registry.UseCase) *BidHandler {
 	}
 }
 
+// Create handles the bid creation request.
 func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateBidRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -63,6 +66,7 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Bid placed successfully"})
 }
 
+// RegisterRoutes registers the bid handler routes to the given mux.
 func (h *BidHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/bids", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {

@@ -10,12 +10,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
 )
 
+// FishermanHandler handles HTTP requests related to fishermen.
 type FishermanHandler struct {
 	createUseCase fisherman.CreateFishermanUseCase
 	listUseCase   fisherman.ListFishermenUseCase
 	deleteUseCase fisherman.DeleteFishermanUseCase
 }
 
+// NewFishermanHandler creates a new FishermanHandler instance.
 func NewFishermanHandler(r registry.UseCase) *FishermanHandler {
 	return &FishermanHandler{
 		createUseCase: r.NewCreateFishermanUseCase(),
@@ -24,6 +26,7 @@ func NewFishermanHandler(r registry.UseCase) *FishermanHandler {
 	}
 }
 
+// Create handles the fisherman creation request.
 func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateFishermanRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -42,6 +45,7 @@ func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// List handles the request to list fishermen.
 func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
 	fishermen, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
@@ -58,6 +62,7 @@ func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Delete handles the fisherman deletion request.
 func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := util.ParseID(r)
 	if err != nil {
@@ -73,4 +78,13 @@ func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {}
+// RegisterRoutes registers the fisherman handler routes to the given mux.
+func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("/api/fishermen", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.List(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+}

@@ -12,26 +12,32 @@ vi.mock('next-intl', () => ({
 describe('AdminBuyersPage', () => {
   const mockOnSubmit = vi.fn((e) => e.preventDefault());
   const mockRegister = vi.fn();
+  const tMock = Object.assign((key: string) => key, {
+    rich: vi.fn(),
+    markup: vi.fn(),
+    raw: vi.fn(),
+    has: vi.fn(),
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useBuyerPage as any).mockReturnValue({
+    vi.mocked(useBuyerPage).mockReturnValue({
       state: {
         buyers: [{ id: 1, name: 'Buyer 1' }],
         isLoading: false,
         isCreating: false,
+        isDeleting: false,
         message: '',
       },
       form: {
         register: mockRegister,
         errors: {},
-      },
+      } as unknown as ReturnType<typeof useBuyerPage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onDelete: vi.fn(),
       },
-      t: (key: string) => key,
+      t: tMock as unknown as ReturnType<typeof useBuyerPage>['t'],
     });
   });
 
@@ -54,17 +60,18 @@ describe('AdminBuyersPage', () => {
 
   it('calls delete action', () => {
     const mockOnDelete = vi.fn();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useBuyerPage as any).mockReturnValue({
+
+    vi.mocked(useBuyerPage).mockReturnValue({
       state: {
         buyers: [{ id: 1, name: 'Buyer 1' }],
         isLoading: false,
         isCreating: false,
         isDeleting: false,
+        message: '',
       },
-      form: { register: mockRegister, errors: {} },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useBuyerPage>['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
-      t: (key: string) => key,
+      t: tMock as unknown as ReturnType<typeof useBuyerPage>['t'],
     });
     render(<AdminBuyersPage />);
     fireEvent.click(screen.getAllByText('Common.delete')[0]);

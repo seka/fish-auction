@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
@@ -14,7 +15,7 @@ type adminStore struct {
 
 var _ repository.AdminRepository = (*adminStore)(nil)
 
-// NewAdminStore creates a new instance of AdminRepository
+// NewAdminStore creates a new instance of AdminRepository.
 func NewAdminStore(db datastore.Database) *adminStore {
 	return &adminStore{db: db}
 }

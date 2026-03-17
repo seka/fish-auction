@@ -2,13 +2,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { usePublicVenues } from './usePublicVenues';
 import { getVenues } from '@/src/api/venue';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mocks
 vi.mock('@/src/api/venue', () => ({
   getVenues: vi.fn(),
 }));
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,9 +23,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('usePublicVenues', () => {
   it('fetches venues', async () => {
-    const mockVenues = [{ id: 1, name: 'Venue A' }];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (getVenues as any).mockResolvedValue(mockVenues);
+    const mockVenues = [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }];
+    vi.mocked(getVenues).mockResolvedValue(mockVenues);
 
     const { result } = renderHook(() => usePublicVenues(), { wrapper });
 

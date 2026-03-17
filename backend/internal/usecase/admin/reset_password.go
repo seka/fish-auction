@@ -12,7 +12,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ResetPasswordUseCase defines the interface for resetting an admin password.
 type ResetPasswordUseCase interface {
+	// Execute resets the admin password using the reset token.
 	Execute(ctx context.Context, token, newPassword string) error
 }
 
@@ -23,7 +25,7 @@ type resetPasswordUseCase struct {
 
 var _ ResetPasswordUseCase = (*resetPasswordUseCase)(nil)
 
-// NewResetPasswordUseCase creates a new instance of ResetPasswordUseCase
+// NewResetPasswordUseCase creates a new ResetPasswordUseCase instance.
 func NewResetPasswordUseCase(
 	pwdResetRepo repository.PasswordResetRepository,
 	adminRepo repository.AdminRepository,

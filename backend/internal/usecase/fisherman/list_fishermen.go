@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListFishermenUseCase defines the interface for listing fishermen
+// ListFishermenUseCase defines the interface for listing fishermen.
 type ListFishermenUseCase interface {
+	// Execute lists all fishermen.
 	Execute(ctx context.Context) ([]model.Fisherman, error)
 }
 

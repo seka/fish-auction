@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { css } from 'styled-system/css';
-import { Box, Button, Card, HStack, Text } from '@atoms';
+import { Box, Card, HStack, Text } from '@atoms';
 import { useTranslations } from 'next-intl';
 
 export default function AdminDashboard() {

@@ -12,6 +12,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/venue"
 )
 
+// VenueHandler handles HTTP requests related to venues.
 type VenueHandler struct {
 	createUseCase venue.CreateVenueUseCase
 	listUseCase   venue.ListVenuesUseCase
@@ -20,6 +21,7 @@ type VenueHandler struct {
 	deleteUseCase venue.DeleteVenueUseCase
 }
 
+// NewVenueHandler creates a new VenueHandler instance.
 func NewVenueHandler(r registry.UseCase) *VenueHandler {
 	return &VenueHandler{
 		createUseCase: r.NewCreateVenueUseCase(),
@@ -30,6 +32,7 @@ func NewVenueHandler(r registry.UseCase) *VenueHandler {
 	}
 }
 
+// Create handles the venue creation request.
 func (h *VenueHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateVenueRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -61,6 +64,7 @@ func (h *VenueHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// List handles the request to list venues.
 func (h *VenueHandler) List(w http.ResponseWriter, r *http.Request) {
 	venues, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
@@ -83,6 +87,7 @@ func (h *VenueHandler) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Get handles the request to get a specific venue.
 func (h *VenueHandler) Get(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[len("/api/venues/"):]
 	id, err := strconv.Atoi(idStr)
@@ -109,6 +114,7 @@ func (h *VenueHandler) Get(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Update handles the request to update a specific venue.
 func (h *VenueHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[len("/api/venues/"):]
 	id, err := strconv.Atoi(idStr)
@@ -138,6 +144,7 @@ func (h *VenueHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Delete handles the venue deletion request.
 func (h *VenueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[len("/api/venues/"):]
 	id, err := strconv.Atoi(idStr)
@@ -154,6 +161,7 @@ func (h *VenueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// RegisterRoutes registers the venue handler routes to the given mux.
 func (h *VenueHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/venues", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {

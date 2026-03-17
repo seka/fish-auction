@@ -12,7 +12,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ResetPasswordUseCase defines the interface for resetting a password.
 type ResetPasswordUseCase interface {
+	// Execute resets the password using the reset token.
 	Execute(ctx context.Context, token, newPassword string) error
 }
 

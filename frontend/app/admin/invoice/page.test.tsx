@@ -14,8 +14,7 @@ describe('InvoicePage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useInvoicePage as any).mockReturnValue({
+    vi.mocked(useInvoicePage).mockReturnValue({
       state: {
         invoices: [{ buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 }],
         isLoading: false,
@@ -42,8 +41,7 @@ describe('InvoicePage', () => {
   });
 
   it('renders detail modal when selected', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useInvoicePage as any).mockReturnValue({
+    vi.mocked(useInvoicePage).mockReturnValue({
       state: {
         invoices: [],
         isLoading: false,
@@ -57,9 +55,9 @@ describe('InvoicePage', () => {
     expect(screen.getByText('Admin.Invoice.modal_title')).toBeInTheDocument();
     expect(screen.getByText('Buyer 1')).toBeInTheDocument();
   });
+
   it('closes detail modal', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useInvoicePage as any).mockReturnValue({
+    vi.mocked(useInvoicePage).mockReturnValue({
       state: {
         invoices: [],
         isLoading: false,
@@ -76,8 +74,7 @@ describe('InvoicePage', () => {
   });
 
   it('renders empty state', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useInvoicePage as any).mockReturnValue({
+    vi.mocked(useInvoicePage).mockReturnValue({
       state: {
         invoices: [],
         isLoading: false,

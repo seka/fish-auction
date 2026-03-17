@@ -12,11 +12,16 @@ vi.mock('next-intl', () => ({
 describe('AdminFishermenPage', () => {
   const mockOnSubmit = vi.fn((e) => e.preventDefault());
   const mockRegister = vi.fn();
+  const tMock = Object.assign((key: string) => key, {
+    rich: vi.fn(),
+    markup: vi.fn(),
+    raw: vi.fn(),
+    has: vi.fn(),
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useFishermanPage as any).mockReturnValue({
+    vi.mocked(useFishermanPage).mockReturnValue({
       state: {
         fishermen: [
           { id: 1, name: 'Fisherman 1' },
@@ -24,17 +29,18 @@ describe('AdminFishermenPage', () => {
         ],
         isLoading: false,
         isCreating: false,
+        isDeleting: false,
         message: '',
       },
       form: {
         register: mockRegister,
-        errors: {},
-      },
+        errors: { name: undefined },
+      } as unknown as ReturnType<typeof useFishermanPage>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onDelete: vi.fn(),
       },
-      t: (key: string) => key,
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
   });
 
@@ -52,24 +58,22 @@ describe('AdminFishermenPage', () => {
   });
 
   it('shows loading state', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useFishermanPage as any).mockReturnValue({
-      state: { fishermen: [], isLoading: true },
-      form: { register: mockRegister, errors: {} },
-      actions: { onSubmit: mockOnSubmit },
-      t: (key: string) => key,
+    vi.mocked(useFishermanPage).mockReturnValue({
+      state: { fishermen: [], isLoading: true, isCreating: false, isDeleting: false, message: '' },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
     render(<AdminFishermenPage />);
     expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
   });
 
   it('shows empty state', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useFishermanPage as any).mockReturnValue({
-      state: { fishermen: [], isLoading: false },
-      form: { register: mockRegister, errors: {} },
-      actions: { onSubmit: mockOnSubmit },
-      t: (key: string) => key,
+    vi.mocked(useFishermanPage).mockReturnValue({
+      state: { fishermen: [], isLoading: false, isCreating: false, isDeleting: false, message: '' },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
     render(<AdminFishermenPage />);
     expect(screen.getByText('Common.no_data')).toBeInTheDocument();
@@ -84,17 +88,17 @@ describe('AdminFishermenPage', () => {
 
   it('calls delete action', () => {
     const mockOnDelete = vi.fn();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (useFishermanPage as any).mockReturnValue({
+    vi.mocked(useFishermanPage).mockReturnValue({
       state: {
         fishermen: [{ id: 1, name: 'Fisherman 1' }],
         isLoading: false,
         isCreating: false,
         isDeleting: false,
+        message: '',
       },
-      form: { register: mockRegister, errors: {} },
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useFishermanPage>['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
-      t: (key: string) => key,
+      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
     });
     render(<AdminFishermenPage />);
     fireEvent.click(screen.getAllByText('Common.delete')[0]);

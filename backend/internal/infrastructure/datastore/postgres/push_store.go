@@ -16,7 +16,7 @@ type pushStore struct {
 
 var _ repository.PushRepository = (*pushStore)(nil)
 
-// NewPushStore creates a new instance of PushRepository
+// NewPushStore creates a new instance of PushRepository.
 func NewPushStore(db datastore.Database) *pushStore {
 	return &pushStore{db: db}
 }
@@ -68,7 +68,10 @@ func (r *pushStore) GetSubscriptionsByBuyerID(ctx context.Context, buyerID int) 
 		}
 		subs = append(subs, sub)
 	}
-	return subs, dserrors.HandleError(rows.Err(), "PushSubscription", buyerID, "GetSubscriptionsByBuyerID")
+	if err := rows.Err(); err != nil {
+		return nil, dserrors.HandleError(err, "PushSubscription", buyerID, "GetSubscriptionsByBuyerID")
+	}
+	return subs, nil
 }
 
 func (r *pushStore) DeleteSubscription(ctx context.Context, endpoint string) error {

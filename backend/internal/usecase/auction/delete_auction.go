@@ -6,8 +6,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// DeleteAuctionUseCase defines the interface for deleting auctions
+// DeleteAuctionUseCase defines the interface for deleting auctions.
 type DeleteAuctionUseCase interface {
+	// Execute deletes an auction.
 	Execute(ctx context.Context, id int) error
 }
 

@@ -8,7 +8,7 @@ import (
 
 type FishermanCache interface {
 	Get(ctx context.Context, id int) (*model.Fisherman, error)
-	Set(ctx context.Context, id int, fisherman *model.Fisherman) error
+	Set(ctx context.Context, id int, fisherman *model.Fisherman, ) error
 	Delete(ctx context.Context, id int) error
 }
 

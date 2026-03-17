@@ -17,7 +17,7 @@ type passwordResetStore struct {
 	db datastore.Database
 }
 
-// NewPasswordResetStore creates a new instance of PasswordResetRepository
+// NewPasswordResetStore creates a new instance of PasswordResetRepository.
 func NewPasswordResetStore(db datastore.Database) *passwordResetStore {
 	return &passwordResetStore{db: db}
 }

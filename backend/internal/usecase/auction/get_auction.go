@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// GetAuctionUseCase defines the interface for getting an auction by ID
+// GetAuctionUseCase defines the interface for getting an auction by ID.
 type GetAuctionUseCase interface {
+	// Execute gets an auction by ID.
 	Execute(ctx context.Context, id int) (*model.Auction, error)
 }
 

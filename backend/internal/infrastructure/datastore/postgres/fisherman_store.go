@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
@@ -15,7 +16,7 @@ type fishermanStore struct {
 
 var _ repository.FishermanRepository = (*fishermanStore)(nil)
 
-// NewFishermanStore creates a new instance of FishermanRepository
+// NewFishermanStore creates a new instance of FishermanRepository.
 func NewFishermanStore(db datastore.Database) *fishermanStore {
 	return &fishermanStore{db: db}
 }

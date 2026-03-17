@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// UpdateAuctionUseCase defines the interface for updating auctions
+// UpdateAuctionUseCase defines the interface for updating auctions.
 type UpdateAuctionUseCase interface {
+	// Execute updates an auction.
 	Execute(ctx context.Context, auction *model.Auction) error
 }
 

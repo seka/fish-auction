@@ -2,8 +2,11 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"time"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
@@ -18,7 +21,7 @@ type authenticationStore struct {
 	db datastore.Database
 }
 
-// NewAuthenticationStore creates a new instance of AuthenticationRepository
+// NewAuthenticationStore creates a new instance of AuthenticationRepository.
 func NewAuthenticationStore(db datastore.Database) *authenticationStore {
 	return &authenticationStore{
 		db: db,
@@ -59,6 +62,9 @@ func (r *authenticationStore) FindByEmail(ctx context.Context, email string) (*m
 		email,
 	).Scan(&e.ID, &e.BuyerID, &e.Email, &e.PasswordHash, &e.AuthType, &e.FailedAttempts, &e.LockedUntil, &e.LastLoginAt, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.NotFoundError{Resource: "Authentication", ID: 0}
+		}
 		return nil, dserrors.HandleError(err, "Authentication", 0, "FindByEmail")
 	}
 	return e.ToModel(), nil
@@ -72,6 +78,9 @@ func (r *authenticationStore) FindByBuyerID(ctx context.Context, buyerID int) (*
 		buyerID,
 	).Scan(&e.ID, &e.BuyerID, &e.Email, &e.PasswordHash, &e.AuthType, &e.FailedAttempts, &e.LockedUntil, &e.LastLoginAt, &e.CreatedAt, &e.UpdatedAt)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.NotFoundError{Resource: "Authentication", ID: buyerID}
+		}
 		return nil, dserrors.HandleError(err, "Authentication", buyerID, "FindByBuyerID")
 	}
 	return e.ToModel(), nil

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
@@ -9,13 +10,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
+// buyerStore はバイヤーに関する DB 操作の実装
 type buyerStore struct {
 	db datastore.Database
 }
 
 var _ repository.BuyerRepository = (*buyerStore)(nil)
 
-// NewBuyerStore creates a new instance of BuyerRepository
+// NewBuyerStore は新しいバイヤー用 BuyerStore を作成
 func NewBuyerStore(db datastore.Database) *buyerStore {
 	return &buyerStore{db: db}
 }

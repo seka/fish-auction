@@ -6,7 +6,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// DeleteBuyerUseCase defines the interface for deleting a buyer.
 type DeleteBuyerUseCase interface {
+	// Execute deletes a buyer by ID.
 	Execute(ctx context.Context, id int) error
 }
 

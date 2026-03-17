@@ -1,6 +1,7 @@
 package dto
 
 // Buyer DTOs
+// CreateBuyerRequest represents the request body for creating a buyer.
 type CreateBuyerRequest struct {
 	Name         string `json:"name"`
 	Email        string `json:"email"`
@@ -9,16 +10,19 @@ type CreateBuyerRequest struct {
 	ContactInfo  string `json:"contact_info"`
 }
 
+// LoginBuyerRequest represents the request body for buyer login.
 type LoginBuyerRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
+// BuyerResponse represents the response body for a buyer.
 type BuyerResponse struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
+// PurchaseResponse represents the response body for a purchase.
 type PurchaseResponse struct {
 	ID          int    `json:"id"`
 	ItemID      int    `json:"item_id"`

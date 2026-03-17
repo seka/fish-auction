@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListBuyersUseCase defines the interface for listing buyers
+// ListBuyersUseCase defines the interface for listing buyers.
 type ListBuyersUseCase interface {
+	// Execute lists all buyers.
 	Execute(ctx context.Context) ([]model.Buyer, error)
 }
 

@@ -15,6 +15,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 )
 
+// AuctionHandler handles HTTP requests related to auctions.
 type AuctionHandler struct {
 	createUseCase       auction.CreateAuctionUseCase
 	listUseCase         auction.ListAuctionsUseCase
@@ -25,6 +26,7 @@ type AuctionHandler struct {
 	deleteUseCase       auction.DeleteAuctionUseCase
 }
 
+// NewAuctionHandler creates a new AuctionHandler instance.
 func NewAuctionHandler(r registry.UseCase) *AuctionHandler {
 	return &AuctionHandler{
 		createUseCase:       r.NewCreateAuctionUseCase(),
@@ -60,6 +62,7 @@ func formatTime(t *time.Time) *string {
 	return new(s)
 }
 
+// Create handles the auction creation request.
 func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateAuctionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -109,6 +112,7 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// List handles the request to list auctions.
 func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 	filters := &repository.AuctionFilters{}
 
@@ -153,6 +157,7 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Get handles the request to get a specific auction.
 func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/auctions/")
 	// Handle /items suffix
@@ -193,6 +198,7 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// GetItems handles the request to get items for a specific auction.
 func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/auctions/"), "/items")
 	id, err := strconv.Atoi(idStr)
@@ -229,6 +235,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Update handles the request to update a specific auction.
 func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
@@ -266,6 +273,7 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// UpdateStatus handles the request to update the status of an auction.
 func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimSuffix(r.URL.Path, "/status")
 	idStr := path[strings.LastIndex(path, "/")+1:]
@@ -290,6 +298,7 @@ func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Delete handles the request to delete a specific auction.
 func (h *AuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
@@ -306,6 +315,7 @@ func (h *AuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// RegisterRoutes registers the auction handler routes to the given mux.
 func (h *AuctionHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auctions", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {

@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// CreateAuctionUseCase defines the interface for creating auctions
+// CreateAuctionUseCase defines the interface for creating auctions.
 type CreateAuctionUseCase interface {
+	// Execute creates a new auction.
 	Execute(ctx context.Context, auction *model.Auction) (*model.Auction, error)
 }
 

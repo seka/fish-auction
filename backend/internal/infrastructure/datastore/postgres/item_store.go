@@ -11,12 +11,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
+// itemStore はアイテムに関する DB 操作の実装
 type itemStore struct {
 	db datastore.Database
 }
 
 var _ repository.ItemRepository = (*itemStore)(nil)
 
+// NewItemStore は新しいアイテム用 ItemStore を作成
 func NewItemStore(db datastore.Database) *itemStore {
 	return &itemStore{db: db}
 }

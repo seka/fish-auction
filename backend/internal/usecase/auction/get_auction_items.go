@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// GetAuctionItemsUseCase defines the interface for getting items in an auction
+// GetAuctionItemsUseCase defines the interface for getting items in an auction.
 type GetAuctionItemsUseCase interface {
+	// Execute gets all items in an auction.
 	Execute(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 }
 

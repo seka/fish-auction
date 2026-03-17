@@ -16,7 +16,7 @@ type venueStore struct {
 	db datastore.Database
 }
 
-// NewVenueStore creates a new instance of VenueRepository
+// NewVenueStore creates a new instance of VenueRepository.
 func NewVenueStore(db datastore.Database) *venueStore {
 	return &venueStore{db: db}
 }
@@ -63,7 +63,10 @@ func (r *venueStore) List(ctx context.Context) ([]model.Venue, error) {
 		}
 		venues = append(venues, v)
 	}
-	return venues, dserrors.HandleError(rows.Err(), "Venue", 0, "List")
+	if err := rows.Err(); err != nil {
+		return nil, dserrors.HandleError(err, "Venue", 0, "List")
+	}
+	return venues, nil
 }
 
 func (r *venueStore) Update(ctx context.Context, venue *model.Venue) error {

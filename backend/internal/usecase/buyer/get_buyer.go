@@ -7,7 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// GetBuyerUseCase defines the interface for getting a buyer by ID.
 type GetBuyerUseCase interface {
+	// Execute gets a buyer by ID.
 	Execute(ctx context.Context, id int) (*model.Buyer, error)
 }
 

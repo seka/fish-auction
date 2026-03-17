@@ -12,7 +12,7 @@ vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => {
     const t = (key: string) => (namespace ? `${namespace}.${key}` : key);
     t.raw = (key: string) => (namespace ? `${namespace}.${key}` : key);
-    t.rich = (key: string, values: any) => {
+    t.rich = (key: string, _values: Record<string, unknown>) => {
       const base = namespace ? `${namespace}.${key}` : key;
       return base;
     };
@@ -24,18 +24,8 @@ vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react')>();
   return {
     ...actual,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     use: (_: unknown) => {
       // Unwrapping promise for params
-      // In test environment, we can just return a resolved object if passed as promise
-      // or we might need to simulate it.
-      // Simplified: Expecting params to be passed not as promise in test render if possible,
-      // or handle it here.
-      // Actually, in Next.js 15, params is a Promise. We need to handle this.
-      // But 'use' hook unwrapping is internal to React.
-      // Check if we can just pass an object that matches usage.
-      // If 'promise' has 'then', it's a promise.
-      // For testing, let's assume we pass { id: '1' } directly and mock 'use' to return it.
       return { id: '1' };
     },
   };
@@ -109,12 +99,11 @@ describe('AuctionDetailPage', () => {
   });
 
   // Note: params prop in Next 15 is Promise.
-  // We mocked 'react'.use so we just need to pass a Promise.
   const params = Promise.resolve({ id: '1' });
 
   it('renders loading state', () => {
     vi.mocked(useAuctionData).mockReturnValue({
-      auction: null,
+      auction: undefined,
       items: [],
       isLoading: true,
       refetchItems: vi.fn(),
@@ -195,6 +184,7 @@ describe('AuctionDetailPage', () => {
       expect(screen.getByText('Public.AuctionDetail.fail_bid')).toBeInTheDocument();
     });
   });
+
   it('renders checking state', () => {
     vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: true });
     render(
@@ -207,7 +197,7 @@ describe('AuctionDetailPage', () => {
 
   it('renders no data when auction not found', () => {
     vi.mocked(useAuctionData).mockReturnValue({
-      auction: null,
+      auction: undefined,
       items: [],
       isLoading: false,
       refetchItems: vi.fn(),
@@ -241,8 +231,6 @@ describe('AuctionDetailPage', () => {
     expect(screen.getByText('Public.AuctionDetail.out_of_hours_title')).toBeInTheDocument();
   });
 
-  // Test login success separately?
-  // onSubmitLogin calls loginBuyer and reloads.
   it('handles login flow', async () => {
     // Need to mock window.location.reload
     const originalLocation = window.location;
@@ -271,11 +259,10 @@ describe('AuctionDetailPage', () => {
       target: { value: 'password' },
     });
 
-    fireEvent.submit(screen.getByRole('button', { name: 'Public.Login.submit' })); // Or click button in form
+    fireEvent.submit(screen.getByRole('button', { name: 'Public.Login.submit' }));
 
     await waitFor(() => {
       expect(loginBuyer).toHaveBeenCalled();
-      window.location.reload();
       expect(window.location.reload).toHaveBeenCalled();
     });
 

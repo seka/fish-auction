@@ -12,7 +12,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
+// CreateBidUseCase defines the interface for creating a bid.
 type CreateBidUseCase interface {
+	// Execute creates a new bid.
 	Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error)
 }
 
@@ -27,7 +29,7 @@ type createBidUseCase struct {
 
 var _ CreateBidUseCase = (*createBidUseCase)(nil)
 
-// NewCreateBidUseCase creates a new instance of CreateBidUseCase
+// NewCreateBidUseCase creates a new instance of CreateBidUseCase.
 func NewCreateBidUseCase(
 	itemRepo repository.ItemRepository,
 	bidRepo repository.BidRepository,
@@ -46,7 +48,7 @@ func NewCreateBidUseCase(
 	}
 }
 
-// Execute は新しい入札を作成します
+// Execute creates a new bid.
 func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
 	var result *model.Bid
 	var lockedItem *model.AuctionItem

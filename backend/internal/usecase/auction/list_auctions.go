@@ -7,8 +7,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-// ListAuctionsUseCase defines the interface for listing auctions
+// ListAuctionsUseCase defines the interface for listing auctions.
 type ListAuctionsUseCase interface {
+	// Execute lists auctions with optional filters.
 	Execute(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error)
 }
 

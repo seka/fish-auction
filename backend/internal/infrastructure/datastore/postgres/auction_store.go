@@ -18,7 +18,7 @@ type auctionStore struct {
 	db datastore.Database
 }
 
-// NewAuctionStore creates a new instance of AuctionRepository
+// NewAuctionStore creates a new instance of AuctionRepository.
 func NewAuctionStore(db datastore.Database) *auctionStore {
 	return &auctionStore{db: db}
 }
