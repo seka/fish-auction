@@ -3,6 +3,7 @@ package dto
 import "time"
 
 // Auction DTOs
+// CreateAuctionRequest represents the request body for creating an auction.
 type CreateAuctionRequest struct {
 	VenueID     int     `json:"venue_id"`
 	AuctionDate string  `json:"auction_date"` // YYYY-MM-DD
@@ -11,6 +12,7 @@ type CreateAuctionRequest struct {
 	Status      string  `json:"status"`
 }
 
+// UpdateAuctionRequest represents the request body for updating an auction.
 type UpdateAuctionRequest struct {
 	VenueID     int     `json:"venue_id"`
 	AuctionDate string  `json:"auction_date"`
@@ -19,10 +21,12 @@ type UpdateAuctionRequest struct {
 	Status      string  `json:"status"`
 }
 
+// UpdateAuctionStatusRequest represents the request body for updating an auction's status.
 type UpdateAuctionStatusRequest struct {
 	Status string `json:"status"`
 }
 
+// AuctionResponse represents the response body for an auction.
 type AuctionResponse struct {
 	ID          int       `json:"id"`
 	VenueID     int       `json:"venue_id"`
