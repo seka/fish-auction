@@ -12,16 +12,19 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
+// PushHandler handles HTTP requests related to push notifications.
 type PushHandler struct {
 	pushUseCase notification.PushNotificationUseCase
 }
 
+// NewPushHandler creates a new PushHandler instance.
 func NewPushHandler(r registry.UseCase) *PushHandler {
 	return &PushHandler{
 		pushUseCase: r.NewPushNotificationUseCase(),
 	}
 }
 
+// Subscribe handles the push notification subscription request.
 func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	var req dto.SubscribePushRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -50,6 +53,7 @@ func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// RegisterRoutes registers the push notification handler routes to the given mux.
 func (h *PushHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/push/subscribe", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {

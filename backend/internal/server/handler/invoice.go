@@ -10,14 +10,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/invoice"
 )
 
+// InvoiceHandler handles HTTP requests related to invoices.
 type InvoiceHandler struct {
 	listUseCase invoice.ListInvoicesUseCase
 }
 
+// NewInvoiceHandler creates a new InvoiceHandler instance.
 func NewInvoiceHandler(r registry.UseCase) *InvoiceHandler {
 	return &InvoiceHandler{listUseCase: r.NewListInvoicesUseCase()}
 }
 
+// List handles the request to list invoices.
 func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	invoices, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
@@ -38,6 +41,7 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// RegisterRoutes registers the invoice handler routes to the given mux.
 func (h *InvoiceHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/invoices", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {

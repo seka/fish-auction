@@ -11,6 +11,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 )
 
+// BuyerHandler handles HTTP requests related to buyers.
 type BuyerHandler struct {
 	createUseCase         buyer.CreateBuyerUseCase
 	listUseCase           buyer.ListBuyersUseCase
@@ -22,6 +23,7 @@ type BuyerHandler struct {
 	getBuyerUseCase       buyer.GetBuyerUseCase
 }
 
+// NewBuyerHandler creates a new BuyerHandler instance.
 func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 	return &BuyerHandler{
 		createUseCase:         r.NewCreateBuyerUseCase(),
@@ -35,6 +37,7 @@ func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 	}
 }
 
+// Create handles the buyer creation request.
 func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateBuyerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -54,6 +57,7 @@ func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// List handles the request to list buyers.
 func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
 	buyers, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
@@ -68,6 +72,7 @@ func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Login handles the buyer login request.
 func (h *BuyerHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginBuyerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -115,6 +120,7 @@ func (h *BuyerHandler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Logout handles the buyer logout request.
 func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "buyer_session",
@@ -137,6 +143,7 @@ func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCurrentBuyer handles the request to get the currently authenticated buyer.
 func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	// Check for buyer_session cookie
 	cookie, err := r.Cookie("buyer_session")
@@ -176,6 +183,7 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetMyPurchases handles the request to get the purchases of the authenticated buyer.
 func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
 	// Check for buyer_session cookie
 	cookie, err := r.Cookie("buyer_session")
@@ -225,6 +233,7 @@ func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// GetMyAuctions handles the request to get the auctions of the authenticated buyer.
 func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
 	// Check for buyer_session cookie
 	cookie, err := r.Cookie("buyer_session")
@@ -282,6 +291,7 @@ func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// UpdatePassword handles the password update request for a buyer.
 func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	// Check authentication
 	cookie, err := r.Cookie("buyer_session")
@@ -317,6 +327,7 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+// Delete handles the buyer deletion request.
 func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := util.ParseID(r)
 	if err != nil {
@@ -332,6 +343,7 @@ func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// RegisterRoutes registers the buyer handler routes to the given mux.
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {

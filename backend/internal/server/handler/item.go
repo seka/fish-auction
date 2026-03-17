@@ -15,6 +15,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/item"
 )
 
+// ItemHandler handles HTTP requests related to items.
 type ItemHandler struct {
 	createUseCase          item.CreateItemUseCase
 	listUseCase            item.ListItemsUseCase
@@ -24,6 +25,7 @@ type ItemHandler struct {
 	reorderItemsUseCase    item.ReorderItemsUseCase
 }
 
+// NewItemHandler creates a new ItemHandler instance.
 func NewItemHandler(r registry.UseCase) *ItemHandler {
 	return &ItemHandler{
 		createUseCase:          r.NewCreateItemUseCase(),
@@ -35,6 +37,7 @@ func NewItemHandler(r registry.UseCase) *ItemHandler {
 	}
 }
 
+// Create handles the item creation request.
 func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -59,6 +62,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSON(w, http.StatusCreated, h.toResponse(created))
 }
 
+// List handles the request to list items.
 func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
 	items, err := h.listUseCase.Execute(r.Context(), status)
@@ -75,6 +79,7 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSON(w, http.StatusOK, resp)
 }
 
+// Update handles the request to update a specific item.
 func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// Extract ID from path: /items/{id} or /api/admin/items/{id}
 	path := r.URL.Path
@@ -118,6 +123,7 @@ func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSON(w, http.StatusOK, h.toResponse(updated))
 }
 
+// Delete handles the item deletion request.
 func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// Extract ID from path: /items/{id}
 	path := r.URL.Path
@@ -144,6 +150,7 @@ func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// UpdateSortOrder handles the request to update an item's sort order.
 func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -166,6 +173,7 @@ func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// Reorder handles the request to reorder items within an auction.
 func (h *ItemHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	auctionID, err := strconv.Atoi(vars["id"])
@@ -205,6 +213,7 @@ func (h *ItemHandler) toResponse(item *model.AuctionItem) dto.ItemResponse {
 	}
 }
 
+// RegisterRoutes registers the item handler routes to the given router.
 func (h *ItemHandler) RegisterRoutes(r *mux.Router, authMiddleware func(http.Handler) http.Handler) {
 	r.HandleFunc("/api/items", h.List).Methods(http.MethodGet)
 	r.Handle("/api/items", authMiddleware(http.HandlerFunc(h.Create))).Methods(http.MethodPost)

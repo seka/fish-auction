@@ -20,14 +20,17 @@ type ResetPasswordConfirmRequest struct {
 	NewPassword string `json:"new_password"`
 }
 
+// AuthResetHandler handles HTTP requests related to password resets.
 type AuthResetHandler struct {
 	reg registry.UseCase
 }
 
-func NewAuthResetHandler(reg registry.UseCase) *AuthResetHandler {
-	return &AuthResetHandler{reg: reg}
+// NewAuthResetHandler creates a new AuthResetHandler instance.
+func NewAuthResetHandler(r registry.UseCase) *AuthResetHandler {
+	return &AuthResetHandler{reg: r}
 }
 
+// RequestReset handles the password reset request.
 func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) {
 	var req ResetPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -85,6 +88,7 @@ func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
 }
 
+// RegisterRoutes registers the password reset handler routes to the given mux.
 func (h *AuthResetHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/auth/password-reset/request", h.RequestReset)
 	mux.HandleFunc("POST /api/auth/password-reset/verify", h.VerifyToken)
