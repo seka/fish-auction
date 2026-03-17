@@ -14,7 +14,9 @@ import (
 
 var randRead = rand.Read
 
+// RequestPasswordResetUseCase defines the interface for requesting a password reset.
 type RequestPasswordResetUseCase interface {
+	// Execute initiates the password reset process for the given email.
 	Execute(ctx context.Context, email string) error
 }
 
