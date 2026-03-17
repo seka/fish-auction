@@ -8,8 +8,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
-// UpdateAuctionStatusUseCase defines the interface for updating auction status
+// UpdateAuctionStatusUseCase defines the interface for updating auction status.
 type UpdateAuctionStatusUseCase interface {
+	// Execute updates an auction's status and potentially sends notifications.
 	Execute(ctx context.Context, id int, status model.AuctionStatus) error
 }
 
