@@ -11,9 +11,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// CreateAdminUseCase defines the interface for creating an admin
+// CreateAdminUseCase defines the interface for creating an admin.
 type CreateAdminUseCase interface {
+	// Execute creates a new admin with the given email and password.
 	Execute(ctx context.Context, email, password string) (*model.Admin, error)
+	// Count returns the total number of admins.
 	Count(ctx context.Context) (int, error)
 }
 

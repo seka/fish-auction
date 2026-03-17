@@ -14,7 +14,9 @@ import (
 
 var randRead = rand.Read
 
+// RequestPasswordResetUseCase defines the interface for requesting an admin password reset.
 type RequestPasswordResetUseCase interface {
+	// Execute initiates the password reset process for the given email.
 	Execute(ctx context.Context, email string) error
 }
 
@@ -24,6 +26,7 @@ type requestPasswordResetUseCase struct {
 	emailService service.AdminEmailService
 }
 
+// NewRequestPasswordResetUseCase creates a new RequestPasswordResetUseCase instance.
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
