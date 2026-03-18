@@ -7,13 +7,11 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/usecase"
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	MaxFailedAttempts = 5
-	LockDuration      = 30 * time.Minute
-)
+// LockDuration and MaxFailedAttempts are now defined in central usecase package.
 
 // LoginBuyerUseCase defines the interface for buyer login
 type LoginBuyerUseCase interface {
@@ -52,8 +50,8 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
 
 		// Lock account if too many failed attempts
-		if auth.FailedAttempts+1 >= MaxFailedAttempts {
-			lockUntil := time.Now().Add(LockDuration)
+		if auth.FailedAttempts+1 >= usecase.MaxFailedLoginAttempts {
+			lockUntil := time.Now().Add(usecase.AccountLockDuration)
 			_ = uc.authRepo.LockAccount(ctx, auth.ID, lockUntil)
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
 		}

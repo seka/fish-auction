@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/usecase"
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
@@ -145,11 +145,8 @@ func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *
 	tz := model.NewTimeZone(model.LocationJST)
 	now := tz.Now()
 
-	const extensionThreshold = 5 * time.Minute
-	const extensionDuration = 5 * time.Minute
-
-	if auction.Period.ShouldExtend(now, extensionThreshold) {
-		auction.Period = auction.Period.Extend(extensionDuration)
+	if auction.Period.ShouldExtend(now, usecase.AuctionExtensionThreshold) {
+		auction.Period = auction.Period.Extend(usecase.AuctionExtensionDuration)
 
 		if err := uc.auctionRepo.Update(ctx, auction); err != nil {
 			return fmt.Errorf("failed to extend auction: %w", err)
