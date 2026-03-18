@@ -81,15 +81,20 @@ func TestFishermanHandler_List(t *testing.T) {
 }
 
 func TestFishermanHandler_RegisterRoutes(t *testing.T) {
-	mockReg := &mock.MockRegistry{}
+	mockListUC := &mock.MockListFishermenUseCase{
+		ExecuteFunc: func(ctx context.Context) ([]model.Fisherman, error) {
+			return []model.Fisherman{}, nil
+		},
+	}
+	mockReg := &mock.MockRegistry{ListFishermenUC: mockListUC}
 	h := handler.NewFishermanHandler(mockReg)
 	mux := http.NewServeMux()
 	h.RegisterRoutes(mux)
-	// RegisterRoutes is now empty, so any request should be 404
+
 	req := httptest.NewRequest(http.MethodGet, "/api/fishermen", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-	if w.Code != http.StatusNotFound {
-		t.Errorf("expected 404, got %d", w.Code)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
 	}
 }

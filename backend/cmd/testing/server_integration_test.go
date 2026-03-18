@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -58,12 +59,12 @@ func TestServerIntegration(t *testing.T) {
 		DBUser:     cfg.DBUser,
 		DBPassword: cfg.DBPassword,
 		DBName:     testDBName,
-		RedisAddr:  "localhost:6379",
+		RedisAddr:  getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
 		CacheTTL:   5 * time.Minute,
 		AppEnv:     "test",
-		SMTPHost:   "localhost",
-		SMTPPort:   "1025",
-		SMTPFrom:   "test@example.com",
+		SMTPHost:   getEnvOrDefault("SMTP_HOST", "localhost"),
+		SMTPPort:   getEnvOrDefault("SMTP_PORT", "1025"),
+		SMTPFrom:   getEnvOrDefault("SMTP_FROM", "test@example.com"),
 	}
 
 	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
@@ -392,6 +393,13 @@ func seedAdmin(t *testing.T, db *sql.DB, email, password string) {
 	if err != nil {
 		t.Fatalf("Failed to seed admin: %v", err)
 	}
+}
+
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
 
 // HttpCookieClient wrapper for standard client to simplify logic if needed
