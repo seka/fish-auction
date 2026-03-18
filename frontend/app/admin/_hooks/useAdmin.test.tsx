@@ -102,7 +102,7 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterItem', () => {
     it('calls registerItem API on mutate and invalidates queries', async () => {
-      vi.mocked(registerItem).mockResolvedValueOnce({ id: 100, name: 'Item 1' } as any);
+      vi.mocked(registerItem).mockResolvedValueOnce({ id: 100, fishType: 'Item 1' } as any);
       const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
       const { result } = renderHook(() => useRegisterItem(), { wrapper });
@@ -115,7 +115,7 @@ describe('useAdmin Hooks', () => {
         unit: 'kg',
       });
 
-      expect(registerItem).toHaveBeenCalledWith(expect.objectContaining({ name: 'Item 1' }));
+      expect(registerItem).toHaveBeenCalledWith(expect.objectContaining({ fishType: 'Item 1' }));
 
       await waitFor(() =>
         expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['items'] }),

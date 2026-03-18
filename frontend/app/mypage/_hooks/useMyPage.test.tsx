@@ -137,7 +137,7 @@ describe('useMyPage', () => {
       }),
     );
 
-    expect(result.current.message).toEqual({ type: 'success', text: 'パスワードを更新しました。' });
+    expect(result.current.message).toEqual({ type: 'success', text: 'Validation.success_password_update' });
     expect(result.current.currentPassword).toBe('');
   });
 });
