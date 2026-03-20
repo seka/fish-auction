@@ -126,6 +126,10 @@ func (uc *createBidUseCase) validateBidPrice(item *model.AuctionItem, bidPrice m
 }
 
 func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error {
+	if !auction.Period.HasTimeRange() {
+		return nil
+	}
+
 	tz := model.NewTimeZone(model.LocationJST)
 	now := tz.Now()
 	if !auction.Period.IsBiddingOpen(now) {
@@ -142,6 +146,10 @@ func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error 
 }
 
 func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *model.Auction) error {
+	if !auction.Period.HasTimeRange() {
+		return nil
+	}
+
 	tz := model.NewTimeZone(model.LocationJST)
 	now := tz.Now()
 

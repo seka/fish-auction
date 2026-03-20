@@ -20,6 +20,11 @@ func NewAuctionPeriod(date time.Time, start, end *time.Time) AuctionPeriod {
 	}
 }
 
+// HasTimeRange reports whether both start and end times are present.
+func (p AuctionPeriod) HasTimeRange() bool {
+	return p.StartAt != nil && p.EndAt != nil
+}
+
 // GetStartDateTime returns the absolute start time of the auction.
 func (p AuctionPeriod) GetStartDateTime() *time.Time {
 	if p.StartAt == nil {

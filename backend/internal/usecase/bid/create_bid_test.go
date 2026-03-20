@@ -146,6 +146,31 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 		},
 		{
+			name: "Success_MissingStartTimeSkipsAuctionWindowChecks",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   bp(1000),
+			},
+			itemFound:        true,
+			wantID:           1,
+			wantCreateCalled: true,
+			wantTxCalled:     true,
+			wantUpdateCalled: false,
+			mockAuction: func() *model.Auction {
+				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+				now := time.Now().In(jst)
+				endTime := now.Add(2 * time.Minute)
+
+				return &model.Auction{
+					ID:      1,
+					VenueID: 1,
+					Period:  model.NewAuctionPeriod(now, nil, &endTime),
+					Status:  model.AuctionStatusInProgress,
+				}
+			}(),
+		},
+		{
 			name: "Error_UpdateStatusFails",
 			input: &model.Bid{
 				ItemID:  1,
