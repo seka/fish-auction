@@ -42,10 +42,21 @@ func (a *Auction) ShouldBeCompleted() bool {
 
 	tz := NewTimeZone(LocationJST)
 	now := tz.Now()
+	location := tz.Location()
 
 	// If auction date is in the past
-	today := now.Truncate(24 * time.Hour)
-	auctionDate := a.Period.AuctionDate.Truncate(24 * time.Hour)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
+	auctionDateInTZ := tz.At(a.Period.AuctionDate)
+	auctionDate := time.Date(
+		auctionDateInTZ.Year(),
+		auctionDateInTZ.Month(),
+		auctionDateInTZ.Day(),
+		0,
+		0,
+		0,
+		0,
+		location,
+	)
 	if auctionDate.Before(today) {
 		return true
 	}
