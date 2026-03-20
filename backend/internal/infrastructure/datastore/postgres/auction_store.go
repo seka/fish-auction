@@ -35,7 +35,7 @@ func (r *AuctionStore) Create(ctx context.Context, auction *model.Auction) (*mod
 	var auctionDate time.Time
 	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query,
-		auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
+		auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
 		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		if dserrors.IsUniqueViolation(err) {
