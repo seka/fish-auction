@@ -2,11 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
@@ -25,23 +25,9 @@ func NewAdminHandler(r registry.UseCase) *AdminHandler {
 
 // UpdatePassword handles the password update request for an admin.
 func (h *AdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	// Check authentication
-	cookie, err := r.Cookie("admin_session")
-	if err != nil || cookie.Value != "authenticated" {
+	adminID, ok := middleware.AdminIDFromContext(r.Context())
+	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Get admin ID from cookie
-	idCookie, err := r.Cookie("admin_id")
-	if err != nil {
-		http.Error(w, "Unauthorized: Admin ID missing", http.StatusUnauthorized)
-		return
-	}
-
-	var adminID int
-	if _, err := fmt.Sscanf(idCookie.Value, "%d", &adminID); err != nil {
-		http.Error(w, "Invalid admin ID", http.StatusBadRequest)
 		return
 	}
 

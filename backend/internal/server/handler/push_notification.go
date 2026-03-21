@@ -33,7 +33,7 @@ func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get buyer ID from context (authenticated user)
-	buyerID, ok := r.Context().Value(middleware.BuyerIDKey).(int)
+	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return

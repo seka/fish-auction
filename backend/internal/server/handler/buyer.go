@@ -2,11 +2,13 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 )
@@ -21,10 +23,11 @@ type BuyerHandler struct {
 	updatePasswordUseCase buyer.UpdatePasswordUseCase
 	deleteUseCase         buyer.DeleteBuyerUseCase
 	getBuyerUseCase       buyer.GetBuyerUseCase
+	sessionRepo           repository.SessionRepository
 }
 
 // NewBuyerHandler creates a new BuyerHandler instance.
-func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
+func NewBuyerHandler(r registry.UseCase, sessionRepo repository.SessionRepository) *BuyerHandler {
 	return &BuyerHandler{
 		createUseCase:         r.NewCreateBuyerUseCase(),
 		listUseCase:           r.NewListBuyersUseCase(),
@@ -34,6 +37,7 @@ func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 		updatePasswordUseCase: r.NewBuyerUpdatePasswordUseCase(),
 		deleteUseCase:         r.NewDeleteBuyerUseCase(),
 		getBuyerUseCase:       r.NewGetBuyerUseCase(),
+		sessionRepo:           sessionRepo,
 	}
 }
 
@@ -85,35 +89,18 @@ func (h *BuyerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		util.HandleError(w, err)
 		return
 	}
+	if buyer == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-	// Set session cookie
-	// In a real app, generate a secure token and store it in Redis/DB
-	// For now, we'll use a simple signed token or just the ID (insecure but simple for MVP)
-	// Let's use "buyer_session" cookie with value "authenticated" and maybe another for ID?
-	// Or better, use a JWT or signed cookie.
-	// Given the previous "admin_session" implementation, let's stick to simple cookie for now.
-	// But we need the BuyerID for bidding.
-	// So let's set "buyer_id" cookie as well (HttpOnly).
+	sessionID, err := h.sessionRepo.Create(r.Context(), buyer.ID, model.SessionRoleBuyer)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "buyer_session",
-		Value:    "authenticated",
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false, // Set to true in production
-		SameSite: http.SameSiteLaxMode,
-	})
-
-	// Store Buyer ID in a separate cookie or encoded in the session
-	// For simplicity, let's use a separate cookie "buyer_id"
-	http.SetCookie(w, &http.Cookie{
-		Name:     "buyer_id",
-		Value:    fmt.Sprintf("%d", buyer.ID),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-	})
+	setSessionCookie(w, "buyer_session", sessionID)
 
 	resp := dto.BuyerResponse{ID: buyer.ID, Name: buyer.Name}
 	w.Header().Set("Content-Type", "application/json")
@@ -122,20 +109,15 @@ func (h *BuyerHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // Logout handles the buyer logout request.
 func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "buyer_session",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "buyer_id",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
+	if cookie, err := r.Cookie("buyer_session"); err == nil {
+		if err := h.sessionRepo.Delete(r.Context(), cookie.Value); err != nil {
+			util.HandleError(w, err)
+			return
+		}
+	}
+
+	clearSessionCookie(w, "buyer_session")
+
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"}); err != nil {
 		util.HandleError(w, err)
@@ -145,24 +127,9 @@ func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 // GetCurrentBuyer handles the request to get the currently authenticated buyer.
 func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
-	// Check for buyer_session cookie
-	cookie, err := r.Cookie("buyer_session")
-	if err != nil || cookie.Value != "authenticated" {
+	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
+	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Get buyer ID from cookie
-	idCookie, err := r.Cookie("buyer_id")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Convert buyer_id to int
-	var buyerID int
-	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
-		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
 		return
 	}
 
@@ -175,7 +142,7 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"authenticated": true,
-		"buyer_id":      idCookie.Value,
+		"buyer_id":      buyerID,
 		"name":          buyer.Name,
 	}); err != nil {
 		util.HandleError(w, err)
@@ -185,24 +152,9 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 
 // GetMyPurchases handles the request to get the purchases of the authenticated buyer.
 func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
-	// Check for buyer_session cookie
-	cookie, err := r.Cookie("buyer_session")
-	if err != nil || cookie.Value != "authenticated" {
+	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
+	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Get buyer ID from cookie
-	idCookie, err := r.Cookie("buyer_id")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Convert buyer_id to int
-	var buyerID int
-	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
-		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
 		return
 	}
 
@@ -235,24 +187,9 @@ func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
 
 // GetMyAuctions handles the request to get the auctions of the authenticated buyer.
 func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
-	// Check for buyer_session cookie
-	cookie, err := r.Cookie("buyer_session")
-	if err != nil || cookie.Value != "authenticated" {
+	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
+	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Get buyer ID from cookie
-	idCookie, err := r.Cookie("buyer_id")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// Convert buyer_id to int
-	var buyerID int
-	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
-		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
 		return
 	}
 
@@ -293,20 +230,9 @@ func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePassword handles the password update request for a buyer.
 func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	// Check authentication
-	cookie, err := r.Cookie("buyer_session")
-	if err != nil || cookie.Value != "authenticated" {
+	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
+	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	idCookie, err := r.Cookie("buyer_id")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	var buyerID int
-	if _, err := fmt.Sscanf(idCookie.Value, "%d", &buyerID); err != nil {
-		http.Error(w, "Invalid buyer ID", http.StatusBadRequest)
 		return
 	}
 

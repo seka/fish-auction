@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"github.com/seka/fish-auction/backend/internal/domain/errors"
+	domainerrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
@@ -15,11 +16,15 @@ import (
 // AuthHandler handles HTTP requests related to authentication.
 type AuthHandler struct {
 	loginUseCase auth.LoginUseCase
+	sessionRepo  repository.SessionRepository
 }
 
 // NewAuthHandler creates a new AuthHandler instance.
-func NewAuthHandler(r registry.UseCase) *AuthHandler {
-	return &AuthHandler{loginUseCase: r.NewLoginUseCase()}
+func NewAuthHandler(r registry.UseCase, sessionRepo repository.SessionRepository) *AuthHandler {
+	return &AuthHandler{
+		loginUseCase: r.NewLoginUseCase(),
+		sessionRepo:  sessionRepo,
+	}
 }
 
 // Login handles the login request.
@@ -36,30 +41,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if admin == nil {
-		util.HandleError(w, &errors.UnauthorizedError{Message: "Invalid credentials"})
+		util.HandleError(w, &domainerrors.UnauthorizedError{Message: "Invalid credentials"})
 		return
 	}
 
-	token := "authenticated" // Session token value
+	sessionID, err := h.sessionRepo.Create(r.Context(), admin.ID, model.SessionRoleAdmin)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "admin_session",
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false, // Set to true in production with HTTPS
-		SameSite: http.SameSiteLaxMode,
-	})
-
-	// Set admin_id cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "admin_id",
-		Value:    fmt.Sprintf("%d", admin.ID),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-	})
+	setSessionCookie(w, "admin_session", sessionID)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"}); err != nil {
@@ -70,20 +62,15 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // Logout handles the logout request.
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "admin_session",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "admin_id",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
+	if cookie, err := r.Cookie("admin_session"); err == nil {
+		if err := h.sessionRepo.Delete(r.Context(), cookie.Value); err != nil {
+			util.HandleError(w, err)
+			return
+		}
+	}
+
+	clearSessionCookie(w, "admin_session")
+
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"}); err != nil {
 		util.HandleError(w, err)
