@@ -16,6 +16,7 @@ type Config struct {
 	ServerAddress   string
 	RedisAddr       string
 	CacheTTL        time.Duration
+	SessionTTL      time.Duration
 	AppEnv          string
 	SMTPHost        string
 	SMTPPort        string
@@ -26,7 +27,8 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	cacheTTL := getEnvInt("CACHE_TTL_SECONDS", 300) // デフォルト5分
+	cacheTTL := getEnvInt("CACHE_TTL_SECONDS", 300)       // デフォルト5分
+	sessionTTL := getEnvInt("SESSION_TTL_SECONDS", 86400) // デフォルト24時間
 
 	cfg := &Config{
 		DBHost:          os.Getenv("DB_HOST"),
@@ -37,6 +39,7 @@ func Load() (*Config, error) {
 		ServerAddress:   os.Getenv("SERVER_ADDRESS"),
 		RedisAddr:       getEnv("REDIS_ADDR", "localhost:6379"),
 		CacheTTL:        time.Duration(cacheTTL) * time.Second,
+		SessionTTL:      time.Duration(sessionTTL) * time.Second,
 		AppEnv:          getEnv("APP_ENV", "production"),
 		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:        getEnv("SMTP_PORT", "1025"),

@@ -33,6 +33,7 @@ type Repository interface {
 	NewPushRepository() repository.PushRepository
 	PasswordReset() repository.PasswordResetRepository
 	NewItemCacheInvalidator() repository.CacheInvalidator
+	NewSessionRepository() repository.SessionRepository
 }
 
 // repositoryRegistry implements the Repository interface
@@ -40,6 +41,7 @@ type repositoryRegistry struct {
 	db       datastore.Database
 	cache    datastore.Cache
 	cacheTTL time.Duration
+	sessionTTL time.Duration
 }
 
 // NewRepositoryRegistry creates a new Repository registry
@@ -62,9 +64,10 @@ func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
 	}
 
 	return &repositoryRegistry{
-		db:       postgres.NewClient(db),
-		cache:    cacheStore.NewClient(redisClient),
-		cacheTTL: cfg.CacheTTL,
+		db:         postgres.NewClient(db),
+		cache:      cacheStore.NewClient(redisClient),
+		cacheTTL:   cfg.CacheTTL,
+		sessionTTL: cfg.SessionTTL,
 	}, db, nil
 }
 
@@ -191,4 +194,8 @@ func (r *repositoryRegistry) NewPushRepository() repository.PushRepository {
 
 func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository {
 	return postgres.NewPasswordResetStore(r.db)
+}
+
+func (r *repositoryRegistry) NewSessionRepository() repository.SessionRepository {
+	return cacheStore.NewSessionStore(r.cache, r.sessionTTL)
 }
