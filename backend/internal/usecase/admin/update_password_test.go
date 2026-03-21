@@ -7,6 +7,7 @@ import (
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -38,6 +39,14 @@ func (m *mockAdminRepositoryForUpdate) Count(ctx context.Context) (int, error) {
 }
 func (m *mockAdminRepositoryForUpdate) UpdatePassword(ctx context.Context, id int, hash string) error {
 	return m.updateErr
+}
+
+type mockSessionRepo struct {
+	repository.SessionRepository
+}
+
+func (m *mockSessionRepo) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
+	return nil
 }
 
 func TestUpdatePasswordUseCase_Execute(t *testing.T) {
@@ -114,7 +123,7 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 				findErr:   tt.findErr,
 				updateErr: tt.updateErr,
 			}
-			uc := admin.NewUpdatePasswordUseCase(repo)
+			uc := admin.NewUpdatePasswordUseCase(repo, &mockSessionRepo{})
 			err := uc.Execute(context.Background(), tt.id, tt.currentPassword, tt.newPassword)
 
 			if (err != nil) != tt.wantErr {

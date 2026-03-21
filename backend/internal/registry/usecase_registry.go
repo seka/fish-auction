@@ -207,11 +207,11 @@ func (u *useCaseRegistry) NewDeleteAuctionUseCase() auction.DeleteAuctionUseCase
 }
 
 func (u *useCaseRegistry) NewAdminUpdatePasswordUseCase() admin.UpdatePasswordUseCase {
-	return admin.NewUpdatePasswordUseCase(u.repo.NewAdminRepository())
+	return admin.NewUpdatePasswordUseCase(u.repo.NewAdminRepository(), u.repo.NewSessionRepository())
 }
 
 func (u *useCaseRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase {
-	return buyer.NewUpdatePasswordUseCase(u.repo.NewAuthenticationRepository())
+	return buyer.NewUpdatePasswordUseCase(u.repo.NewAuthenticationRepository(), u.repo.NewSessionRepository())
 }
 
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,12 +18,16 @@ type UpdatePasswordUseCase interface {
 var _ UpdatePasswordUseCase = (*updatePasswordUseCase)(nil)
 
 type updatePasswordUseCase struct {
-	adminRepo repository.AdminRepository
+	adminRepo   repository.AdminRepository
+	sessionRepo repository.SessionRepository
 }
 
 // NewUpdatePasswordUseCase creates a new UpdatePasswordUseCase instance.
-func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository) *updatePasswordUseCase {
-	return &updatePasswordUseCase{adminRepo: adminRepo}
+func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository, sessionRepo repository.SessionRepository) *updatePasswordUseCase {
+	return &updatePasswordUseCase{
+		adminRepo:   adminRepo,
+		sessionRepo: sessionRepo,
+	}
 }
 
 func (uc *updatePasswordUseCase) Execute(ctx context.Context, id int, currentPassword, newPassword string) error {
@@ -40,5 +45,10 @@ func (uc *updatePasswordUseCase) Execute(ctx context.Context, id int, currentPas
 		return err
 	}
 
-	return uc.adminRepo.UpdatePassword(ctx, id, string(newHash))
+	if err := uc.adminRepo.UpdatePassword(ctx, id, string(newHash)); err != nil {
+		return err
+	}
+
+	// Invalidate all sessions after password change
+	return uc.sessionRepo.DeleteAllByUserID(ctx, id, model.SessionRoleAdmin)
 }

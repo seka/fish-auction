@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -15,12 +16,16 @@ type UpdatePasswordUseCase interface {
 var _ UpdatePasswordUseCase = (*updatePasswordUseCase)(nil)
 
 type updatePasswordUseCase struct {
-	authRepo repository.AuthenticationRepository
+	authRepo    repository.AuthenticationRepository
+	sessionRepo repository.SessionRepository
 }
 
 // NewUpdatePasswordUseCase creates a new instance of UpdatePasswordUseCase
-func NewUpdatePasswordUseCase(authRepo repository.AuthenticationRepository) *updatePasswordUseCase {
-	return &updatePasswordUseCase{authRepo: authRepo}
+func NewUpdatePasswordUseCase(authRepo repository.AuthenticationRepository, sessionRepo repository.SessionRepository) *updatePasswordUseCase {
+	return &updatePasswordUseCase{
+		authRepo:    authRepo,
+		sessionRepo: sessionRepo,
+	}
 }
 
 func (uc *updatePasswordUseCase) Execute(ctx context.Context, buyerID int, currentPassword, newPassword string) error {
@@ -41,5 +46,10 @@ func (uc *updatePasswordUseCase) Execute(ctx context.Context, buyerID int, curre
 		return err
 	}
 
-	return uc.authRepo.UpdatePassword(ctx, buyerID, string(newHash))
+	if err := uc.authRepo.UpdatePassword(ctx, buyerID, string(newHash)); err != nil {
+		return err
+	}
+
+	// Invalidate all sessions after password change
+	return uc.sessionRepo.DeleteAllByUserID(ctx, buyerID, model.SessionRoleBuyer)
 }

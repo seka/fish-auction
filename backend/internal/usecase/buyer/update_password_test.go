@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -48,6 +49,14 @@ func (m *mockAuthRepoForUpdate) UpdatePassword(ctx context.Context, buyerID int,
 	if m.updateErr != nil {
 		return m.updateErr
 	}
+	return nil
+}
+
+type mockSessionRepo struct {
+	repository.SessionRepository
+}
+
+func (m *mockSessionRepo) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
 	return nil
 }
 
@@ -122,7 +131,7 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 				findErr:   tt.findErr,
 				updateErr: tt.updateErr,
 			}
-			uc := buyer.NewUpdatePasswordUseCase(repo)
+			uc := buyer.NewUpdatePasswordUseCase(repo, &mockSessionRepo{})
 
 			err := uc.Execute(context.Background(), tt.buyerID, tt.currentPass, tt.newPass)
 
