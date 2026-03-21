@@ -2,46 +2,39 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
+
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-type AdminAuthMiddleware struct{}
+type AdminAuthMiddleware struct {
+	sessionRepo repository.SessionRepository
+}
 
-func NewAdminAuthMiddleware() *AdminAuthMiddleware {
-	return &AdminAuthMiddleware{}
+func NewAdminAuthMiddleware(sessionRepo repository.SessionRepository) *AdminAuthMiddleware {
+	return &AdminAuthMiddleware{sessionRepo: sessionRepo}
 }
 
 func (m *AdminAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		// Check session cookie
 		cookie, err := r.Cookie("admin_session")
-		if err != nil || cookie.Value != "authenticated" {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized", "message": "Admin session cookie missing or invalid"})
+		if err != nil || cookie.Value == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// Get admin ID from cookie
-		idCookie, err := r.Cookie("admin_id")
+		session, err := m.sessionRepo.FindByID(r.Context(), cookie.Value)
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized", "message": "Admin ID cookie missing"})
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if session == nil || session.Role != model.SessionRoleAdmin {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		var adminID int
-		if _, err := fmt.Sscanf(idCookie.Value, "%d", &adminID); err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized", "message": "Invalid Admin ID in cookie"})
-			return
-		}
-
-		// Set admin ID in context
-		ctx := context.WithValue(r.Context(), AdminIDKey, adminID)
+		ctx := context.WithValue(r.Context(), AdminIDKey, session.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

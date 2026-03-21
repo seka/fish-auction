@@ -3,39 +3,38 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"strconv"
+
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
-type BuyerAuthMiddleware struct{}
+type BuyerAuthMiddleware struct {
+	sessionRepo repository.SessionRepository
+}
 
-func NewBuyerAuthMiddleware() *BuyerAuthMiddleware {
-	return &BuyerAuthMiddleware{}
+func NewBuyerAuthMiddleware(sessionRepo repository.SessionRepository) *BuyerAuthMiddleware {
+	return &BuyerAuthMiddleware{sessionRepo: sessionRepo}
 }
 
 func (m *BuyerAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check session cookie
 		cookie, err := r.Cookie("buyer_session")
-		if err != nil || cookie.Value != "authenticated" {
+		if err != nil || cookie.Value == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// Get buyer ID from cookie
-		idCookie, err := r.Cookie("buyer_id")
+		session, err := m.sessionRepo.FindByID(r.Context(), cookie.Value)
 		if err != nil {
-			http.Error(w, "Unauthorized: missing buyer ID", http.StatusUnauthorized)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if session == nil || session.Role != model.SessionRoleBuyer {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		buyerID, err := strconv.Atoi(idCookie.Value)
-		if err != nil {
-			http.Error(w, "Unauthorized: invalid buyer ID", http.StatusUnauthorized)
-			return
-		}
-
-		// Set buyer ID in context
-		ctx := context.WithValue(r.Context(), BuyerIDKey, buyerID)
+		ctx := context.WithValue(r.Context(), BuyerIDKey, session.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
