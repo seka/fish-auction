@@ -59,3 +59,18 @@ func (m *MockSessionRepository) Delete(ctx context.Context, sessionID string) er
 
 	return nil
 }
+
+func (m *MockSessionRepository) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
+	if m.Sessions == nil {
+		return nil
+	}
+
+	for id, s := range m.Sessions {
+		if s.UserID == userID && s.Role == role {
+			delete(m.Sessions, id)
+			m.DeletedSessionIDs = append(m.DeletedSessionIDs, id)
+		}
+	}
+
+	return nil
+}
