@@ -119,7 +119,7 @@ func (h *BuyerHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	clearSessionCookie(w, "buyer_session")
 
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"}); err != nil {
+	if err := json.NewEncoder(w).Encode(dto.MessageResponse{Message: "Logged out"}); err != nil {
 		util.HandleError(w, err)
 		return
 	}
@@ -140,10 +140,10 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(map[string]interface{}{
-		"authenticated": true,
-		"buyer_id":      buyerID,
-		"name":          buyer.Name,
+	if err := json.NewEncoder(w).Encode(dto.BuyerMeResponse{
+		Authenticated: true,
+		BuyerID:       buyerID,
+		Name:          buyer.Name,
 	}); err != nil {
 		util.HandleError(w, err)
 		return
@@ -248,7 +248,7 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"}); err != nil {
+	if err := json.NewEncoder(w).Encode(dto.MessageResponse{Message: "Password updated successfully"}); err != nil {
 		util.HandleError(w, err)
 		return
 	}

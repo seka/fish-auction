@@ -54,7 +54,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	setSessionCookie(w, "admin_session", sessionID)
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"}); err != nil {
+	if err := json.NewEncoder(w).Encode(dto.MessageResponse{Message: "Login successful"}); err != nil {
 		util.HandleError(w, err)
 		return
 	}
@@ -72,7 +72,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	clearSessionCookie(w, "admin_session")
 
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Logged out"}); err != nil {
+	if err := json.NewEncoder(w).Encode(dto.MessageResponse{Message: "Logged out"}); err != nil {
 		util.HandleError(w, err)
 		return
 	}

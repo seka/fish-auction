@@ -43,7 +43,7 @@ func (h *AdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"}); err != nil {
+	if err := json.NewEncoder(w).Encode(dto.MessageResponse{Message: "Password updated successfully"}); err != nil {
 		util.HandleError(w, err)
 		return
 	}
