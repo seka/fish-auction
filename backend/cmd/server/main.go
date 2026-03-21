@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	domainrepo "github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
@@ -47,7 +48,8 @@ func main() {
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg)
 
 	// Initialize Handlers
-	handlers := buildHandlers(useCaseReg)
+	sessionRepo := repoReg.NewSessionRepository()
+	handlers := buildHandlers(useCaseReg, sessionRepo)
 
 	// Initialize Server
 	srv := server.NewServer(
@@ -64,6 +66,7 @@ func main() {
 		handlers.authReset,
 		handlers.adminAuthReset,
 		handlers.push,
+		sessionRepo,
 	)
 
 	// Start Server
@@ -72,15 +75,15 @@ func main() {
 	}
 }
 
-func buildHandlers(reg registry.UseCase) *handlers {
+func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepository) *handlers {
 	return &handlers{
 		health:         handler.NewHealthHandler(),
 		fisherman:      handler.NewFishermanHandler(reg),
-		buyer:          handler.NewBuyerHandler(reg),
+		buyer:          handler.NewBuyerHandler(reg, sessionRepo),
 		item:           handler.NewItemHandler(reg),
 		bid:            handler.NewBidHandler(reg),
 		invoice:        handler.NewInvoiceHandler(reg),
-		auth:           handler.NewAuthHandler(reg),
+		auth:           handler.NewAuthHandler(reg, sessionRepo),
 		venue:          handler.NewVenueHandler(reg),
 		auction:        handler.NewAuctionHandler(reg),
 		admin:          handler.NewAdminHandler(reg),

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
 )
@@ -49,6 +50,7 @@ func NewServer(
 	authResetHandler *handler.AuthResetHandler,
 	adminAuthResetHandler *handler.AdminAuthResetHandler,
 	pushHandler *handler.PushHandler,
+	sessionRepo repository.SessionRepository,
 ) *Server {
 	s := &Server{
 		router:                http.NewServeMux(),
@@ -65,8 +67,8 @@ func NewServer(
 		authResetHandler:      authResetHandler,
 		adminAuthResetHandler: adminAuthResetHandler,
 		pushHandler:           pushHandler,
-		adminAuth:             middleware.NewAdminAuthMiddleware(),
-		buyerAuth:             middleware.NewBuyerAuthMiddleware(),
+		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
+		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
 	}
 	s.routes()
 	return s
@@ -104,6 +106,13 @@ func (s *Server) registerPublicRoutes() {
 	s.router.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			s.buyerHandler.Login(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	s.router.HandleFunc("/api/buyers/logout", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			s.buyerHandler.Logout(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
