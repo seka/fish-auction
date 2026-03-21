@@ -17,6 +17,10 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
+func withBuyerID(req *http.Request, buyerID interface{}) *http.Request {
+	return req.WithContext(context.WithValue(req.Context(), middleware.BuyerIDKey, buyerID))
+}
+
 func TestBuyerHandler_Create(t *testing.T) {
 	type testCase struct {
 		name       string
@@ -68,7 +72,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewBuyerHandler(mockReg)
+			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 
 			var reqBody []byte
 			if s, ok := tc.body.(string); ok {
@@ -136,7 +140,8 @@ func TestBuyerHandler_Login(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewBuyerHandler(mockReg)
+			sessionRepo := &mock.MockSessionRepository{NextSessionID: "buyer-session-1"}
+			h := handler.NewBuyerHandler(mockReg, sessionRepo)
 
 			var reqBody []byte
 			if s, ok := tc.body.(string); ok {
@@ -158,7 +163,7 @@ func TestBuyerHandler_Login(t *testing.T) {
 				cookies := w.Result().Cookies()
 				found := false
 				for _, c := range cookies {
-					if c.Name == "buyer_session" && c.Value == "authenticated" {
+					if c.Name == "buyer_session" && c.Value == "buyer-session-1" {
 						found = true
 						break
 					}
@@ -174,7 +179,8 @@ func TestBuyerHandler_Login(t *testing.T) {
 func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 	type testCase struct {
 		name       string
-		cookies    map[string]string
+		ctxValue    interface{}
+		withContext bool
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
@@ -182,7 +188,8 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 	tests := []testCase{
 		{
 			name:    "Success",
-			cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			ctxValue: 1,
+			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerPurchasesUC = &mock.MockGetBuyerPurchasesUseCase{
 					ExecuteFunc: func(ctx context.Context, buyerID int) ([]model.Purchase, error) {
@@ -196,26 +203,14 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:       "Unauthorized_NoSession",
-			cookies:    map[string]string{},
+			name:       "Unauthorized_NoContext",
 			mockSetup:  func(r *mock.MockRegistry) {},
 			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name:       "Unauthorized_NoID",
-			cookies:    map[string]string{"buyer_session": "authenticated"},
-			mockSetup:  func(r *mock.MockRegistry) {},
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name:       "InvalidIDFormat",
-			cookies:    map[string]string{"buyer_session": "authenticated", "buyer_id": "invalid"},
-			mockSetup:  func(r *mock.MockRegistry) {},
-			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:    "UseCaseError",
-			cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			ctxValue: 1,
+			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerPurchasesUC = &mock.MockGetBuyerPurchasesUseCase{
 					ExecuteFunc: func(ctx context.Context, buyerID int) ([]model.Purchase, error) {
@@ -231,20 +226,11 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewBuyerHandler(mockReg)
+			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 
 			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me/purchases", nil)
-			for k, v := range tc.cookies {
-				req.AddCookie(&http.Cookie{Name: k, Value: v})
-			}
-
-			// Inject into context if buyer_id cookie exists
-			if idStr, ok := tc.cookies["buyer_id"]; ok {
-				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1) // Using 1 for simplicity
-				if idStr == "invalid" {
-					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
-				}
-				req = req.WithContext(ctx)
+			if tc.withContext {
+				req = withBuyerID(req, tc.ctxValue)
 			}
 
 			w := httptest.NewRecorder()
@@ -295,7 +281,7 @@ func TestBuyerHandler_List(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewBuyerHandler(mockReg)
+			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 			req := httptest.NewRequest(http.MethodGet, "/api/admin/buyers", nil)
 			w := httptest.NewRecorder()
 			h.List(w, req)
@@ -309,14 +295,14 @@ func TestBuyerHandler_List(t *testing.T) {
 func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 	type testCase struct {
 		name       string
-		cookies    map[string]string
+		withContext bool
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
 	tests := []testCase{
 		{
 			name:    "Success",
-			cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerUC = &mock.MockGetBuyerUseCase{
 					ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
@@ -327,14 +313,7 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:       "NoSession",
-			cookies:    map[string]string{},
-			mockSetup:  func(r *mock.MockRegistry) {},
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name:       "NoID",
-			cookies:    map[string]string{"buyer_session": "authenticated"},
+			name:       "NoContext",
 			mockSetup:  func(r *mock.MockRegistry) {},
 			wantStatus: http.StatusUnauthorized,
 		},
@@ -345,16 +324,10 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 			if tc.mockSetup != nil {
 				tc.mockSetup(mockReg)
 			}
-			h := handler.NewBuyerHandler(mockReg)
+			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me", nil)
-			for k, v := range tc.cookies {
-				req.AddCookie(&http.Cookie{Name: k, Value: v})
-			}
-
-			// Inject into context if buyer_id cookie exists
-			if _, ok := tc.cookies["buyer_id"]; ok {
-				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
-				req = req.WithContext(ctx)
+			if tc.withContext {
+				req = withBuyerID(req, 1)
 			}
 
 			w := httptest.NewRecorder()
@@ -369,15 +342,16 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 	type testCase struct {
 		name       string
-		cookies    map[string]string
+		ctxValue    interface{}
+		withContext bool
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
-	// Logic is very similar to GetMyPurchases. Testing InvalidIDFormat specific to GetMyAuctions
 	tests := []testCase{
 		{
 			name:    "Success",
-			cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			ctxValue: 1,
+			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerAuctionsUC = &mock.MockGetBuyerAuctionsUseCase{
 					ExecuteFunc: func(ctx context.Context, id int) ([]model.Auction, error) {
@@ -389,29 +363,19 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:       "InvalidIDFormat",
-			cookies:    map[string]string{"buyer_session": "authenticated", "buyer_id": "invalid"},
+			name:       "Unauthorized_NoContext",
 			mockSetup:  func(r *mock.MockRegistry) {},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusUnauthorized,
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewBuyerHandler(mockReg)
+			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me/auctions", nil)
-			for k, v := range tc.cookies {
-				req.AddCookie(&http.Cookie{Name: k, Value: v})
-			}
-
-			// Inject into context if buyer_id cookie exists
-			if idStr, ok := tc.cookies["buyer_id"]; ok {
-				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
-				if idStr == "invalid" {
-					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
-				}
-				req = req.WithContext(ctx)
+			if tc.withContext {
+				req = withBuyerID(req, tc.ctxValue)
 			}
 
 			w := httptest.NewRecorder()
@@ -426,7 +390,7 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 func TestBuyerHandler_UpdatePassword(t *testing.T) {
 	type testCase struct {
 		name       string
-		cookies    map[string]string
+		withContext bool
 		body       interface{}
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
@@ -435,7 +399,7 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 	tests := []testCase{
 		{
 			name:    "Success",
-			cookies: map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			withContext: true,
 			body:    dto.UpdatePasswordRequest{CurrentPassword: "old", NewPassword: "new"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateBuyerPasswordUC = &mock.MockBuyerUpdatePasswordUseCase{
@@ -446,17 +410,16 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 		},
 		{
 			name:       "InvalidJSON",
-			cookies:    map[string]string{"buyer_session": "authenticated", "buyer_id": "1"},
+			withContext: true,
 			body:       "invalid",
 			mockSetup:  func(r *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name:       "InvalidIDFormat",
-			cookies:    map[string]string{"buyer_session": "authenticated", "buyer_id": "invalid"},
+			name:       "Unauthorized_NoContext",
 			body:       dto.UpdatePasswordRequest{},
 			mockSetup:  func(r *mock.MockRegistry) {},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusUnauthorized,
 		},
 	}
 
@@ -464,7 +427,7 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewBuyerHandler(mockReg)
+			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 
 			var reqBody []byte
 			if s, ok := tc.body.(string); ok {
@@ -473,17 +436,8 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 			req := httptest.NewRequest(http.MethodPut, "/api/buyers/me/password", bytes.NewReader(reqBody))
-			for k, v := range tc.cookies {
-				req.AddCookie(&http.Cookie{Name: k, Value: v})
-			}
-
-			// Inject into context if buyer_id cookie exists
-			if idStr, ok := tc.cookies["buyer_id"]; ok {
-				ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
-				if idStr == "invalid" {
-					ctx = context.WithValue(req.Context(), middleware.BuyerIDKey, "invalid")
-				}
-				req = req.WithContext(ctx)
+			if tc.withContext {
+				req = withBuyerID(req, 1)
 			}
 
 			w := httptest.NewRecorder()
@@ -496,13 +450,21 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 }
 
 func TestBuyerHandler_Logout(t *testing.T) {
-	// Simple
-	h := handler.NewBuyerHandler(&mock.MockRegistry{})
+	sessionRepo := &mock.MockSessionRepository{
+		Sessions: map[string]*model.Session{
+			"buyer-session-1": {ID: "buyer-session-1", UserID: 1, Role: model.SessionRoleBuyer},
+		},
+	}
+	h := handler.NewBuyerHandler(&mock.MockRegistry{}, sessionRepo)
 	req := httptest.NewRequest(http.MethodPost, "/api/buyers/logout", nil)
+	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
 	w := httptest.NewRecorder()
 	h.Logout(w, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("expected 200, got %d", w.Code)
+	}
+	if len(sessionRepo.DeletedSessionIDs) != 1 || sessionRepo.DeletedSessionIDs[0] != "buyer-session-1" {
+		t.Errorf("expected buyer-session-1 to be deleted, got %#v", sessionRepo.DeletedSessionIDs)
 	}
 }
 
@@ -544,7 +506,8 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 		GetBuyerUC:            &mock.MockGetBuyerUseCase{ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) { return &model.Buyer{Name: "B1"}, nil }},
 	}
 
-	h := handler.NewBuyerHandler(mockReg)
+	sessionRepo := &mock.MockSessionRepository{NextSessionID: "buyer-session-1"}
+	h := handler.NewBuyerHandler(mockReg, sessionRepo)
 	mux := http.NewServeMux()
 	h.RegisterRoutes(mux)
 
@@ -552,9 +515,6 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var body []byte
 			req := httptest.NewRequest(tc.method, tc.path, bytes.NewReader(body))
-			// Add cookies for handlers that need them to pass auth check, to allow reaching method check or status 200
-			req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "authenticated"})
-			req.AddCookie(&http.Cookie{Name: "buyer_id", Value: "1"})
 
 			// Handle Bodies for strict JSON decoders if method matches
 			if tc.method == http.MethodPost || tc.method == http.MethodPut {
@@ -565,9 +525,12 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 					body, _ = json.Marshal(dto.UpdatePasswordRequest{})
 				}
 				req = httptest.NewRequest(tc.method, tc.path, bytes.NewReader(body))
-				// Re-add cookies
-				req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "authenticated"})
-				req.AddCookie(&http.Cookie{Name: "buyer_id", Value: "1"})
+			}
+			if tc.path == "/api/buyers/logout" {
+				req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
+			}
+			if tc.path != "/api/buyers/login" && tc.path != "/api/buyers/logout" {
+				req = withBuyerID(req, 1)
 			}
 
 			w := httptest.NewRecorder()

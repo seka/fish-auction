@@ -34,13 +34,19 @@ func TestServer_SecurityRoutes(t *testing.T) {
 	}
 
 	// Initialize Handlers
+	sessionRepo := &mock.MockSessionRepository{
+		Sessions: map[string]*model.Session{
+			"admin-session-1": {ID: "admin-session-1", UserID: 1, Role: model.SessionRoleAdmin},
+			"buyer-session-1": {ID: "buyer-session-1", UserID: 1, Role: model.SessionRoleBuyer},
+		},
+	}
 	hHealth := handler.NewHealthHandler()
 	hFisherman := handler.NewFishermanHandler(mockReg)
-	hBuyer := handler.NewBuyerHandler(mockReg)
+	hBuyer := handler.NewBuyerHandler(mockReg, sessionRepo)
 	hItem := handler.NewItemHandler(mockReg)
 	hBid := handler.NewBidHandler(mockReg)
 	hInvoice := handler.NewInvoiceHandler(mockReg)
-	hAuth := handler.NewAuthHandler(mockReg)
+	hAuth := handler.NewAuthHandler(mockReg, sessionRepo)
 	hVenue := handler.NewVenueHandler(mockReg)
 	hAuction := handler.NewAuctionHandler(mockReg)
 	hAdmin := handler.NewAdminHandler(mockReg)
@@ -63,6 +69,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hAuthReset,
 		hAdminAuthReset,
 		hPush,
+		sessionRepo,
 	)
 
 	tests := []struct {
@@ -117,7 +124,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			method:         http.MethodPost,
 			path:           "/api/admin/fishermen",
 			cookieName:     "admin_session",
-			cookieValue:    "authenticated",
+			cookieValue:    "admin-session-1",
 			expectedStatus: http.StatusOK,
 		},
 		// Auction Status (Admin)
@@ -126,7 +133,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			method:         http.MethodPatch,
 			path:           "/api/admin/auctions/1/status",
 			cookieName:     "admin_session",
-			cookieValue:    "authenticated",
+			cookieValue:    "admin-session-1",
 			expectedStatus: http.StatusOK,
 		},
 		// List Fishermen (Admin)
@@ -135,7 +142,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			method:         http.MethodGet,
 			path:           "/api/admin/fishermen",
 			cookieName:     "admin_session",
-			cookieValue:    "authenticated",
+			cookieValue:    "admin-session-1",
 			expectedStatus: http.StatusOK,
 		},
 		// List Buyers (Admin)
@@ -144,7 +151,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			method:         http.MethodGet,
 			path:           "/api/admin/buyers",
 			cookieName:     "admin_session",
-			cookieValue:    "authenticated",
+			cookieValue:    "admin-session-1",
 			expectedStatus: http.StatusOK,
 		},
 		// Buyer Me (Buyer)
@@ -153,7 +160,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			method:         http.MethodGet,
 			path:           "/api/buyer/me",
 			cookieName:     "buyer_session",
-			cookieValue:    "authenticated",
+			cookieValue:    "buyer-session-1",
 			expectedStatus: http.StatusOK,
 		},
 		// Auction Create (Admin)
@@ -162,7 +169,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			method:         http.MethodPost,
 			path:           "/api/admin/auctions",
 			cookieName:     "admin_session",
-			cookieValue:    "authenticated",
+			cookieValue:    "admin-session-1",
 			expectedStatus: http.StatusOK,
 		},
 	}
@@ -182,9 +189,6 @@ func TestServer_SecurityRoutes(t *testing.T) {
 
 			if tc.cookieName != "" {
 				req.AddCookie(&http.Cookie{Name: tc.cookieName, Value: tc.cookieValue})
-				// Add ID cookies required by middleware/handlers
-				req.AddCookie(&http.Cookie{Name: "admin_id", Value: "1"})
-				req.AddCookie(&http.Cookie{Name: "buyer_id", Value: "1"})
 			}
 			w := httptest.NewRecorder()
 

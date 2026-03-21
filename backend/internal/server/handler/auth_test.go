@@ -22,7 +22,8 @@ func TestAuthHandler_Login(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{LoginUC: mockLoginUC}
-		h := handler.NewAuthHandler(mockReg)
+		sessionRepo := &mock.MockSessionRepository{NextSessionID: "admin-session-1"}
+		h := handler.NewAuthHandler(mockReg, sessionRepo)
 
 		reqBody := dto.LoginRequest{Email: "admin@example.com", Password: "password"}
 		body, _ := json.Marshal(reqBody)
@@ -38,20 +39,13 @@ func TestAuthHandler_Login(t *testing.T) {
 		// Check cookies
 		cookies := w.Result().Cookies()
 		foundSession := false
-		foundID := false
 		for _, c := range cookies {
-			if c.Name == "admin_session" && c.Value == "authenticated" {
+			if c.Name == "admin_session" && c.Value == "admin-session-1" {
 				foundSession = true
-			}
-			if c.Name == "admin_id" && c.Value == "1" {
-				foundID = true
 			}
 		}
 		if !foundSession {
 			t.Error("expected admin_session cookie")
-		}
-		if !foundID {
-			t.Error("expected admin_id cookie")
 		}
 	})
 
@@ -62,7 +56,7 @@ func TestAuthHandler_Login(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{LoginUC: mockLoginUC}
-		h := handler.NewAuthHandler(mockReg)
+		h := handler.NewAuthHandler(mockReg, &mock.MockSessionRepository{})
 
 		reqBody := dto.LoginRequest{Email: "admin@example.com", Password: "wrong"}
 		body, _ := json.Marshal(reqBody)
@@ -80,7 +74,7 @@ func TestAuthHandler_Login(t *testing.T) {
 func TestAuthHandler_RegisterRoutes(t *testing.T) {
 	t.Run("MethodNotAllowed", func(t *testing.T) {
 		mockReg := &mock.MockRegistry{}
-		h := handler.NewAuthHandler(mockReg)
+		h := handler.NewAuthHandler(mockReg, &mock.MockSessionRepository{})
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 

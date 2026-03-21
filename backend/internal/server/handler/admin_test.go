@@ -33,8 +33,6 @@ func TestAdminHandler_UpdatePassword(t *testing.T) {
 		}
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPut, "/api/admin/password", bytes.NewReader(body))
-		req.AddCookie(&http.Cookie{Name: "admin_session", Value: "authenticated"})
-		req.AddCookie(&http.Cookie{Name: "admin_id", Value: "1"})
 
 		// Inject into context
 		ctx := context.WithValue(req.Context(), middleware.AdminIDKey, 1)

@@ -61,6 +61,7 @@ func TestServerIntegration(t *testing.T) {
 		DBName:     testDBName,
 		RedisAddr:  getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
 		CacheTTL:   5 * time.Minute,
+		SessionTTL: 24 * time.Hour,
 		AppEnv:     "test",
 		SMTPHost:   getEnvOrDefault("SMTP_HOST", "localhost"),
 		SMTPPort:   getEnvOrDefault("SMTP_PORT", "1025"),
@@ -80,11 +81,12 @@ func TestServerIntegration(t *testing.T) {
 	// 6. Handlers を初期化
 	healthHandler := handler.NewHealthHandler()
 	fishermanHandler := handler.NewFishermanHandler(useCaseReg)
-	buyerHandler := handler.NewBuyerHandler(useCaseReg)
+	sessionRepo := repoReg.NewSessionRepository()
+	buyerHandler := handler.NewBuyerHandler(useCaseReg, sessionRepo)
 	itemHandler := handler.NewItemHandler(useCaseReg)
 	bidHandler := handler.NewBidHandler(useCaseReg)
 	invoiceHandler := handler.NewInvoiceHandler(useCaseReg)
-	authHandler := handler.NewAuthHandler(useCaseReg)
+	authHandler := handler.NewAuthHandler(useCaseReg, sessionRepo)
 	venueHandler := handler.NewVenueHandler(useCaseReg)
 	auctionHandler := handler.NewAuctionHandler(useCaseReg)
 	adminHandler := handler.NewAdminHandler(useCaseReg)
@@ -107,6 +109,7 @@ func TestServerIntegration(t *testing.T) {
 		authResetHandler,
 		adminAuthResetHandler,
 		pushHandler,
+		sessionRepo,
 	)
 
 	// 8. サーバーを goroutine で起動
