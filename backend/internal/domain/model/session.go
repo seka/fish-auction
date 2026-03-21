@@ -10,8 +10,8 @@ const (
 )
 
 type Session struct {
-	ID        string      `json:"id"`
-	UserID    int         `json:"user_id"`
-	Role      SessionRole `json:"role"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID        string
+	UserID    int
+	Role      SessionRole
+	CreatedAt time.Time
 }

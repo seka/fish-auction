@@ -20,6 +20,13 @@ type SessionStore struct {
 	ttl   time.Duration
 }
 
+type sessionJSON struct {
+	ID        string            `json:"id"`
+	UserID    int               `json:"user_id"`
+	Role      model.SessionRole `json:"role"`
+	CreatedAt time.Time         `json:"created_at"`
+}
+
 var _ repository.SessionRepository = (*SessionStore)(nil)
 
 func NewSessionStore(cache datastore.Cache, ttl time.Duration) *SessionStore {
@@ -35,14 +42,14 @@ func (s *SessionStore) Create(ctx context.Context, userID int, role model.Sessio
 		return "", err
 	}
 
-	session := model.Session{
+	sJSON := sessionJSON{
 		ID:        sessionID,
 		UserID:    userID,
 		Role:      role,
 		CreatedAt: time.Now().UTC(),
 	}
 
-	payload, err := json.Marshal(session)
+	payload, err := json.Marshal(sJSON)
 	if err != nil {
 		return "", fmt.Errorf("marshal session: %w", err)
 	}
@@ -63,12 +70,17 @@ func (s *SessionStore) FindByID(ctx context.Context, sessionID string) (*model.S
 		return nil, nil
 	}
 
-	var session model.Session
-	if err := json.Unmarshal(payload, &session); err != nil {
+	var sJSON sessionJSON
+	if err := json.Unmarshal(payload, &sJSON); err != nil {
 		return nil, fmt.Errorf("unmarshal session: %w", err)
 	}
 
-	return &session, nil
+	return &model.Session{
+		ID:        sJSON.ID,
+		UserID:    sJSON.UserID,
+		Role:      sJSON.Role,
+		CreatedAt: sJSON.CreatedAt,
+	}, nil
 }
 
 func (s *SessionStore) Delete(ctx context.Context, sessionID string) error {
