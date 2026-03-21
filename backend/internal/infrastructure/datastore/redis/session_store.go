@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	goredis "github.com/redis/go-redis/v9"
+
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
@@ -58,6 +60,17 @@ func (s *SessionStore) Create(ctx context.Context, userID int, role model.Sessio
 		return "", err
 	}
 
+	// Add to user sessions set
+	if rc := s.getRedisClient(); rc != nil {
+		setKey := userSessionsKey(role, userID)
+		if err := rc.SAdd(ctx, setKey, sessionID).Err(); err != nil {
+			return "", fmt.Errorf("add to session set: %w", err)
+		}
+		if err := rc.Expire(ctx, setKey, s.ttl).Err(); err != nil {
+			return "", fmt.Errorf("expire session set: %w", err)
+		}
+	}
+
 	return sessionID, nil
 }
 
@@ -88,7 +101,53 @@ func (s *SessionStore) Delete(ctx context.Context, sessionID string) error {
 		return nil
 	}
 
-	return s.cache.Delete(ctx, sessionKey(sessionID))
+	// Find first to get userID and role for set removal
+	session, err := s.FindByID(ctx, sessionID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.cache.Delete(ctx, sessionKey(sessionID)); err != nil {
+		return err
+	}
+
+	if session != nil {
+		if rc := s.getRedisClient(); rc != nil {
+			_ = rc.SRem(ctx, userSessionsKey(session.Role, session.UserID), sessionID).Err()
+		}
+	}
+
+	return nil
+}
+
+func (s *SessionStore) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
+	rc := s.getRedisClient()
+	if rc == nil {
+		return fmt.Errorf("redis client not available")
+	}
+
+	setKey := userSessionsKey(role, userID)
+	sessionIDs, err := rc.SMembers(ctx, setKey).Result()
+	if err != nil {
+		return fmt.Errorf("get user sessions: %w", err)
+	}
+
+	for _, id := range sessionIDs {
+		_ = s.cache.Delete(ctx, sessionKey(id))
+	}
+
+	return rc.Del(ctx, setKey).Err()
+}
+
+func (s *SessionStore) getRedisClient() *goredis.Client {
+	if c, ok := s.cache.(*Client); ok {
+		return c.client
+	}
+	return nil
+}
+
+func userSessionsKey(role model.SessionRole, userID int) string {
+	return fmt.Sprintf("user_sessions:%s:%d", role, userID)
 }
 
 func sessionKey(sessionID string) string {
