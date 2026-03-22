@@ -61,11 +61,9 @@ func (m *CSRFMiddleware) Handle(next http.Handler) http.Handler {
 			}
 		}
 
-		// API向け：Origin も Sec-Fetch-Site もない副作用リクエスト（直撃など）をどう扱うか？
-		// 令和時代のAPIとしては、ブラウザからの正当なリクエストにはいずれかが付与されているはずなので、
-		// 両方ない場合も一旦許可するが、より厳格にするなら Origin なしのPOSTを拒否する選択もあり得る。
+		// ブラウザ以外のクライアント（curl コマンド、モバイルアプリ、古いツールなど）からリクエストを送る場合、Origin や Sec-Fetch-Site といったヘッダーをあえて付けずに送ることが可能。
+		// API向け：Origin も Sec-Fetch-Site もない副作用リクエスト（直撃など）は一旦許可するが、より厳格にするなら Origin なしのPOSTを拒否する選択もあり得る。
 		// ここでは実用性を考慮し、明示的な不一致がある場合のみ拒否する。
-
 		next.ServeHTTP(w, r)
 	})
 }
