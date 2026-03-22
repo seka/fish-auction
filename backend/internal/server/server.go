@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
@@ -35,7 +34,7 @@ type Server struct {
 	pushHandler           *handler.PushHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
-	allowedOrigins        []string
+	cors                  *middleware.CORSMiddleware
 }
 
 func NewServer(
@@ -72,7 +71,7 @@ func NewServer(
 		pushHandler:           pushHandler,
 		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
-		allowedOrigins:        allowedOrigins,
+		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
 	}
 	s.routes()
 	return s
@@ -272,13 +271,7 @@ func (s *Server) Start(addr string) error {
 		addr = ":8080"
 	}
 	
-	c := cors.New(cors.Options{
-		AllowedOrigins:   s.allowedOrigins,
-		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
-	})
-	handlerWithCORS := c.Handler(s.router)
+	handlerWithCORS := s.cors.Handle(s.router)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,
