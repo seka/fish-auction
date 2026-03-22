@@ -35,6 +35,7 @@ type Server struct {
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
 	cors                  *middleware.CORSMiddleware
+	securityHeaders       *middleware.SecurityHeadersMiddleware
 }
 
 func NewServer(
@@ -72,6 +73,7 @@ func NewServer(
 		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
 		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
+		securityHeaders:       middleware.NewSecurityHeadersMiddleware(),
 	}
 	s.routes()
 	return s
@@ -272,10 +274,11 @@ func (s *Server) Start(addr string) error {
 	}
 	
 	handlerWithCORS := s.cors.Handle(s.router)
+	handlerWithSecurityHeaders := s.securityHeaders.Handle(handlerWithCORS)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,
-		Handler:           handlerWithCORS,
+		Handler:           handlerWithSecurityHeaders,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
