@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
@@ -34,6 +35,7 @@ type Server struct {
 	pushHandler           *handler.PushHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
+	allowedOrigins        []string
 }
 
 func NewServer(
@@ -51,6 +53,7 @@ func NewServer(
 	adminAuthResetHandler *handler.AdminAuthResetHandler,
 	pushHandler *handler.PushHandler,
 	sessionRepo repository.SessionRepository,
+	allowedOrigins []string,
 ) *Server {
 	s := &Server{
 		router:                http.NewServeMux(),
@@ -69,6 +72,7 @@ func NewServer(
 		pushHandler:           pushHandler,
 		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
+		allowedOrigins:        allowedOrigins,
 	}
 	s.routes()
 	return s
@@ -267,9 +271,18 @@ func (s *Server) Start(addr string) error {
 	if addr == "" {
 		addr = ":8080"
 	}
+	
+	c := cors.New(cors.Options{
+		AllowedOrigins:   s.allowedOrigins,
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+	})
+	handlerWithCORS := c.Handler(s.router)
+
 	s.httpServer = &http.Server{
 		Addr:              addr,
-		Handler:           s.router,
+		Handler:           handlerWithCORS,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 

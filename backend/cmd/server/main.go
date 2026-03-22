@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
@@ -67,6 +68,7 @@ func main() {
 		handlers.adminAuthReset,
 		handlers.push,
 		sessionRepo,
+		strings.Split(cfg.AllowedOrigins, ","),
 	)
 
 	// Start Server
