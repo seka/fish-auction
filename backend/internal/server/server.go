@@ -276,12 +276,16 @@ func (s *Server) Start(addr string) error {
 	}
 	
 	handlerWithCORS := s.cors.Handle(s.router)
-	handlerWithSecurityHeaders := s.securityHeaders.Handle(handlerWithCORS)
-	handlerWithCSRF := s.csrf.Handle(handlerWithSecurityHeaders)
+	handlerWithHeaders := s.securityHeaders.Handle(handlerWithCORS)
+	handlerWithCSRF := s.csrf.Handle(handlerWithHeaders)
+	handlerWithCache := middleware.CacheControlMiddleware(handlerWithCSRF)
+	handlerWithGzip := middleware.GzipMiddleware(handlerWithCache)
+	// リクエストボディを1MBに制限
+	handlerWithLimit := middleware.MaxBodyMiddleware(1024 * 1024)(handlerWithGzip)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,
-		Handler:           handlerWithCSRF,
+		Handler:           handlerWithLimit,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
