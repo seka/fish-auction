@@ -110,6 +110,7 @@ func TestServerIntegration(t *testing.T) {
 		adminAuthResetHandler,
 		pushHandler,
 		sessionRepo,
+		[]string{"http://localhost:3000"},
 	)
 
 	// 8. サーバーを goroutine で起動

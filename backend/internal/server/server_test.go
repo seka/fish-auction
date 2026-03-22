@@ -70,6 +70,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hAdminAuthReset,
 		hPush,
 		sessionRepo,
+		[]string{"http://localhost:3000"},
 	)
 
 	tests := []struct {
