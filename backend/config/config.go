@@ -18,6 +18,7 @@ type Config struct {
 	CacheTTL        time.Duration
 	SessionTTL      time.Duration
 	AppEnv          string
+	AllowedOrigins  string
 	SMTPHost        string
 	SMTPPort        string
 	SMTPFrom        string
@@ -41,6 +42,7 @@ func Load() (*Config, error) {
 		CacheTTL:        time.Duration(cacheTTL) * time.Second,
 		SessionTTL:      time.Duration(sessionTTL) * time.Second,
 		AppEnv:          getEnv("APP_ENV", "production"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
 		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:        getEnv("SMTP_PORT", "1025"),
 		SMTPFrom:        getEnv("SMTP_FROM", "noreply@fish-auction.com"),
