@@ -36,6 +36,7 @@ type Server struct {
 	buyerAuth             *middleware.BuyerAuthMiddleware
 	cors                  *middleware.CORSMiddleware
 	securityHeaders       *middleware.SecurityHeadersMiddleware
+	csrf                  *middleware.CSRFMiddleware
 }
 
 func NewServer(
@@ -74,6 +75,7 @@ func NewServer(
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
 		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
 		securityHeaders:       middleware.NewSecurityHeadersMiddleware(),
+		csrf:                  middleware.NewCSRFMiddleware(allowedOrigins),
 	}
 	s.routes()
 	return s
@@ -275,10 +277,11 @@ func (s *Server) Start(addr string) error {
 	
 	handlerWithCORS := s.cors.Handle(s.router)
 	handlerWithSecurityHeaders := s.securityHeaders.Handle(handlerWithCORS)
+	handlerWithCSRF := s.csrf.Handle(handlerWithSecurityHeaders)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,
-		Handler:           handlerWithSecurityHeaders,
+		Handler:           handlerWithCSRF,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
