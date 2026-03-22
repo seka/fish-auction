@@ -37,6 +37,9 @@ type Server struct {
 	cors                  *middleware.CORSMiddleware
 	securityHeaders       *middleware.SecurityHeadersMiddleware
 	csrf                  *middleware.CSRFMiddleware
+	cacheControl          *middleware.CacheControlMiddleware
+	gzip                  *middleware.GzipMiddleware
+	maxBody               *middleware.MaxBodyMiddleware
 }
 
 func NewServer(
@@ -76,6 +79,9 @@ func NewServer(
 		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
 		securityHeaders:       middleware.NewSecurityHeadersMiddleware(),
 		csrf:                  middleware.NewCSRFMiddleware(allowedOrigins),
+		cacheControl:          middleware.NewCacheControlMiddleware(),
+		gzip:                  middleware.NewGzipMiddleware(),
+		maxBody:               middleware.NewMaxBodyMiddleware(1024 * 1024), // 1MB
 	}
 	s.routes()
 	return s
@@ -278,10 +284,9 @@ func (s *Server) Start(addr string) error {
 	handlerWithCORS := s.cors.Handle(s.router)
 	handlerWithHeaders := s.securityHeaders.Handle(handlerWithCORS)
 	handlerWithCSRF := s.csrf.Handle(handlerWithHeaders)
-	handlerWithCache := middleware.CacheControlMiddleware(handlerWithCSRF)
-	handlerWithGzip := middleware.GzipMiddleware(handlerWithCache)
-	// リクエストボディを1MBに制限
-	handlerWithLimit := middleware.MaxBodyMiddleware(1024 * 1024)(handlerWithGzip)
+	handlerWithCache := s.cacheControl.Handle(handlerWithCSRF)
+	handlerWithGzip := s.gzip.Handle(handlerWithCache)
+	handlerWithLimit := s.maxBody.Handle(handlerWithGzip)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,

@@ -10,7 +10,8 @@ import (
 )
 
 func TestCacheControlMiddleware(t *testing.T) {
-	handler := CacheControlMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	middleware := NewCacheControlMiddleware()
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -26,8 +27,8 @@ func TestCacheControlMiddleware(t *testing.T) {
 
 func TestMaxBodyMiddleware(t *testing.T) {
 	// Limit to 10 bytes
-	middleware := MaxBodyMiddleware(10)
-	handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	middleware := NewMaxBodyMiddleware(10)
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusRequestEntityTooLarge)
@@ -56,7 +57,8 @@ func TestMaxBodyMiddleware(t *testing.T) {
 }
 
 func TestGzipMiddleware(t *testing.T) {
-	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	middleware := NewGzipMiddleware()
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, World! This is a long enough string to benefit from compression."))
 	}))
 
