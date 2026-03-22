@@ -5,7 +5,14 @@ import (
 )
 
 // CSRFMiddleware protects against Cross-Site Request Forgery.
-// It leverages Origin and Fetch Metadata headers for modern browser-based protection.
+// 現代的なCSRF対策として、ブラウザが提供する Origin と Fetch Metadata を検証します。
+// 参考: 令和時代の API 実装のベースプラクティスと CSRF 対策 | blog.jxck.io
+// https://blog.jxck.io/entries/2024-04-26/csrf.html
+//
+// 対策の仕組み:
+// 1. SameSite Cookie (Lax/Strict): ブラウザがクロスドメインのリクエストに自動でクッキーを付与するのを抑制。
+// 2. Origin Check: リクエストの発生元ドメインが許可されたものか検証。
+// 3. Fetch Metadata Check: ブラウザが自動付与する Sec-Fetch-Site ヘッダーを検証し、cross-site を拒否。
 type CSRFMiddleware struct {
 	allowedOrigins []string
 }
