@@ -45,7 +45,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := &model.AuctionItem{
+	it := &model.AuctionItem{
 		AuctionID:   req.AuctionID,
 		FishermanID: req.FishermanID,
 		FishType:    req.FishType,
@@ -53,7 +53,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Unit:        req.Unit,
 	}
 
-	created, err := h.createUseCase.Execute(r.Context(), item)
+	created, err := h.createUseCase.Execute(r.Context(), it)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -72,8 +72,9 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := make([]dto.ItemResponse, len(items))
-	for i, item := range items {
-		resp[i] = h.toResponse(&item)
+	for i := range items {
+		it := items[i]
+		resp[i] = h.toResponse(&it)
 	}
 
 	util.WriteJSON(w, http.StatusOK, resp)
@@ -196,25 +197,25 @@ func (h *ItemHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *ItemHandler) toResponse(item *model.AuctionItem) dto.ItemResponse {
+func (h *ItemHandler) toResponse(it *model.AuctionItem) dto.ItemResponse {
 	var highestBid *int
-	if item.HighestBid != nil {
-		amt := item.HighestBid.Amount()
+	if it.HighestBid != nil {
+		amt := it.HighestBid.Amount()
 		highestBid = &amt
 	}
 	return dto.ItemResponse{
-		ID:                item.ID,
-		AuctionID:         item.AuctionID,
-		FishermanID:       item.FishermanID,
-		FishType:          item.FishType,
-		Quantity:          item.Quantity,
-		Unit:              item.Unit,
-		Status:            item.Status.String(),
+		ID:                it.ID,
+		AuctionID:         it.AuctionID,
+		FishermanID:       it.FishermanID,
+		FishType:          it.FishType,
+		Quantity:          it.Quantity,
+		Unit:              it.Unit,
+		Status:            it.Status.String(),
 		HighestBid:        highestBid,
-		HighestBidderID:   item.HighestBidderID,
-		HighestBidderName: item.HighestBidderName,
-		SortOrder:         item.SortOrder,
-		CreatedAt:         item.CreatedAt,
+		HighestBidderID:   it.HighestBidderID,
+		HighestBidderName: it.HighestBidderName,
+		SortOrder:         it.SortOrder,
+		CreatedAt:         it.CreatedAt,
 	}
 }
 

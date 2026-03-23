@@ -50,20 +50,20 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// This requires adding auction_id to the bid request or looking it up
 	// For now, let's comment out the period check and implement it properly later
 
-	bid := &model.Bid{
+	b := &model.Bid{
 		ItemID:  req.ItemID,
 		BuyerID: buyerID,
 		Price:   model.NewBidPrice(req.Price),
 	}
 
-	if _, err := h.createUseCase.Execute(r.Context(), bid); err != nil {
+	if _, err := h.createUseCase.Execute(r.Context(), b); err != nil {
 		util.HandleError(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Bid placed successfully"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Bid placed successfully"})
 }
 
 // RegisterRoutes registers the bid handler routes to the given mux.

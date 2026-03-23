@@ -48,12 +48,12 @@ func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		util.HandleError(w, err)
 		return
 	}
-	buyer, err := h.createUseCase.Execute(r.Context(), req.Name, req.Email, req.Password, req.Organization, req.ContactInfo)
+	buy, err := h.createUseCase.Execute(r.Context(), req.Name, req.Email, req.Password, req.Organization, req.ContactInfo)
 	if err != nil {
 		util.HandleError(w, err)
 		return
 	}
-	resp := dto.BuyerResponse{ID: buyer.ID, Name: buyer.Name}
+	resp := dto.BuyerResponse{ID: buy.ID, Name: buy.Name}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		util.HandleError(w, err)
@@ -73,7 +73,7 @@ func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
 		resp[i] = dto.BuyerResponse{ID: b.ID, Name: b.Name}
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Login handles the buyer login request.
@@ -84,17 +84,17 @@ func (h *BuyerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buyer, err := h.loginUseCase.Execute(r.Context(), req.Email, req.Password)
+	buy, err := h.loginUseCase.Execute(r.Context(), req.Email, req.Password)
 	if err != nil {
 		util.HandleError(w, err)
 		return
 	}
-	if buyer == nil {
+	if buy == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	sessionID, err := h.sessionRepo.Create(r.Context(), buyer.ID, model.SessionRoleBuyer)
+	sessionID, err := h.sessionRepo.Create(r.Context(), buy.ID, model.SessionRoleBuyer)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -102,9 +102,9 @@ func (h *BuyerHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	setSessionCookie(w, "buyer_session", sessionID)
 
-	resp := dto.BuyerResponse{ID: buyer.ID, Name: buyer.Name}
+	resp := dto.BuyerResponse{ID: buy.ID, Name: buy.Name}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Logout handles the buyer logout request.
@@ -133,7 +133,7 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buyer, err := h.getBuyerUseCase.Execute(r.Context(), buyerID)
+	buy, err := h.getBuyerUseCase.Execute(r.Context(), buyerID)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -143,7 +143,7 @@ func (h *BuyerHandler) GetCurrentBuyer(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(dto.BuyerMeResponse{
 		Authenticated: true,
 		BuyerID:       buyerID,
-		Name:          buyer.Name,
+		Name:          buy.Name,
 	}); err != nil {
 		util.HandleError(w, err)
 		return
@@ -182,7 +182,7 @@ func (h *BuyerHandler) GetMyPurchases(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // GetMyAuctions handles the request to get the auctions of the authenticated buyer.
@@ -225,7 +225,7 @@ func (h *BuyerHandler) GetMyAuctions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // UpdatePassword handles the password update request for a buyer.

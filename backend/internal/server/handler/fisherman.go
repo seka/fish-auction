@@ -34,15 +34,15 @@ func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fisherman, err := h.createUseCase.Execute(r.Context(), req.Name)
+	fm, err := h.createUseCase.Execute(r.Context(), req.Name)
 	if err != nil {
 		util.HandleError(w, err)
 		return
 	}
 
-	resp := dto.FishermanResponse{ID: fisherman.ID, Name: fisherman.Name}
+	resp := dto.FishermanResponse{ID: fm.ID, Name: fm.Name}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // List handles the request to list fishermen.
@@ -59,7 +59,7 @@ func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Delete handles the fisherman deletion request.

@@ -76,17 +76,17 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auction := &model.Auction{
+	auc := &model.Auction{
 		VenueID: req.VenueID,
 		Status:  model.AuctionStatus(req.Status),
 		Period:  model.NewAuctionPeriod(auctionDate, parseTime(req.StartTime), parseTime(req.EndTime)),
 	}
 
-	if auction.Status == "" {
-		auction.Status = model.AuctionStatusScheduled
+	if auc.Status == "" {
+		auc.Status = model.AuctionStatusScheduled
 	}
 
-	created, err := h.createUseCase.Execute(r.Context(), auction)
+	created, err := h.createUseCase.Execute(r.Context(), auc)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -152,7 +152,7 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Get handles the request to get a specific auction.
@@ -193,7 +193,7 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // GetItems handles the request to get items for a specific auction.
@@ -212,7 +212,8 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := make([]dto.ItemResponse, len(items))
-	for i, item := range items {
+	for i := range items {
+		item := items[i]
 		var highestBid *int
 		if item.HighestBid != nil {
 			amt := item.HighestBid.Amount()
@@ -235,7 +236,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Update handles the request to update a specific auction.
@@ -259,14 +260,14 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auction := &model.Auction{
+	auc := &model.Auction{
 		ID:      id,
 		VenueID: req.VenueID,
 		Status:  model.AuctionStatus(req.Status),
 		Period:  model.NewAuctionPeriod(auctionDate, parseTime(req.StartTime), parseTime(req.EndTime)),
 	}
 
-	if err := h.updateUseCase.Execute(r.Context(), auction); err != nil {
+	if err := h.updateUseCase.Execute(r.Context(), auc); err != nil {
 		util.HandleError(w, err)
 		return
 	}

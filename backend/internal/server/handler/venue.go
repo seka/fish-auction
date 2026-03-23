@@ -40,13 +40,13 @@ func (h *VenueHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	venue := &model.Venue{
+	vn := &model.Venue{
 		Name:        req.Name,
 		Location:    req.Location,
 		Description: req.Description,
 	}
 
-	created, err := h.createUseCase.Execute(r.Context(), venue)
+	created, err := h.createUseCase.Execute(r.Context(), vn)
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -61,7 +61,7 @@ func (h *VenueHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // List handles the request to list venues.
@@ -84,7 +84,7 @@ func (h *VenueHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Get handles the request to get a specific venue.
@@ -111,7 +111,7 @@ func (h *VenueHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Update handles the request to update a specific venue.
@@ -129,14 +129,14 @@ func (h *VenueHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	venue := &model.Venue{
+	vn := &model.Venue{
 		ID:          id,
 		Name:        req.Name,
 		Location:    req.Location,
 		Description: req.Description,
 	}
 
-	if err := h.updateUseCase.Execute(r.Context(), venue); err != nil {
+	if err := h.updateUseCase.Execute(r.Context(), vn); err != nil {
 		util.HandleError(w, err)
 		return
 	}
