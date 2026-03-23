@@ -3,6 +3,7 @@ package postgres_test
 import (
 	"context"
 	"database/sql"
+	"os"
 	"testing"
 	"time"
 
@@ -15,7 +16,11 @@ import (
 )
 
 func getTestDBConnStr() string {
-	return "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=disable"
+	sslMode := os.Getenv("DB_SSLMODE")
+	if sslMode == "" {
+		sslMode = "disable"
+	}
+	return "postgres://postgres:postgres@localhost:5432/fish_auction?sslmode=" + sslMode
 }
 
 // TestItemStore_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.

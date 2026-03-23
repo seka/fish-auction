@@ -82,8 +82,9 @@ func getEnvInt(key string, defaultValue int) int {
 
 // DBConnectionURL returns the PostgreSQL connection string based on the configuration.
 func (c *Config) DBConnectionURL() string {
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName)
+	sslMode := getEnv("DB_SSLMODE", "disable")
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, sslMode)
 }
 
 // SMTPAddress returns the SMTP server address in host:port format.

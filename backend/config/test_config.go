@@ -10,6 +10,7 @@ type TestConfig struct {
 	DBPort     string
 	DBUser     string
 	DBPassword string
+	DBSslMode  string
 }
 
 // LoadTest はテスト用の設定を読み込む
@@ -19,17 +20,18 @@ func LoadTest() *TestConfig {
 		DBPort:     getEnv("DB_PORT", "5432"),
 		DBUser:     getEnv("DB_USER", "postgres"),
 		DBPassword: getEnv("DB_PASSWORD", "postgres"),
+		DBSslMode:  getEnv("DB_SSLMODE", "disable"),
 	}
 }
 
 // AdminConnStr は管理用 DB の接続文字列を返す
 func (c *TestConfig) AdminConnStr() string {
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=disable",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword)
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=postgres sslmode=%s",
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBSslMode)
 }
 
 // TestDBConnStr はテスト用 DB の接続文字列を返す
 func (c *TestConfig) TestDBConnStr(dbName string) string {
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, dbName)
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, dbName, c.DBSslMode)
 }
