@@ -78,6 +78,9 @@ func run() error {
 		handlers.push,
 		sessionRepo,
 		strings.Split(cfg.AllowedOrigins, ","),
+		cfg.ReadTimeoutSec,
+		cfg.WriteTimeoutSec,
+		cfg.IdleTimeoutSec,
 	)
 
 	// Start Server
