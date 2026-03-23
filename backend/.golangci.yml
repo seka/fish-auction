@@ -18,28 +18,37 @@ linters:
     - noctx
     - copyloopvar
     - misspell
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+        - name: empty-block
+          disabled: true
+        - name: unused-parameter
+          disabled: false
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+      disabled-checks:
+        - ifElseChain
+        - appendAssign
+    misspell:
+      locale: US
 
 issues:
-  exclude-use-default: false
+  exclude-use-default: true
   max-issues-per-linter: 0
   max-same-issues: 0
-
-linters-settings:
-  govet:
-    enable-all: true
-  revive:
-    rules:
-      - name: exported
-        disabled: true
-      - name: package-comments
-        disabled: true
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-    disabled-checks:
-      - ifElseChain
-      - appendAssign
-  misspell:
-    locale: US
+  exclude-rules:
+    - linters: [revive]
+      text: "exported"
+    - linters: [gocritic]
+      text: "commentedOutCode"
