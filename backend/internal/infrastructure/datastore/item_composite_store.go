@@ -6,14 +6,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
- // ItemCache defines the interface for Item caching.
+// ItemCache defines the interface for Item caching.
 type ItemCache interface {
 	Get(ctx context.Context, id int) (*model.AuctionItem, error)
 	Set(ctx context.Context, id int, item *model.AuctionItem) error
 	Delete(ctx context.Context, id int) error
 }
 
- // ItemStore defines the interface for Item persistence.
+// ItemStore defines the interface for Item persistence.
 type ItemStore interface {
 	Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 	List(ctx context.Context, status string) ([]model.AuctionItem, error)

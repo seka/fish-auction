@@ -50,7 +50,7 @@ func (r *ItemStore) Create(ctx context.Context, item *model.AuctionItem) (*model
 // List returns all auction items with the given status.
 func (r *ItemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
-	var args []interface{}
+	var args []any
 	if status != "" {
 		query += " AND status = $1"
 		args = append(args, status)

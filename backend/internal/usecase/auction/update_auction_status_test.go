@@ -61,7 +61,7 @@ type mockPushUseCaseForStatusUpdate struct{}
 func (m *mockPushUseCaseForStatusUpdate) Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error {
 	return nil
 }
-func (m *mockPushUseCaseForStatusUpdate) SendNotification(ctx context.Context, buyerID int, payload interface{}) error {
+func (m *mockPushUseCaseForStatusUpdate) SendNotification(ctx context.Context, buyerID int, payload any) error {
 	return nil
 }
 

@@ -18,7 +18,7 @@ func (e *ValidationError) Error() string {
 // NotFoundError represents a resource not found error
 type NotFoundError struct {
 	Resource string
-	ID       interface{}
+	ID       any
 }
 
 func (e *NotFoundError) Error() string {

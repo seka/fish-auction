@@ -6,14 +6,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
- // FishermanCache defines the interface for Fisherman caching.
+// FishermanCache defines the interface for Fisherman caching.
 type FishermanCache interface {
 	Get(ctx context.Context, id int) (*model.Fisherman, error)
-	Set(ctx context.Context, id int, fisherman *model.Fisherman, ) error
+	Set(ctx context.Context, id int, fisherman *model.Fisherman) error
 	Delete(ctx context.Context, id int) error
 }
 
- // FishermanStore defines the interface for Fisherman persistence.
+// FishermanStore defines the interface for Fisherman persistence.
 type FishermanStore interface {
 	Create(ctx context.Context, name string) (*model.Fisherman, error)
 	List(ctx context.Context) ([]model.Fisherman, error)

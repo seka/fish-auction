@@ -171,7 +171,7 @@ func (uc *createBidUseCase) invalidateCache(ctx context.Context, itemID int) {
 func (uc *createBidUseCase) notifyOutbid(ctx context.Context, bid *model.Bid, item *model.AuctionItem) {
 	if item.HighestBidderID != nil && *item.HighestBidderID != bid.BuyerID {
 		log.Printf("Outbid detected. Sending notification to previous bidder (ID: %d). Current bidder (ID: %d)", *item.HighestBidderID, bid.BuyerID)
-		payload := map[string]interface{}{
+		payload := map[string]any{
 			"title": "高値更新されました",
 			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price.Amount()),
 			"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),

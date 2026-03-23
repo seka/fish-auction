@@ -275,7 +275,7 @@ func registerUser(t *testing.T, client *http.Client, urlStr, jsonBody string) in
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("Expected status 200/201, got %d: %s", resp.StatusCode, string(body))
 	}
-	var res map[string]interface{}
+	var res map[string]any
 	json.NewDecoder(resp.Body).Decode(&res)
 	id, ok := res["id"].(float64)
 	if !ok {
@@ -317,7 +317,7 @@ func createResource(t *testing.T, client *http.Client, urlStr, jsonBody string, 
 		t.Fatalf("Expected status 200/201 at %s, got %d: %s", urlStr, resp.StatusCode, string(body))
 	}
 
-	var res map[string]interface{}
+	var res map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		t.Fatalf("Failed to decode response: %v", err)
 	}
@@ -364,7 +364,7 @@ func verifyBid(t *testing.T, client *http.Client, urlStr string, itemID, expecte
 	}
 	defer resp.Body.Close()
 
-	var items []map[string]interface{}
+	var items []map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
 		t.Fatalf("Failed to decode items: %v", err)
 	}

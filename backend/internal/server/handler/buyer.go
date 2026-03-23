@@ -253,6 +253,7 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 // Delete handles the buyer deletion request.
 func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := util.ParseID(r)

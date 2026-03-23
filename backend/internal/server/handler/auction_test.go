@@ -20,7 +20,7 @@ import (
 func TestAuctionHandler_Create(t *testing.T) {
 	type testCase struct {
 		name       string
-		body       interface{} // string or struct
+		body       any // string or struct
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
@@ -325,7 +325,7 @@ func TestAuctionHandler_Update(t *testing.T) {
 	type testCase struct {
 		name       string
 		path       string
-		body       interface{}
+		body       any
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
@@ -417,7 +417,7 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 	type testCase struct {
 		name       string
 		path       string
-		body       interface{}
+		body       any
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}

@@ -59,7 +59,7 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 			name:        "returns true when today's auction end time has passed",
 			status:      AuctionStatusInProgress,
 			auctionDate: today,
-			end:         timePtr(time.Date(0, 1, 1, past.Hour(), past.Minute(), past.Second(), 0, location)),
+			end:         new(time.Date(0, 1, 1, past.Hour(), past.Minute(), past.Second(), 0, location)),
 			want:        true,
 			skip:        past.Day() != now.Day() || past.Month() != now.Month() || past.Year() != now.Year(),
 			skipReason:  "cannot create an earlier same-day time near midnight",
@@ -68,7 +68,7 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 			name:        "returns false when today's auction end time is still ahead",
 			status:      AuctionStatusInProgress,
 			auctionDate: today,
-			end:         timePtr(time.Date(0, 1, 1, future.Hour(), future.Minute(), future.Second(), 0, location)),
+			end:         new(time.Date(0, 1, 1, future.Hour(), future.Minute(), future.Second(), 0, location)),
 			want:        false,
 			skip:        future.Day() != now.Day() || future.Month() != now.Month() || future.Year() != now.Year(),
 			skipReason:  "cannot create a later same-day time near midnight",
@@ -93,6 +93,7 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 	}
 }
 
+//go:fix inline
 func timePtr(t time.Time) *time.Time {
-	return &t
+	return new(t)
 }

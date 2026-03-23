@@ -1,4 +1,4 @@
- // Package datastore provides repository implementations using multiple backends.
+// Package datastore provides repository implementations using multiple backends.
 package datastore
 
 import (
@@ -7,14 +7,14 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
- // BuyerCache defines the interface for Buyer caching.
+// BuyerCache defines the interface for Buyer caching.
 type BuyerCache interface {
 	Get(ctx context.Context, id int) (*model.Buyer, error)
 	Set(ctx context.Context, id int, buyer *model.Buyer) error
 	Delete(ctx context.Context, id int) error
 }
 
- // BuyerStore defines the interface for Buyer persistence.
+// BuyerStore defines the interface for Buyer persistence.
 type BuyerStore interface {
 	Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error)
 	List(ctx context.Context) ([]model.Buyer, error)

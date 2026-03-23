@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"slices"
 )
 
 // CSRFMiddleware protects against Cross-Site Request Forgery.
@@ -48,13 +49,7 @@ func (m *CSRFMiddleware) Handle(next http.Handler) http.Handler {
 		// Sec-Fetch-Site がない場合や古いブラウザ向けの多層防御
 		origin := r.Header.Get("Origin")
 		if origin != "" {
-			allowed := false
-			for _, ao := range m.allowedOrigins {
-				if origin == ao {
-					allowed = true
-					break
-				}
-			}
+			allowed := slices.Contains(m.allowedOrigins, origin)
 			if !allowed {
 				http.Error(w, "Forbidden (Origin mismatch)", http.StatusForbidden)
 				return

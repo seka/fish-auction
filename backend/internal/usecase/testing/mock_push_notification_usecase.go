@@ -8,7 +8,7 @@ import (
 
 type MockPushNotificationUseCase struct {
 	SubscribeFunc        func(ctx context.Context, buyerID int, sub *model.PushSubscription) error
-	SendNotificationFunc func(ctx context.Context, buyerID int, payload interface{}) error
+	SendNotificationFunc func(ctx context.Context, buyerID int, payload any) error
 }
 
 func (m *MockPushNotificationUseCase) Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error {
@@ -18,7 +18,7 @@ func (m *MockPushNotificationUseCase) Subscribe(ctx context.Context, buyerID int
 	return nil
 }
 
-func (m *MockPushNotificationUseCase) SendNotification(ctx context.Context, buyerID int, payload interface{}) error {
+func (m *MockPushNotificationUseCase) SendNotification(ctx context.Context, buyerID int, payload any) error {
 	if m.SendNotificationFunc != nil {
 		return m.SendNotificationFunc(ctx, buyerID, payload)
 	}

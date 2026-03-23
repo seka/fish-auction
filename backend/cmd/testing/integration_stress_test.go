@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"sort"
+	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -76,7 +76,7 @@ func TestLoadTest(t *testing.T) {
 	startTime := time.Now()
 
 	// ワーカー起動
-	for i := 0; i < concurrency; i++ {
+	for range concurrency {
 		wg.Add(1)
 		go worker(&wg, requestChan, stopChan, targetURL, totalWeight, metrics)
 	}
@@ -114,7 +114,7 @@ func sendRequests(duration, totalRequests int, requestChan chan<- struct{}, stop
 		}
 	} else {
 		// リクエスト数指定の場合
-		for i := 0; i < totalRequests; i++ {
+		for range totalRequests {
 			requestChan <- struct{}{}
 		}
 		close(requestChan)
@@ -216,9 +216,7 @@ func printMetrics(t *testing.T, metrics *Metrics, elapsed time.Duration) {
 	metrics.mu.Lock()
 	defer metrics.mu.Unlock()
 
-	sort.Slice(metrics.ResponseTimes, func(i, j int) bool {
-		return metrics.ResponseTimes[i] < metrics.ResponseTimes[j]
-	})
+	slices.Sort(metrics.ResponseTimes)
 
 	total := metrics.TotalRequests
 	success := metrics.SuccessRequests
@@ -284,7 +282,7 @@ func percentile(durations []time.Duration, p int) time.Duration {
 
 // generateFishermanBody は漁師作成用のリクエストボディを生成
 func generateFishermanBody() []byte {
-	body := map[string]interface{}{
+	body := map[string]any{
 		"name": fmt.Sprintf("Fisherman-%d", rand.Intn(10000)),
 	}
 	data, _ := json.Marshal(body)
@@ -293,7 +291,7 @@ func generateFishermanBody() []byte {
 
 // generateBuyerBody は買い手作成用のリクエストボディを生成
 func generateBuyerBody() []byte {
-	body := map[string]interface{}{
+	body := map[string]any{
 		"name": fmt.Sprintf("Buyer-%d", rand.Intn(10000)),
 	}
 	data, _ := json.Marshal(body)

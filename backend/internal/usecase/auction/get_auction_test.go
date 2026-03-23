@@ -91,7 +91,7 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 			mockAuc: &model.Auction{
 				ID:     1,
 				Status: model.AuctionStatusInProgress,
-				Period: model.NewAuctionPeriod(time.Now(), timePtr(time.Now().Add(-2*time.Hour)), timePtr(time.Now().Add(-1*time.Hour))),
+				Period: model.NewAuctionPeriod(time.Now(), new(time.Now().Add(-2*time.Hour)), new(time.Now().Add(-1*time.Hour))),
 			},
 			mockUpdateStatusErr: errors.New("update failed"),
 			wantErr:             true,
@@ -122,6 +122,7 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 	}
 }
 
+//go:fix inline
 func timePtr(t time.Time) *time.Time {
-	return &t
+	return new(t)
 }

@@ -87,7 +87,7 @@ func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 			  FROM auctions`
 
 	var conditions []string
-	var args []interface{}
+	var args []any
 	argIndex := 1
 
 	if filters != nil {

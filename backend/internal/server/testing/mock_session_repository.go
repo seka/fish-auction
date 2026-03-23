@@ -7,12 +7,12 @@ import (
 )
 
 type MockSessionRepository struct {
-	CreateFunc         func(ctx context.Context, userID int, role model.SessionRole) (string, error)
-	FindByIDFunc       func(ctx context.Context, sessionID string) (*model.Session, error)
-	DeleteFunc         func(ctx context.Context, sessionID string) error
-	Sessions           map[string]*model.Session
-	NextSessionID      string
-	DeletedSessionIDs  []string
+	CreateFunc        func(ctx context.Context, userID int, role model.SessionRole) (string, error)
+	FindByIDFunc      func(ctx context.Context, sessionID string) (*model.Session, error)
+	DeleteFunc        func(ctx context.Context, sessionID string) error
+	Sessions          map[string]*model.Session
+	NextSessionID     string
+	DeletedSessionIDs []string
 }
 
 func (m *MockSessionRepository) Create(ctx context.Context, userID int, role model.SessionRole) (string, error) {

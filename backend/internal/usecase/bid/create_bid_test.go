@@ -21,8 +21,9 @@ func bpp(amount int) *model.BidPrice {
 	return &p
 }
 
+//go:fix inline
 func intPtr(i int) *int {
-	return &i
+	return new(i)
 }
 
 func TestCreateBidUseCase_Execute(t *testing.T) {
@@ -285,7 +286,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				AuctionID:       1,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: intPtr(1),
+				HighestBidderID: new(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -310,7 +311,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				ID:              1,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: intPtr(1),
+				HighestBidderID: new(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -388,7 +389,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 			notificationCalled := false
 			mockPushUseCase := &mock.MockPushNotificationUseCase{
-				SendNotificationFunc: func(ctx context.Context, buyerID int, payload interface{}) error {
+				SendNotificationFunc: func(ctx context.Context, buyerID int, payload any) error {
 					notificationCalled = true
 					return nil
 				},

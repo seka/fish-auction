@@ -17,14 +17,14 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
-func withBuyerID(req *http.Request, buyerID interface{}) *http.Request {
+func withBuyerID(req *http.Request, buyerID any) *http.Request {
 	return req.WithContext(context.WithValue(req.Context(), middleware.BuyerIDKey, buyerID))
 }
 
 func TestBuyerHandler_Create(t *testing.T) {
 	type testCase struct {
 		name       string
-		body       interface{}
+		body       any
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
@@ -96,7 +96,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 func TestBuyerHandler_Login(t *testing.T) {
 	type testCase struct {
 		name         string
-		body         interface{}
+		body         any
 		mockSetup    func(*mock.MockRegistry)
 		wantStatus   int
 		expectCookie bool
@@ -178,17 +178,17 @@ func TestBuyerHandler_Login(t *testing.T) {
 
 func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 	type testCase struct {
-		name       string
-		ctxValue    interface{}
+		name        string
+		ctxValue    any
 		withContext bool
-		mockSetup  func(*mock.MockRegistry)
-		wantStatus int
+		mockSetup   func(*mock.MockRegistry)
+		wantStatus  int
 	}
 
 	tests := []testCase{
 		{
-			name:    "Success",
-			ctxValue: 1,
+			name:        "Success",
+			ctxValue:    1,
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerPurchasesUC = &mock.MockGetBuyerPurchasesUseCase{
@@ -208,8 +208,8 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name:    "UseCaseError",
-			ctxValue: 1,
+			name:        "UseCaseError",
+			ctxValue:    1,
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerPurchasesUC = &mock.MockGetBuyerPurchasesUseCase{
@@ -294,14 +294,14 @@ func TestBuyerHandler_List(t *testing.T) {
 
 func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 	type testCase struct {
-		name       string
+		name        string
 		withContext bool
-		mockSetup  func(*mock.MockRegistry)
-		wantStatus int
+		mockSetup   func(*mock.MockRegistry)
+		wantStatus  int
 	}
 	tests := []testCase{
 		{
-			name:    "Success",
+			name:        "Success",
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerUC = &mock.MockGetBuyerUseCase{
@@ -341,16 +341,16 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 
 func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 	type testCase struct {
-		name       string
-		ctxValue    interface{}
+		name        string
+		ctxValue    any
 		withContext bool
-		mockSetup  func(*mock.MockRegistry)
-		wantStatus int
+		mockSetup   func(*mock.MockRegistry)
+		wantStatus  int
 	}
 	tests := []testCase{
 		{
-			name:    "Success",
-			ctxValue: 1,
+			name:        "Success",
+			ctxValue:    1,
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerAuctionsUC = &mock.MockGetBuyerAuctionsUseCase{
@@ -389,18 +389,18 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 
 func TestBuyerHandler_UpdatePassword(t *testing.T) {
 	type testCase struct {
-		name       string
+		name        string
 		withContext bool
-		body       interface{}
-		mockSetup  func(*mock.MockRegistry)
-		wantStatus int
+		body        any
+		mockSetup   func(*mock.MockRegistry)
+		wantStatus  int
 	}
 
 	tests := []testCase{
 		{
-			name:    "Success",
+			name:        "Success",
 			withContext: true,
-			body:    dto.UpdatePasswordRequest{CurrentPassword: "old", NewPassword: "new"},
+			body:        dto.UpdatePasswordRequest{CurrentPassword: "old", NewPassword: "new"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateBuyerPasswordUC = &mock.MockBuyerUpdatePasswordUseCase{
 					ExecuteFunc: func(ctx context.Context, id int, c, n string) error { return nil },
@@ -409,11 +409,11 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:       "InvalidJSON",
+			name:        "InvalidJSON",
 			withContext: true,
-			body:       "invalid",
-			mockSetup:  func(r *mock.MockRegistry) {},
-			wantStatus: http.StatusInternalServerError,
+			body:        "invalid",
+			mockSetup:   func(r *mock.MockRegistry) {},
+			wantStatus:  http.StatusInternalServerError,
 		},
 		{
 			name:       "Unauthorized_NoContext",

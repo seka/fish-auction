@@ -38,9 +38,9 @@ type Repository interface {
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db       datastore.Database
-	cache    datastore.Cache
-	cacheTTL time.Duration
+	db         datastore.Database
+	cache      datastore.Cache
+	cacheTTL   time.Duration
 	sessionTTL time.Duration
 }
 

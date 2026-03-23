@@ -152,15 +152,16 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 			buyerRepo := &mockBuyerRepository{buyer: tt.mockBuyer, err: tt.mockRepoErr}
 			resetRepo := &mockBuyerPasswordResetRepository{}
-			if tt.name == "Success" {
+			switch tt.name {
+			case "Success":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(nil)
-			} else if tt.name == "DeleteTokenError" {
+			case "DeleteTokenError":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(errors.New("delete failed"))
-			} else if tt.name == "CreateTokenError" {
+			case "CreateTokenError":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(errors.New("create failed"))
-			} else if tt.name == "EmailError" {
+			case "EmailError":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(nil)
 			}

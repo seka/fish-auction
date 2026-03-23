@@ -28,11 +28,11 @@ func NewAdminEmailService(cfg *config.Config, loader templates.TemplateProvider)
 }
 
 func (s *adminEmailService) send(to, subject, body string) error {
-	msg := []byte(fmt.Sprintf("To: %s\r\n"+
+	msg := fmt.Appendf(nil, "To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
 		"\r\n"+
-		"%s", to, subject, body))
+		"%s", to, subject, body)
 
 	addr := fmt.Sprintf("%s:%s", s.cfg.SMTPHost, s.cfg.SMTPPort)
 	// MailHog doesn't require auth

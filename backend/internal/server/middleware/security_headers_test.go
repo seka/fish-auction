@@ -22,14 +22,14 @@ func TestSecurityHeadersMiddleware(t *testing.T) {
 	res := rr.Result()
 
 	expectedHeaders := map[string]string{
-		"Content-Security-Policy":             "default-src 'none'; frame-ancestors 'none'",
-		"Strict-Transport-Security":           "max-age=631138519",
-		"X-Content-Type-Options":              "nosniff",
-		"X-Download-Options":                  "noopen",
-		"X-Frame-Options":                     "DENY",
+		"Content-Security-Policy":           "default-src 'none'; frame-ancestors 'none'",
+		"Strict-Transport-Security":         "max-age=631138519",
+		"X-Content-Type-Options":            "nosniff",
+		"X-Download-Options":                "noopen",
+		"X-Frame-Options":                   "DENY",
 		"X-Permitted-Cross-Domain-Policies": "none",
-		"X-XSS-Protection":                    "0",
-		"Referrer-Policy":                     "strict-origin-when-cross-origin",
+		"X-XSS-Protection":                  "0",
+		"Referrer-Policy":                   "strict-origin-when-cross-origin",
 	}
 
 	for key, expectedValue := range expectedHeaders {

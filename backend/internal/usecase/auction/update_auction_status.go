@@ -58,7 +58,7 @@ func (uc *updateAuctionStatusUseCase) Execute(ctx context.Context, id int, statu
 				body = "オークションが終了しました。結果をご確認ください。"
 			}
 
-			payload := map[string]interface{}{
+			payload := map[string]any{
 				"title": title,
 				"body":  body,
 				"url":   "/auctions",

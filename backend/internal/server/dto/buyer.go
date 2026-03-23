@@ -35,6 +35,7 @@ type PurchaseResponse struct {
 	AuctionDate string `json:"auction_date"`
 	CreatedAt   string `json:"created_at"`
 }
+
 // BuyerMeResponse represents the response body for the current authenticated buyer.
 type BuyerMeResponse struct {
 	Authenticated bool   `json:"authenticated"`

@@ -16,7 +16,7 @@ import (
 // resourceName is used for formatting NotFoundError
 // resourceID is used for formatting NotFoundError
 // errCtxMessage is used to prefix the original error when converted to a standard error.
-func HandleError(err error, resourceName string, resourceID interface{}, errCtxMessage string) error {
+func HandleError(err error, resourceName string, resourceID any, errCtxMessage string) error {
 	if err == nil {
 		return nil
 	}
