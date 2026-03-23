@@ -40,6 +40,7 @@ type Server struct {
 	cacheControl          *middleware.CacheControlMiddleware
 	gzip                  *middleware.GzipMiddleware
 	maxBody               *middleware.MaxBodyMiddleware
+	recovery              *middleware.RecoveryMiddleware
 }
 
 func NewServer(
@@ -82,6 +83,7 @@ func NewServer(
 		cacheControl:          middleware.NewCacheControlMiddleware(),
 		gzip:                  middleware.NewGzipMiddleware(),
 		maxBody:               middleware.NewMaxBodyMiddleware(1024 * 1024), // 1MB
+		recovery:              middleware.NewRecoveryMiddleware(),
 	}
 	s.routes()
 	return s
@@ -280,17 +282,18 @@ func (s *Server) Start(addr string) error {
 	if addr == "" {
 		addr = ":8080"
 	}
-	
+
 	handlerWithCORS := s.cors.Handle(s.router)
 	handlerWithHeaders := s.securityHeaders.Handle(handlerWithCORS)
 	handlerWithCSRF := s.csrf.Handle(handlerWithHeaders)
 	handlerWithCache := s.cacheControl.Handle(handlerWithCSRF)
 	handlerWithGzip := s.gzip.Handle(handlerWithCache)
 	handlerWithLimit := s.maxBody.Handle(handlerWithGzip)
+	handlerWithRecovery := s.recovery.Handle(handlerWithLimit)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,
-		Handler:           handlerWithLimit,
+		Handler:           handlerWithRecovery,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
