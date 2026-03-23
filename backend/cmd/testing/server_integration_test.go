@@ -41,7 +41,7 @@ func TestServerIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to connect to admin database: %v", err)
 	}
-	defer adminDB.Close()
+	defer func() { _ = adminDB.Close() }()
 
 	// 4. テスト用 DB を作成
 	if err := createTestDatabase(adminDB, testDBName); err != nil {
@@ -73,7 +73,7 @@ func TestServerIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	serviceReg := registry.NewServiceRegistry(appCfg)
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg)
@@ -130,7 +130,7 @@ func TestServerIntegration(t *testing.T) {
 
 	// 10. Health エンドポイントをテスト
 	t.Run("Health", func(t *testing.T) {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, serverURL+"/api/health", nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, serverURL+"/api/health", http.NoBody)
 		if err != nil {
 			t.Fatalf("failed to create request: %v", err)
 		}
@@ -138,7 +138,7 @@ func TestServerIntegration(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to call health endpoint: %v", err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -177,7 +177,7 @@ func TestServerIntegration(t *testing.T) {
 		// StartTime 00:00, EndTime 23:59
 		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 		auctionDate := time.Now().In(jst).Format("2006-01-02")
-		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": "%s", "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
+		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": %q, "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
 
 		// 8. Create Item (as Admin)
 		// POST /api/admin/items
@@ -214,21 +214,21 @@ func TestServerIntegration(t *testing.T) {
 
 // createTestDatabase はテスト用 DB を作成
 func createTestDatabase(db *sql.DB, dbName string) error {
-	_, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s", dbName))
+	_, err := db.ExecContext(context.Background(), fmt.Sprintf("CREATE DATABASE %s", dbName))
 	return err
 }
 
 // dropTestDatabase はテスト用 DB を削除
 func dropTestDatabase(db *sql.DB, dbName string) error {
-	// アクティブな接続を切断
-	_, _ = db.Exec(fmt.Sprintf(`
+	//nolint:bodyclose,noctx // アクティブな接続を切断するため意図的にクローズしない。テスト用DB削除のため Context は使用しない（または Background を使う）
+	_, _ = db.ExecContext(context.Background(), fmt.Sprintf(`
 		SELECT pg_terminate_backend(pg_stat_activity.pid)
 		FROM pg_stat_activity
 		WHERE pg_stat_activity.datname = '%s'
 		AND pid <> pg_backend_pid()
 	`, dbName))
 
-	_, err := db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", dbName))
+	_, err := db.ExecContext(context.Background(), fmt.Sprintf("DROP DATABASE IF EXISTS %s", dbName))
 	return err
 }
 
@@ -246,13 +246,13 @@ func waitForServer(url string) error {
 		case <-timeout:
 			return fmt.Errorf("timeout waiting for server to start")
 		case <-ticker.C:
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 			if err != nil {
 				return fmt.Errorf("failed to create request: %w", err)
 			}
 			resp, err := http.DefaultClient.Do(req)
 			if err == nil {
-				resp.Body.Close()
+				_ = resp.Body.Close()
 				if resp.StatusCode == http.StatusOK {
 					return nil
 				}
@@ -266,17 +266,22 @@ func waitForServer(url string) error {
 // Helper functions (registerUser, login, etc) follow...
 
 func registerUser(t *testing.T, client *http.Client, urlStr, jsonBody string) int {
-	resp, err := client.Post(urlStr, "application/json", strings.NewReader(jsonBody))
+	req, err := http.NewRequestWithContext(context.Background(), "POST", urlStr, strings.NewReader(jsonBody))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to register: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("Expected status 200/201, got %d: %s", resp.StatusCode, string(body))
 	}
 	var res map[string]any
-	json.NewDecoder(resp.Body).Decode(&res)
+	_ = json.NewDecoder(resp.Body).Decode(&res)
 	id, ok := res["id"].(float64)
 	if !ok {
 		// Try to parse from response if ID is not top level or different format
@@ -288,11 +293,16 @@ func registerUser(t *testing.T, client *http.Client, urlStr, jsonBody string) in
 }
 
 func login(t *testing.T, client *http.Client, urlStr, jsonBody string) []*http.Cookie {
-	resp, err := client.Post(urlStr, "application/json", strings.NewReader(jsonBody))
+	req, err := http.NewRequestWithContext(context.Background(), "POST", urlStr, strings.NewReader(jsonBody))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to login: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("Expected status 200, got %d: %s", resp.StatusCode, string(body))
@@ -301,7 +311,7 @@ func login(t *testing.T, client *http.Client, urlStr, jsonBody string) []*http.C
 }
 
 func createResource(t *testing.T, client *http.Client, urlStr, jsonBody string, cookies []*http.Cookie) int {
-	req, _ := http.NewRequest("POST", urlStr, strings.NewReader(jsonBody))
+	req, _ := http.NewRequestWithContext(context.Background(), "POST", urlStr, strings.NewReader(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	for _, c := range cookies {
 		req.AddCookie(c)
@@ -311,7 +321,7 @@ func createResource(t *testing.T, client *http.Client, urlStr, jsonBody string, 
 	if err != nil {
 		t.Fatalf("Failed to create resource at %s: %v", urlStr, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("Expected status 200/201 at %s, got %d: %s", urlStr, resp.StatusCode, string(body))
@@ -329,7 +339,7 @@ func createResource(t *testing.T, client *http.Client, urlStr, jsonBody string, 
 }
 
 func postResource(t *testing.T, client *http.Client, urlStr, jsonBody string, cookies []*http.Cookie) {
-	req, _ := http.NewRequest("POST", urlStr, strings.NewReader(jsonBody))
+	req, _ := http.NewRequestWithContext(context.Background(), "POST", urlStr, strings.NewReader(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	for _, c := range cookies {
 		req.AddCookie(c)
@@ -339,7 +349,7 @@ func postResource(t *testing.T, client *http.Client, urlStr, jsonBody string, co
 	if err != nil {
 		t.Fatalf("Failed to POST to %s: %v", urlStr, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("Expected status 200/201 at %s, got %d: %s", urlStr, resp.StatusCode, string(body))
@@ -347,22 +357,30 @@ func postResource(t *testing.T, client *http.Client, urlStr, jsonBody string, co
 }
 
 func listResources(t *testing.T, client *http.Client, urlStr string) {
-	resp, err := client.Get(urlStr)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", urlStr, http.NoBody)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to list resources at %s: %v", urlStr, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status 200, got %d", resp.StatusCode)
 	}
 }
 
 func verifyBid(t *testing.T, client *http.Client, urlStr string, itemID, expectedPrice int) {
-	resp, err := client.Get(urlStr)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", urlStr, http.NoBody)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to get details at %s: %v", urlStr, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var items []map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
@@ -393,7 +411,7 @@ func seedAdmin(t *testing.T, db *sql.DB, email, password string) {
 		t.Fatalf("Failed to hash password: %v", err)
 	}
 	// Correct column is password_hash
-	_, err = db.Exec("INSERT INTO admins (email, password_hash, created_at) VALUES ($1, $2, NOW())", email, string(hash))
+	_, err = db.ExecContext(context.Background(), "INSERT INTO admins (email, password_hash, created_at) VALUES ($1, $2, NOW())", email, string(hash))
 	if err != nil {
 		t.Fatalf("Failed to seed admin: %v", err)
 	}

@@ -1,11 +1,12 @@
 package testing
 
 import (
+	"context"
 	"bytes"
-	"encoding/json"
+	"crypto/rand"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"os"
 	"slices"
@@ -122,7 +123,7 @@ func sendRequests(duration, totalRequests int, requestChan chan<- struct{}, stop
 }
 
 // worker は並行してリクエストを送信するワーカー
-func worker(wg *sync.WaitGroup, requestChan <-chan struct{}, stopChan <-chan struct{}, targetURL string, totalWeight int, metrics *Metrics) {
+func worker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL string, totalWeight int, metrics *Metrics) {
 	defer wg.Done()
 
 	client := &http.Client{
@@ -166,7 +167,14 @@ func worker(wg *sync.WaitGroup, requestChan <-chan struct{}, stopChan <-chan str
 
 // selectEndpoint は重みに基づいてランダムにエンドポイントを選択
 func selectEndpoint(totalWeight int) Endpoint {
-	r := rand.Intn(totalWeight)
+	if totalWeight <= 0 {
+		return endpoints[0]
+	}
+	rBig, err := rand.Int(rand.Reader, big.NewInt(int64(totalWeight)))
+	if err != nil {
+		return endpoints[0]
+	}
+	r := int(rBig.Int64())
 	cumulative := 0
 
 	for _, ep := range endpoints {
@@ -186,7 +194,7 @@ func sendRequest(client *http.Client, baseURL string, endpoint Endpoint) error {
 		body = bytes.NewReader(endpoint.Body())
 	}
 
-	req, err := http.NewRequest(endpoint.Method, baseURL+endpoint.Path, body)
+	req, err := http.NewRequestWithContext(context.Background(), endpoint.Method, baseURL+endpoint.Path, body)
 	if err != nil {
 		return err
 	}
@@ -199,7 +207,7 @@ func sendRequest(client *http.Client, baseURL string, endpoint Endpoint) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// レスポンスボディを読み捨て
 	_, _ = io.Copy(io.Discard, resp.Body)
@@ -232,16 +240,16 @@ func printMetrics(t *testing.T, metrics *Metrics, elapsed time.Duration) {
 	t.Logf("Throughput:         %.2f req/s", throughput)
 
 	if len(metrics.ResponseTimes) > 0 {
-		min := metrics.ResponseTimes[0]
-		max := metrics.ResponseTimes[len(metrics.ResponseTimes)-1]
+		minTime := metrics.ResponseTimes[0]
+		maxTime := metrics.ResponseTimes[len(metrics.ResponseTimes)-1]
 		mean := calculateMean(metrics.ResponseTimes)
 		p50 := percentile(metrics.ResponseTimes, 50)
 		p95 := percentile(metrics.ResponseTimes, 95)
 		p99 := percentile(metrics.ResponseTimes, 99)
 
 		t.Logf("\nResponse Times:")
-		t.Logf("  Min:              %s", min.Round(time.Millisecond))
-		t.Logf("  Max:              %s", max.Round(time.Millisecond))
+		t.Logf("  Min:              %s", minTime.Round(time.Millisecond))
+		t.Logf("  Max:              %s", maxTime.Round(time.Millisecond))
 		t.Logf("  Mean:             %s", mean.Round(time.Millisecond))
 		t.Logf("  P50:              %s", p50.Round(time.Millisecond))
 		t.Logf("  P95:              %s", p95.Round(time.Millisecond))
@@ -280,23 +288,6 @@ func percentile(durations []time.Duration, p int) time.Duration {
 	return durations[index]
 }
 
-// generateFishermanBody は漁師作成用のリクエストボディを生成
-func generateFishermanBody() []byte {
-	body := map[string]any{
-		"name": fmt.Sprintf("Fisherman-%d", rand.Intn(10000)),
-	}
-	data, _ := json.Marshal(body)
-	return data
-}
-
-// generateBuyerBody は買い手作成用のリクエストボディを生成
-func generateBuyerBody() []byte {
-	body := map[string]any{
-		"name": fmt.Sprintf("Buyer-%d", rand.Intn(10000)),
-	}
-	data, _ := json.Marshal(body)
-	return data
-}
 
 // getEnv は環境変数を取得（デフォルト値あり）
 func getEnv(key, defaultValue string) string {
