@@ -18,33 +18,42 @@ import (
 var seedSQL string
 
 func main() {
+	if err := run(); err != nil {
+		log.Printf("Error: %v", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	// Check APP_ENV explicitly
 	appEnv := os.Getenv("APP_ENV")
 	if appEnv == "" {
-		log.Fatal("APP_ENV environment variable is required")
+		return fmt.Errorf("APP_ENV environment variable is required")
 	}
 
 	// Load Config
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("Failed to load config:", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Safety check: Only run in development
 	if cfg.AppEnv != "development" && cfg.AppEnv != "test" {
-		log.Fatalf("Seed command is only allowed in 'development' or 'test' environments. Current environment: %s", cfg.AppEnv)
+		return fmt.Errorf("seed command is only allowed in 'development' or 'test' environments. Current environment: %s", cfg.AppEnv)
 	}
+
+	ctx := context.Background()
 
 	// Connect to DB
 	connStr := cfg.DBConnectionURL()
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
-	if err := db.Ping(); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
+	if err := db.PingContext(ctx); err != nil {
+		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
 	fmt.Println("Connected to database. Environment:", cfg.AppEnv)
@@ -62,7 +71,7 @@ func main() {
 	}
 
 	for _, table := range tables {
-		_, err := db.Exec(fmt.Sprintf("TRUNCATE TABLE %s CASCADE", table))
+		_, err := db.ExecContext(ctx, fmt.Sprintf("TRUNCATE TABLE %s CASCADE", table))
 		if err != nil {
 			// Ignore error if table doesn't exist, but log it
 			log.Printf("Warning: failed to truncate table %s: %v", table, err)
@@ -72,30 +81,31 @@ func main() {
 
 	// Run Seed Migration
 	fmt.Println("Seeding database...")
-	_, err = db.Exec(seedSQL)
+	_, err = db.ExecContext(ctx, seedSQL)
 	if err != nil {
-		log.Fatalf("Failed to execute seed SQL: %v", err)
+		return fmt.Errorf("failed to execute seed SQL: %w", err)
 	}
 
 	// Create Default Admin
 	fmt.Println("Creating default admin...")
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
-	ctx := context.Background()
 
 	count, err := uc.Count(ctx)
-	if err != nil {
+	switch {
+	case err != nil:
 		log.Printf("Failed to count admins: %v", err)
-	} else if count > 0 {
+	case count > 0:
 		fmt.Printf("Admin user(s) found (%d). Skipping default admin creation.\n", count)
-	} else {
+	default:
 		email := "admin@example.com"
 		password := "admin-password"
 		if _, err = uc.Execute(ctx, email, password); err != nil {
-			log.Fatalf("Failed to create admin: %v", err)
+			return fmt.Errorf("failed to create admin: %w", err)
 		}
 		fmt.Printf("Successfully created default admin user: %s\n", email)
 	}
 
 	fmt.Println("Database seeded successfully!")
+	return nil
 }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	_ "github.com/lib/pq"
@@ -29,18 +31,25 @@ type handlers struct {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Printf("Error: %v", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	// Load Config
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("Failed to load config:", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
 	repoReg, db, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Initialize Service Registry
 	serviceReg := registry.NewServiceRegistry(cfg)
@@ -73,8 +82,9 @@ func main() {
 
 	// Start Server
 	if err := srv.Start(cfg.ServerAddress); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		return fmt.Errorf("failed to start server: %w", err)
 	}
+	return nil
 }
 
 func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepository) *handlers {
