@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
@@ -71,6 +72,9 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hPush,
 		sessionRepo,
 		[]string{"http://localhost:3000"},
+		10*time.Second,
+		10*time.Second,
+		10*time.Second,
 	)
 
 	tests := []struct {

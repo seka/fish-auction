@@ -111,6 +111,9 @@ func TestServerIntegration(t *testing.T) {
 		pushHandler,
 		sessionRepo,
 		[]string{"http://localhost:3000"},
+		time.Minute,
+		time.Minute,
+		time.Minute,
 	)
 
 	// 8. サーバーを goroutine で起動
