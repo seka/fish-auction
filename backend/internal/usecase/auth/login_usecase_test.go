@@ -16,7 +16,7 @@ type mockAdminRepository struct {
 	err   error
 }
 
-func (m *mockAdminRepository) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+func (m *mockAdminRepository) FindByID(_ context.Context, id int) (*model.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -26,7 +26,7 @@ func (m *mockAdminRepository) FindByID(ctx context.Context, id int) (*model.Admi
 	return nil, &apperrors.NotFoundError{Resource: "Admin", ID: id}
 }
 
-func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+func (m *mockAdminRepository) FindOneByEmail(_ context.Context, email string) (*model.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -37,15 +37,15 @@ func (m *mockAdminRepository) FindOneByEmail(ctx context.Context, email string) 
 	return nil, &apperrors.NotFoundError{Resource: "Admin", ID: 0}
 }
 
-func (m *mockAdminRepository) Create(ctx context.Context, admin *model.Admin) error {
+func (m *mockAdminRepository) Create(_ context.Context, _ *model.Admin) error {
 	return nil
 }
 
-func (m *mockAdminRepository) Count(ctx context.Context) (int, error) {
+func (m *mockAdminRepository) Count(_ context.Context) (int, error) {
 	return 0, nil
 }
 
-func (m *mockAdminRepository) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
+func (m *mockAdminRepository) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return nil
 }
 

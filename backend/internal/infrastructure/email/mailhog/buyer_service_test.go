@@ -56,7 +56,7 @@ func TestBuyerEmailService(t *testing.T) {
 
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				restore := setSendMailFunc(func(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
+				restore := setSendMailFunc(func(_ string, _ smtp.Auth, _ string, _ []string, _ []byte) error {
 					if tt.mockSendErr != nil {
 						return tt.mockSendErr
 					}

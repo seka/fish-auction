@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,7 +26,7 @@ func TestAdminAuthMiddleware_Success(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/api/admin/fishermen", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/fishermen", nil)
 	req.AddCookie(&http.Cookie{Name: "admin_session", Value: "admin-session-1"})
 	w := httptest.NewRecorder()
 
@@ -44,11 +45,11 @@ func TestAdminAuthMiddleware_RoleMismatch(t *testing.T) {
 	}
 	mw := NewAdminAuthMiddleware(sessionRepo)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/admin/fishermen", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/fishermen", nil)
 	req.AddCookie(&http.Cookie{Name: "admin_session", Value: "buyer-session-1"})
 	w := httptest.NewRecorder()
 
-	mw.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).ServeHTTP(w, req)
+	mw.Handle(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {})).ServeHTTP(w, req)
 
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status 401, got %d", w.Code)
@@ -71,7 +72,7 @@ func TestBuyerAuthMiddleware_Success(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/api/buyer/me", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/buyer/me", nil)
 	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
 	w := httptest.NewRecorder()
 

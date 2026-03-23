@@ -14,28 +14,28 @@ type mockAuctionRepoForUpdate struct {
 	err error
 }
 
-func (m *mockAuctionRepoForUpdate) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
+func (m *mockAuctionRepoForUpdate) Create(_ context.Context, _ *model.Auction) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForUpdate) FindByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForUpdate) FindByID(_ context.Context, _ int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForUpdate) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForUpdate) FindByIDWithLock(_ context.Context, _ int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForUpdate) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+func (m *mockAuctionRepoForUpdate) List(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForUpdate) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
+func (m *mockAuctionRepoForUpdate) ListByVenue(_ context.Context, _ int) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForUpdate) Update(ctx context.Context, auction *model.Auction) error {
+func (m *mockAuctionRepoForUpdate) Update(_ context.Context, _ *model.Auction) error {
 	return m.err
 }
-func (m *mockAuctionRepoForUpdate) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
+func (m *mockAuctionRepoForUpdate) UpdateStatus(_ context.Context, _ int, _ model.AuctionStatus) error {
 	return nil
 }
-func (m *mockAuctionRepoForUpdate) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockAuctionRepoForUpdate) Delete(_ context.Context, _ int) error { return nil }
 
 func TestUpdateAuctionUseCase_Execute(t *testing.T) {
 	tests := []struct {

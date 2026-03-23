@@ -15,7 +15,7 @@ import (
 func TestInvoiceHandler_List(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockListUC := &mock.MockListInvoicesUseCase{
-			ExecuteFunc: func(ctx context.Context) ([]model.InvoiceItem, error) {
+			ExecuteFunc: func(_ context.Context) ([]model.InvoiceItem, error) {
 				return []model.InvoiceItem{
 					{BuyerID: 1, BuyerName: "B1", TotalAmount: 100},
 				}, nil
@@ -24,7 +24,7 @@ func TestInvoiceHandler_List(t *testing.T) {
 		mockReg := &mock.MockRegistry{ListInvoicesUC: mockListUC}
 		h := handler.NewInvoiceHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/invoices", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/invoices", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -36,14 +36,14 @@ func TestInvoiceHandler_List(t *testing.T) {
 
 	t.Run("UseCaseError", func(t *testing.T) {
 		mockListUC := &mock.MockListInvoicesUseCase{
-			ExecuteFunc: func(ctx context.Context) ([]model.InvoiceItem, error) {
+			ExecuteFunc: func(_ context.Context) ([]model.InvoiceItem, error) {
 				return nil, errors.New("db error")
 			},
 		}
 		mockReg := &mock.MockRegistry{ListInvoicesUC: mockListUC}
 		h := handler.NewInvoiceHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/invoices", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/invoices", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -61,7 +61,7 @@ func TestInvoiceHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequest(http.MethodPut, "/api/invoices", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/invoices", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)

@@ -33,7 +33,7 @@ func NewRequestPasswordResetUseCase(
 	buyerRepo repository.BuyerRepository,
 	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.BuyerEmailService,
-) *requestPasswordResetUseCase {
+) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		buyerRepo:    buyerRepo,
 		pwdResetRepo: pwdResetRepo,

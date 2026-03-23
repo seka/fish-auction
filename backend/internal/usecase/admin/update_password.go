@@ -23,7 +23,7 @@ type updatePasswordUseCase struct {
 }
 
 // NewUpdatePasswordUseCase creates a new UpdatePasswordUseCase instance.
-func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository, sessionRepo repository.SessionRepository) *updatePasswordUseCase {
+func NewUpdatePasswordUseCase(adminRepo repository.AdminRepository, sessionRepo repository.SessionRepository) UpdatePasswordUseCase {
 	return &updatePasswordUseCase{
 		adminRepo:   adminRepo,
 		sessionRepo: sessionRepo,

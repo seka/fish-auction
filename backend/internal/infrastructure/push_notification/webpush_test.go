@@ -32,7 +32,7 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		orig := webpushSendNotification
 		defer func() { webpushSendNotification = orig }()
 
-		webpushSendNotification = func(message []byte, s *webpush.Subscription, options *webpush.Options) (*http.Response, error) {
+		webpushSendNotification = func(_ []byte, _ *webpush.Subscription, _ *webpush.Options) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewBufferString("")),
@@ -51,7 +51,7 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		orig := webpushSendNotification
 		defer func() { webpushSendNotification = orig }()
 
-		webpushSendNotification = func(message []byte, s *webpush.Subscription, options *webpush.Options) (*http.Response, error) {
+		webpushSendNotification = func(_ []byte, _ *webpush.Subscription, _ *webpush.Options) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusGone,
 				Body:       io.NopCloser(bytes.NewBufferString("")),
@@ -70,7 +70,7 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		orig := webpushSendNotification
 		defer func() { webpushSendNotification = orig }()
 
-		webpushSendNotification = func(message []byte, s *webpush.Subscription, options *webpush.Options) (*http.Response, error) {
+		webpushSendNotification = func(_ []byte, _ *webpush.Subscription, _ *webpush.Options) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusNotFound,
 				Body:       io.NopCloser(bytes.NewBufferString("")),
@@ -89,7 +89,7 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		orig := webpushSendNotification
 		defer func() { webpushSendNotification = orig }()
 
-		webpushSendNotification = func(message []byte, s *webpush.Subscription, options *webpush.Options) (*http.Response, error) {
+		webpushSendNotification = func(_ []byte, _ *webpush.Subscription, _ *webpush.Options) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Body:       io.NopCloser(bytes.NewBufferString("")),
@@ -109,7 +109,7 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		defer func() { webpushSendNotification = orig }()
 
 		expectedErr := errors.New("network error")
-		webpushSendNotification = func(message []byte, s *webpush.Subscription, options *webpush.Options) (*http.Response, error) {
+		webpushSendNotification = func(_ []byte, _ *webpush.Subscription, _ *webpush.Options) (*http.Response, error) {
 			return nil, expectedErr
 		}
 

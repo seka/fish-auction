@@ -17,31 +17,31 @@ type mockAuthRepositoryForReset struct {
 	err error
 }
 
-func (m *mockAuthRepositoryForReset) Login(ctx context.Context, email, password string) (*model.Buyer, error) {
+func (m *mockAuthRepositoryForReset) Login(_ context.Context, _, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockAuthRepositoryForReset) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
+func (m *mockAuthRepositoryForReset) Create(_ context.Context, _ *model.Authentication) (*model.Authentication, error) {
 	return nil, nil
 }
-func (m *mockAuthRepositoryForReset) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
+func (m *mockAuthRepositoryForReset) FindByEmail(_ context.Context, _ string) (*model.Authentication, error) {
 	return nil, nil
 }
-func (m *mockAuthRepositoryForReset) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
+func (m *mockAuthRepositoryForReset) FindByBuyerID(_ context.Context, _ int) (*model.Authentication, error) {
 	return nil, nil
 }
-func (m *mockAuthRepositoryForReset) UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error {
+func (m *mockAuthRepositoryForReset) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAuthRepositoryForReset) IncrementFailedAttempts(ctx context.Context, id int) error {
+func (m *mockAuthRepositoryForReset) IncrementFailedAttempts(_ context.Context, _ int) error {
 	return nil
 }
-func (m *mockAuthRepositoryForReset) ResetFailedAttempts(ctx context.Context, id int) error {
+func (m *mockAuthRepositoryForReset) ResetFailedAttempts(_ context.Context, _ int) error {
 	return nil
 }
-func (m *mockAuthRepositoryForReset) LockAccount(ctx context.Context, id int, until time.Time) error {
+func (m *mockAuthRepositoryForReset) LockAccount(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAuthRepositoryForReset) UpdatePassword(ctx context.Context, buyerID int, hashedPassword string) error {
+func (m *mockAuthRepositoryForReset) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return m.err
 }
 
@@ -49,11 +49,11 @@ type mockBuyerPasswordResetRepositoryForReset struct {
 	mock.Mock
 }
 
-func (m *mockBuyerPasswordResetRepositoryForReset) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+func (m *mockBuyerPasswordResetRepositoryForReset) Create(ctx context.Context, userID int, role, tokenHash string, expiresAt time.Time) error {
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+func (m *mockBuyerPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
 	args := m.Called(ctx, tokenHash)
 	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
@@ -144,11 +144,12 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			hash := sha256.Sum256([]byte(tt.token))
 			expectedHash := hex.EncodeToString(hash[:])
 
-			if tt.mockFindErr != nil {
+			switch {
+			case tt.mockFindErr != nil:
 				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, tt.mockFindErr)
-			} else if tt.mockTokenHash == "" {
+			case tt.mockTokenHash == "": // Token not found scenario
 				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, nil)
-			} else {
+			default: // Token found scenario
 				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(tt.mockBuyerID, "buyer", tt.mockExpiresAt, nil)
 				if tt.mockBuyerID != 0 {
 					if tt.mockExpiresAt.After(time.Now()) {

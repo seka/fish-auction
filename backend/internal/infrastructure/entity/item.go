@@ -8,6 +8,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// AuctionItem provides AuctionItem related functionality.
 type AuctionItem struct {
 	ID                int              `db:"id"`
 	AuctionID         int              `db:"auction_id"`
@@ -24,6 +25,7 @@ type AuctionItem struct {
 	DeletedAt         *time.Time       `db:"deleted_at"`
 }
 
+// Validate provides Validate related functionality.
 func (e *AuctionItem) Validate() error {
 	if e.FishermanID <= 0 {
 		return &errors.ValidationError{
@@ -58,6 +60,7 @@ func (e *AuctionItem) Validate() error {
 	return nil
 }
 
+// ToModel provides ToModel related functionality.
 func (e *AuctionItem) ToModel() *model.AuctionItem {
 	var highestBid *model.BidPrice
 	if e.HighestBid != nil {

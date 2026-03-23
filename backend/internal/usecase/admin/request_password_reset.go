@@ -33,7 +33,7 @@ func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.AdminEmailService,
-) *requestPasswordResetUseCase {
+) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,

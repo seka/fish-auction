@@ -2,8 +2,8 @@ package dto
 
 import "time"
 
-// Auction DTOs
-// CreateAuctionRequest represents the request body for creating an auction.
+
+// CreateAuctionRequest is a data transfer object.
 type CreateAuctionRequest struct {
 	VenueID     int     `json:"venue_id"`
 	AuctionDate string  `json:"auction_date"` // YYYY-MM-DD

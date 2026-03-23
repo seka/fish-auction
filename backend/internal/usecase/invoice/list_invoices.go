@@ -13,7 +13,7 @@ type ListInvoicesUseCase interface {
 	Execute(ctx context.Context) ([]model.InvoiceItem, error)
 }
 
-// listInvoicesUseCase handles listing invoices
+// ListInvoicesUseCase handles listing invoices
 type listInvoicesUseCase struct {
 	bidRepo repository.BidRepository
 }
@@ -21,7 +21,8 @@ type listInvoicesUseCase struct {
 // NewListInvoicesUseCase creates a new instance of ListInvoicesUseCase
 var _ ListInvoicesUseCase = (*listInvoicesUseCase)(nil)
 
-func NewListInvoicesUseCase(bidRepo repository.BidRepository) *listInvoicesUseCase {
+// NewListInvoicesUseCase creates a new ListInvoicesUseCase instance.
+func NewListInvoicesUseCase(bidRepo repository.BidRepository) ListInvoicesUseCase {
 	return &listInvoicesUseCase{
 		bidRepo: bidRepo,
 	}

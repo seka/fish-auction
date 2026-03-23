@@ -16,19 +16,19 @@ import (
 func TestServer_SecurityRoutes(t *testing.T) {
 	// Setup Mocks (Minimal needed to avoid nil pointers, actual logic not executed for 401 checks)
 	mockReg := &mock.MockRegistry{
-		CreateFishermanUC:   &mock.MockCreateFishermanUseCase{ExecuteFunc: func(ctx context.Context, name string) (*model.Fisherman, error) { return &model.Fisherman{ID: 1}, nil }},
-		CreateBuyerUC:       &mock.MockCreateBuyerUseCase{ExecuteFunc: func(ctx context.Context, n, e, p, o, c string) (*model.Buyer, error) { return &model.Buyer{ID: 1}, nil }},
-		ListFishermenUC:     &mock.MockListFishermenUseCase{ExecuteFunc: func(ctx context.Context) ([]model.Fisherman, error) { return []model.Fisherman{}, nil }},
-		ListBuyersUC:        &mock.MockListBuyersUseCase{ExecuteFunc: func(ctx context.Context) ([]model.Buyer, error) { return []model.Buyer{}, nil }},
-		GetBuyerPurchasesUC: &mock.MockGetBuyerPurchasesUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Purchase, error) { return []model.Purchase{}, nil }},
-		GetBuyerAuctionsUC:  &mock.MockGetBuyerAuctionsUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Auction, error) { return []model.Auction{}, nil }},
-		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
+		CreateFishermanUC:   &mock.MockCreateFishermanUseCase{ExecuteFunc: func(_ context.Context, _ string) (*model.Fisherman, error) { return &model.Fisherman{ID: 1}, nil }},
+		CreateBuyerUC:       &mock.MockCreateBuyerUseCase{ExecuteFunc: func(_ context.Context, _, _, _, _, _ string) (*model.Buyer, error) { return &model.Buyer{ID: 1}, nil }},
+		ListFishermenUC:     &mock.MockListFishermenUseCase{ExecuteFunc: func(_ context.Context) ([]model.Fisherman, error) { return []model.Fisherman{}, nil }},
+		ListBuyersUC:        &mock.MockListBuyersUseCase{ExecuteFunc: func(_ context.Context) ([]model.Buyer, error) { return []model.Buyer{}, nil }},
+		GetBuyerPurchasesUC: &mock.MockGetBuyerPurchasesUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.Purchase, error) { return []model.Purchase{}, nil }},
+		GetBuyerAuctionsUC:  &mock.MockGetBuyerAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.Auction, error) { return []model.Auction{}, nil }},
+		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(_ context.Context, auction *model.Auction) (*model.Auction, error) {
 			return &model.Auction{ID: 1, VenueID: auction.VenueID}, nil
 		}},
-		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(ctx context.Context, id int, status model.AuctionStatus) error {
+		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
 			return nil
 		}},
-		GetBuyerUC: &mock.MockGetBuyerUseCase{ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+		GetBuyerUC: &mock.MockGetBuyerUseCase{ExecuteFunc: func(_ context.Context, _ int) (*model.Buyer, error) {
 			return &model.Buyer{ID: 1, Name: "Test Buyer"}, nil
 		}},
 	}
@@ -186,7 +186,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 				}
 				body = strings.NewReader(payload)
 			}
-			req := httptest.NewRequest(tc.method, tc.path, body)
+			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, body)
 
 			if tc.cookieName != "" {
 				req.AddCookie(&http.Cookie{Name: tc.cookieName, Value: tc.cookieValue})

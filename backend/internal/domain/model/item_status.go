@@ -4,8 +4,11 @@ package model
 type ItemStatus string
 
 const (
+	// ItemStatusPending provides ItemStatusPending related functionality.
 	ItemStatusPending   ItemStatus = "Pending"
+	// ItemStatusAvailable provides ItemStatusAvailable related functionality.
 	ItemStatusAvailable ItemStatus = "Available"
+	// ItemStatusSold provides ItemStatusSold related functionality.
 	ItemStatusSold      ItemStatus = "Sold"
 )
 

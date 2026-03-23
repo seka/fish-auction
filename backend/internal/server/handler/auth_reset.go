@@ -7,14 +7,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/registry"
 )
 
+// ResetPasswordRequest provides ResetPasswordRequest related functionality.
 type ResetPasswordRequest struct {
 	Email string `json:"email"`
 }
 
+// ResetPasswordVerifyRequest provides ResetPasswordVerifyRequest related functionality.
 type ResetPasswordVerifyRequest struct {
 	Token string `json:"token"`
 }
 
+// ResetPasswordConfirmRequest provides ResetPasswordConfirmRequest related functionality.
 type ResetPasswordConfirmRequest struct {
 	Token       string `json:"token"`
 	NewPassword string `json:"new_password"`
@@ -39,16 +42,15 @@ func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) 
 	}
 
 	uc := h.reg.NewRequestPasswordResetUseCase()
-	if err := uc.Execute(r.Context(), req.Email); err != nil {
-		// Log error but generally return success to prevent user enumeration
-		// log.Printf("Failed to request reset: %v", err)
-	}
+	// Process reset request
+	_ = uc.Execute(r.Context(), req.Email)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "If the email exists, a reset link has been sent."})
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "If the email exists, a reset link has been sent."})
 }
 
-func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
+// VerifyToken provides VerifyToken related functionality.
+func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, _ *http.Request) {
 	// Verification is implicitly done by finding the token.
 	// However, we don't have a dedicated "Verify" use case that just checks without consuming.
 	// We could use ResetPassword but that consumes it.
@@ -71,6 +73,7 @@ func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK) // Placeholder
 }
 
+// ConfirmReset provides ConfirmReset related functionality.
 func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) {
 	var req ResetPasswordConfirmRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -85,7 +88,7 @@ func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
 }
 
 // RegisterRoutes registers the password reset handler routes to the given mux.

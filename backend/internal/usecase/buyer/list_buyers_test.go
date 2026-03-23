@@ -32,16 +32,16 @@ func TestListBuyersUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mock.MockBuyerRepository{
-				ListFunc: func(ctx context.Context) ([]model.Buyer, error) {
+				ListFunc: func(_ context.Context) ([]model.Buyer, error) {
 					if tt.wantErr != nil {
 						return nil, tt.wantErr
 					}
 					return tt.buyers, nil
 				},
-				FindByIDFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+				FindByIDFunc: func(_ context.Context, _ int) (*model.Buyer, error) {
 					return nil, nil
 				},
-				FindByNameFunc: func(ctx context.Context, name string) (*model.Buyer, error) {
+				FindByNameFunc: func(_ context.Context, _ string) (*model.Buyer, error) {
 					return nil, nil
 				},
 			}

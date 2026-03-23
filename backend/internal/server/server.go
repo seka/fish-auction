@@ -16,6 +16,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
 )
 
+// Server serves the request.
 type Server struct {
 	router                *http.ServeMux
 	httpServer            *http.Server
@@ -43,6 +44,7 @@ type Server struct {
 	recovery              *middleware.RecoveryMiddleware
 }
 
+// NewServer creates a new Server instance.
 func NewServer(
 	healthHandler *handler.HealthHandler,
 	fishermanHandler *handler.FishermanHandler,
@@ -278,6 +280,7 @@ func (s *Server) registerBuyerRoutes() {
 	s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))
 }
 
+// Start provides Start related functionality.
 func (s *Server) Start(addr string) error {
 	if addr == "" {
 		addr = ":8080"

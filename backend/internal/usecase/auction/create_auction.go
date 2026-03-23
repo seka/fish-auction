@@ -13,7 +13,7 @@ type CreateAuctionUseCase interface {
 	Execute(ctx context.Context, auction *model.Auction) (*model.Auction, error)
 }
 
-// createAuctionUseCase handles the creation of auctions
+// CreateAuctionUseCase handles the creation of auctions
 type createAuctionUseCase struct {
 	repo repository.AuctionRepository
 }
@@ -21,7 +21,7 @@ type createAuctionUseCase struct {
 var _ CreateAuctionUseCase = (*createAuctionUseCase)(nil)
 
 // NewCreateAuctionUseCase creates a new instance of CreateAuctionUseCase
-func NewCreateAuctionUseCase(repo repository.AuctionRepository) *createAuctionUseCase {
+func NewCreateAuctionUseCase(repo repository.AuctionRepository) CreateAuctionUseCase {
 	return &createAuctionUseCase{repo: repo}
 }
 

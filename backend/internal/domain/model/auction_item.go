@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// AuctionItem provides AuctionItem related functionality.
 type AuctionItem struct {
 	ID                int
 	AuctionID         int

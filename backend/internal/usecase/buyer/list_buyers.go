@@ -13,7 +13,7 @@ type ListBuyersUseCase interface {
 	Execute(ctx context.Context) ([]model.Buyer, error)
 }
 
-// listBuyersUseCase handles listing buyers
+// ListBuyersUseCase handles listing buyers
 type listBuyersUseCase struct {
 	repo repository.BuyerRepository
 }
@@ -21,7 +21,7 @@ type listBuyersUseCase struct {
 var _ ListBuyersUseCase = (*listBuyersUseCase)(nil)
 
 // NewListBuyersUseCase creates a new instance of ListBuyersUseCase
-func NewListBuyersUseCase(buyerRepo repository.BuyerRepository) *listBuyersUseCase {
+func NewListBuyersUseCase(buyerRepo repository.BuyerRepository) ListBuyersUseCase {
 	return &listBuyersUseCase{repo: buyerRepo}
 }
 

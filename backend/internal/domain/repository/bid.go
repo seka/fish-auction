@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// BidRepository provides BidRepository related functionality.
 type BidRepository interface {
 	Create(ctx context.Context, bid *model.Bid) (*model.Bid, error)
 	ListInvoices(ctx context.Context) ([]model.InvoiceItem, error)

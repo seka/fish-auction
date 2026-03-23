@@ -11,6 +11,7 @@ type MockCreateItemUseCase struct {
 	ExecuteFunc func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 }
 
+// Execute executes the use case logic.
 func (m *MockCreateItemUseCase) Execute(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	return m.ExecuteFunc(ctx, item)
 }

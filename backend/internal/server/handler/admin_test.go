@@ -17,7 +17,7 @@ import (
 func TestAdminHandler_UpdatePassword(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockUpdateUC := &mock.MockAdminUpdatePasswordUseCase{
-			ExecuteFunc: func(ctx context.Context, id int, currentPassword, newPassword string) error {
+			ExecuteFunc: func(_ context.Context, id int, _, _ string) error {
 				if id != 1 {
 					t.Errorf("expected id 1, got %d", id)
 				}
@@ -32,7 +32,7 @@ func TestAdminHandler_UpdatePassword(t *testing.T) {
 			NewPassword:     "new",
 		}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPut, "/api/admin/password", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/admin/password", bytes.NewReader(body))
 
 		// Inject into context
 		ctx := context.WithValue(req.Context(), middleware.AdminIDKey, 1)
@@ -51,7 +51,7 @@ func TestAdminHandler_UpdatePassword(t *testing.T) {
 		mockReg := &mock.MockRegistry{}
 		h := handler.NewAdminHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodPut, "/api/admin/password", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/admin/password", nil)
 		w := httptest.NewRecorder()
 
 		h.UpdatePassword(w, req)
@@ -69,7 +69,7 @@ func TestAdminHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequest(http.MethodPost, "/api/admin/password", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/admin/password", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)

@@ -1,4 +1,3 @@
-// Package errors provides error handling utilities for the PostgreSQL datastore.
 package errors
 
 import (

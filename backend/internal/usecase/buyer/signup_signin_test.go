@@ -18,13 +18,13 @@ func TestSignupAndSigninFlow(t *testing.T) {
 
 	// Setup Mocks
 	buyerRepo := &mock.MockBuyerRepository{
-		CreateFunc: func(ctx context.Context, b *model.Buyer) (*model.Buyer, error) {
+		CreateFunc: func(_ context.Context, b *model.Buyer) (*model.Buyer, error) {
 			b.ID = nextID
 			nextID++
 			buyers[b.ID] = b
 			return b, nil
 		},
-		FindByIDFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+		FindByIDFunc: func(_ context.Context, id int) (*model.Buyer, error) {
 			if b, ok := buyers[id]; ok {
 				return b, nil
 			}
@@ -33,19 +33,19 @@ func TestSignupAndSigninFlow(t *testing.T) {
 	}
 
 	authRepo := &mock.MockAuthenticationRepository{
-		CreateFunc: func(ctx context.Context, a *model.Authentication) (*model.Authentication, error) {
+		CreateFunc: func(_ context.Context, a *model.Authentication) (*model.Authentication, error) {
 			a.ID = nextID // simple ID generation
 			nextID++
 			auths[a.Email] = a
 			return a, nil
 		},
-		FindByEmailFunc: func(ctx context.Context, email string) (*model.Authentication, error) {
+		FindByEmailFunc: func(_ context.Context, email string) (*model.Authentication, error) {
 			if a, ok := auths[email]; ok {
 				return a, nil
 			}
 			return nil, context.DeadlineExceeded // Using a dummy error, or create a custom one
 		},
-		UpdateLoginSuccessFunc: func(ctx context.Context, id int, loginAt time.Time) error {
+		UpdateLoginSuccessFunc: func(_ context.Context, id int, _ time.Time) error {
 			// Find auth by ID (inefficient but fine for test)
 			for _, a := range auths {
 				if a.ID == id {
@@ -55,7 +55,7 @@ func TestSignupAndSigninFlow(t *testing.T) {
 			}
 			return nil
 		},
-		IncrementFailedAttemptsFunc: func(ctx context.Context, id int) error {
+		IncrementFailedAttemptsFunc: func(_ context.Context, id int) error {
 			for _, a := range auths {
 				if a.ID == id {
 					a.FailedAttempts++
@@ -64,7 +64,7 @@ func TestSignupAndSigninFlow(t *testing.T) {
 			}
 			return nil
 		},
-		LockAccountFunc: func(ctx context.Context, id int, until time.Time) error {
+		LockAccountFunc: func(_ context.Context, id int, until time.Time) error {
 			for _, a := range auths {
 				if a.ID == id {
 					a.LockedUntil = &until

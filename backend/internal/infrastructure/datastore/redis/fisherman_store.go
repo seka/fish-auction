@@ -24,6 +24,7 @@ func NewFishermanStore(cache datastore.Cache, ttl time.Duration) *FishermanStore
 	}
 }
 
+// Get provides Get related functionality.
 func (c *FishermanStore) Get(ctx context.Context, id int) (*model.Fisherman, error) {
 	key := fmt.Sprintf("fisherman:%d", id)
 	data, err := c.cache.Get(ctx, key)
@@ -41,6 +42,7 @@ func (c *FishermanStore) Get(ctx context.Context, id int) (*model.Fisherman, err
 	return &fisherman, nil
 }
 
+// Set provides Set related functionality.
 func (c *FishermanStore) Set(ctx context.Context, id int, fisherman *model.Fisherman) error {
 	key := fmt.Sprintf("fisherman:%d", id)
 	data, err := json.Marshal(fisherman)
@@ -50,6 +52,7 @@ func (c *FishermanStore) Set(ctx context.Context, id int, fisherman *model.Fishe
 	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
+// Delete removes a record by ID.
 func (c *FishermanStore) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("fisherman:%d", id)
 	return c.cache.Delete(ctx, key)

@@ -12,7 +12,7 @@ type DeleteAuctionUseCase interface {
 	Execute(ctx context.Context, id int) error
 }
 
-// deleteAuctionUseCase handles deleting auctions
+// DeleteAuctionUseCase handles deleting auctions
 type deleteAuctionUseCase struct {
 	repo repository.AuctionRepository
 }
@@ -20,7 +20,7 @@ type deleteAuctionUseCase struct {
 var _ DeleteAuctionUseCase = (*deleteAuctionUseCase)(nil)
 
 // NewDeleteAuctionUseCase creates a new instance of DeleteAuctionUseCase
-func NewDeleteAuctionUseCase(repo repository.AuctionRepository) *deleteAuctionUseCase {
+func NewDeleteAuctionUseCase(repo repository.AuctionRepository) DeleteAuctionUseCase {
 	return &deleteAuctionUseCase{repo: repo}
 }
 

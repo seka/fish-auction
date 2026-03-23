@@ -19,7 +19,7 @@ type deleteFishermanUseCase struct {
 }
 
 // NewDeleteFishermanUseCase creates a new instance of DeleteFishermanUseCase
-func NewDeleteFishermanUseCase(repo repository.FishermanRepository) *deleteFishermanUseCase {
+func NewDeleteFishermanUseCase(repo repository.FishermanRepository) DeleteFishermanUseCase {
 	return &deleteFishermanUseCase{repo: repo}
 }
 

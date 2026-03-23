@@ -18,7 +18,7 @@ import (
 func TestFishermanHandler_Create(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockCreateUC := &mock.MockCreateFishermanUseCase{
-			ExecuteFunc: func(ctx context.Context, name string) (*model.Fisherman, error) {
+			ExecuteFunc: func(_ context.Context, name string) (*model.Fisherman, error) {
 				return &model.Fisherman{ID: 1, Name: name}, nil
 			},
 		}
@@ -27,7 +27,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateFishermanRequest{Name: "Tuna Corp"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -39,7 +39,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 	t.Run("Error_UseCase", func(t *testing.T) {
 		mockCreateUC := &mock.MockCreateFishermanUseCase{
-			ExecuteFunc: func(ctx context.Context, name string) (*model.Fisherman, error) {
+			ExecuteFunc: func(_ context.Context, _ string) (*model.Fisherman, error) {
 				return nil, errors.New("db error")
 			},
 		}
@@ -48,7 +48,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateFishermanRequest{Name: "Tuna Corp"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -62,14 +62,14 @@ func TestFishermanHandler_Create(t *testing.T) {
 func TestFishermanHandler_List(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockListUC := &mock.MockListFishermenUseCase{
-			ExecuteFunc: func(ctx context.Context) ([]model.Fisherman, error) {
+			ExecuteFunc: func(_ context.Context) ([]model.Fisherman, error) {
 				return []model.Fisherman{{ID: 1, Name: "F1"}, {ID: 2, Name: "F2"}}, nil
 			},
 		}
 		mockReg := &mock.MockRegistry{ListFishermenUC: mockListUC}
 		h := handler.NewFishermanHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/admin/fishermen", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/fishermen", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -82,7 +82,7 @@ func TestFishermanHandler_List(t *testing.T) {
 
 func TestFishermanHandler_RegisterRoutes(t *testing.T) {
 	mockListUC := &mock.MockListFishermenUseCase{
-		ExecuteFunc: func(ctx context.Context) ([]model.Fisherman, error) {
+		ExecuteFunc: func(_ context.Context) ([]model.Fisherman, error) {
 			return []model.Fisherman{}, nil
 		},
 	}
@@ -91,7 +91,7 @@ func TestFishermanHandler_RegisterRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 	h.RegisterRoutes(mux)
 
-	req := httptest.NewRequest(http.MethodGet, "/api/fishermen", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/fishermen", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {

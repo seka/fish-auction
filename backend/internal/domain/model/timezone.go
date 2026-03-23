@@ -6,6 +6,7 @@ import "time"
 type LocationName string
 
 const (
+	// LocationJST provides LocationJST related functionality.
 	LocationJST LocationName = "Asia/Tokyo"
 )
 

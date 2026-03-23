@@ -13,17 +13,17 @@ type mockVenueRepoForDelete struct {
 	err error
 }
 
-func (m *mockVenueRepoForDelete) Create(ctx context.Context, v *model.Venue) (*model.Venue, error) {
+func (m *mockVenueRepoForDelete) Create(_ context.Context, _ *model.Venue) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForDelete) FindByID(ctx context.Context, id int) (*model.Venue, error) {
+func (m *mockVenueRepoForDelete) FindByID(_ context.Context, _ int) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForDelete) List(ctx context.Context) ([]model.Venue, error) { return nil, nil }
-func (m *mockVenueRepoForDelete) Update(ctx context.Context, venue *model.Venue) error {
+func (m *mockVenueRepoForDelete) List(_ context.Context) ([]model.Venue, error) { return nil, nil }
+func (m *mockVenueRepoForDelete) Update(_ context.Context, _ *model.Venue) error {
 	return nil
 }
-func (m *mockVenueRepoForDelete) Delete(ctx context.Context, id int) error {
+func (m *mockVenueRepoForDelete) Delete(_ context.Context, _ int) error {
 	return m.err
 }
 

@@ -14,20 +14,22 @@ import (
 
 var webpushSendNotification = webpush.SendNotification
 
-type webpushNotificationService struct {
+// WebpushNotificationService provides WebpushNotificationService related functionality.
+type WebpushNotificationService struct {
 	cfg *config.Config
 }
 
-var _ service.PushNotificationService = (*webpushNotificationService)(nil)
+var _ service.PushNotificationService = (*WebpushNotificationService)(nil)
 
 // NewWebpushService creates a new PushNotificationService implementation using webpush-go
-func NewWebpushService(cfg *config.Config) *webpushNotificationService {
-	return &webpushNotificationService{
+func NewWebpushService(cfg *config.Config) *WebpushNotificationService {
+	return &WebpushNotificationService{
 		cfg: cfg,
 	}
 }
 
-func (s *webpushNotificationService) Send(_ context.Context, sub *model.PushSubscription, payload any) error {
+// Send provides Send related functionality.
+func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubscription, payload any) error {
 	message, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)

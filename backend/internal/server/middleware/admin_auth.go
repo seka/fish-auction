@@ -8,14 +8,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// AdminAuthMiddleware provides AdminAuthMiddleware related functionality.
 type AdminAuthMiddleware struct {
 	sessionRepo repository.SessionRepository
 }
 
+// NewAdminAuthMiddleware creates a new AdminAuthMiddleware instance.
 func NewAdminAuthMiddleware(sessionRepo repository.SessionRepository) *AdminAuthMiddleware {
 	return &AdminAuthMiddleware{sessionRepo: sessionRepo}
 }
 
+// Handle provides Handle related functionality.
 func (m *AdminAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("admin_session")

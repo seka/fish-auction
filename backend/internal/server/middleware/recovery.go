@@ -13,10 +13,12 @@ import (
 // and returning a 500 Internal Server Error response.
 type RecoveryMiddleware struct{}
 
+// NewRecoveryMiddleware creates a new RecoveryMiddleware instance.
 func NewRecoveryMiddleware() *RecoveryMiddleware {
 	return &RecoveryMiddleware{}
 }
 
+// Handle provides Handle related functionality.
 func (m *RecoveryMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {

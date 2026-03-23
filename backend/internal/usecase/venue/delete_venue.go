@@ -11,7 +11,7 @@ type DeleteVenueUseCase interface {
 	Execute(ctx context.Context, id int) error
 }
 
-// deleteVenueUseCase handles deleting venues
+// DeleteVenueUseCase handles deleting venues
 type deleteVenueUseCase struct {
 	repo repository.VenueRepository
 }
@@ -19,7 +19,7 @@ type deleteVenueUseCase struct {
 var _ DeleteVenueUseCase = (*deleteVenueUseCase)(nil)
 
 // NewDeleteVenueUseCase creates a new instance of DeleteVenueUseCase
-func NewDeleteVenueUseCase(repo repository.VenueRepository) *deleteVenueUseCase {
+func NewDeleteVenueUseCase(repo repository.VenueRepository) DeleteVenueUseCase {
 	return &deleteVenueUseCase{repo: repo}
 }
 

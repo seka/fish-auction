@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// BuyerRepository provides BuyerRepository related functionality.
 type BuyerRepository interface {
 	Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error)
 	List(ctx context.Context) ([]model.Buyer, error)

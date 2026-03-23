@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// MockSessionRepository is a mock implementation of SessionRepository for testing.
 type MockSessionRepository struct {
 	CreateFunc        func(ctx context.Context, userID int, role model.SessionRole) (string, error)
 	FindByIDFunc      func(ctx context.Context, sessionID string) (*model.Session, error)
@@ -15,6 +16,7 @@ type MockSessionRepository struct {
 	DeletedSessionIDs []string
 }
 
+// Create creates a new record.
 func (m *MockSessionRepository) Create(ctx context.Context, userID int, role model.SessionRole) (string, error) {
 	if m.CreateFunc != nil {
 		return m.CreateFunc(ctx, userID, role)
@@ -37,6 +39,7 @@ func (m *MockSessionRepository) Create(ctx context.Context, userID int, role mod
 	return sessionID, nil
 }
 
+// FindByID retrieves a record based on criteria.
 func (m *MockSessionRepository) FindByID(ctx context.Context, sessionID string) (*model.Session, error) {
 	if m.FindByIDFunc != nil {
 		return m.FindByIDFunc(ctx, sessionID)
@@ -47,6 +50,7 @@ func (m *MockSessionRepository) FindByID(ctx context.Context, sessionID string) 
 	return m.Sessions[sessionID], nil
 }
 
+// Delete removes a record by ID.
 func (m *MockSessionRepository) Delete(ctx context.Context, sessionID string) error {
 	if m.DeleteFunc != nil {
 		return m.DeleteFunc(ctx, sessionID)
@@ -60,7 +64,8 @@ func (m *MockSessionRepository) Delete(ctx context.Context, sessionID string) er
 	return nil
 }
 
-func (m *MockSessionRepository) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
+// DeleteAllByUserID removes a record by ID.
+func (m *MockSessionRepository) DeleteAllByUserID(_ context.Context, userID int, role model.SessionRole) error {
 	if m.Sessions == nil {
 		return nil
 	}

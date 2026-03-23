@@ -13,7 +13,7 @@ type ListFishermenUseCase interface {
 	Execute(ctx context.Context) ([]model.Fisherman, error)
 }
 
-// listFishermenUseCase handles listing fishermen
+// ListFishermenUseCase handles listing fishermen
 type listFishermenUseCase struct {
 	repo repository.FishermanRepository
 }
@@ -21,7 +21,7 @@ type listFishermenUseCase struct {
 var _ ListFishermenUseCase = (*listFishermenUseCase)(nil)
 
 // NewListFishermenUseCase creates a new instance of ListFishermenUseCase
-func NewListFishermenUseCase(repo repository.FishermanRepository) *listFishermenUseCase {
+func NewListFishermenUseCase(repo repository.FishermanRepository) ListFishermenUseCase {
 	return &listFishermenUseCase{repo: repo}
 }
 

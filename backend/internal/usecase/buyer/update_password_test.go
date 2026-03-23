@@ -18,34 +18,34 @@ type mockAuthRepoForUpdate struct {
 	updateErr error
 }
 
-func (m *mockAuthRepoForUpdate) Login(ctx context.Context, email, password string) (*model.Buyer, error) {
+func (m *mockAuthRepoForUpdate) Login(_ context.Context, _, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockAuthRepoForUpdate) Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
+func (m *mockAuthRepoForUpdate) Create(_ context.Context, _ *model.Authentication) (*model.Authentication, error) {
 	return nil, nil
 }
-func (m *mockAuthRepoForUpdate) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
+func (m *mockAuthRepoForUpdate) FindByEmail(_ context.Context, _ string) (*model.Authentication, error) {
 	return nil, nil
 }
-func (m *mockAuthRepoForUpdate) FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error) {
+func (m *mockAuthRepoForUpdate) FindByBuyerID(_ context.Context, _ int) (*model.Authentication, error) {
 	if m.findErr != nil {
 		return nil, m.findErr
 	}
 	return m.auth, nil
 }
-func (m *mockAuthRepoForUpdate) UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error {
+func (m *mockAuthRepoForUpdate) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAuthRepoForUpdate) IncrementFailedAttempts(ctx context.Context, id int) error {
+func (m *mockAuthRepoForUpdate) IncrementFailedAttempts(_ context.Context, _ int) error {
 	return nil
 }
-func (m *mockAuthRepoForUpdate) ResetFailedAttempts(ctx context.Context, id int) error {
+func (m *mockAuthRepoForUpdate) ResetFailedAttempts(_ context.Context, _ int) error {
 	return nil
 }
-func (m *mockAuthRepoForUpdate) LockAccount(ctx context.Context, id int, until time.Time) error {
+func (m *mockAuthRepoForUpdate) LockAccount(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAuthRepoForUpdate) UpdatePassword(ctx context.Context, buyerID int, hashedPassword string) error {
+func (m *mockAuthRepoForUpdate) UpdatePassword(_ context.Context, _ int, _ string) error {
 	if m.updateErr != nil {
 		return m.updateErr
 	}
@@ -56,7 +56,7 @@ type mockSessionRepo struct {
 	repository.SessionRepository
 }
 
-func (m *mockSessionRepo) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
+func (m *mockSessionRepo) DeleteAllByUserID(_ context.Context, _ int, _ model.SessionRole) error {
 	return nil
 }
 

@@ -12,7 +12,7 @@ type UpdateVenueUseCase interface {
 	Execute(ctx context.Context, venue *model.Venue) error
 }
 
-// updateVenueUseCase handles updating venues
+// UpdateVenueUseCase handles updating venues
 type updateVenueUseCase struct {
 	repo repository.VenueRepository
 }
@@ -20,7 +20,7 @@ type updateVenueUseCase struct {
 var _ UpdateVenueUseCase = (*updateVenueUseCase)(nil)
 
 // NewUpdateVenueUseCase creates a new instance of UpdateVenueUseCase
-func NewUpdateVenueUseCase(repo repository.VenueRepository) *updateVenueUseCase {
+func NewUpdateVenueUseCase(repo repository.VenueRepository) UpdateVenueUseCase {
 	return &updateVenueUseCase{repo: repo}
 }
 

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -12,12 +13,12 @@ import (
 func TestRecoveryMiddleware_NormalRequest(t *testing.T) {
 	middleware := NewRecoveryMiddleware()
 
-	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK"))
 	}))
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)
@@ -36,11 +37,11 @@ func TestRecoveryMiddleware_NormalRequest(t *testing.T) {
 func TestRecoveryMiddleware_PanicRecovery(t *testing.T) {
 	middleware := NewRecoveryMiddleware()
 
-	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := middleware.Handle(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
 		panic("test panic")
 	}))
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	rr := httptest.NewRecorder()
 
 	// パニックが発生してもテストプロセスはクラッシュしない

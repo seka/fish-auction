@@ -16,8 +16,8 @@ type mockAdminRepoForReqPwd struct {
 	err   error
 }
 
-func (m *mockAdminRepoForReqPwd) Create(ctx context.Context, admin *model.Admin) error { return nil }
-func (m *mockAdminRepoForReqPwd) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+func (m *mockAdminRepoForReqPwd) Create(_ context.Context, _ *model.Admin) error { return nil }
+func (m *mockAdminRepoForReqPwd) FindOneByEmail(_ context.Context, email string) (*model.Admin, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -26,23 +26,23 @@ func (m *mockAdminRepoForReqPwd) FindOneByEmail(ctx context.Context, email strin
 	}
 	return nil, nil
 }
-func (m *mockAdminRepoForReqPwd) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+func (m *mockAdminRepoForReqPwd) FindByID(_ context.Context, _ int) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepoForReqPwd) UpdatePassword(ctx context.Context, id int, password string) error {
+func (m *mockAdminRepoForReqPwd) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return nil
 }
-func (m *mockAdminRepoForReqPwd) Count(ctx context.Context) (int, error) { return 0, nil }
+func (m *mockAdminRepoForReqPwd) Count(_ context.Context) (int, error) { return 0, nil }
 
 type mockPwdResetRepoForReqPwd struct {
 	mock.Mock
 }
 
-func (m *mockPwdResetRepoForReqPwd) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+func (m *mockPwdResetRepoForReqPwd) Create(ctx context.Context, userID int, role, tokenHash string, expiresAt time.Time) error {
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
-func (m *mockPwdResetRepoForReqPwd) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+func (m *mockPwdResetRepoForReqPwd) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
 	args := m.Called(ctx, tokenHash)
 	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
@@ -59,10 +59,10 @@ type mockEmailServiceForReqPwd struct {
 	sndErr error
 }
 
-func (m *mockEmailServiceForReqPwd) SendAdminPasswordReset(ctx context.Context, to, url string) error {
+func (m *mockEmailServiceForReqPwd) SendAdminPasswordReset(_ context.Context, _, _ string) error {
 	return m.sndErr
 }
-func (m *mockEmailServiceForReqPwd) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
+func (m *mockEmailServiceForReqPwd) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
 	return nil
 }
 

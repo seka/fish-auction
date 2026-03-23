@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +22,7 @@ func TestMaxBodyMiddleware(t *testing.T) {
 	}))
 
 	t.Run("Under limit", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("12345"))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/", strings.NewReader("12345"))
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 		if rr.Code != http.StatusOK {
@@ -30,7 +31,7 @@ func TestMaxBodyMiddleware(t *testing.T) {
 	})
 
 	t.Run("Over limit", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("1234567890123"))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/", strings.NewReader("1234567890123"))
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 		if rr.Code != http.StatusRequestEntityTooLarge {

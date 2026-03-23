@@ -7,6 +7,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// GetBuyerPurchasesUseCase provides GetBuyerPurchasesUseCase related functionality.
 type GetBuyerPurchasesUseCase interface {
 	Execute(ctx context.Context, buyerID int) ([]model.Purchase, error)
 }
@@ -17,7 +18,8 @@ type getBuyerPurchasesUseCase struct {
 
 var _ GetBuyerPurchasesUseCase = (*getBuyerPurchasesUseCase)(nil)
 
-func NewGetBuyerPurchasesUseCase(bidRepo repository.BidRepository) *getBuyerPurchasesUseCase {
+// NewGetBuyerPurchasesUseCase creates a new GetBuyerPurchasesUseCase instance.
+func NewGetBuyerPurchasesUseCase(bidRepo repository.BidRepository) GetBuyerPurchasesUseCase {
 	return &getBuyerPurchasesUseCase{
 		bidRepo: bidRepo,
 	}

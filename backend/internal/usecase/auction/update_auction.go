@@ -13,7 +13,7 @@ type UpdateAuctionUseCase interface {
 	Execute(ctx context.Context, auction *model.Auction) error
 }
 
-// updateAuctionUseCase handles updating auctions
+// UpdateAuctionUseCase handles updating auctions
 type updateAuctionUseCase struct {
 	repo repository.AuctionRepository
 }
@@ -21,7 +21,7 @@ type updateAuctionUseCase struct {
 var _ UpdateAuctionUseCase = (*updateAuctionUseCase)(nil)
 
 // NewUpdateAuctionUseCase creates a new instance of UpdateAuctionUseCase
-func NewUpdateAuctionUseCase(repo repository.AuctionRepository) *updateAuctionUseCase {
+func NewUpdateAuctionUseCase(repo repository.AuctionRepository) UpdateAuctionUseCase {
 	return &updateAuctionUseCase{repo: repo}
 }
 

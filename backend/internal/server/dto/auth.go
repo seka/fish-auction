@@ -1,7 +1,7 @@
 package dto
 
-// Auth DTOs
-// LoginRequest represents the request body for login.
+
+// LoginRequest is a data transfer object.
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

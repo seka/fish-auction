@@ -12,7 +12,7 @@ type GetVenueUseCase interface {
 	Execute(ctx context.Context, id int) (*model.Venue, error)
 }
 
-// getVenueUseCase handles getting a venue
+// GetVenueUseCase handles getting a venue
 type getVenueUseCase struct {
 	repo repository.VenueRepository
 }
@@ -20,7 +20,7 @@ type getVenueUseCase struct {
 var _ GetVenueUseCase = (*getVenueUseCase)(nil)
 
 // NewGetVenueUseCase creates a new instance of GetVenueUseCase
-func NewGetVenueUseCase(repo repository.VenueRepository) *getVenueUseCase {
+func NewGetVenueUseCase(repo repository.VenueRepository) GetVenueUseCase {
 	return &getVenueUseCase{repo: repo}
 }
 

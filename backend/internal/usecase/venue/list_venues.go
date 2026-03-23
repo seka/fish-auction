@@ -13,7 +13,7 @@ type ListVenuesUseCase interface {
 	Execute(ctx context.Context) ([]model.Venue, error)
 }
 
-// listVenuesUseCase handles listing venues
+// ListVenuesUseCase handles listing venues
 type listVenuesUseCase struct {
 	repo repository.VenueRepository
 }
@@ -21,7 +21,7 @@ type listVenuesUseCase struct {
 var _ ListVenuesUseCase = (*listVenuesUseCase)(nil)
 
 // NewListVenuesUseCase creates a new instance of ListVenuesUseCase
-func NewListVenuesUseCase(repo repository.VenueRepository) *listVenuesUseCase {
+func NewListVenuesUseCase(repo repository.VenueRepository) ListVenuesUseCase {
 	return &listVenuesUseCase{repo: repo}
 }
 

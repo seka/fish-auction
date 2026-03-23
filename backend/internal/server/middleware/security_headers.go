@@ -2,12 +2,15 @@ package middleware
 
 import "net/http"
 
+// SecurityHeadersMiddleware provides SecurityHeadersMiddleware related functionality.
 type SecurityHeadersMiddleware struct{}
 
+// NewSecurityHeadersMiddleware creates a new SecurityHeadersMiddleware instance.
 func NewSecurityHeadersMiddleware() *SecurityHeadersMiddleware {
 	return &SecurityHeadersMiddleware{}
 }
 
+// Handle provides Handle related functionality.
 func (m *SecurityHeadersMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// リソースの読み込み制限（APIのため一切の読み込みとiframe埋め込みを禁止）

@@ -13,21 +13,23 @@ import (
 
 var adminSendMailFunc = smtp.SendMail
 
-type adminEmailService struct {
+// AdminEmailService provides AdminEmailService related functionality.
+type AdminEmailService struct {
 	cfg            *config.Config
 	templateLoader templates.TemplateProvider
 }
 
-var _ service.AdminEmailService = (*adminEmailService)(nil)
+var _ service.AdminEmailService = (*AdminEmailService)(nil)
 
-func NewAdminEmailService(cfg *config.Config, loader templates.TemplateProvider) *adminEmailService {
-	return &adminEmailService{
+// NewAdminEmailService creates a new AdminEmailService instance.
+func NewAdminEmailService(cfg *config.Config, loader templates.TemplateProvider) *AdminEmailService {
+	return &AdminEmailService{
 		cfg:            cfg,
 		templateLoader: loader,
 	}
 }
 
-func (s *adminEmailService) send(to, subject, body string) error {
+func (s *AdminEmailService) send(to, subject, body string) error {
 	msg := fmt.Appendf(nil, "To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
@@ -39,7 +41,8 @@ func (s *adminEmailService) send(to, subject, body string) error {
 	return adminSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
-func (s *adminEmailService) SendAdminPasswordReset(_ context.Context, to, url string) error {
+// SendAdminPasswordReset provides SendAdminPasswordReset related functionality.
+func (s *AdminEmailService) SendAdminPasswordReset(_ context.Context, to, url string) error {
 	tmpl := s.templateLoader.Get("admin_password_reset.txt")
 	if tmpl == nil {
 		return fmt.Errorf("template admin_password_reset.txt not found")

@@ -14,7 +14,7 @@ type UpdateAuctionStatusUseCase interface {
 	Execute(ctx context.Context, id int, status model.AuctionStatus) error
 }
 
-// updateAuctionStatusUseCase handles updating auction status
+// UpdateAuctionStatusUseCase handles updating auction status
 type updateAuctionStatusUseCase struct {
 	auctionRepo repository.AuctionRepository
 	buyerRepo   repository.BuyerRepository
@@ -28,7 +28,7 @@ func NewUpdateAuctionStatusUseCase(
 	auctionRepo repository.AuctionRepository,
 	buyerRepo repository.BuyerRepository,
 	pushNotification notification.PushNotificationUseCase,
-) *updateAuctionStatusUseCase {
+) UpdateAuctionStatusUseCase {
 	return &updateAuctionStatusUseCase{
 		auctionRepo: auctionRepo,
 		buyerRepo:   buyerRepo,

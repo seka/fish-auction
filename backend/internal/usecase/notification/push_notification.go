@@ -28,7 +28,7 @@ var _ PushNotificationUseCase = (*pushNotificationUseCase)(nil)
 func NewPushNotificationUseCase(
 	repo repository.PushRepository,
 	pushNotificationService service.PushNotificationService,
-) *pushNotificationUseCase {
+) PushNotificationUseCase {
 	return &pushNotificationUseCase{
 		repo:                    repo,
 		pushNotificationService: pushNotificationService,

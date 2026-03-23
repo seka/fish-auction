@@ -42,10 +42,11 @@ func (h *AdminAuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset email sent if account exists"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Password reset email sent if account exists"})
 }
 
-func (h *AdminAuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
+// VerifyToken provides VerifyToken related functionality.
+func (h *AdminAuthResetHandler) VerifyToken(w http.ResponseWriter, _ *http.Request) {
 	// Optional: verify token validity without resetting password yet
 	// Not strictly required if frontend just prompts for new password.
 	// But nice for UX (show "invalid token" immediately).
@@ -54,6 +55,7 @@ func (h *AdminAuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 }
 
+// ConfirmReset provides ConfirmReset related functionality.
 func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Token       string `json:"token"`
@@ -74,7 +76,7 @@ func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
 }
 
 // RegisterRoutes registers the admin password reset handler routes to the given mux.

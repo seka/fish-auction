@@ -20,7 +20,7 @@ type getBuyerUseCase struct {
 var _ GetBuyerUseCase = (*getBuyerUseCase)(nil)
 
 // NewGetBuyerUseCase creates a new instance of GetBuyerUseCase
-func NewGetBuyerUseCase(buyerRepo repository.BuyerRepository) *getBuyerUseCase {
+func NewGetBuyerUseCase(buyerRepo repository.BuyerRepository) GetBuyerUseCase {
 	return &getBuyerUseCase{buyerRepo: buyerRepo}
 }
 

@@ -17,17 +17,17 @@ type mockAdminRepositoryForReset struct {
 	err error
 }
 
-func (m *mockAdminRepositoryForReset) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+func (m *mockAdminRepositoryForReset) FindByID(_ context.Context, _ int) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForReset) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+func (m *mockAdminRepositoryForReset) FindOneByEmail(_ context.Context, _ string) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForReset) Create(ctx context.Context, admin *model.Admin) error {
+func (m *mockAdminRepositoryForReset) Create(_ context.Context, _ *model.Admin) error {
 	return nil
 }
-func (m *mockAdminRepositoryForReset) Count(ctx context.Context) (int, error) { return 0, nil }
-func (m *mockAdminRepositoryForReset) UpdatePassword(ctx context.Context, id int, hash string) error {
+func (m *mockAdminRepositoryForReset) Count(_ context.Context) (int, error) { return 0, nil }
+func (m *mockAdminRepositoryForReset) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return m.err
 }
 
@@ -35,12 +35,12 @@ type mockAdminPasswordResetRepositoryForReset struct {
 	mock.Mock
 }
 
-func (m *mockAdminPasswordResetRepositoryForReset) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+func (m *mockAdminPasswordResetRepositoryForReset) Create(ctx context.Context, userID int, role, tokenHash string, expiresAt time.Time) error {
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
 
-func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
 	args := m.Called(ctx, tokenHash)
 	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
@@ -133,13 +133,12 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			hash := sha256.Sum256([]byte(tt.token))
 			expectedHash := hex.EncodeToString(hash[:])
 
-			if tt.mockFindErr != nil {
+			switch {
+			case tt.mockFindErr != nil:
 				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, tt.mockFindErr)
-			} else if tt.mockTokenHash == "" {
-				// Token not found scenario
+			case tt.mockTokenHash == "": // Token not found scenario
 				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, nil)
-			} else {
-				// Found
+			default: // Token found
 				// Ensure that the mockTokenHash in test case matches expectedHash?
 				// Actually for the "Success" case, tt.mockTokenHash is validTokenHash, and tt.token is validToken. So they match.
 				// For "TokenExpired", same.

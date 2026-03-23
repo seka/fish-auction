@@ -16,7 +16,7 @@ type LoginUseCase interface {
 	Execute(ctx context.Context, email, password string) (*model.Admin, error)
 }
 
-// loginUseCase handles user authentication
+// LoginUseCase handles user authentication
 type loginUseCase struct {
 	adminRepo repository.AdminRepository
 }
@@ -24,7 +24,7 @@ type loginUseCase struct {
 var _ LoginUseCase = (*loginUseCase)(nil)
 
 // NewLoginUseCase creates a new instance of LoginUseCase
-func NewLoginUseCase(adminRepo repository.AdminRepository) *loginUseCase {
+func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
 	return &loginUseCase{adminRepo: adminRepo}
 }
 

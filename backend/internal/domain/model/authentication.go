@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// Authentication provides Authentication related functionality.
 type Authentication struct {
 	ID             int
 	BuyerID        int

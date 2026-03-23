@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// ItemRepository provides ItemRepository related functionality.
 type ItemRepository interface {
 	Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 	List(ctx context.Context, status string) ([]model.AuctionItem, error)

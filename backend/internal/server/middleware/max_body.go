@@ -9,12 +9,14 @@ type MaxBodyMiddleware struct {
 	limit int64
 }
 
+// NewMaxBodyMiddleware creates a new MaxBodyMiddleware instance.
 func NewMaxBodyMiddleware(limit int64) *MaxBodyMiddleware {
 	return &MaxBodyMiddleware{
 		limit: limit,
 	}
 }
 
+// Handle provides Handle related functionality.
 func (m *MaxBodyMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// http.MaxBytesReader: 指定サイズを超えた読み込みが発生した時点でエラーを返し接続を切る。

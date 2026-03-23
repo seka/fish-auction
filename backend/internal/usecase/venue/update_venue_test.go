@@ -13,17 +13,17 @@ type mockVenueRepoForUpdate struct {
 	err error
 }
 
-func (m *mockVenueRepoForUpdate) Create(ctx context.Context, v *model.Venue) (*model.Venue, error) {
+func (m *mockVenueRepoForUpdate) Create(_ context.Context, _ *model.Venue) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForUpdate) FindByID(ctx context.Context, id int) (*model.Venue, error) {
+func (m *mockVenueRepoForUpdate) FindByID(_ context.Context, _ int) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForUpdate) List(ctx context.Context) ([]model.Venue, error) { return nil, nil }
-func (m *mockVenueRepoForUpdate) Update(ctx context.Context, venue *model.Venue) error {
+func (m *mockVenueRepoForUpdate) List(_ context.Context) ([]model.Venue, error) { return nil, nil }
+func (m *mockVenueRepoForUpdate) Update(_ context.Context, _ *model.Venue) error {
 	return m.err
 }
-func (m *mockVenueRepoForUpdate) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockVenueRepoForUpdate) Delete(_ context.Context, _ int) error { return nil }
 
 func TestUpdateVenueUseCase_Execute(t *testing.T) {
 	tests := []struct {

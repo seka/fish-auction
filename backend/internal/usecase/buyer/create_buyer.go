@@ -14,7 +14,7 @@ type CreateBuyerUseCase interface {
 	Execute(ctx context.Context, name, email, password, organization, contactInfo string) (*model.Buyer, error)
 }
 
-// createBuyerUseCase handles the creation of buyers
+// CreateBuyerUseCase handles the creation of buyers
 type createBuyerUseCase struct {
 	buyerRepo repository.BuyerRepository
 	authRepo  repository.AuthenticationRepository
@@ -24,7 +24,7 @@ type createBuyerUseCase struct {
 var _ CreateBuyerUseCase = (*createBuyerUseCase)(nil)
 
 // NewCreateBuyerUseCase creates a new instance of CreateBuyerUseCase
-func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository, txMgr repository.TransactionManager) *createBuyerUseCase {
+func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository, txMgr repository.TransactionManager) CreateBuyerUseCase {
 	return &createBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo, txMgr: txMgr}
 }
 

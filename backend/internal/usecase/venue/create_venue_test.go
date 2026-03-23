@@ -14,7 +14,7 @@ type mockVenueRepoForCreate struct {
 	err     error
 }
 
-func (m *mockVenueRepoForCreate) Create(ctx context.Context, v *model.Venue) (*model.Venue, error) {
+func (m *mockVenueRepoForCreate) Create(_ context.Context, v *model.Venue) (*model.Venue, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -22,14 +22,14 @@ func (m *mockVenueRepoForCreate) Create(ctx context.Context, v *model.Venue) (*m
 	v.ID = 1
 	return v, nil
 }
-func (m *mockVenueRepoForCreate) FindByID(ctx context.Context, id int) (*model.Venue, error) {
+func (m *mockVenueRepoForCreate) FindByID(_ context.Context, _ int) (*model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForCreate) List(ctx context.Context) ([]model.Venue, error) {
+func (m *mockVenueRepoForCreate) List(_ context.Context) ([]model.Venue, error) {
 	return nil, nil
 }
-func (m *mockVenueRepoForCreate) Update(ctx context.Context, venue *model.Venue) error { return nil }
-func (m *mockVenueRepoForCreate) Delete(ctx context.Context, id int) error             { return nil }
+func (m *mockVenueRepoForCreate) Update(_ context.Context, _ *model.Venue) error { return nil }
+func (m *mockVenueRepoForCreate) Delete(_ context.Context, _ int) error             { return nil }
 
 func TestCreateVenueUseCase_Execute(t *testing.T) {
 	validVenue := &model.Venue{Name: "New Venue"}

@@ -16,10 +16,10 @@ type mockAdminRepositoryForCreate struct {
 	repoErr       error
 }
 
-func (m *mockAdminRepositoryForCreate) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+func (m *mockAdminRepositoryForCreate) FindByID(_ context.Context, _ int) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForCreate) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+func (m *mockAdminRepositoryForCreate) FindOneByEmail(_ context.Context, email string) (*model.Admin, error) {
 	if m.repoErr != nil {
 		return nil, m.repoErr
 	}
@@ -28,13 +28,13 @@ func (m *mockAdminRepositoryForCreate) FindOneByEmail(ctx context.Context, email
 	}
 	return nil, nil
 }
-func (m *mockAdminRepositoryForCreate) Create(ctx context.Context, admin *model.Admin) error {
+func (m *mockAdminRepositoryForCreate) Create(_ context.Context, _ *model.Admin) error {
 	return m.createErr
 }
-func (m *mockAdminRepositoryForCreate) Count(ctx context.Context) (int, error) {
+func (m *mockAdminRepositoryForCreate) Count(_ context.Context) (int, error) {
 	return 0, nil
 }
-func (m *mockAdminRepositoryForCreate) UpdatePassword(ctx context.Context, id int, hash string) error {
+func (m *mockAdminRepositoryForCreate) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return nil
 }
 

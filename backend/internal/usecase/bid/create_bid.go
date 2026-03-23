@@ -37,7 +37,7 @@ func NewCreateBidUseCase(
 	pushUseCase notification.PushNotificationUseCase,
 	txMgr repository.TransactionManager,
 	itemCacheInv repository.CacheInvalidator,
-) *createBidUseCase {
+) CreateBidUseCase {
 	return &createBidUseCase{
 		itemRepo:     itemRepo,
 		bidRepo:      bidRepo,

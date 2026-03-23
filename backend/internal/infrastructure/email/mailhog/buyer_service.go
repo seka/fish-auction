@@ -13,21 +13,23 @@ import (
 
 var buyerSendMailFunc = smtp.SendMail
 
-type buyerEmailService struct {
+// BuyerEmailService provides BuyerEmailService related functionality.
+type BuyerEmailService struct {
 	cfg            *config.Config
 	templateLoader templates.TemplateProvider
 }
 
-var _ service.BuyerEmailService = (*buyerEmailService)(nil)
+var _ service.BuyerEmailService = (*BuyerEmailService)(nil)
 
-func NewBuyerEmailService(cfg *config.Config, loader templates.TemplateProvider) *buyerEmailService {
-	return &buyerEmailService{
+// NewBuyerEmailService creates a new BuyerEmailService instance.
+func NewBuyerEmailService(cfg *config.Config, loader templates.TemplateProvider) *BuyerEmailService {
+	return &BuyerEmailService{
 		cfg:            cfg,
 		templateLoader: loader,
 	}
 }
 
-func (s *buyerEmailService) send(to, subject, body string) error {
+func (s *BuyerEmailService) send(to, subject, body string) error {
 	msg := fmt.Appendf(nil, "To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
@@ -39,7 +41,8 @@ func (s *buyerEmailService) send(to, subject, body string) error {
 	return buyerSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
-func (s *buyerEmailService) SendBuyerPasswordReset(_ context.Context, to, url string) error {
+// SendBuyerPasswordReset provides SendBuyerPasswordReset related functionality.
+func (s *BuyerEmailService) SendBuyerPasswordReset(_ context.Context, to, url string) error {
 	tmpl := s.templateLoader.Get("buyer_password_reset.txt")
 	if tmpl == nil {
 		return fmt.Errorf("template buyer_password_reset.txt not found")

@@ -19,7 +19,7 @@ type mockAdminRepositoryForUpdate struct {
 	updateErr error
 }
 
-func (m *mockAdminRepositoryForUpdate) FindByID(ctx context.Context, id int) (*model.Admin, error) {
+func (m *mockAdminRepositoryForUpdate) FindByID(_ context.Context, id int) (*model.Admin, error) {
 	if m.findErr != nil {
 		return nil, m.findErr
 	}
@@ -28,16 +28,16 @@ func (m *mockAdminRepositoryForUpdate) FindByID(ctx context.Context, id int) (*m
 	}
 	return nil, &apperrors.NotFoundError{Resource: "Admin", ID: id} // Changed return for not found
 }
-func (m *mockAdminRepositoryForUpdate) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
+func (m *mockAdminRepositoryForUpdate) FindOneByEmail(_ context.Context, _ string) (*model.Admin, error) {
 	return nil, nil
 }
-func (m *mockAdminRepositoryForUpdate) Create(ctx context.Context, admin *model.Admin) error {
+func (m *mockAdminRepositoryForUpdate) Create(_ context.Context, _ *model.Admin) error {
 	return nil
 }
-func (m *mockAdminRepositoryForUpdate) Count(ctx context.Context) (int, error) {
+func (m *mockAdminRepositoryForUpdate) Count(_ context.Context) (int, error) {
 	return 0, nil
 }
-func (m *mockAdminRepositoryForUpdate) UpdatePassword(ctx context.Context, id int, hash string) error {
+func (m *mockAdminRepositoryForUpdate) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return m.updateErr
 }
 
@@ -45,7 +45,7 @@ type mockSessionRepo struct {
 	repository.SessionRepository
 }
 
-func (m *mockSessionRepo) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
+func (m *mockSessionRepo) DeleteAllByUserID(_ context.Context, _ int, _ model.SessionRole) error {
 	return nil
 }
 

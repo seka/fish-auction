@@ -17,10 +17,10 @@ type mockAuctionRepoForGet struct {
 	updateStatusErr error
 }
 
-func (m *mockAuctionRepoForGet) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
+func (m *mockAuctionRepoForGet) Create(_ context.Context, _ *model.Auction) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForGet) FindByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForGet) FindByID(_ context.Context, id int) (*model.Auction, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -32,17 +32,17 @@ func (m *mockAuctionRepoForGet) FindByID(ctx context.Context, id int) (*model.Au
 func (m *mockAuctionRepoForGet) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	return m.FindByID(ctx, id)
 }
-func (m *mockAuctionRepoForGet) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+func (m *mockAuctionRepoForGet) List(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForGet) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
+func (m *mockAuctionRepoForGet) ListByVenue(_ context.Context, _ int) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForGet) Update(ctx context.Context, auction *model.Auction) error { return nil }
-func (m *mockAuctionRepoForGet) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
+func (m *mockAuctionRepoForGet) Update(_ context.Context, _ *model.Auction) error { return nil }
+func (m *mockAuctionRepoForGet) UpdateStatus(_ context.Context, _ int, _ model.AuctionStatus) error {
 	return m.updateStatusErr
 }
-func (m *mockAuctionRepoForGet) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockAuctionRepoForGet) Delete(_ context.Context, _ int) error { return nil }
 
 func TestGetAuctionUseCase_Execute(t *testing.T) {
 	validAuction := &model.Auction{ID: 1}
@@ -123,6 +123,3 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 }
 
 //go:fix inline
-func timePtr(t time.Time) *time.Time {
-	return new(t)
-}

@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// ReorderItemsUseCase provides ReorderItemsUseCase related functionality.
 type ReorderItemsUseCase interface {
 	Execute(ctx context.Context, auctionID int, ids []int) error
 }
@@ -17,7 +18,7 @@ type reorderItemsUseCase struct {
 }
 
 // NewReorderItemsUseCase creates a new instance of ReorderItemsUseCase
-func NewReorderItemsUseCase(itemRepo repository.ItemRepository) *reorderItemsUseCase {
+func NewReorderItemsUseCase(itemRepo repository.ItemRepository) ReorderItemsUseCase {
 	return &reorderItemsUseCase{itemRepo: itemRepo}
 }
 

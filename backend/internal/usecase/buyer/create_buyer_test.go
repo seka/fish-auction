@@ -56,7 +56,7 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			buyerRepo := &mock.MockBuyerRepository{
-				CreateFunc: func(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
+				CreateFunc: func(_ context.Context, buyer *model.Buyer) (*model.Buyer, error) {
 					if buyer.Name != tt.input {
 						t.Fatalf("unexpected name %s", buyer.Name)
 					}
@@ -73,7 +73,7 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 			}
 
 			authRepo := &mock.MockAuthenticationRepository{
-				CreateFunc: func(ctx context.Context, auth *model.Authentication) (*model.Authentication, error) {
+				CreateFunc: func(_ context.Context, auth *model.Authentication) (*model.Authentication, error) {
 					if tt.createAuthErr != nil {
 						return nil, tt.createAuthErr
 					}

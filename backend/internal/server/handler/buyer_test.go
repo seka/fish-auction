@@ -41,7 +41,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateBuyerUC = &mock.MockCreateBuyerUseCase{
-					ExecuteFunc: func(ctx context.Context, name, email, password, organization, contactInfo string) (*model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context, name, _, _, organization, _ string) (*model.Buyer, error) {
 						return &model.Buyer{ID: 1, Name: name, Organization: organization}, nil
 					},
 				}
@@ -51,7 +51,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 		{
 			name:       "InvalidJSON",
 			body:       "invalid-json",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
@@ -59,7 +59,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 			body: dto.CreateBuyerRequest{Email: "buyer@example.com"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateBuyerUC = &mock.MockCreateBuyerUseCase{
-					ExecuteFunc: func(ctx context.Context, name, email, password, organization, contactInfo string) (*model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context, _, _, _, _, _ string) (*model.Buyer, error) {
 						return nil, errors.New("db error")
 					},
 				}
@@ -81,7 +81,7 @@ func TestBuyerHandler_Create(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/api/admin/buyers", bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/admin/buyers", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Create(w, req)
@@ -108,7 +108,7 @@ func TestBuyerHandler_Login(t *testing.T) {
 			body: dto.LoginBuyerRequest{Email: "buyer@example.com", Password: "password"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.LoginBuyerUC = &mock.MockLoginBuyerUseCase{
-					ExecuteFunc: func(ctx context.Context, email, password string) (*model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context, _, _ string) (*model.Buyer, error) {
 						return &model.Buyer{ID: 1, Name: "Buyer 1"}, nil
 					},
 				}
@@ -119,7 +119,7 @@ func TestBuyerHandler_Login(t *testing.T) {
 		{
 			name:       "InvalidJSON",
 			body:       "invalid-json",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
@@ -127,7 +127,7 @@ func TestBuyerHandler_Login(t *testing.T) {
 			body: dto.LoginBuyerRequest{Email: "buyer@example.com", Password: "wrong"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.LoginBuyerUC = &mock.MockLoginBuyerUseCase{
-					ExecuteFunc: func(ctx context.Context, email, password string) (*model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context, _, _ string) (*model.Buyer, error) {
 						return nil, errors.New("invalid credentials")
 					},
 				}
@@ -150,7 +150,7 @@ func TestBuyerHandler_Login(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/api/buyers/login", bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyers/login", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Login(w, req)
@@ -192,7 +192,7 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerPurchasesUC = &mock.MockGetBuyerPurchasesUseCase{
-					ExecuteFunc: func(ctx context.Context, buyerID int) ([]model.Purchase, error) {
+					ExecuteFunc: func(_ context.Context, buyerID int) ([]model.Purchase, error) {
 						if buyerID != 1 {
 							return nil, errors.New("wrong ID")
 						}
@@ -204,7 +204,7 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 		},
 		{
 			name:       "Unauthorized_NoContext",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
@@ -213,7 +213,7 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerPurchasesUC = &mock.MockGetBuyerPurchasesUseCase{
-					ExecuteFunc: func(ctx context.Context, buyerID int) ([]model.Purchase, error) {
+					ExecuteFunc: func(_ context.Context, _ int) ([]model.Purchase, error) {
 						return nil, errors.New("db error")
 					},
 				}
@@ -228,7 +228,7 @@ func TestBuyerHandler_GetMyPurchases(t *testing.T) {
 			tc.mockSetup(mockReg)
 			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
 
-			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me/purchases", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/buyers/me/purchases", nil)
 			if tc.withContext {
 				req = withBuyerID(req, tc.ctxValue)
 			}
@@ -257,7 +257,7 @@ func TestBuyerHandler_List(t *testing.T) {
 			name: "Success",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListBuyersUC = &mock.MockListBuyersUseCase{
-					ExecuteFunc: func(ctx context.Context) ([]model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context) ([]model.Buyer, error) {
 						return []model.Buyer{{Name: "B1"}}, nil
 					},
 				}
@@ -268,7 +268,7 @@ func TestBuyerHandler_List(t *testing.T) {
 			name: "UseCaseError",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListBuyersUC = &mock.MockListBuyersUseCase{
-					ExecuteFunc: func(ctx context.Context) ([]model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context) ([]model.Buyer, error) {
 						return nil, errors.New("db error")
 					},
 				}
@@ -282,7 +282,7 @@ func TestBuyerHandler_List(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
 			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
-			req := httptest.NewRequest(http.MethodGet, "/api/admin/buyers", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/buyers", nil)
 			w := httptest.NewRecorder()
 			h.List(w, req)
 			if w.Code != tc.wantStatus {
@@ -305,7 +305,7 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerUC = &mock.MockGetBuyerUseCase{
-					ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+					ExecuteFunc: func(_ context.Context, _ int) (*model.Buyer, error) {
 						return &model.Buyer{ID: 1, Name: "Buyer 1"}, nil
 					},
 				}
@@ -314,7 +314,7 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 		},
 		{
 			name:       "NoContext",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -325,7 +325,7 @@ func TestBuyerHandler_GetCurrentBuyer(t *testing.T) {
 				tc.mockSetup(mockReg)
 			}
 			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
-			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/buyers/me", nil)
 			if tc.withContext {
 				req = withBuyerID(req, 1)
 			}
@@ -354,7 +354,7 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 			withContext: true,
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetBuyerAuctionsUC = &mock.MockGetBuyerAuctionsUseCase{
-					ExecuteFunc: func(ctx context.Context, id int) ([]model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, _ int) ([]model.Auction, error) {
 						now := time.Now()
 						return []model.Auction{{ID: 1, Period: model.NewAuctionPeriod(now, &now, &now)}}, nil
 					},
@@ -364,7 +364,7 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 		},
 		{
 			name:       "Unauthorized_NoContext",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -373,7 +373,7 @@ func TestBuyerHandler_GetMyAuctions(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
 			h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
-			req := httptest.NewRequest(http.MethodGet, "/api/buyers/me/auctions", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/buyers/me/auctions", nil)
 			if tc.withContext {
 				req = withBuyerID(req, tc.ctxValue)
 			}
@@ -403,7 +403,7 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 			body:        dto.UpdatePasswordRequest{CurrentPassword: "old", NewPassword: "new"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateBuyerPasswordUC = &mock.MockBuyerUpdatePasswordUseCase{
-					ExecuteFunc: func(ctx context.Context, id int, c, n string) error { return nil },
+					ExecuteFunc: func(_ context.Context, _ int, _, _ string) error { return nil },
 				}
 			},
 			wantStatus: http.StatusOK,
@@ -412,13 +412,13 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 			name:        "InvalidJSON",
 			withContext: true,
 			body:        "invalid",
-			mockSetup:   func(r *mock.MockRegistry) {},
+			mockSetup:   func(_ *mock.MockRegistry) {},
 			wantStatus:  http.StatusInternalServerError,
 		},
 		{
 			name:       "Unauthorized_NoContext",
 			body:       dto.UpdatePasswordRequest{},
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -435,7 +435,7 @@ func TestBuyerHandler_UpdatePassword(t *testing.T) {
 			} else {
 				reqBody, _ = json.Marshal(tc.body)
 			}
-			req := httptest.NewRequest(http.MethodPut, "/api/buyers/me/password", bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/buyers/me/password", bytes.NewReader(reqBody))
 			if tc.withContext {
 				req = withBuyerID(req, 1)
 			}
@@ -456,7 +456,7 @@ func TestBuyerHandler_Logout(t *testing.T) {
 		},
 	}
 	h := handler.NewBuyerHandler(&mock.MockRegistry{}, sessionRepo)
-	req := httptest.NewRequest(http.MethodPost, "/api/buyers/logout", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyers/logout", nil)
 	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
 	w := httptest.NewRecorder()
 	h.Logout(w, req)
@@ -497,13 +497,13 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 
 	mockReg := &mock.MockRegistry{
 		// Mock all UCs
-		CreateBuyerUC:         &mock.MockCreateBuyerUseCase{ExecuteFunc: func(ctx context.Context, n, e, p, o, c string) (*model.Buyer, error) { return &model.Buyer{ID: 1}, nil }},
-		ListBuyersUC:          &mock.MockListBuyersUseCase{ExecuteFunc: func(ctx context.Context) ([]model.Buyer, error) { return []model.Buyer{}, nil }},
-		LoginBuyerUC:          &mock.MockLoginBuyerUseCase{ExecuteFunc: func(ctx context.Context, e, p string) (*model.Buyer, error) { return &model.Buyer{ID: 1}, nil }},
-		GetBuyerPurchasesUC:   &mock.MockGetBuyerPurchasesUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Purchase, error) { return []model.Purchase{}, nil }},
-		GetBuyerAuctionsUC:    &mock.MockGetBuyerAuctionsUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.Auction, error) { return []model.Auction{}, nil }},
-		UpdateBuyerPasswordUC: &mock.MockBuyerUpdatePasswordUseCase{ExecuteFunc: func(ctx context.Context, id int, c, n string) error { return nil }},
-		GetBuyerUC:            &mock.MockGetBuyerUseCase{ExecuteFunc: func(ctx context.Context, id int) (*model.Buyer, error) { return &model.Buyer{Name: "B1"}, nil }},
+		CreateBuyerUC:         &mock.MockCreateBuyerUseCase{ExecuteFunc: func(_ context.Context, _, _, _, _, _ string) (*model.Buyer, error) { return &model.Buyer{ID: 1}, nil }},
+		ListBuyersUC:          &mock.MockListBuyersUseCase{ExecuteFunc: func(_ context.Context) ([]model.Buyer, error) { return []model.Buyer{}, nil }},
+		LoginBuyerUC:          &mock.MockLoginBuyerUseCase{ExecuteFunc: func(_ context.Context, _, _ string) (*model.Buyer, error) { return &model.Buyer{ID: 1}, nil }},
+		GetBuyerPurchasesUC:   &mock.MockGetBuyerPurchasesUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.Purchase, error) { return []model.Purchase{}, nil }},
+		GetBuyerAuctionsUC:    &mock.MockGetBuyerAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.Auction, error) { return []model.Auction{}, nil }},
+		UpdateBuyerPasswordUC: &mock.MockBuyerUpdatePasswordUseCase{ExecuteFunc: func(_ context.Context, _ int, _, _ string) error { return nil }},
+		GetBuyerUC:            &mock.MockGetBuyerUseCase{ExecuteFunc: func(_ context.Context, _ int) (*model.Buyer, error) { return &model.Buyer{Name: "B1"}, nil }},
 	}
 
 	sessionRepo := &mock.MockSessionRepository{NextSessionID: "buyer-session-1"}
@@ -514,17 +514,17 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var body []byte
-			req := httptest.NewRequest(tc.method, tc.path, bytes.NewReader(body))
+			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(body))
 
 			// Handle Bodies for strict JSON decoders if method matches
 			if tc.method == http.MethodPost || tc.method == http.MethodPut {
 				if tc.path == "/api/buyers/login" {
-					body, _ = json.Marshal(dto.LoginBuyerRequest{})
+					body, _ = json.Marshal(map[string]string{"email": "", "password": ""})
 				}
 				if tc.path == "/api/buyers/password" {
 					body, _ = json.Marshal(dto.UpdatePasswordRequest{})
 				}
-				req = httptest.NewRequest(tc.method, tc.path, bytes.NewReader(body))
+				req = httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(body))
 			}
 			if tc.path == "/api/buyers/logout" {
 				req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})

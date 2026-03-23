@@ -29,7 +29,7 @@ var _ ResetPasswordUseCase = (*resetPasswordUseCase)(nil)
 func NewResetPasswordUseCase(
 	pwdResetRepo repository.PasswordResetRepository,
 	adminRepo repository.AdminRepository,
-) *resetPasswordUseCase {
+) ResetPasswordUseCase {
 	return &resetPasswordUseCase{
 		pwdResetRepo: pwdResetRepo,
 		adminRepo:    adminRepo,
@@ -62,9 +62,8 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
-	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, adminID, "admin"); err != nil {
-		// Log error
-	}
+	// Invalidate token
+	_ = u.pwdResetRepo.DeleteAllByUserID(ctx, adminID, "admin")
 
 	return nil
 }

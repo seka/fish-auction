@@ -17,6 +17,7 @@ import (
 
 const sessionKeyPrefix = "session:"
 
+// SessionStore provides SessionStore related functionality.
 type SessionStore struct {
 	cache datastore.Cache
 	ttl   time.Duration
@@ -31,6 +32,7 @@ type sessionJSON struct {
 
 var _ repository.SessionRepository = (*SessionStore)(nil)
 
+// NewSessionStore creates a new SessionStore instance.
 func NewSessionStore(cache datastore.Cache, ttl time.Duration) *SessionStore {
 	return &SessionStore{
 		cache: cache,
@@ -38,6 +40,7 @@ func NewSessionStore(cache datastore.Cache, ttl time.Duration) *SessionStore {
 	}
 }
 
+// Create creates a new record.
 func (s *SessionStore) Create(ctx context.Context, userID int, role model.SessionRole) (string, error) {
 	sessionID, err := newSessionID()
 	if err != nil {
@@ -74,6 +77,7 @@ func (s *SessionStore) Create(ctx context.Context, userID int, role model.Sessio
 	return sessionID, nil
 }
 
+// FindByID retrieves a record based on criteria.
 func (s *SessionStore) FindByID(ctx context.Context, sessionID string) (*model.Session, error) {
 	payload, err := s.cache.Get(ctx, sessionKey(sessionID))
 	if err != nil {
@@ -96,6 +100,7 @@ func (s *SessionStore) FindByID(ctx context.Context, sessionID string) (*model.S
 	}, nil
 }
 
+// Delete removes a record by ID.
 func (s *SessionStore) Delete(ctx context.Context, sessionID string) error {
 	if sessionID == "" {
 		return nil
@@ -120,6 +125,7 @@ func (s *SessionStore) Delete(ctx context.Context, sessionID string) error {
 	return nil
 }
 
+// DeleteAllByUserID removes a record by ID.
 func (s *SessionStore) DeleteAllByUserID(ctx context.Context, userID int, role model.SessionRole) error {
 	rc := s.getRedisClient()
 	if rc == nil {

@@ -13,7 +13,7 @@ type GetAuctionItemsUseCase interface {
 	Execute(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 }
 
-// getAuctionItemsUseCase handles getting items in an auction
+// GetAuctionItemsUseCase handles getting items in an auction
 type getAuctionItemsUseCase struct {
 	itemRepo repository.ItemRepository
 }
@@ -21,7 +21,7 @@ type getAuctionItemsUseCase struct {
 var _ GetAuctionItemsUseCase = (*getAuctionItemsUseCase)(nil)
 
 // NewGetAuctionItemsUseCase creates a new instance of GetAuctionItemsUseCase
-func NewGetAuctionItemsUseCase(itemRepo repository.ItemRepository) *getAuctionItemsUseCase {
+func NewGetAuctionItemsUseCase(itemRepo repository.ItemRepository) GetAuctionItemsUseCase {
 	return &getAuctionItemsUseCase{itemRepo: itemRepo}
 }
 

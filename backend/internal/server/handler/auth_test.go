@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
@@ -17,7 +16,7 @@ import (
 func TestAuthHandler_Login(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockLoginUC := &mock.MockLoginUseCase{
-			ExecuteFunc: func(ctx context.Context, email, password string) (*model.Admin, error) {
+			ExecuteFunc: func(_ context.Context, email, _ string) (*model.Admin, error) {
 				return &model.Admin{ID: 1, Email: email}, nil
 			},
 		}
@@ -25,9 +24,9 @@ func TestAuthHandler_Login(t *testing.T) {
 		sessionRepo := &mock.MockSessionRepository{NextSessionID: "admin-session-1"}
 		h := handler.NewAuthHandler(mockReg, sessionRepo)
 
-		reqBody := dto.LoginRequest{Email: "admin@example.com", Password: "password"}
+		reqBody := map[string]string{"email": "buyer@example.com", "password": "password123"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/login", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/login", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Login(w, req)
@@ -51,16 +50,16 @@ func TestAuthHandler_Login(t *testing.T) {
 
 	t.Run("InvalidCredentials", func(t *testing.T) {
 		mockLoginUC := &mock.MockLoginUseCase{
-			ExecuteFunc: func(ctx context.Context, email, password string) (*model.Admin, error) {
+			ExecuteFunc: func(_ context.Context, _, _ string) (*model.Admin, error) {
 				return nil, nil // Returns nil, nil for invalid credentials (as per implementation inspection)
 			},
 		}
 		mockReg := &mock.MockRegistry{LoginUC: mockLoginUC}
 		h := handler.NewAuthHandler(mockReg, &mock.MockSessionRepository{})
 
-		reqBody := dto.LoginRequest{Email: "admin@example.com", Password: "wrong"}
+		reqBody := map[string]string{"email": "buyer@example.com", "password": "wrong-password"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/login", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/login", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Login(w, req)
@@ -78,7 +77,7 @@ func TestAuthHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/login", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/login", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)

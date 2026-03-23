@@ -2,8 +2,8 @@ package dto
 
 import "time"
 
-// Venue DTOs
-// CreateVenueRequest represents the request body for creating a venue.
+
+// CreateVenueRequest is a data transfer object.
 type CreateVenueRequest struct {
 	Name        string `json:"name"`
 	Location    string `json:"location"`

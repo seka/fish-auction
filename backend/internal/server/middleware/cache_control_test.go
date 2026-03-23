@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -9,11 +10,11 @@ import (
 
 func TestCacheControlMiddleware(t *testing.T) {
 	middleware := NewCacheControlMiddleware()
-	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)

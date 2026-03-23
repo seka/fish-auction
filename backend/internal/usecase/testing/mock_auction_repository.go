@@ -19,6 +19,7 @@ type MockAuctionRepository struct {
 	DeleteFunc           func(ctx context.Context, id int) error
 }
 
+// Create creates a new record.
 func (m *MockAuctionRepository) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
 	if m.CreateFunc != nil {
 		return m.CreateFunc(ctx, auction)
@@ -26,6 +27,7 @@ func (m *MockAuctionRepository) Create(ctx context.Context, auction *model.Aucti
 	return nil, nil
 }
 
+// FindByID retrieves a record based on criteria.
 func (m *MockAuctionRepository) FindByID(ctx context.Context, id int) (*model.Auction, error) {
 	if m.FindByIDFunc != nil {
 		return m.FindByIDFunc(ctx, id)
@@ -33,6 +35,7 @@ func (m *MockAuctionRepository) FindByID(ctx context.Context, id int) (*model.Au
 	return nil, nil
 }
 
+// FindByIDWithLock retrieves a record based on criteria.
 func (m *MockAuctionRepository) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
 	if m.FindByIDWithLockFunc != nil {
 		return m.FindByIDWithLockFunc(ctx, id)
@@ -40,6 +43,7 @@ func (m *MockAuctionRepository) FindByIDWithLock(ctx context.Context, id int) (*
 	return nil, nil
 }
 
+// List retrieves a list of records.
 func (m *MockAuctionRepository) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 	if m.ListFunc != nil {
 		return m.ListFunc(ctx, filters)
@@ -47,6 +51,7 @@ func (m *MockAuctionRepository) List(ctx context.Context, filters *repository.Au
 	return nil, nil
 }
 
+// ListByVenue retrieves a list of records.
 func (m *MockAuctionRepository) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
 	if m.ListByVenueFunc != nil {
 		return m.ListByVenueFunc(ctx, venueID)
@@ -54,6 +59,7 @@ func (m *MockAuctionRepository) ListByVenue(ctx context.Context, venueID int) ([
 	return nil, nil
 }
 
+// Update updates an existing record.
 func (m *MockAuctionRepository) Update(ctx context.Context, auction *model.Auction) error {
 	if m.UpdateFunc != nil {
 		return m.UpdateFunc(ctx, auction)
@@ -61,6 +67,7 @@ func (m *MockAuctionRepository) Update(ctx context.Context, auction *model.Aucti
 	return nil
 }
 
+// UpdateStatus updates an existing record.
 func (m *MockAuctionRepository) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
 	if m.UpdateStatusFunc != nil {
 		return m.UpdateStatusFunc(ctx, id, status)
@@ -68,6 +75,7 @@ func (m *MockAuctionRepository) UpdateStatus(ctx context.Context, id int, status
 	return nil
 }
 
+// Delete removes a record by ID.
 func (m *MockAuctionRepository) Delete(ctx context.Context, id int) error {
 	if m.DeleteFunc != nil {
 		return m.DeleteFunc(ctx, id)

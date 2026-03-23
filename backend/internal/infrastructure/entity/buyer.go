@@ -8,6 +8,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// Buyer provides Buyer related functionality.
 type Buyer struct {
 	ID           int        `db:"id"`
 	Name         string     `db:"name"`
@@ -16,6 +17,7 @@ type Buyer struct {
 	DeletedAt    *time.Time `db:"deleted_at"`
 }
 
+// Validate provides Validate related functionality.
 func (b *Buyer) Validate() error {
 	if strings.TrimSpace(b.Name) == "" {
 		return &apperrors.ValidationError{Field: "name", Message: "Name is required"}
@@ -29,6 +31,7 @@ func (b *Buyer) Validate() error {
 	return nil
 }
 
+// ToModel provides ToModel related functionality.
 func (b *Buyer) ToModel() *model.Buyer {
 	return &model.Buyer{
 		ID:           b.ID,

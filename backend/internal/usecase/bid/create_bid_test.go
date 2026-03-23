@@ -22,9 +22,6 @@ func bpp(amount int) *model.BidPrice {
 }
 
 //go:fix inline
-func intPtr(i int) *int {
-	return new(i)
-}
 
 func TestCreateBidUseCase_Execute(t *testing.T) {
 	updateStatusErr := errors.New("update status failed")
@@ -331,7 +328,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			txCalled := false
 
 			mockItemRepo := &mock.MockItemRepository{
-				FindByIDWithLockFunc: func(ctx context.Context, id int) (*model.AuctionItem, error) {
+				FindByIDWithLockFunc: func(_ context.Context, _ int) (*model.AuctionItem, error) {
 					if tt.listItemsErr != nil {
 						return nil, tt.listItemsErr
 					}
@@ -350,7 +347,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			mockBidRepo := &mock.MockBidRepository{
-				CreateFunc: func(ctx context.Context, b *model.Bid) (*model.Bid, error) {
+				CreateFunc: func(_ context.Context, b *model.Bid) (*model.Bid, error) {
 					createCalled = true
 					if b.ItemID != tt.input.ItemID || b.BuyerID != tt.input.BuyerID || b.Price.Amount() != tt.input.Price.Amount() {
 						t.Fatalf("bid field mismatch: got %+v, want %+v", b, tt.input)
@@ -365,13 +362,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			mockAuctionRepo := &mock.MockAuctionRepository{
-				FindByIDWithLockFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+				FindByIDWithLockFunc: func(_ context.Context, _ int) (*model.Auction, error) {
 					if tt.getAuctionErr != nil {
 						return nil, tt.getAuctionErr
 					}
 					return tt.mockAuction, nil
 				},
-				UpdateFunc: func(ctx context.Context, auction *model.Auction) error {
+				UpdateFunc: func(_ context.Context, _ *model.Auction) error {
 					updateCalled = true
 					return nil
 				},
@@ -389,14 +386,14 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 			notificationCalled := false
 			mockPushUseCase := &mock.MockPushNotificationUseCase{
-				SendNotificationFunc: func(ctx context.Context, buyerID int, payload any) error {
+				SendNotificationFunc: func(_ context.Context, _ int, _ any) error {
 					notificationCalled = true
 					return nil
 				},
 			}
 
 			mockCacheInv := &mock.MockCacheInvalidator{
-				InvalidateCacheFunc: func(ctx context.Context, id int) error {
+				InvalidateCacheFunc: func(_ context.Context, _ int) error {
 					return nil
 				},
 			}
@@ -414,15 +411,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 					if wantValErr.Field != "" && gotValErr.Field != wantValErr.Field {
 						t.Fatalf("expected field %s, got %s", wantValErr.Field, gotValErr.Field)
 					}
-				} else {
-					if !errors.Is(err, tt.wantErr) {
-						t.Fatalf("expected error %v, got %v", tt.wantErr, err)
-					}
+				} else if !errors.Is(err, tt.wantErr) {
+					t.Fatalf("expected error %v, got %v", tt.wantErr, err)
 				}
 				if created != nil {
 					t.Fatalf("expected nil result, got %+v", created)
 				}
-			} else {
+			} else if tt.wantErr == nil { // No error expected
 				if err != nil {
 					t.Fatalf("expected no error, got %v", err)
 				}

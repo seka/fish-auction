@@ -35,7 +35,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateAuctionUC = &mock.MockCreateAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, auction *model.Auction) (*model.Auction, error) {
 						auction.ID = 1
 						auction.CreatedAt = time.Now()
 						auction.UpdatedAt = time.Now()
@@ -48,7 +48,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 		{
 			name:       "InvalidJSON",
 			body:       "invalid-json",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError, // util.HandleError returns 500 for generic errors or maybe bad request? Check util implementation.
 			// Checking util.HandleError implementation usually maps json decode error to 500 unless handled specifically.
 			// Let's assume 500 for now based on previous simple HandleError usage.
@@ -60,7 +60,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 				VenueID:     1,
 				AuctionDate: "invalid-date",
 			},
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
@@ -71,7 +71,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateAuctionUC = &mock.MockCreateAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, _ *model.Auction) (*model.Auction, error) {
 						return nil, errors.New("db error")
 					},
 				}
@@ -93,7 +93,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/api/auctions", bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/auctions", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Create(w, req)
@@ -118,7 +118,7 @@ func TestAuctionHandler_List(t *testing.T) {
 			name: "Success",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 						return []model.Auction{{ID: 1}}, nil
 					},
 				}
@@ -134,7 +134,7 @@ func TestAuctionHandler_List(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 						if filters.VenueID == nil || *filters.VenueID != 1 {
 							return nil, errors.New("filter mismatch")
 						}
@@ -152,7 +152,7 @@ func TestAuctionHandler_List(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
 						// Handler ignores invalid parse, so filters should be nil/empty
 						if filters.VenueID != nil {
 							return nil, errors.New("expected nil VenueID")
@@ -167,7 +167,7 @@ func TestAuctionHandler_List(t *testing.T) {
 			name: "UseCaseError",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 						return nil, errors.New("db error")
 					},
 				}
@@ -182,7 +182,7 @@ func TestAuctionHandler_List(t *testing.T) {
 			tc.mockSetup(mockReg)
 			h := handler.NewAuctionHandler(mockReg)
 
-			req := httptest.NewRequest(http.MethodGet, "/api/auctions", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions", nil)
 			q := req.URL.Query()
 			for k, v := range tc.queryParams {
 				q.Add(k, v)
@@ -213,7 +213,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 			path: "/api/auctions/1",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
 						return &model.Auction{ID: 1}, nil
 					},
 				}
@@ -223,7 +223,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 		{
 			name: "InvalidID",
 			path: "/api/auctions/invalid",
-			mockSetup: func(r *mock.MockRegistry) {
+			mockSetup: func(_ *mock.MockRegistry) {
 				// No UC call expected
 			},
 			wantStatus: http.StatusBadRequest,
@@ -233,7 +233,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 			path: "/api/auctions/999",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, id int) (*model.Auction, error) {
+					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
 						return nil, errors.New("not found")
 					},
 				}
@@ -246,7 +246,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 			path: "/api/auctions/1/items",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetAuctionItemsUC = &mock.MockGetAuctionItemsUseCase{
-					ExecuteFunc: func(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+					ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) {
 						return []model.AuctionItem{}, nil
 					},
 				}
@@ -261,7 +261,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 			tc.mockSetup(mockReg)
 			h := handler.NewAuctionHandler(mockReg)
 
-			req := httptest.NewRequest(http.MethodGet, tc.path, nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, tc.path, nil)
 			w := httptest.NewRecorder()
 
 			h.Get(w, req)
@@ -279,13 +279,13 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockReg := &mock.MockRegistry{
 			GetAuctionItemsUC: &mock.MockGetAuctionItemsUseCase{
-				ExecuteFunc: func(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+				ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) {
 					return []model.AuctionItem{}, nil
 				},
 			},
 		}
 		h := handler.NewAuctionHandler(mockReg)
-		req := httptest.NewRequest(http.MethodGet, "/api/auctions/1/items", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/1/items", nil)
 		w := httptest.NewRecorder()
 		h.GetItems(w, req)
 		if w.Code != http.StatusOK {
@@ -295,7 +295,7 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 
 	t.Run("InvalidID", func(t *testing.T) {
 		h := handler.NewAuctionHandler(&mock.MockRegistry{})
-		req := httptest.NewRequest(http.MethodGet, "/api/auctions/invalid/items", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/invalid/items", nil)
 		w := httptest.NewRecorder()
 		h.GetItems(w, req)
 		if w.Code != http.StatusBadRequest {
@@ -306,13 +306,13 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 	t.Run("UseCaseError", func(t *testing.T) {
 		mockReg := &mock.MockRegistry{
 			GetAuctionItemsUC: &mock.MockGetAuctionItemsUseCase{
-				ExecuteFunc: func(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+				ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) {
 					return nil, errors.New("db error")
 				},
 			},
 		}
 		h := handler.NewAuctionHandler(mockReg)
-		req := httptest.NewRequest(http.MethodGet, "/api/auctions/1/items", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/1/items", nil)
 		w := httptest.NewRecorder()
 		h.GetItems(w, req)
 		if w.Code != http.StatusInternalServerError {
@@ -341,7 +341,7 @@ func TestAuctionHandler_Update(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, auction *model.Auction) error {
+					ExecuteFunc: func(_ context.Context, _ *model.Auction) error {
 						return nil
 					},
 				}
@@ -352,14 +352,14 @@ func TestAuctionHandler_Update(t *testing.T) {
 			name:       "InvalidID",
 			path:       "/api/auctions/invalid",
 			body:       dto.UpdateAuctionRequest{},
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "InvalidJSON",
 			path:       "/api/auctions/1",
 			body:       "invalid-json",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
@@ -368,7 +368,7 @@ func TestAuctionHandler_Update(t *testing.T) {
 			body: dto.UpdateAuctionRequest{
 				AuctionDate: "invalid",
 			},
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
@@ -379,7 +379,7 @@ func TestAuctionHandler_Update(t *testing.T) {
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, auction *model.Auction) error {
+					ExecuteFunc: func(_ context.Context, _ *model.Auction) error {
 						return errors.New("db error")
 					},
 				}
@@ -401,7 +401,7 @@ func TestAuctionHandler_Update(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPut, tc.path, bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, tc.path, bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Update(w, req)
@@ -429,7 +429,7 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 			body: dto.UpdateAuctionStatusRequest{Status: "Closed"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
-					ExecuteFunc: func(ctx context.Context, id int, status model.AuctionStatus) error {
+					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
 						return nil
 					},
 				}
@@ -440,14 +440,14 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 			name:       "InvalidID",
 			path:       "/api/auctions/invalid/status",
 			body:       dto.UpdateAuctionStatusRequest{Status: "Closed"},
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "InvalidJSON",
 			path:       "/api/auctions/1/status",
 			body:       "invalid-json",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
@@ -456,7 +456,7 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 			body: dto.UpdateAuctionStatusRequest{Status: "Closed"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
-					ExecuteFunc: func(ctx context.Context, id int, status model.AuctionStatus) error {
+					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
 						return errors.New("db error")
 					},
 				}
@@ -478,7 +478,7 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequest(http.MethodPatch, tc.path, bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, tc.path, bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.UpdateStatus(w, req)
@@ -504,7 +504,7 @@ func TestAuctionHandler_Delete(t *testing.T) {
 			path: "/api/auctions/1",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.DeleteAuctionUC = &mock.MockDeleteAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, id int) error {
+					ExecuteFunc: func(_ context.Context, _ int) error {
 						return nil
 					},
 				}
@@ -514,7 +514,7 @@ func TestAuctionHandler_Delete(t *testing.T) {
 		{
 			name:       "InvalidID",
 			path:       "/api/auctions/invalid",
-			mockSetup:  func(r *mock.MockRegistry) {},
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
@@ -522,7 +522,7 @@ func TestAuctionHandler_Delete(t *testing.T) {
 			path: "/api/auctions/1",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.DeleteAuctionUC = &mock.MockDeleteAuctionUseCase{
-					ExecuteFunc: func(ctx context.Context, id int) error {
+					ExecuteFunc: func(_ context.Context, _ int) error {
 						return errors.New("db error")
 					},
 				}
@@ -537,7 +537,7 @@ func TestAuctionHandler_Delete(t *testing.T) {
 			tc.mockSetup(mockReg)
 			h := handler.NewAuctionHandler(mockReg)
 
-			req := httptest.NewRequest(http.MethodDelete, tc.path, nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, tc.path, nil)
 			w := httptest.NewRecorder()
 
 			h.Delete(w, req)
@@ -579,15 +579,15 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 
 	mockReg := &mock.MockRegistry{
 		// Mock all UCs to return success for routing tests
-		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(ctx context.Context, a *model.Auction) (*model.Auction, error) { a.ID = 1; return a, nil }},
-		ListAuctionsUC: &mock.MockListAuctionsUseCase{ExecuteFunc: func(ctx context.Context, f *repository.AuctionFilters) ([]model.Auction, error) {
+		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(_ context.Context, a *model.Auction) (*model.Auction, error) { a.ID = 1; return a, nil }},
+		ListAuctionsUC: &mock.MockListAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 			return []model.Auction{}, nil
 		}},
-		GetAuctionUC:          &mock.MockGetAuctionUseCase{ExecuteFunc: func(ctx context.Context, id int) (*model.Auction, error) { return &model.Auction{ID: 1}, nil }},
-		UpdateAuctionUC:       &mock.MockUpdateAuctionUseCase{ExecuteFunc: func(ctx context.Context, a *model.Auction) error { return nil }},
-		DeleteAuctionUC:       &mock.MockDeleteAuctionUseCase{ExecuteFunc: func(ctx context.Context, id int) error { return nil }},
-		GetAuctionItemsUC:     &mock.MockGetAuctionItemsUseCase{ExecuteFunc: func(ctx context.Context, id int) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
-		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(ctx context.Context, id int, s model.AuctionStatus) error { return nil }},
+		GetAuctionUC:          &mock.MockGetAuctionUseCase{ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) { return &model.Auction{ID: 1}, nil }},
+		UpdateAuctionUC:       &mock.MockUpdateAuctionUseCase{ExecuteFunc: func(_ context.Context, _ *model.Auction) error { return nil }},
+		DeleteAuctionUC:       &mock.MockDeleteAuctionUseCase{ExecuteFunc: func(_ context.Context, _ int) error { return nil }},
+		GetAuctionItemsUC:     &mock.MockGetAuctionItemsUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
+		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error { return nil }},
 	}
 
 	h := handler.NewAuctionHandler(mockReg)
@@ -601,18 +601,19 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 				// Provide minimal valid body to avoid 400/500 from Handler before method check if check is late?
 				// Actually Handler checks method first usually in RegisterRoutes.
 				// But to succeed we need body for 200 cases.
-				if tc.path == "/api/auctions" && tc.method == http.MethodPost {
+				switch {
+				case tc.path == "/api/auctions" && tc.method == http.MethodPost:
 					body, _ = json.Marshal(dto.CreateAuctionRequest{AuctionDate: "2023-01-01"})
-				} else if tc.path == "/api/auctions/1" && tc.method == http.MethodPut {
+				case tc.path == "/api/auctions/1" && tc.method == http.MethodPut:
 					body, _ = json.Marshal(dto.UpdateAuctionRequest{AuctionDate: "2023-01-01"})
-				} else if tc.path == "/api/auctions/1/status" && tc.method == http.MethodPatch {
+				case tc.path == "/api/auctions/1/status" && tc.method == http.MethodPatch:
 					body, _ = json.Marshal(dto.UpdateAuctionStatusRequest{Status: "Closed"})
-				} else {
+				default:
 					body = []byte("{}")
 				}
 			}
 
-			req := httptest.NewRequest(tc.method, tc.path, bytes.NewReader(body))
+			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(body))
 			w := httptest.NewRecorder()
 
 			mux.ServeHTTP(w, req)

@@ -1,4 +1,3 @@
-// Package postgres provides repository implementations using PostgreSQL.
 package postgres
 
 import (

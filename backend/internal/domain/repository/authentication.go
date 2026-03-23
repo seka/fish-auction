@@ -7,6 +7,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// AuthenticationRepository provides AuthenticationRepository related functionality.
 type AuthenticationRepository interface {
 	Create(ctx context.Context, auth *model.Authentication) (*model.Authentication, error)
 	FindByEmail(ctx context.Context, email string) (*model.Authentication, error)

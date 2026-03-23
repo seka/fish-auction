@@ -7,6 +7,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// Bid provides Bid related functionality.
 type Bid struct {
 	ID        int       `db:"id"`
 	ItemID    int       `db:"item_id"`
@@ -15,6 +16,7 @@ type Bid struct {
 	CreatedAt time.Time `db:"created_at"`
 }
 
+// Validate provides Validate related functionality.
 func (e *Bid) Validate() error {
 	if e.ItemID <= 0 {
 		return &errors.ValidationError{
@@ -37,6 +39,7 @@ func (e *Bid) Validate() error {
 	return nil
 }
 
+// ToModel provides ToModel related functionality.
 func (e *Bid) ToModel() *model.Bid {
 	return &model.Bid{
 		ID:        e.ID,

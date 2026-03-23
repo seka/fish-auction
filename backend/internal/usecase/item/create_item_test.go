@@ -45,7 +45,7 @@ func TestCreateItemUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := &mock.MockItemRepository{
-				CreateFunc: func(ctx context.Context, in *model.AuctionItem) (*model.AuctionItem, error) {
+				CreateFunc: func(_ context.Context, in *model.AuctionItem) (*model.AuctionItem, error) {
 					if in != tt.input {
 						t.Fatalf("input pointer mismatch")
 					}

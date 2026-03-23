@@ -13,7 +13,7 @@ type ListAuctionsUseCase interface {
 	Execute(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error)
 }
 
-// listAuctionsUseCase handles listing auctions
+// ListAuctionsUseCase handles listing auctions
 type listAuctionsUseCase struct {
 	repo repository.AuctionRepository
 }
@@ -21,7 +21,7 @@ type listAuctionsUseCase struct {
 var _ ListAuctionsUseCase = (*listAuctionsUseCase)(nil)
 
 // NewListAuctionsUseCase creates a new instance of ListAuctionsUseCase
-func NewListAuctionsUseCase(auctionRepo repository.AuctionRepository) *listAuctionsUseCase {
+func NewListAuctionsUseCase(auctionRepo repository.AuctionRepository) ListAuctionsUseCase {
 	return &listAuctionsUseCase{repo: auctionRepo}
 }
 

@@ -11,6 +11,7 @@ type MockUpdateItemUseCase struct {
 	ExecuteFunc func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 }
 
+// Execute executes the use case logic.
 func (m *MockUpdateItemUseCase) Execute(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, item)
@@ -23,6 +24,7 @@ type MockDeleteItemUseCase struct {
 	ExecuteFunc func(ctx context.Context, id int) error
 }
 
+// Execute executes the use case logic.
 func (m *MockDeleteItemUseCase) Execute(ctx context.Context, id int) error {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, id)
@@ -35,6 +37,7 @@ type MockUpdateItemSortOrderUseCase struct {
 	ExecuteFunc func(ctx context.Context, id int, sortOrder int) error
 }
 
+// Execute executes the use case logic.
 func (m *MockUpdateItemSortOrderUseCase) Execute(ctx context.Context, id, sortOrder int) error {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, id, sortOrder)

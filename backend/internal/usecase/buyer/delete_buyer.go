@@ -19,7 +19,7 @@ type deleteBuyerUseCase struct {
 }
 
 // NewDeleteBuyerUseCase creates a new instance of DeleteBuyerUseCase
-func NewDeleteBuyerUseCase(repo repository.BuyerRepository) *deleteBuyerUseCase {
+func NewDeleteBuyerUseCase(repo repository.BuyerRepository) DeleteBuyerUseCase {
 	return &deleteBuyerUseCase{repo: repo}
 }
 

@@ -16,7 +16,7 @@ type mockAuctionRepoForCreate struct {
 	err     error
 }
 
-func (m *mockAuctionRepoForCreate) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
+func (m *mockAuctionRepoForCreate) Create(_ context.Context, a *model.Auction) (*model.Auction, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -25,13 +25,13 @@ func (m *mockAuctionRepoForCreate) Create(ctx context.Context, a *model.Auction)
 	a.ID = 1
 	return a, nil
 }
-func (m *mockAuctionRepoForCreate) FindByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForCreate) FindByID(_ context.Context, _ int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForCreate) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForCreate) FindByIDWithLock(_ context.Context, _ int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForCreate) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+func (m *mockAuctionRepoForCreate) List(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 	// Actually interface compliance check:
 	// repository.AuctionRepository uses repository.AuctionFilters.
 	// But minimal mock for Create doesn't need List.
@@ -39,16 +39,16 @@ func (m *mockAuctionRepoForCreate) List(ctx context.Context, filters *repository
 }
 
 // Quick minimal methods stub to satisfy interface
-func (m *mockAuctionRepoForCreate) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
+func (m *mockAuctionRepoForCreate) ListByVenue(_ context.Context, _ int) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForCreate) Update(ctx context.Context, auction *model.Auction) error {
+func (m *mockAuctionRepoForCreate) Update(_ context.Context, _ *model.Auction) error {
 	return nil
 }
-func (m *mockAuctionRepoForCreate) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
+func (m *mockAuctionRepoForCreate) UpdateStatus(_ context.Context, _ int, _ model.AuctionStatus) error {
 	return nil
 }
-func (m *mockAuctionRepoForCreate) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockAuctionRepoForCreate) Delete(_ context.Context, _ int) error { return nil }
 
 // Fix List signature
 // But we need to import repository package for the signature.

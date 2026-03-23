@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"compress/gzip"
 	"io"
 	"net/http"
@@ -10,12 +11,12 @@ import (
 
 func TestGzipMiddleware(t *testing.T) {
 	middleware := NewGzipMiddleware()
-	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World! This is a long enough string to benefit from compression."))
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("Hello, World! This is a long enough string to benefit from compression."))
 	}))
 
 	t.Run("No gzip support", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 		if rr.Header().Get("Content-Encoding") != "" {
@@ -24,7 +25,7 @@ func TestGzipMiddleware(t *testing.T) {
 	})
 
 	t.Run("Gzip support", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 		req.Header.Set("Accept-Encoding", "gzip")
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
@@ -37,7 +38,7 @@ func TestGzipMiddleware(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer gz.Close()
+		defer func() { _ = gz.Close() }()
 
 		body, _ := io.ReadAll(gz)
 		if string(body) != "Hello, World! This is a long enough string to benefit from compression." {

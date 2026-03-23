@@ -15,37 +15,37 @@ type mockItemRepository struct {
 }
 
 // Implement ItemRepository interface
-func (m *mockItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (m *mockItemRepository) Create(_ context.Context, _ *model.AuctionItem) (*model.AuctionItem, error) {
 	return nil, nil
 }
-func (m *mockItemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
+func (m *mockItemRepository) FindByID(_ context.Context, _ int) (*model.AuctionItem, error) {
 	return nil, nil
 }
-func (m *mockItemRepository) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
+func (m *mockItemRepository) FindByIDWithLock(_ context.Context, _ int) (*model.AuctionItem, error) {
 	return nil, nil
 }
-func (m *mockItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
+func (m *mockItemRepository) List(_ context.Context, _ string) ([]model.AuctionItem, error) {
 	return nil, nil
 }
-func (m *mockItemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
+func (m *mockItemRepository) ListByAuction(_ context.Context, _ int) ([]model.AuctionItem, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
 	return m.items, nil
 }
-func (m *mockItemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+func (m *mockItemRepository) Update(_ context.Context, _ *model.AuctionItem) (*model.AuctionItem, error) {
 	return nil, nil
 }
-func (m *mockItemRepository) Delete(ctx context.Context, id int) error {
+func (m *mockItemRepository) Delete(_ context.Context, _ int) error {
 	return nil
 }
-func (m *mockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
+func (m *mockItemRepository) UpdateStatus(_ context.Context, _ int, _ model.ItemStatus) error {
 	return nil
 }
-func (m *mockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+func (m *mockItemRepository) UpdateSortOrder(_ context.Context, _, _ int) error {
 	return nil
 }
-func (m *mockItemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
+func (m *mockItemRepository) Reorder(_ context.Context, _ int, _ []int) error {
 	return nil
 }
 

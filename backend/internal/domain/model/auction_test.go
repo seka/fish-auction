@@ -38,7 +38,7 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 			want:        false,
 		},
 		{
-			name:        "returns false when status is cancelled",
+			name:        "returns false when status is canceled",
 			status:      AuctionStatusCancelled,
 			auctionDate: today.AddDate(0, 0, -1),
 			want:        false,
@@ -94,6 +94,3 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 }
 
 //go:fix inline
-func timePtr(t time.Time) *time.Time {
-	return new(t)
-}

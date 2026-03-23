@@ -10,10 +10,12 @@ import (
 // GzipMiddleware compresses the response using gzip if the client supports it.
 type GzipMiddleware struct{}
 
+// NewGzipMiddleware creates a new GzipMiddleware instance.
 func NewGzipMiddleware() *GzipMiddleware {
 	return &GzipMiddleware{}
 }
 
+// Handle provides Handle related functionality.
 func (m *GzipMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// クライアントがGzip圧縮に対応している場合のみ適用。
@@ -25,7 +27,7 @@ func (m *GzipMiddleware) Handle(next http.Handler) http.Handler {
 
 		w.Header().Set("Content-Encoding", "gzip")
 		gz := gzip.NewWriter(w)
-		defer gz.Close()
+		defer func() { _ = gz.Close() }()
 
 		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
 		next.ServeHTTP(gzw, r)

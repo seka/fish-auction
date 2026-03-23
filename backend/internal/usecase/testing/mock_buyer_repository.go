@@ -16,26 +16,32 @@ type MockBuyerRepository struct {
 	DeleteFunc      func(ctx context.Context, id int) error
 }
 
+// Create creates a new record.
 func (m *MockBuyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
 	return m.CreateFunc(ctx, buyer)
 }
 
+// List retrieves a list of records.
 func (m *MockBuyerRepository) List(ctx context.Context) ([]model.Buyer, error) {
 	return m.ListFunc(ctx)
 }
 
+// FindByID retrieves a record based on criteria.
 func (m *MockBuyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
 	return m.FindByIDFunc(ctx, id)
 }
 
+// FindByName retrieves a record based on criteria.
 func (m *MockBuyerRepository) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
 	return m.FindByNameFunc(ctx, name)
 }
 
+// FindByEmail retrieves a record based on criteria.
 func (m *MockBuyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
 	return m.FindByEmailFunc(ctx, email)
 }
 
+// Delete removes a record by ID.
 func (m *MockBuyerRepository) Delete(ctx context.Context, id int) error {
 	return m.DeleteFunc(ctx, id)
 }

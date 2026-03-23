@@ -2,8 +2,8 @@ package dto
 
 import "time"
 
-// Bid/Transaction DTOs
-// CreateBidRequest represents the request body for creating a bid.
+
+// CreateBidRequest is a data transfer object.
 type CreateBidRequest struct {
 	ItemID  int `json:"item_id"`
 	BuyerID int `json:"buyer_id"`

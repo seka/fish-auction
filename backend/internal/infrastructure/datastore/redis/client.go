@@ -20,6 +20,7 @@ func NewClient(client *goredis.Client) *Client {
 	return &Client{client: client}
 }
 
+// Get provides Get related functionality.
 func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == goredis.Nil {
@@ -28,10 +29,12 @@ func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
 	return data, err
 }
 
+// Set provides Set related functionality.
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	return c.client.Set(ctx, key, value, ttl).Err()
 }
 
+// Delete removes a record by ID.
 func (c *Client) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }

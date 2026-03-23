@@ -1,7 +1,7 @@
 package dto
 
-// Buyer DTOs
-// CreateBuyerRequest represents the request body for creating a buyer.
+
+// CreateBuyerRequest is a data transfer object.
 type CreateBuyerRequest struct {
 	Name         string `json:"name"`
 	Email        string `json:"email"`

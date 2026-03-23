@@ -14,54 +14,54 @@ type mockAuctionRepoForStatusUpdate struct {
 	err error
 }
 
-func (m *mockAuctionRepoForStatusUpdate) Create(ctx context.Context, a *model.Auction) (*model.Auction, error) {
+func (m *mockAuctionRepoForStatusUpdate) Create(_ context.Context, _ *model.Auction) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForStatusUpdate) FindByID(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForStatusUpdate) FindByID(_ context.Context, _ int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForStatusUpdate) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
+func (m *mockAuctionRepoForStatusUpdate) FindByIDWithLock(_ context.Context, _ int) (*model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForStatusUpdate) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
+func (m *mockAuctionRepoForStatusUpdate) List(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForStatusUpdate) ListByVenue(ctx context.Context, venueID int) ([]model.Auction, error) {
+func (m *mockAuctionRepoForStatusUpdate) ListByVenue(_ context.Context, _ int) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockAuctionRepoForStatusUpdate) Update(ctx context.Context, auction *model.Auction) error {
+func (m *mockAuctionRepoForStatusUpdate) Update(_ context.Context, _ *model.Auction) error {
 	return nil
 }
-func (m *mockAuctionRepoForStatusUpdate) UpdateStatus(ctx context.Context, id int, status model.AuctionStatus) error {
+func (m *mockAuctionRepoForStatusUpdate) UpdateStatus(_ context.Context, _ int, _ model.AuctionStatus) error {
 	return m.err
 }
-func (m *mockAuctionRepoForStatusUpdate) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockAuctionRepoForStatusUpdate) Delete(_ context.Context, _ int) error { return nil }
 
 type mockBuyerRepoForStatusUpdate struct{}
 
-func (m *mockBuyerRepoForStatusUpdate) Create(ctx context.Context, b *model.Buyer) (*model.Buyer, error) {
+func (m *mockBuyerRepoForStatusUpdate) Create(_ context.Context, _ *model.Buyer) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepoForStatusUpdate) List(ctx context.Context) ([]model.Buyer, error) {
+func (m *mockBuyerRepoForStatusUpdate) List(_ context.Context) ([]model.Buyer, error) {
 	return []model.Buyer{{ID: 1}}, nil
 }
-func (m *mockBuyerRepoForStatusUpdate) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+func (m *mockBuyerRepoForStatusUpdate) FindByID(_ context.Context, _ int) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepoForStatusUpdate) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
+func (m *mockBuyerRepoForStatusUpdate) FindByName(_ context.Context, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepoForStatusUpdate) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+func (m *mockBuyerRepoForStatusUpdate) FindByEmail(_ context.Context, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepoForStatusUpdate) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockBuyerRepoForStatusUpdate) Delete(_ context.Context, _ int) error { return nil }
 
 type mockPushUseCaseForStatusUpdate struct{}
 
-func (m *mockPushUseCaseForStatusUpdate) Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error {
+func (m *mockPushUseCaseForStatusUpdate) Subscribe(_ context.Context, _ int, _ *model.PushSubscription) error {
 	return nil
 }
-func (m *mockPushUseCaseForStatusUpdate) SendNotification(ctx context.Context, buyerID int, payload any) error {
+func (m *mockPushUseCaseForStatusUpdate) SendNotification(_ context.Context, _ int, _ any) error {
 	return nil
 }
 

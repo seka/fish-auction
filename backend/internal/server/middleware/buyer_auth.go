@@ -8,14 +8,17 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// BuyerAuthMiddleware provides BuyerAuthMiddleware related functionality.
 type BuyerAuthMiddleware struct {
 	sessionRepo repository.SessionRepository
 }
 
+// NewBuyerAuthMiddleware creates a new BuyerAuthMiddleware instance.
 func NewBuyerAuthMiddleware(sessionRepo repository.SessionRepository) *BuyerAuthMiddleware {
 	return &BuyerAuthMiddleware{sessionRepo: sessionRepo}
 }
 
+// Handle provides Handle related functionality.
 func (m *BuyerAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("buyer_session")

@@ -35,7 +35,7 @@ func TestListItemsUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mock.MockItemRepository{
-				ListFunc: func(ctx context.Context, status string) ([]model.AuctionItem, error) {
+				ListFunc: func(_ context.Context, status string) ([]model.AuctionItem, error) {
 					if status != tt.status {
 						t.Fatalf("unexpected status %s", status)
 					}

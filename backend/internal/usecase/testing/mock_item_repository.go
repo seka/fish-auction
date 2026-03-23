@@ -20,42 +20,52 @@ type MockItemRepository struct {
 	ReorderFunc          func(ctx context.Context, auctionID int, ids []int) error
 }
 
+// Create creates a new record.
 func (m *MockItemRepository) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	return m.CreateFunc(ctx, item)
 }
 
+// List retrieves a list of records.
 func (m *MockItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
 	return m.ListFunc(ctx, status)
 }
 
+// ListByAuction retrieves a list of records.
 func (m *MockItemRepository) ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error) {
 	return m.ListByAuctionFunc(ctx, auctionID)
 }
 
+// FindByID retrieves a record based on criteria.
 func (m *MockItemRepository) FindByID(ctx context.Context, id int) (*model.AuctionItem, error) {
 	return m.FindByIDFunc(ctx, id)
 }
 
+// FindByIDWithLock retrieves a record based on criteria.
 func (m *MockItemRepository) FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error) {
 	return m.FindByIDWithLockFunc(ctx, id)
 }
 
+// Update updates an existing record.
 func (m *MockItemRepository) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	return m.UpdateFunc(ctx, item)
 }
 
+// Delete removes a record by ID.
 func (m *MockItemRepository) Delete(ctx context.Context, id int) error {
 	return m.DeleteFunc(ctx, id)
 }
 
+// UpdateStatus updates an existing record.
 func (m *MockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
 	return m.UpdateStatusFunc(ctx, id, status)
 }
 
-func (m *MockItemRepository) UpdateSortOrder(ctx context.Context, id int, sortOrder int) error {
+// UpdateSortOrder updates an existing record.
+func (m *MockItemRepository) UpdateSortOrder(ctx context.Context, id, sortOrder int) error {
 	return m.UpdateSortOrderFunc(ctx, id, sortOrder)
 }
 
+// Reorder provides Reorder related functionality.
 func (m *MockItemRepository) Reorder(ctx context.Context, auctionID int, ids []int) error {
 	return m.ReorderFunc(ctx, auctionID, ids)
 }

@@ -15,7 +15,7 @@ import (
 func TestAuthResetHandler(t *testing.T) {
 	t.Run("RequestReset_Success", func(t *testing.T) {
 		mockReqUC := &mock.MockRequestPasswordResetUseCase{
-			ExecuteFunc: func(ctx context.Context, email string) error {
+			ExecuteFunc: func(_ context.Context, _ string) error {
 				return nil
 			},
 		}
@@ -24,7 +24,7 @@ func TestAuthResetHandler(t *testing.T) {
 
 		reqBody := map[string]string{"email": "buyer@example.com"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/password-reset/request", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/auth/password-reset/request", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.RequestReset(w, req)
@@ -41,7 +41,7 @@ func TestAuthResetHandler(t *testing.T) {
 
 		reqBody := map[string]string{"token": "token123"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/password-reset/verify", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/auth/password-reset/verify", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.VerifyToken(w, req)
@@ -53,7 +53,7 @@ func TestAuthResetHandler(t *testing.T) {
 
 	t.Run("ConfirmReset_Success", func(t *testing.T) {
 		mockResetUC := &mock.MockResetPasswordUseCase{
-			ExecuteFunc: func(ctx context.Context, token, newPassword string) error {
+			ExecuteFunc: func(_ context.Context, _, _ string) error {
 				return nil
 			},
 		}
@@ -62,7 +62,7 @@ func TestAuthResetHandler(t *testing.T) {
 
 		reqBody := map[string]string{"token": "token123", "new_password": "newpass"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/password-reset/confirm", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/auth/password-reset/confirm", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.ConfirmReset(w, req)
@@ -78,7 +78,7 @@ func TestAuthResetHandler(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/auth/password-reset/request", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auth/password-reset/request", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)

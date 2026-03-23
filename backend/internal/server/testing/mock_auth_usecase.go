@@ -6,10 +6,12 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// MockLoginUseCase is a mock implementation of LoginUseCase for testing.
 type MockLoginUseCase struct {
 	ExecuteFunc func(ctx context.Context, email, password string) (*model.Admin, error)
 }
 
+// Execute executes the use case logic.
 func (m *MockLoginUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, email, password)
@@ -17,10 +19,12 @@ func (m *MockLoginUseCase) Execute(ctx context.Context, email, password string) 
 	return nil, nil
 }
 
+// MockRequestPasswordResetUseCase is a mock implementation of RequestPasswordResetUseCase for testing.
 type MockRequestPasswordResetUseCase struct {
 	ExecuteFunc func(ctx context.Context, email string) error
 }
 
+// Execute executes the use case logic.
 func (m *MockRequestPasswordResetUseCase) Execute(ctx context.Context, email string) error {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, email)
@@ -28,10 +32,12 @@ func (m *MockRequestPasswordResetUseCase) Execute(ctx context.Context, email str
 	return nil
 }
 
+// MockResetPasswordUseCase is a mock implementation of ResetPasswordUseCase for testing.
 type MockResetPasswordUseCase struct {
 	ExecuteFunc func(ctx context.Context, token, newPassword string) error
 }
 
+// Execute executes the use case logic.
 func (m *MockResetPasswordUseCase) Execute(ctx context.Context, token, newPassword string) error {
 	if m.ExecuteFunc != nil {
 		return m.ExecuteFunc(ctx, token, newPassword)

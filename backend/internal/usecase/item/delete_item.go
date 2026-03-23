@@ -6,6 +6,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// DeleteItemUseCase removes a record by ID.
 type DeleteItemUseCase interface {
 	Execute(ctx context.Context, id int) error
 }
@@ -17,7 +18,7 @@ type deleteItemUseCase struct {
 }
 
 // NewDeleteItemUseCase creates a new instance of DeleteItemUseCase
-func NewDeleteItemUseCase(repo repository.ItemRepository) *deleteItemUseCase {
+func NewDeleteItemUseCase(repo repository.ItemRepository) DeleteItemUseCase {
 	return &deleteItemUseCase{repo: repo}
 }
 

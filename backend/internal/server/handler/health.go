@@ -19,7 +19,7 @@ func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	fmt.Fprintf(w, "Backend is healthy!")
+	_, _ = fmt.Fprintf(w, "Backend is healthy!")
 }
 
 // RegisterRoutes registers the health handler routes to the given mux.

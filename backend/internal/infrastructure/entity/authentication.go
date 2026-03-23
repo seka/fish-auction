@@ -9,6 +9,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
+// Authentication provides Authentication related functionality.
 type Authentication struct {
 	ID             int        `db:"id"`
 	BuyerID        int        `db:"buyer_id"`
@@ -22,6 +23,7 @@ type Authentication struct {
 	UpdatedAt      time.Time  `db:"updated_at"`
 }
 
+// Validate provides Validate related functionality.
 func (a *Authentication) Validate() error {
 	if strings.TrimSpace(a.Email) == "" {
 		return &apperrors.ValidationError{Field: "email", Message: "Email is required"}
@@ -35,6 +37,7 @@ func (a *Authentication) Validate() error {
 	return nil
 }
 
+// IsLocked provides IsLocked related functionality.
 func (a *Authentication) IsLocked() bool {
 	if a.LockedUntil == nil {
 		return false
@@ -42,6 +45,7 @@ func (a *Authentication) IsLocked() bool {
 	return time.Now().Before(*a.LockedUntil)
 }
 
+// ToModel provides ToModel related functionality.
 func (a *Authentication) ToModel() *model.Authentication {
 	return &model.Authentication{
 		ID:             a.ID,

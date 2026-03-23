@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// UpdatePasswordUseCase updates an existing record.
 type UpdatePasswordUseCase interface {
 	Execute(ctx context.Context, buyerID int, currentPassword, newPassword string) error
 }
@@ -21,7 +22,7 @@ type updatePasswordUseCase struct {
 }
 
 // NewUpdatePasswordUseCase creates a new instance of UpdatePasswordUseCase
-func NewUpdatePasswordUseCase(authRepo repository.AuthenticationRepository, sessionRepo repository.SessionRepository) *updatePasswordUseCase {
+func NewUpdatePasswordUseCase(authRepo repository.AuthenticationRepository, sessionRepo repository.SessionRepository) UpdatePasswordUseCase {
 	return &updatePasswordUseCase{
 		authRepo:    authRepo,
 		sessionRepo: sessionRepo,

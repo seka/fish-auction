@@ -13,7 +13,7 @@ type CreateItemUseCase interface {
 	Execute(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 }
 
-// createItemUseCase handles the creation of auction items
+// CreateItemUseCase handles the creation of auction items
 type createItemUseCase struct {
 	repo repository.ItemRepository
 }
@@ -21,7 +21,7 @@ type createItemUseCase struct {
 var _ CreateItemUseCase = (*createItemUseCase)(nil)
 
 // NewCreateItemUseCase creates a new instance of CreateItemUseCase
-func NewCreateItemUseCase(repo repository.ItemRepository) *createItemUseCase {
+func NewCreateItemUseCase(repo repository.ItemRepository) CreateItemUseCase {
 	return &createItemUseCase{repo: repo}
 }
 

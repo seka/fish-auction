@@ -24,6 +24,7 @@ func NewItemStore(cache datastore.Cache, ttl time.Duration) *ItemStore {
 	}
 }
 
+// Get provides Get related functionality.
 func (c *ItemStore) Get(ctx context.Context, id int) (*model.AuctionItem, error) {
 	key := fmt.Sprintf("item:%d", id)
 	data, err := c.cache.Get(ctx, key)
@@ -41,6 +42,7 @@ func (c *ItemStore) Get(ctx context.Context, id int) (*model.AuctionItem, error)
 	return &item, nil
 }
 
+// Set provides Set related functionality.
 func (c *ItemStore) Set(ctx context.Context, id int, item *model.AuctionItem) error {
 	key := fmt.Sprintf("item:%d", id)
 	data, err := json.Marshal(item)
@@ -50,6 +52,7 @@ func (c *ItemStore) Set(ctx context.Context, id int, item *model.AuctionItem) er
 	return c.cache.Set(ctx, key, data, c.ttl)
 }
 
+// Delete removes a record by ID.
 func (c *ItemStore) Delete(ctx context.Context, id int) error {
 	key := fmt.Sprintf("item:%d", id)
 	return c.cache.Delete(ctx, key)

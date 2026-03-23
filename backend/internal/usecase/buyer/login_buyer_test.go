@@ -105,7 +105,7 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 			lockCalled := false
 
 			mockAuthRepo := &mock.MockAuthenticationRepository{
-				FindByEmailFunc: func(ctx context.Context, email string) (*model.Authentication, error) {
+				FindByEmailFunc: func(_ context.Context, email string) (*model.Authentication, error) {
 					if tt.mockAuthErr != nil {
 						return nil, tt.mockAuthErr
 					}
@@ -114,20 +114,20 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 					}
 					return nil, errors.New("not found")
 				},
-				UpdateLoginSuccessFunc: func(ctx context.Context, id int, loginAt time.Time) error {
+				UpdateLoginSuccessFunc: func(_ context.Context, _ int, _ time.Time) error {
 					return nil
 				},
-				IncrementFailedAttemptsFunc: func(ctx context.Context, id int) error {
+				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) error {
 					return nil
 				},
-				LockAccountFunc: func(ctx context.Context, id int, until time.Time) error {
+				LockAccountFunc: func(_ context.Context, _ int, _ time.Time) error {
 					lockCalled = true
 					return nil
 				},
 			}
 
 			mockBuyerRepo := &mock.MockBuyerRepository{
-				FindByIDFunc: func(ctx context.Context, id int) (*model.Buyer, error) {
+				FindByIDFunc: func(_ context.Context, _ int) (*model.Buyer, error) {
 					if tt.mockBuyerErr != nil {
 						return nil, tt.mockBuyerErr
 					}

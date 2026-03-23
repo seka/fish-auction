@@ -32,7 +32,7 @@ func TestCreateFishermanUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mock.MockFishermanRepository{
-				CreateFunc: func(ctx context.Context, name string) (*model.Fisherman, error) {
+				CreateFunc: func(_ context.Context, name string) (*model.Fisherman, error) {
 					if name != tt.input {
 						t.Fatalf("unexpected name %s", name)
 					}

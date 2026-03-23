@@ -1,7 +1,7 @@
 package dto
 
-// Fisherman DTOs
-// CreateFishermanRequest represents the request body for creating a fisherman.
+
+// CreateFishermanRequest is a data transfer object.
 type CreateFishermanRequest struct {
 	Name string `json:"name"`
 }

@@ -18,7 +18,7 @@ import (
 func TestItemHandler_Create(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockCreateUC := &mock.MockCreateItemUseCase{
-			ExecuteFunc: func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+			ExecuteFunc: func(_ context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 				item.ID = 1
 				item.Status = model.ItemStatusAvailable
 				return item, nil
@@ -44,7 +44,7 @@ func TestItemHandler_Create(t *testing.T) {
 		}
 		body, _ := json.Marshal(reqBody)
 
-		req := httptest.NewRequest(http.MethodPost, "/api/items", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/items", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -74,7 +74,7 @@ func TestItemHandler_Create(t *testing.T) {
 
 		h := handler.NewItemHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodPost, "/api/items", bytes.NewReader([]byte("invalid json")))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/items", bytes.NewReader([]byte("invalid json")))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -88,7 +88,7 @@ func TestItemHandler_Create(t *testing.T) {
 func TestItemHandler_List(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockListUC := &mock.MockListItemsUseCase{
-			ExecuteFunc: func(ctx context.Context, status string) ([]model.AuctionItem, error) {
+			ExecuteFunc: func(_ context.Context, _ string) ([]model.AuctionItem, error) {
 				return []model.AuctionItem{
 					{ID: 1, FishType: "Tuna", Quantity: 10, Unit: "kg", Status: model.ItemStatusAvailable},
 				}, nil
@@ -105,7 +105,7 @@ func TestItemHandler_List(t *testing.T) {
 
 		h := handler.NewItemHandler(mockReg)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/items?status=Available", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/items?status=Available", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -130,7 +130,7 @@ func TestItemHandler_RegisterRoutes(t *testing.T) {
 		authMiddleware := func(next http.Handler) http.Handler { return next }
 		h.RegisterRoutes(r, authMiddleware)
 
-		req := httptest.NewRequest(http.MethodPatch, "/api/items", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, "/api/items", nil)
 		w := httptest.NewRecorder()
 
 		r.ServeHTTP(w, req)

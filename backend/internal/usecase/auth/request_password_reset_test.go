@@ -16,13 +16,13 @@ type mockBuyerRepository struct {
 	err   error
 }
 
-func (m *mockBuyerRepository) Create(ctx context.Context, buyer *model.Buyer) (*model.Buyer, error) {
+func (m *mockBuyerRepository) Create(_ context.Context, _ *model.Buyer) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepository) FindByID(ctx context.Context, id int) (*model.Buyer, error) {
+func (m *mockBuyerRepository) FindByID(_ context.Context, _ int) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepository) FindByEmail(ctx context.Context, email string) (*model.Buyer, error) {
+func (m *mockBuyerRepository) FindByEmail(_ context.Context, _ string) (*model.Buyer, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -30,22 +30,22 @@ func (m *mockBuyerRepository) FindByEmail(ctx context.Context, email string) (*m
 	// Since model.Buyer doesn't have Email, use external check or standard return
 	return m.buyer, nil
 }
-func (m *mockBuyerRepository) List(ctx context.Context) ([]model.Buyer, error) { return nil, nil }
-func (m *mockBuyerRepository) FindByName(ctx context.Context, name string) (*model.Buyer, error) {
+func (m *mockBuyerRepository) List(_ context.Context) ([]model.Buyer, error) { return nil, nil }
+func (m *mockBuyerRepository) FindByName(_ context.Context, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepository) Count(ctx context.Context) (int, error)   { return 0, nil }
-func (m *mockBuyerRepository) Delete(ctx context.Context, id int) error { return nil }
+func (m *mockBuyerRepository) Count(_ context.Context) (int, error)   { return 0, nil }
+func (m *mockBuyerRepository) Delete(_ context.Context, _ int) error { return nil }
 
 type mockBuyerPasswordResetRepository struct {
 	mock.Mock
 }
 
-func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, userID int, role string, tokenHash string, expiresAt time.Time) error {
+func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, userID int, role, tokenHash string, expiresAt time.Time) error {
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (int, string, time.Time, error) {
+func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
 	args := m.Called(ctx, tokenHash)
 	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
 }
@@ -64,14 +64,14 @@ type mockEmailService struct {
 	err          error
 }
 
-func (m *mockEmailService) SendBuyerPasswordReset(ctx context.Context, to, url string) error {
+func (m *mockEmailService) SendBuyerPasswordReset(_ context.Context, _, url string) error {
 	if m.err != nil {
 		return m.err
 	}
 	m.sentBuyerURL = url
 	return nil
 }
-func (m *mockEmailService) SendAdminPasswordReset(ctx context.Context, to, url string) error {
+func (m *mockEmailService) SendAdminPasswordReset(_ context.Context, _, url string) error {
 	if m.err != nil {
 		return m.err
 	}
@@ -173,7 +173,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 			// Mock rand.Read if testing random error
 			if tt.name == "RandomError" {
-				cleanup := auth.SetRandRead(func(b []byte) (int, error) {
+				cleanup := auth.SetRandRead(func(_ []byte) (int, error) {
 					return 0, errors.New("random failed")
 				})
 				defer cleanup()
@@ -185,7 +185,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				// Re-check logic: FindByEmail error returns nil.
 				if tt.name == "RepoError" && err == nil {
-					// Expected behavior as per implementation
+					t.Log("Expected behavior as per implementation: error suppressed")
 				} else {
 					t.Errorf("expected error=%v, got %v", tt.wantError, err)
 				}

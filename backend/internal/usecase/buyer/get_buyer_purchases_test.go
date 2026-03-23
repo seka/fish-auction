@@ -14,25 +14,25 @@ type mockBidRepoForPurchases struct {
 	err       error
 }
 
-func (m *mockBidRepoForPurchases) Create(ctx context.Context, bid *model.Bid) (*model.Bid, error) {
+func (m *mockBidRepoForPurchases) Create(_ context.Context, _ *model.Bid) (*model.Bid, error) {
 	return nil, nil
 }
-func (m *mockBidRepoForPurchases) ListInvoices(ctx context.Context) ([]model.InvoiceItem, error) {
+func (m *mockBidRepoForPurchases) ListInvoices(_ context.Context) ([]model.InvoiceItem, error) {
 	return nil, nil
 }
-func (m *mockBidRepoForPurchases) ListByAuctionID(ctx context.Context, auctionID int) ([]model.Bid, error) {
+func (m *mockBidRepoForPurchases) ListByAuctionID(_ context.Context, _ int) ([]model.Bid, error) {
 	return nil, nil
 }
-func (m *mockBidRepoForPurchases) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]model.Auction, error) {
+func (m *mockBidRepoForPurchases) ListAuctionsByBuyerID(_ context.Context, _ int) ([]model.Auction, error) {
 	return nil, nil
 }
-func (m *mockBidRepoForPurchases) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]model.Purchase, error) {
+func (m *mockBidRepoForPurchases) ListPurchasesByBuyerID(_ context.Context, _ int) ([]model.Purchase, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
 	return m.purchases, nil
 }
-func (m *mockBidRepoForPurchases) GetHighestBid(ctx context.Context, auctionItemID int) (*model.Bid, error) {
+func (m *mockBidRepoForPurchases) GetHighestBid(_ context.Context, _ int) (*model.Bid, error) {
 	return nil, nil
 }
 

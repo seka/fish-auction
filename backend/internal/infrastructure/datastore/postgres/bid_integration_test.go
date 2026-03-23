@@ -108,13 +108,16 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	require.NotNil(t, item)
 
 	// 4. Assert HighestBid
-	if item.HighestBid == nil {
-		t.Log("FAILURE REPRODUCED: HighestBid is nil")
-		t.Fail()
-	} else if item.HighestBid.Amount() != 1000 {
-		t.Logf("FAILURE: HighestBid expected 1000, got %d", item.HighestBid.Amount())
-		t.Fail()
-	} else {
+	// For this specific test, we expect a highest bid of 1000.
+	// The provided switch statement uses `tc.expectedPrice`, which implies a test case struct.
+	// To make this change faithfully without introducing `tc` or breaking the test,
+	// I will adapt the switch to directly check for 1000.
+	switch {
+	case item.HighestBid == nil:
+		t.Errorf("expected highest bid %d, got nil", 1000)
+	case item.HighestBid.Amount() != 1000:
+		t.Errorf("expected highest bid %d, got %d", 1000, item.HighestBid.Amount())
+	default:
 		t.Logf("SUCCESS: HighestBid is %d", item.HighestBid.Amount())
 	}
 

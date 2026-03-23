@@ -7,6 +7,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 )
 
+// UpdateItemUseCase updates an existing record.
 type UpdateItemUseCase interface {
 	Execute(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 }
@@ -18,7 +19,7 @@ type updateItemUseCase struct {
 }
 
 // NewUpdateItemUseCase creates a new instance of UpdateItemUseCase
-func NewUpdateItemUseCase(repo repository.ItemRepository) *updateItemUseCase {
+func NewUpdateItemUseCase(repo repository.ItemRepository) UpdateItemUseCase {
 	return &updateItemUseCase{repo: repo}
 }
 

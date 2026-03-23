@@ -1,4 +1,3 @@
-// Package datastore provides repository implementations using multiple backends.
 package datastore
 
 import (

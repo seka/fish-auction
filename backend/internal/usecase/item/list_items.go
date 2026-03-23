@@ -12,7 +12,7 @@ type ListItemsUseCase interface {
 	Execute(ctx context.Context, status string) ([]model.AuctionItem, error)
 }
 
-// listItemsUseCase handles listing auction items
+// ListItemsUseCase handles listing auction items
 type listItemsUseCase struct {
 	repo repository.ItemRepository
 }
@@ -20,7 +20,7 @@ type listItemsUseCase struct {
 var _ ListItemsUseCase = (*listItemsUseCase)(nil)
 
 // NewListItemsUseCase creates a new instance of ListItemsUseCase
-func NewListItemsUseCase(repo repository.ItemRepository) *listItemsUseCase {
+func NewListItemsUseCase(repo repository.ItemRepository) ListItemsUseCase {
 	return &listItemsUseCase{repo: repo}
 }
 

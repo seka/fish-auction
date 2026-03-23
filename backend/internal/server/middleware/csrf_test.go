@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +11,7 @@ func TestCSRFMiddleware(t *testing.T) {
 	allowedOrigins := []string{"http://localhost:3000"}
 	middleware := NewCSRFMiddleware(allowedOrigins)
 
-	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -67,7 +68,7 @@ func TestCSRFMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, "/", nil)
+			req := httptest.NewRequestWithContext(context.Background(), tt.method, "/", nil)
 			if tt.origin != "" {
 				req.Header.Set("Origin", tt.origin)
 			}

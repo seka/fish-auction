@@ -5,10 +5,12 @@ import "net/http"
 // CacheControlMiddleware adds Cache-Control headers to prevent caching of API responses.
 type CacheControlMiddleware struct{}
 
+// NewCacheControlMiddleware creates a new CacheControlMiddleware instance.
 func NewCacheControlMiddleware() *CacheControlMiddleware {
 	return &CacheControlMiddleware{}
 }
 
+// Handle provides Handle related functionality.
 func (m *CacheControlMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// no-store: キャッシュを保存させない。個人情報や最新性が重要なAPIレスポンスの保護。

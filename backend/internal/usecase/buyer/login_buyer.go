@@ -18,7 +18,7 @@ type LoginBuyerUseCase interface {
 	Execute(ctx context.Context, email, password string) (*model.Buyer, error)
 }
 
-// loginBuyerUseCase handles buyer login
+// LoginBuyerUseCase handles buyer login
 type loginBuyerUseCase struct {
 	buyerRepo repository.BuyerRepository
 	authRepo  repository.AuthenticationRepository
@@ -27,7 +27,7 @@ type loginBuyerUseCase struct {
 var _ LoginBuyerUseCase = (*loginBuyerUseCase)(nil)
 
 // NewLoginBuyerUseCase creates a new instance of LoginBuyerUseCase
-func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) *loginBuyerUseCase {
+func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) LoginBuyerUseCase {
 	return &loginBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo}
 }
 
