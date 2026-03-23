@@ -1,6 +1,5 @@
 package dto
 
-// ErrorResponse represents a structured error response
 // ErrorResponse represents a structured error response.
 type ErrorResponse struct {
 	Error   string `json:"error"`
