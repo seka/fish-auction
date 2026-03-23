@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Config represents the application configuration loaded from environment variables.
 type Config struct {
 	DBHost          string
 	DBPort          string
@@ -27,6 +28,7 @@ type Config struct {
 	VAPIDSubject    string
 }
 
+// Load provides Load related functionality.
 func Load() (*Config, error) {
 	cacheTTL := getEnvInt("CACHE_TTL_SECONDS", 300)       // デフォルト5分
 	sessionTTL := getEnvInt("SESSION_TTL_SECONDS", 86400) // デフォルト24時間
@@ -78,11 +80,13 @@ func getEnvInt(key string, defaultValue int) int {
 	return defaultValue
 }
 
+// DBConnectionURL returns the PostgreSQL connection string based on the configuration.
 func (c *Config) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName)
 }
 
+// SMTPAddress returns the SMTP server address in host:port format.
 func (c *Config) SMTPAddress() string {
 	return fmt.Sprintf("%s:%s", c.SMTPHost, c.SMTPPort)
 }
