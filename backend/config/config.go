@@ -26,6 +26,7 @@ type Config struct {
 	VAPIDPublicKey  string
 	VAPIDPrivateKey string
 	VAPIDSubject    string
+	DBSslMode       string
 }
 
 // Load provides Load related functionality.
@@ -51,6 +52,7 @@ func Load() (*Config, error) {
 		VAPIDPublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
 		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
 		VAPIDSubject:    getEnv("VAPID_SUBJECT", "mailto:admin@example.com"),
+		DBSslMode:       getEnv("DB_SSLMODE", "disable"),
 	}
 
 	if cfg.ServerAddress == "" {
@@ -82,9 +84,8 @@ func getEnvInt(key string, defaultValue int) int {
 
 // DBConnectionURL returns the PostgreSQL connection string based on the configuration.
 func (c *Config) DBConnectionURL() string {
-	sslMode := getEnv("DB_SSLMODE", "disable")
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, sslMode)
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSslMode)
 }
 
 // SMTPAddress returns the SMTP server address in host:port format.
