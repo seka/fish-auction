@@ -27,6 +27,9 @@ type Config struct {
 	VAPIDPrivateKey string
 	VAPIDSubject    string
 	DBSslMode       string
+	ReadTimeoutSec  time.Duration
+	WriteTimeoutSec time.Duration
+	IdleTimeoutSec  time.Duration
 }
 
 // Load provides Load related functionality.
@@ -53,6 +56,9 @@ func Load() (*Config, error) {
 		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
 		VAPIDSubject:    getEnv("VAPID_SUBJECT", "mailto:admin@example.com"),
 		DBSslMode:       getEnv("DB_SSLMODE", "disable"),
+		ReadTimeoutSec:  time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
+		WriteTimeoutSec: time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
+		IdleTimeoutSec:  time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 	}
 
 	if cfg.ServerAddress == "" {
