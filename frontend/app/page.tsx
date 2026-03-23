@@ -115,12 +115,8 @@ export default function Home() {
                 <Text variant="h2" className={css({ mb: '2' })}>
                   {t('Common.admin_panel')}
                 </Text>
-                <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: t.raw('Common.admin_panel_description'),
-                    }}
-                  />
+                <Text className={css({ color: 'gray.500', lineHeight: 'relaxed', whiteSpace: 'pre-line' })}>
+                  {t('Common.admin_panel_description')}
                 </Text>
               </Box>
               <Box
@@ -208,12 +204,8 @@ export default function Home() {
                 <Text variant="h2" className={css({ mb: '2' })}>
                   {t('Common.auction_venue')}
                 </Text>
-                <Text className={css({ color: 'gray.500', lineHeight: 'relaxed' })}>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: t.raw('Common.auction_venue_description'),
-                    }}
-                  />
+                <Text className={css({ color: 'gray.500', lineHeight: 'relaxed', whiteSpace: 'pre-line' })}>
+                  {t('Common.auction_venue_description')}
                 </Text>
               </Box>
               <Box

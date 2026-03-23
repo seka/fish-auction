@@ -608,11 +608,9 @@ export default function AuctionDetailPage({ params }: { params: Promise<{ id: st
                 </form>
               ) : (
                 <Box textAlign="center" py="12" color="gray.400">
-                  <Text
-                    dangerouslySetInnerHTML={{
-                      __html: t.raw('Public.AuctionDetail.select_instruction'),
-                    }}
-                  />
+                  <Text className={css({ whiteSpace: 'pre-line' })}>
+                    {t('Public.AuctionDetail.select_instruction')}
+                  </Text>
                 </Box>
               )}
             </Card>
