@@ -6,9 +6,9 @@ PORT ?= 8080
 
 # Go cache and module cache confinement
 # Use project-local .cache directory for reliability in restricted environments
-export GOCACHE=$(shell pwd)/.cache/go-build
-export GOMODCACHE=$(shell pwd)/.cache/go-mod
-export GOTMPDIR=$(shell pwd)/.cache/tmp
+export GOCACHE ?= $(shell pwd)/.cache/go-build
+export GOMODCACHE ?= $(shell pwd)/.cache/go-mod
+export GOTMPDIR ?= $(shell pwd)/.cache/tmp
 export PATH := $(shell pwd)/build/.gopath/bin:$(PATH)
 
 # Ensure cache directories exist
@@ -56,13 +56,13 @@ app.fmt: ## Format code
 .PHONY: app.lint
 app.lint: ## Run linter
 	@echo "Running golangci-lint..."
-	golangci-lint run ./...
+	golangci-lint run --allow-parallel-runners ./...
 
 .PHONY: app.lint.fix
 app.lint.fix: ## Run linter and auto-fix
 	@echo "Running go fix and golangci-lint run --fix..."
 	go fix ./...
-	golangci-lint run --fix ./...
+	golangci-lint run --fix --allow-parallel-runners ./...
 
 .PHONY: app.test
 app.test: ## Run tests
