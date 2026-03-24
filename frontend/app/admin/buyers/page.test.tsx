@@ -69,7 +69,9 @@ describe('AdminBuyersPage', () => {
         isDeleting: false,
         message: '',
       },
-      form: { register: mockRegister, errors: {} } as unknown as ReturnType<typeof useBuyerPage>['form'],
+      form: { register: mockRegister, errors: {} } as unknown as ReturnType<
+        typeof useBuyerPage
+      >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
       t: tMock as unknown as ReturnType<typeof useBuyerPage>['t'],
     });

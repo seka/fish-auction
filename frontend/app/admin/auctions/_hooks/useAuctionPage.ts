@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { auctionSchema, AuctionFormData } from '@/src/models/schemas/auction';
+import { auctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
 import { useAuctionQuery, useAuctionMutation } from '@/src/hooks/useAuction';
 import { useVenueQuery } from '@/src/hooks/useVenue';
 import { Auction } from '@/src/models/auction';
@@ -33,11 +33,11 @@ export const useAuctionPage = () => {
     reset,
     setValue,
     formState: { errors },
-  } = useForm<AuctionFormData>({
+  } = useForm<AuctionFormInput>({
     resolver: zodResolver(auctionSchema),
   });
 
-  const onSubmit = async (data: AuctionFormData) => {
+  const onSubmit = async (data: AuctionFormInput) => {
     try {
       const payload = {
         ...data,

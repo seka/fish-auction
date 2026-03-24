@@ -46,7 +46,7 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterFisherman', () => {
     it('calls registerFisherman API on mutate', async () => {
-      vi.mocked(registerFisherman).mockResolvedValueOnce({ id: 1, name: 'Fisherman 1' } as any);
+      vi.mocked(registerFisherman).mockResolvedValueOnce(true);
 
       const { result } = renderHook(() => useRegisterFisherman(), { wrapper });
 
@@ -71,7 +71,7 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterBuyer', () => {
     it('calls registerBuyer API on mutate', async () => {
-      vi.mocked(registerBuyer).mockResolvedValueOnce({ id: 2, name: 'Buyer 1' } as any);
+      vi.mocked(registerBuyer).mockResolvedValueOnce(true);
 
       const { result } = renderHook(() => useRegisterBuyer(), { wrapper });
 
@@ -83,7 +83,13 @@ describe('useAdmin Hooks', () => {
         contactInfo: 'Contact 1',
       });
 
-      expect(registerBuyer).toHaveBeenCalledWith({ name: 'Buyer 1' });
+      expect(registerBuyer).toHaveBeenCalledWith({
+        name: 'Buyer 1',
+        email: 'buyer1@example.com',
+        password: 'password123',
+        organization: 'Org 1',
+        contactInfo: 'Contact 1',
+      });
     });
   });
 
@@ -102,7 +108,7 @@ describe('useAdmin Hooks', () => {
 
   describe('useRegisterItem', () => {
     it('calls registerItem API on mutate and invalidates queries', async () => {
-      vi.mocked(registerItem).mockResolvedValueOnce({ id: 100, fishType: 'Item 1' } as any);
+      vi.mocked(registerItem).mockResolvedValueOnce(true);
       const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
       const { result } = renderHook(() => useRegisterItem(), { wrapper });

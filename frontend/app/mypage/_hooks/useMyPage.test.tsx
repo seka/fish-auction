@@ -90,7 +90,7 @@ describe('useMyPage', () => {
     });
 
     const mockEvent = {
-        preventDefault: vi.fn(),
+      preventDefault: vi.fn(),
     } as unknown as React.FormEvent<HTMLFormElement>;
 
     await act(async () => {
@@ -119,7 +119,7 @@ describe('useMyPage', () => {
     });
 
     const mockEvent = {
-        preventDefault: vi.fn(),
+      preventDefault: vi.fn(),
     } as unknown as React.FormEvent<HTMLFormElement>;
 
     await act(async () => {
@@ -137,7 +137,10 @@ describe('useMyPage', () => {
       }),
     );
 
-    expect(result.current.message).toEqual({ type: 'success', text: 'Validation.success_password_update' });
+    expect(result.current.message).toEqual({
+      type: 'success',
+      text: 'Validation.success_password_update',
+    });
     expect(result.current.currentPassword).toBe('');
   });
 });

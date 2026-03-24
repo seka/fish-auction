@@ -17,8 +17,19 @@ describe('AdminItemsPage', () => {
     vi.clearAllMocks();
     vi.mocked(useItemPage).mockReturnValue({
       state: {
-        auctions: [{ id: 1, auctionDate: '2023-01-01', venueId: 1, status: 'scheduled', createdAt: '2023-01-01', updatedAt: '2023-01-01' } as unknown],
-        fishermen: [{ id: 1, name: 'Fisherman 1', fishermanId: 'F001', createdAt: '2023-01-01' } as unknown],
+        auctions: [
+          {
+            id: 1,
+            auctionDate: '2023-01-01',
+            venueId: 1,
+            status: 'scheduled',
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          } as unknown,
+        ],
+        fishermen: [
+          { id: 1, name: 'Fisherman 1', fishermanId: 'F001', createdAt: '2023-01-01' } as unknown,
+        ],
         isCreating: false,
         isDeleting: false,
         isUpdating: false,

@@ -49,32 +49,33 @@ describe('PublicNavbar', () => {
     vi.mocked(usePathname).mockReturnValue('/');
   });
 
-  const mockQuerySuccess = (data: Buyer | null): UseQueryResult<Buyer | null, Error> => ({
-    data,
-    isLoading: false,
-    isFetching: false,
-    isSuccess: true,
-    isError: false,
-    error: null,
-    status: 'success',
-    refetch: vi.fn(),
-    isPending: false,
-    isPlaceholderData: false,
-    isRefetching: false,
-    isStale: false,
-    dataUpdatedAt: 0,
-    errorUpdatedAt: 0,
-    failureCount: 0,
-    failureReason: null,
-    isFetched: true,
-    isFetchedAfterMount: true,
-    isInitialLoading: false,
-    isLoadingError: false,
-    isPaused: false,
-    isRefetchError: false,
-    fetchStatus: 'idle',
-    promise: Promise.resolve(data),
-  } as unknown as UseQueryResult<Buyer | null, Error>);
+  const mockQuerySuccess = (data: Buyer | null): UseQueryResult<Buyer | null, Error> =>
+    ({
+      data,
+      isLoading: false,
+      isFetching: false,
+      isSuccess: true,
+      isError: false,
+      error: null,
+      status: 'success',
+      refetch: vi.fn(),
+      isPending: false,
+      isPlaceholderData: false,
+      isRefetching: false,
+      isStale: false,
+      dataUpdatedAt: 0,
+      errorUpdatedAt: 0,
+      failureCount: 0,
+      failureReason: null,
+      isFetched: true,
+      isFetchedAfterMount: true,
+      isInitialLoading: false,
+      isLoadingError: false,
+      isPaused: false,
+      isRefetchError: false,
+      fetchStatus: 'idle',
+      promise: Promise.resolve(data),
+    }) as unknown as UseQueryResult<Buyer | null, Error>;
 
   it('renders correctly when not logged in', () => {
     vi.mocked(useQuery).mockReturnValue(mockQuerySuccess(null));
