@@ -1,10 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getVenues, createVenue, updateVenue, deleteVenue } from '@/src/api/venue';
 import { VenueFormData } from '@/src/models/schemas/auction';
-
-export const venueKeys = {
-  all: ['venues'] as const,
-};
+import { venueKeys } from './queryKey';
 
 export const useVenueQuery = () => {
   const {

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { venueSchema, VenueFormData } from '@/src/models/schemas/auction';
-import { useVenueQuery, useVenueMutation } from '@/src/hooks/useVenue';
+import { useVenueQuery, useVenueMutation } from '@/src/hooks/venue/useVenue';
 import { Venue } from '@/src/models/venue';
 
 export const useVenuePage = () => {
