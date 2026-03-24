@@ -5,9 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { DragEndEvent } from '@dnd-kit/core';
 import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
-import { useItemQuery, useItemMutation } from '@/src/hooks/item/useItem';
-import { useFishermanQuery } from '@/src/hooks/fisherman/useFisherman';
-import { useAuctionQuery } from '@/src/hooks/auction/useAuction';
+import { useItemQuery } from '@/src/hooks/item/useQuery';
+import { useItemMutation } from '@/src/hooks/item/useMutation';
+import { useFishermanQuery } from '@/src/hooks/fisherman/useQuery';
+import { useAuctionQuery } from '@/src/hooks/auction/useQuery';
 import { AuctionItem } from '@/src/models';
 
 export const useItemPage = () => {

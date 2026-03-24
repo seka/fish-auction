@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAuction } from '@/src/api/auction';
 import { getItemsByAuction } from '@/src/api/admin';
 import { AuctionItem } from '@/src/models/auction';
-import { auctionKeys } from '@/src/hooks/auction/queryKey';
+import { auctionKeys } from '@/src/hooks/auction/keys';
 
 export const useAuctionData = (auctionId: number) => {
   const { data: auction, isLoading: isAuctionLoading } = useQuery({

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card } from '@atoms';
 import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
-import { auctionKeys } from '@/src/hooks/auction/queryKey';
+import { auctionKeys } from '@/src/hooks/auction/keys';
 
 import { usePublicVenues } from './_hooks/usePublicVenues';
 

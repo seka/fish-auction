@@ -8,13 +8,12 @@ import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
 import { useAuctionData } from './useAuctionData';
 import { useBidMutation } from './useBidMutation';
-import { useAuth } from '@/src/hooks/auth/useAuth';
+import { useAuthQuery } from '@/src/hooks/auth/useQuery';
 import { isAuctionActive, getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
+import { authKeys } from '@/src/hooks/auth/keys';
 import { AuctionItem } from '@/src/models';
-import { authKeys } from '@/src/hooks/auth/queryKey';
-import { auctionKeys } from '@/src/hooks/auction/queryKey';
 
 export const useAuctionDetailPage = (auctionId: number) => {
   const t = useTranslations();
@@ -25,7 +24,7 @@ export const useAuctionDetailPage = (auctionId: number) => {
 
   const { auction, items, isLoading, refetchItems } = useAuctionData(auctionId);
   const { submitBid, isLoading: isBidLoading } = useBidMutation();
-  const { isLoggedIn, isChecking } = useAuth();
+  const { isLoggedIn, isChecking } = useAuthQuery();
 
   const bidForm = useForm<BidFormData>({
     resolver: zodResolver(bidSchema),
