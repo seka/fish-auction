@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { fishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
-import { useFishermanQuery, useFishermanMutation } from '@/src/hooks/fisherman/useFisherman';
+import { useFishermanQuery } from '@/src/hooks/fisherman/useQuery';
+import { useFishermanMutation } from '@/src/hooks/fisherman/useMutation';
 
 export const useFishermanPage = () => {
   const t = useTranslations();
