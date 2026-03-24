@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { urlBase64ToUint8Array } from '../utils/webPush';
+import { urlBase64ToUint8Array } from '@/src/utils/webPush';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
