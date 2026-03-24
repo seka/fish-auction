@@ -2,10 +2,9 @@
  * オークション関連のクエリキー
  */
 export const auctionKeys = {
-  all: ['auctions'] as const,
-  lists: () => [...auctionKeys.all, 'list'] as const,
-  list: (filters: unknown) => [...auctionKeys.lists(), { filters }] as const,
-  details: () => [...auctionKeys.all, 'detail'] as const,
-  detail: (id: number) => [...auctionKeys.details(), id] as const,
-  items: (id: number) => [...auctionKeys.detail(id), 'items'] as const,
+  // Public (API: /api/auctions)
+  publicAll: ['auctions'] as const,
+  publicList: (filters: unknown) => ['auctions', 'list', { filters }] as const,
+  publicDetail: (id: number) => ['auctions', 'detail', id] as const,
+  publicItems: (id: number) => ['auctions', 'detail', id, 'items'] as const,
 } as const;
