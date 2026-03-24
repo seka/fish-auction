@@ -3,8 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { auctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
-import { useAuctionQuery, useAuctionMutation } from '@/src/hooks/useAuction';
-import { useVenueQuery } from '@/src/hooks/useVenue';
+import { useAuctionQuery, useAuctionMutation } from '@/src/hooks/auction/useAuction';
+import { useVenueQuery } from '@/src/hooks/venue/useVenue';
 import { Auction } from '@/src/models/auction';
 import { ApiError } from '@/src/core/api/client';
 

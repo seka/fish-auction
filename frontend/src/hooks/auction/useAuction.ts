@@ -7,14 +7,7 @@ import {
   deleteAuction,
 } from '@/src/api/auction';
 import { AuctionFormData } from '@/src/models/schemas/auction';
-
-export const auctionKeys = {
-  all: ['auctions'] as const,
-  lists: () => [...auctionKeys.all, 'list'] as const,
-  list: (filters: string) => [...auctionKeys.lists(), { filters }] as const,
-  details: () => [...auctionKeys.all, 'detail'] as const,
-  detail: (id: number) => [...auctionKeys.details(), id] as const,
-};
+import { auctionKeys } from './queryKey';
 
 export const useAuctionQuery = (filters?: { venueId?: number; date?: string; status?: string }) => {
   const {
@@ -22,7 +15,7 @@ export const useAuctionQuery = (filters?: { venueId?: number; date?: string; sta
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['auctions', filters], // TODO: Migrate to auctionKeys later if needed, keeping simple for now to match strict equality
+    queryKey: auctionKeys.list(filters),
     queryFn: () => getAuctions(filters),
   });
 
@@ -35,28 +28,28 @@ export const useAuctionMutation = () => {
   const createMutation = useMutation({
     mutationFn: (data: AuctionFormData) => createAuction(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auctions'] });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.all });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: AuctionFormData }) => updateAuction(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auctions'] });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.all });
     },
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) => updateAuctionStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auctions'] });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.all });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteAuction(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auctions'] });
+      queryClient.invalidateQueries({ queryKey: auctionKeys.all });
     },
   });
 

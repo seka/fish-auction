@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionDetailPage from './page';
-import { ToastProvider } from '@/src/hooks/useToast';
+import { ToastProvider } from '@/src/hooks/ui/useToast';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({

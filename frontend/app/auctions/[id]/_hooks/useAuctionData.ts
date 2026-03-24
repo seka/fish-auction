@@ -1,29 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAuction, getAuctionItems } from '@/src/api/auction';
+import { getAuction } from '@/src/api/auction';
+import { getItemsByAuction } from '@/src/api/admin';
 import { AuctionItem } from '@/src/models/auction';
-
-const EMPTY_ITEMS: AuctionItem[] = [];
+import { auctionKeys } from '@/src/hooks/auction/queryKey';
 
 export const useAuctionData = (auctionId: number) => {
   const { data: auction, isLoading: isAuctionLoading } = useQuery({
-    queryKey: ['auction', auctionId],
+    queryKey: auctionKeys.detail(auctionId),
     queryFn: () => getAuction(auctionId),
     refetchInterval: 5000,
   });
 
   const {
-    data: items,
+    data: items = [],
     isLoading: isItemsLoading,
     refetch: refetchItems,
-  } = useQuery({
-    queryKey: ['auction_items', auctionId],
-    queryFn: () => getAuctionItems(auctionId),
+  } = useQuery<AuctionItem[]>({
+    queryKey: auctionKeys.items(auctionId),
+    queryFn: () => getItemsByAuction(auctionId),
     refetchInterval: 5000, // Poll every 5 seconds
   });
 
   return {
     auction,
-    items: items || EMPTY_ITEMS,
+    items,
     isLoading: isAuctionLoading || isItemsLoading,
     refetchItems,
   };

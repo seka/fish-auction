@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card } from '@atoms';
 import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
+import { auctionKeys } from '@/src/hooks/auction/queryKey';
 
 import { usePublicVenues } from './_hooks/usePublicVenues';
 
@@ -14,7 +15,7 @@ export default function AuctionsListPage() {
   const t = useTranslations();
   // Fetch all auctions
   const { data: allAuctions, isLoading } = useQuery({
-    queryKey: ['public_auctions_list'],
+    queryKey: auctionKeys.lists(),
     queryFn: () => getAuctions(),
   });
 
