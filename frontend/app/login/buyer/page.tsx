@@ -11,7 +11,7 @@ import { Box, Text, Button, Input, Stack, Card } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import { authKeys } from '@/src/hooks/auth/queryKey';
+import { authKeys } from '@/src/hooks/auth/keys';
 
 export default function BuyerLoginPage() {
   const [isLoading, setIsLoading] = useState(false);

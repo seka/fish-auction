@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { usePushSubscription } from '@/src/hooks/notification/usePushSubscription';
-import { useAuth } from '@/src/hooks/auth/useAuth';
+import { useAuthQuery } from '@/src/hooks/auth/useQuery';
 import { useToast } from '@/src/hooks/ui/useToast';
 
 export const useSetup = () => {
   const { isSupported, subscription, subscribeToPush } = usePushSubscription();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuthQuery();
   const { showToast } = useToast();
   const pathname = usePathname();
 

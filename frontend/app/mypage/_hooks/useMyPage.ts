@@ -4,9 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
-import { authKeys } from '@/src/hooks/auth/queryKey';
-import { auctionKeys } from '@/src/hooks/auction/queryKey';
-import { buyerKeys } from '@/src/hooks/buyer/queryKey';
+import { authKeys } from '@/src/hooks/auth/keys';
+import { auctionKeys } from '@/src/hooks/auction/keys';
+import { buyerKeys } from '@/src/hooks/buyer/keys';
 
 export const useMyPage = () => {
   const t = useTranslations();

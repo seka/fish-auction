@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { getCurrentBuyer, logoutBuyer } from '@/src/api/buyer_auth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { css } from 'styled-system/css';
-import { authKeys } from '@/src/hooks/auth/queryKey';
+import { authKeys } from '@/src/hooks/auth/keys';
 
 export const PublicNavbar = () => {
   const pathname = usePathname();
