@@ -1,35 +1,38 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
-import { logoutBuyer } from '@/src/api/buyer_auth';
-import { authKeys } from '@/src/hooks/auth/keys';
-import { buyerKeys } from '@/src/hooks/buyer/keys';
+import { logoutBuyer } from '@/src/data/api/buyer_auth';
+import { authKeys } from '@/src/data/queries/auth/keys';
+import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
+import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
+import { useMyInvoiceQuery } from '@/src/data/queries/buyerInvoice/useQuery';
 
 export const useMyPage = () => {
   const t = useTranslations();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'purchases' | 'auctions' | 'settings'>('purchases');
+  const [activeTab, setActiveTab] = useState<'purchases' | 'auctions' | 'settings' | 'invoices'>(
+    'purchases',
+  );
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState({ text: '', type: 'info' as 'info' | 'error' | 'success' });
+  const [passwordMessage, setPasswordMessage] = useState({
+    text: '',
+    type: 'info' as 'info' | 'error' | 'success',
+  });
 
   // Fetch purchases
-  const { data: purchases = [], isLoading: isPurchasesLoading } = useQuery({
-    queryKey: buyerKeys.mePurchases(),
-    queryFn: getMyPurchases,
-  });
+  const { purchases, isLoading: isPurchasesLoading } = useMyPurchases();
 
   // Fetch participating auctions
-  const { data: auctions = [], isLoading: isAuctionsLoading } = useQuery({
-    queryKey: buyerKeys.meAuctions(),
-    queryFn: getMyAuctions,
-  });
+  const { auctions, isLoading: isAuctionsLoading } = useParticipatingAuctions();
+
+  // Fetch invoices
+  const { invoices, isLoading: isInvoicesLoading } = useMyInvoiceQuery();
 
   const handleLogout = async () => {
     const success = await logoutBuyer();
@@ -58,7 +61,8 @@ export const useMyPage = () => {
     setActiveTab,
     purchases,
     auctions,
-    isLoading: isPurchasesLoading || isAuctionsLoading,
+    invoices,
+    isLoading: isPurchasesLoading || isAuctionsLoading || isInvoicesLoading,
     handleLogout,
     passwordState: {
       currentPassword,
@@ -69,6 +73,7 @@ export const useMyPage = () => {
       setConfirmPassword,
       passwordMessage,
       handleUpdatePassword,
+      isPasswordUpdating: false,
     },
   };
 };

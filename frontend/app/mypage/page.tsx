@@ -14,20 +14,25 @@ export default function MyPage() {
     t,
     activeTab,
     setActiveTab,
+    purchases,
+    auctions,
+    invoices,
+    isLoading,
+    handleLogout,
+    passwordState,
+  } = useMyPage();
+
+  const {
     currentPassword,
     setCurrentPassword,
     newPassword,
     setNewPassword,
     confirmPassword,
     setConfirmPassword,
-    message,
-    isPasswordUpdating,
-    purchases,
-    auctions,
-    isLoading,
-    handleLogout,
+    passwordMessage,
     handleUpdatePassword,
-  } = useMyPage();
+    isPasswordUpdating,
+  } = passwordState;
 
   if (isLoading) {
     return (
@@ -100,6 +105,19 @@ export default function MyPage() {
               className={css({ transition: 'all 0.2s', _hover: { color: 'indigo.600' } })}
             >
               {t('Public.MyPage.participating_auctions')}
+            </Box>
+            <Box
+              as="button"
+              px="4"
+              py="2"
+              fontWeight={activeTab === 'invoices' ? 'bold' : 'medium'}
+              color={activeTab === 'invoices' ? 'indigo.600' : 'gray.500'}
+              borderBottom={activeTab === 'invoices' ? '2px solid' : 'none'}
+              borderColor="indigo.600"
+              onClick={() => setActiveTab('invoices')}
+              className={css({ transition: 'all 0.2s', _hover: { color: 'indigo.600' } })}
+            >
+              {t('Public.MyPage.invoices')}
             </Box>
             <Box
               as="button"
@@ -210,17 +228,17 @@ export default function MyPage() {
               {t('Public.MyPage.password_change_title')}
             </Text>
 
-            {message && (
+            {passwordMessage && (
               <Box
                 p="3"
                 mb="4"
                 borderRadius="md"
-                bg={message.type === 'success' ? 'green.50' : 'red.50'}
-                color={message.type === 'success' ? 'green.700' : 'red.700'}
+                bg={passwordMessage.type === 'success' ? 'green.50' : 'red.50'}
+                color={passwordMessage.type === 'success' ? 'green.700' : 'red.700'}
                 border="1px solid"
-                borderColor={message.type === 'success' ? 'green.200' : 'red.200'}
+                borderColor={passwordMessage.type === 'success' ? 'green.200' : 'red.200'}
               >
-                {message.text}
+                {passwordMessage.text}
               </Box>
             )}
 
@@ -305,6 +323,52 @@ export default function MyPage() {
               </Stack>
             </form>
           </Box>
+        ) : activeTab === 'invoices' ? (
+          <Stack spacing="4">
+            <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
+              {t('Public.MyPage.invoices')}
+            </Text>
+            {invoices.length === 0 ? (
+              <EmptyState
+                message={t('Public.MyPage.no_invoices')}
+                icon={
+                  <span role="img" aria-label="invoice">
+                    🧾
+                  </span>
+                }
+              />
+            ) : (
+              invoices.map((invoice, index) => (
+                <Card
+                  key={index}
+                  padding="lg"
+                  className={css({
+                    _hover: { shadow: 'md' },
+                    transition: 'all 0.2s',
+                    borderWidth: '1px',
+                    borderColor: 'gray.200',
+                    bg: 'white',
+                  })}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Text fontSize="lg" fontWeight="bold">
+                        {invoice.buyerName}
+                      </Text>
+                      <Text fontSize="sm" className={css({ color: 'gray.500' })}>
+                        Buyer ID: {invoice.buyerId}
+                      </Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text fontSize="2xl" fontWeight="bold" className={css({ color: 'green.600' })}>
+                        ¥{invoice.totalAmount.toLocaleString()}
+                      </Text>
+                    </Box>
+                  </Box>
+                </Card>
+              ))
+            )}
+          </Stack>
         ) : (
           <Stack spacing="4">
             <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.800' })}>
