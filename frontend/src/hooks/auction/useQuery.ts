@@ -8,7 +8,7 @@ export const useAuctionQuery = (filters?: { venueId?: number; date?: string; sta
     isLoading,
     error,
   } = useQuery({
-    queryKey: auctionKeys.list(filters),
+    queryKey: auctionKeys.publicList(filters),
     queryFn: () => getAuctions(filters),
   });
 

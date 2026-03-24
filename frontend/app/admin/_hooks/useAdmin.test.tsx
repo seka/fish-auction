@@ -108,7 +108,7 @@ describe('useAdmin hooks', () => {
       expect(registerItem).toHaveBeenCalledWith(expect.objectContaining({ fishType: 'Item 1' }));
 
       await waitFor(() =>
-        expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: itemKeys.all }),
+        expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: itemKeys.adminAll }),
       );
     });
   });

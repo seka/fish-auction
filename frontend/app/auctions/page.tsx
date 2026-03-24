@@ -15,7 +15,7 @@ export default function AuctionsListPage() {
   const t = useTranslations();
   // Fetch all auctions
   const { data: allAuctions, isLoading } = useQuery({
-    queryKey: auctionKeys.lists(),
+    queryKey: auctionKeys.publicList(undefined),
     queryFn: () => getAuctions(),
   });
 

@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
 import { authKeys } from '@/src/hooks/auth/keys';
-import { auctionKeys } from '@/src/hooks/auction/keys';
 import { buyerKeys } from '@/src/hooks/buyer/keys';
 
 export const useMyPage = () => {
@@ -22,13 +21,13 @@ export const useMyPage = () => {
 
   // Fetch purchases
   const { data: purchases = [], isLoading: isPurchasesLoading } = useQuery({
-    queryKey: buyerKeys.purchases,
+    queryKey: buyerKeys.mePurchases(),
     queryFn: getMyPurchases,
   });
 
   // Fetch participating auctions
   const { data: auctions = [], isLoading: isAuctionsLoading } = useQuery({
-    queryKey: auctionKeys.lists(),
+    queryKey: buyerKeys.meAuctions(),
     queryFn: getMyAuctions,
   });
 

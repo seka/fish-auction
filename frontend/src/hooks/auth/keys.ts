@@ -2,6 +2,5 @@
  * 認証関連のクエリキー
  */
 export const authKeys = {
-  all: ['auth'] as const,
-  me: () => [...authKeys.all, 'me'] as const,
+  me: () => ['buyer', 'me'] as const,
 } as const;

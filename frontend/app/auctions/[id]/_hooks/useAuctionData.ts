@@ -6,7 +6,7 @@ import { auctionKeys } from '@/src/hooks/auction/keys';
 
 export const useAuctionData = (auctionId: number) => {
   const { data: auction, isLoading: isAuctionLoading } = useQuery({
-    queryKey: auctionKeys.detail(auctionId),
+    queryKey: auctionKeys.publicDetail(auctionId),
     queryFn: () => getAuction(auctionId),
     refetchInterval: 5000,
   });
@@ -16,7 +16,7 @@ export const useAuctionData = (auctionId: number) => {
     isLoading: isItemsLoading,
     refetch: refetchItems,
   } = useQuery<AuctionItem[]>({
-    queryKey: auctionKeys.items(auctionId),
+    queryKey: auctionKeys.publicItems(auctionId),
     queryFn: () => getItemsByAuction(auctionId),
     refetchInterval: 5000, // Poll every 5 seconds
   });

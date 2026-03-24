@@ -4,7 +4,7 @@ import { venueKeys } from '@/src/hooks/venue/keys';
 
 export const usePublicVenues = () => {
   const { data: venues } = useQuery({
-    queryKey: venueKeys.all,
+    queryKey: venueKeys.publicAll,
     queryFn: getVenues,
   });
   return { venues };

@@ -8,9 +8,9 @@ import {
 } from '@/src/api/admin';
 import { RegisterItemParams } from '@/src/models';
 import { BuyerFormData } from '@/src/models/schemas/admin';
-import { itemKeys } from '@/src/hooks/item/keys';
-import { fishermanKeys } from '@/src/hooks/fisherman/keys';
-import { buyerKeys } from '@/src/hooks/buyer/keys';
+import { adminItemKeys } from '@/src/hooks/adminItem/keys';
+import { adminFishermanKeys } from '@/src/hooks/adminFisherman/keys';
+import { adminBuyerKeys } from '@/src/hooks/adminBuyer/keys';
 
 export const useRegisterFisherman = () => {
   const mutation = useMutation({
@@ -42,7 +42,7 @@ export const useRegisterItem = () => {
   const mutation = useMutation({
     mutationFn: (item: RegisterItemParams) => registerItem(item),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: itemKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminItemKeys.all });
     },
   });
 
@@ -55,7 +55,7 @@ export const useRegisterItem = () => {
 
 export const useFishermen = () => {
   const { data, error, isLoading } = useQuery({
-    queryKey: fishermanKeys.all,
+    queryKey: adminFishermanKeys.all,
     queryFn: getFishermen,
   });
 
@@ -68,7 +68,7 @@ export const useFishermen = () => {
 
 export const useBuyers = () => {
   const { data, error, isLoading } = useQuery({
-    queryKey: buyerKeys.all,
+    queryKey: adminBuyerKeys.all,
     queryFn: getBuyers,
   });
 
