@@ -1,9 +1,6 @@
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { registerFisherman, getFishermen, deleteFisherman } from '@/src/api/admin';
-
-export const fishermanKeys = {
-  all: ['fishermen'] as const,
-};
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getFishermen, registerFisherman, deleteFisherman } from '@/src/api/admin';
+import { fishermanKeys } from './queryKey';
 
 export const useFishermanQuery = () => {
   const { data, error, isLoading } = useQuery({
