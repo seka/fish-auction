@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
@@ -8,6 +8,7 @@ import { logoutBuyer } from '@/src/api/buyer_auth';
 export const useMyPage = () => {
   const t = useTranslations();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'purchases' | 'auctions' | 'settings'>('purchases');
 
   // Password state
@@ -34,6 +35,7 @@ export const useMyPage = () => {
   const handleLogout = async () => {
     const success = await logoutBuyer();
     if (success) {
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       router.push('/login/buyer');
     }
   };

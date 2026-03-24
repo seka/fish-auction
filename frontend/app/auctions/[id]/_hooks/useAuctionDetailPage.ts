@@ -11,10 +11,12 @@ import { useBidMutation } from './useBidMutation';
 import { useAuth } from '@/src/hooks/useAuth';
 import { isAuctionActive, getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
 import { AuctionItem } from '@/src/models';
 
 export const useAuctionDetailPage = (auctionId: number) => {
   const t = useTranslations();
+  const queryClient = useQueryClient();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -44,7 +46,7 @@ export const useAuctionDetailPage = (auctionId: number) => {
     setLoginError('');
     const buyer = await loginBuyer(data);
     if (buyer) {
-      window.location.reload();
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
     } else {
       setLoginError(t('Public.Login.error_credentials'));
     }

@@ -33,7 +33,7 @@ export default function BuyerLoginPage() {
     try {
       const buyer = await loginBuyer(data);
       if (buyer) {
-        await queryClient.invalidateQueries({ queryKey: ['currentBuyer'] });
+        await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
         router.push('/auctions');
       } else {
         setLoginError(t('Public.Login.error_credentials'));

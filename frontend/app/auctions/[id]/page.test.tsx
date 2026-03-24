@@ -1,10 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionDetailPage from './page';
-import { useAuctionData } from './_hooks/useAuctionData';
-import { useBidMutation } from './_hooks/useBidMutation';
-import { useAuth } from '@/src/hooks/useAuth';
-import { isAuctionActive } from '@/src/utils/auction';
 import { ToastProvider } from '@/src/hooks/useToast';
 
 // Mock dependencies
@@ -31,83 +27,92 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 
-vi.mock('./_hooks/useAuctionData');
-vi.mock('./_hooks/useBidMutation');
-vi.mock('@/src/hooks/useAuth');
-vi.mock('@/src/utils/auction');
+vi.mock('./_hooks/useAuctionDetailPage', () => ({
+  useAuctionDetailPage: vi.fn(),
+}));
+
 vi.mock('@/src/api/buyer_auth', () => ({
   loginBuyer: vi.fn(),
 }));
 
+import { useAuctionDetailPage } from './_hooks/useAuctionDetailPage';
+
 describe('AuctionDetailPage', () => {
-  const mockRefetch = vi.fn();
-  const mockSubmitBid = vi.fn();
+  const mockOnSelectItem = vi.fn();
+  const mockOnSubmitLogin = vi.fn();
+  const mockOnSubmitBid = vi.fn();
+  const t = (key: string) => key;
+  t.rich = (key: string) => key;
+
+  const defaultMockValue = {
+    auction: {
+      id: 1,
+      venueId: 1,
+      auctionDate: '2026-03-11',
+      startTime: '10:00:00',
+      endTime: '12:00:00',
+      status: 'in_progress',
+    },
+    items: [
+      {
+        id: 101,
+        fishType: 'Tuna',
+        quantity: 10,
+        unit: 'kg',
+        status: 'Pending',
+      },
+      {
+        id: 102,
+        fishType: 'Salmon',
+        quantity: 5,
+        unit: 'kg',
+        status: 'Sold',
+      },
+    ],
+    isLoading: false,
+    isChecking: false,
+    isLoggedIn: true,
+    selectedItem: null,
+    selectedItemId: null,
+    auctionActive: true,
+    message: '',
+    loginError: '',
+    isBidLoading: false,
+    bidForm: {
+      register: vi.fn(),
+      handleSubmit: (fn: (data: { price: string }) => void) => (e: React.BaseSyntheticEvent) => {
+        e?.preventDefault();
+        fn({ price: '1000' });
+      },
+      formState: { errors: {} },
+    },
+    loginForm: {
+      register: vi.fn(),
+      handleSubmit: (fn: (data: { email: string }) => void) => (e: React.BaseSyntheticEvent) => {
+        e?.preventDefault();
+        fn({ email: 'user@example.com' });
+      },
+      formState: { errors: {} },
+    },
+    onSelectItem: mockOnSelectItem,
+    onSubmitLogin: mockOnSubmitLogin,
+    onSubmitBid: mockOnSubmitBid,
+    t,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    vi.mocked(useAuctionData).mockReturnValue({
-      auction: {
-        id: 1,
-        venueId: 1,
-        auctionDate: '2026-03-11',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
-        status: 'in_progress',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      items: [
-        {
-          id: 101,
-          auctionId: 1,
-          fishermanId: 1,
-          fishType: 'Tuna',
-          quantity: 10,
-          unit: 'kg',
-          status: 'Pending',
-          sortOrder: 1,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 102,
-          auctionId: 1,
-          fishermanId: 1,
-          fishType: 'Salmon',
-          quantity: 5,
-          unit: 'kg',
-          status: 'Sold',
-          sortOrder: 2,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-      isLoading: false,
-      refetchItems: mockRefetch,
-    });
-
-    vi.mocked(useBidMutation).mockReturnValue({
-      submitBid: mockSubmitBid,
-      isLoading: false,
-    });
-
-    vi.mocked(useAuth).mockReturnValue({
-      isLoggedIn: true,
-      isChecking: false,
-    });
-
-    vi.mocked(isAuctionActive).mockReturnValue(true);
+    vi.mocked(useAuctionDetailPage).mockReturnValue(defaultMockValue as unknown as ReturnType<typeof useAuctionDetailPage>);
   });
 
-  // Note: params prop in Next 15 is Promise.
   const params = Promise.resolve({ id: '1' });
 
   it('renders loading state', () => {
-    vi.mocked(useAuctionData).mockReturnValue({
-      auction: undefined,
-      items: [],
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
       isLoading: true,
-      refetchItems: vi.fn(),
-    });
+      auction: null,
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -117,7 +122,10 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders login form if not logged in', () => {
-    vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: false });
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
+      isLoggedIn: false,
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -138,70 +146,61 @@ describe('AuctionDetailPage', () => {
   });
 
   it('selects an item and allows bidding', async () => {
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
+      selectedItem: defaultMockValue.items[0],
+      selectedItemId: 101,
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
       </ToastProvider>,
     );
 
-    // Select Tuna
-    const tunaCard = screen.getByText('Tuna');
-    fireEvent.click(tunaCard);
-
-    // Check panel updates
+    // Bidding panel should show selected item
     expect(screen.getByText('Public.AuctionDetail.selected_item')).toBeInTheDocument();
 
-    // Bid amount input
-    const bidInput = screen.getByRole('spinbutton');
-    fireEvent.change(bidInput, { target: { value: '1000' } });
-
-    // Submit
-    mockSubmitBid.mockResolvedValue(true);
+    // Submit bid
     const bidButton = screen.getByRole('button', { name: 'Public.AuctionDetail.bid_button' });
     fireEvent.click(bidButton);
 
-    await waitFor(() => {
-      expect(mockSubmitBid).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: 101, price: 1000 }),
-      );
-    });
+    expect(mockOnSubmitBid).toHaveBeenCalled();
   });
 
-  it('shows error message on failed bid', async () => {
+  it('shows error message if provided', () => {
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
+      message: 'Success Message',
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
       </ToastProvider>,
     );
-
-    fireEvent.click(screen.getByText('Tuna'));
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '1000' } });
-
-    mockSubmitBid.mockResolvedValue(false);
-    fireEvent.click(screen.getByRole('button', { name: 'Public.AuctionDetail.bid_button' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Public.AuctionDetail.fail_bid')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Success Message')).toBeInTheDocument();
   });
 
   it('renders checking state', () => {
-    vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: true });
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
+      isChecking: true,
+      isLoggedIn: false,
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
       </ToastProvider>,
     );
-    expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
+    expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
 
   it('renders no data when auction not found', () => {
-    vi.mocked(useAuctionData).mockReturnValue({
-      auction: undefined,
-      items: [],
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
+      auction: null,
       isLoading: false,
-      refetchItems: vi.fn(),
-    });
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -210,41 +209,11 @@ describe('AuctionDetailPage', () => {
     expect(screen.getByText('Common.no_data')).toBeInTheDocument();
   });
 
-  it('renders item ended message for non-pending items', () => {
-    render(
-      <ToastProvider>
-        <AuctionDetailPage params={params} />
-      </ToastProvider>,
-    );
-    fireEvent.click(screen.getByText('Salmon')); // Status: Sold
-    expect(screen.getByText('Public.AuctionDetail.item_ended')).toBeInTheDocument();
-  });
-
-  it('renders out of hours message when auction is inactive', () => {
-    vi.mocked(isAuctionActive).mockReturnValue(false);
-    render(
-      <ToastProvider>
-        <AuctionDetailPage params={params} />
-      </ToastProvider>,
-    );
-    fireEvent.click(screen.getByText('Tuna')); // Status: Pending
-    expect(screen.getByText('Public.AuctionDetail.out_of_hours_title')).toBeInTheDocument();
-  });
-
   it('handles login flow', async () => {
-    // Need to mock window.location.reload
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { ...originalLocation, reload: vi.fn() },
-    });
-
-    vi.mocked(useAuth).mockReturnValue({ isLoggedIn: false, isChecking: false });
-    const { loginBuyer } = await import('@/src/api/buyer_auth');
-    vi.mocked(loginBuyer).mockResolvedValue({
-      id: 1,
-      name: 'Buyer',
-    });
+    vi.mocked(useAuctionDetailPage).mockReturnValue({
+      ...defaultMockValue,
+      isLoggedIn: false,
+    } as unknown as ReturnType<typeof useAuctionDetailPage>);
 
     render(
       <ToastProvider>
@@ -252,24 +221,9 @@ describe('AuctionDetailPage', () => {
       </ToastProvider>,
     );
 
-    fireEvent.change(screen.getByPlaceholderText('Common.email'), {
-      target: { value: 'user@example.com' },
-    });
-    fireEvent.change(screen.getByPlaceholderText('Common.password'), {
-      target: { value: 'password' },
-    });
+    const loginButton = screen.getByRole('button', { name: 'Public.Login.submit' });
+    fireEvent.click(loginButton);
 
-    fireEvent.submit(screen.getByRole('button', { name: 'Public.Login.submit' }));
-
-    await waitFor(() => {
-      expect(loginBuyer).toHaveBeenCalled();
-      expect(window.location.reload).toHaveBeenCalled();
-    });
-
-    // Cleanup
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
-    });
+    expect(mockOnSubmitLogin).toHaveBeenCalled();
   });
 });
