@@ -8,11 +8,7 @@ import {
   reorderItems,
 } from '@/src/api/admin';
 import { ReorderItemsParams, AuctionItem } from '@/src/models';
-
-export const itemKeys = {
-  all: ['items'] as const,
-  byAuction: (auctionId: number) => [...itemKeys.all, 'auction', auctionId] as const,
-};
+import { itemKeys } from './queryKey';
 
 export const useItemMutation = () => {
   const queryClient = useQueryClient();
