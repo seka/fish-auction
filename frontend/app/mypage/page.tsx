@@ -360,7 +360,11 @@ export default function MyPage() {
                       </Text>
                     </Box>
                     <Box textAlign="right">
-                      <Text fontSize="2xl" fontWeight="bold" className={css({ color: 'green.600' })}>
+                      <Text
+                        fontSize="2xl"
+                        fontWeight="bold"
+                        className={css({ color: 'green.600' })}
+                      >
                         ¥{invoice.totalAmount.toLocaleString()}
                       </Text>
                     </Box>

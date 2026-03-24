@@ -14,7 +14,12 @@ interface AuctionItemListProps {
   t: ReturnType<typeof useTranslations>;
 }
 
-export const AuctionItemList = ({ items, selectedItemId, onSelectItem, t }: AuctionItemListProps) => {
+export const AuctionItemList = ({
+  items,
+  selectedItemId,
+  onSelectItem,
+  t,
+}: AuctionItemListProps) => {
   return (
     <Box gridColumn={{ base: '1', lg: 'span 2' }}>
       <Stack spacing="4">
@@ -37,9 +42,7 @@ export const AuctionItemList = ({ items, selectedItemId, onSelectItem, t }: Auct
             border="1px dashed"
             borderColor="gray.300"
           >
-            <Text className={css({ color: 'gray.600' })}>
-              {t('Public.AuctionDetail.no_items')}
-            </Text>
+            <Text className={css({ color: 'gray.600' })}>{t('Public.AuctionDetail.no_items')}</Text>
           </Box>
         ) : (
           items.map((item: AuctionItem) => (
@@ -72,11 +75,7 @@ export const AuctionItemList = ({ items, selectedItemId, onSelectItem, t }: Auct
                     ID: {item.id}
                   </Box>
                   <Box>
-                    <Text
-                      fontSize="xl"
-                      fontWeight="bold"
-                      className={css({ color: 'gray.900' })}
-                    >
+                    <Text fontSize="xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
                       {item.fishType}
                     </Text>
                     <Text className={css({ color: 'gray.700' })} mt="1">
@@ -84,12 +83,7 @@ export const AuctionItemList = ({ items, selectedItemId, onSelectItem, t }: Auct
                         {item.quantity}
                       </Text>{' '}
                       {item.unit}
-                      <Text
-                        as="span"
-                        fontSize="sm"
-                        ml="2"
-                        className={css({ color: 'gray.500' })}
-                      >
+                      <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>
                         ({t('Public.AuctionDetail.fisherman_id', { id: item.fishermanId })})
                       </Text>
                     </Text>

@@ -63,13 +63,7 @@ export const BiddingPanel = ({
         {selectedItem ? (
           <form onSubmit={handleSubmit(onSubmitBid)}>
             <Stack spacing="6">
-              <Box
-                p="5"
-                bg="gray.50"
-                borderRadius="lg"
-                borderWidth="1px"
-                borderColor="gray.200"
-              >
+              <Box p="5" bg="gray.50" borderRadius="lg" borderWidth="1px" borderColor="gray.200">
                 <Text fontSize="sm" className={css({ color: 'gray.600' })} mb="1">
                   {t('Public.AuctionDetail.selected_item')}
                 </Text>
@@ -201,13 +195,7 @@ export const BiddingPanel = ({
                   </>
                 )
               ) : (
-                <Box
-                  textAlign="center"
-                  py="4"
-                  bg="gray.100"
-                  borderRadius="md"
-                  color="gray.500"
-                >
+                <Box textAlign="center" py="4" bg="gray.100" borderRadius="md" color="gray.500">
                   {t('Public.AuctionDetail.item_ended')}
                 </Box>
               )}
