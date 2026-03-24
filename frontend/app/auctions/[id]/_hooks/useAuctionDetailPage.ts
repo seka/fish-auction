@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginBuyer } from '@/src/data/api/buyer_auth';
@@ -22,6 +22,16 @@ export const useAuctionDetailPage = (auctionId: number) => {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [loginError, setLoginError] = useState('');
+  const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clean up message timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const { auction, isLoading: isAuctionLoading } = useAuctionDetailQuery(auctionId);
   const { items, isLoading: isItemsLoading, refetch: refetchItems } = useItemsByAuction(auctionId);
@@ -44,6 +54,10 @@ export const useAuctionDetailPage = (auctionId: number) => {
     setSelectedItemId(id);
     bidForm.reset();
     setMessage('');
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current);
+      messageTimeoutRef.current = null;
+    }
   };
 
   const onSubmitLogin = async (data: BuyerLoginFormData) => {
@@ -83,7 +97,16 @@ export const useAuctionDetailPage = (auctionId: number) => {
       setSelectedItemId(null);
       bidForm.reset();
       refetchItems();
-      setTimeout(() => setMessage(''), 3000);
+
+      // Clear existing timeout if any
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+      }
+      
+      messageTimeoutRef.current = setTimeout(() => {
+        setMessage('');
+        messageTimeoutRef.current = null;
+      }, 3000);
     } else {
       setMessage(t('Public.AuctionDetail.fail_bid'));
     }
