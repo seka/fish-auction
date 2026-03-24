@@ -1,9 +1,6 @@
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { registerBuyer, getBuyers, deleteBuyer } from '@/src/api/admin';
-
-export const buyerKeys = {
-  all: ['buyers'] as const,
-};
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getBuyers, registerBuyer, deleteBuyer } from '@/src/api/admin';
+import { buyerKeys } from './queryKey';
 
 export const useBuyerQuery = () => {
   const { data, error, isLoading } = useQuery({

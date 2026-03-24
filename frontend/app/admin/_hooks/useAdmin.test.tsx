@@ -16,116 +16,124 @@ import {
 } from '@/src/api/admin';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
+import { itemKeys } from '@/src/hooks/item/queryKey';
 
 // Mock API
 vi.mock('@/src/api/admin', () => ({
   registerFisherman: vi.fn(),
   getFishermen: vi.fn(),
   registerBuyer: vi.fn(),
-  registerItem: vi.fn(),
   getBuyers: vi.fn(),
+  registerItem: vi.fn(),
 }));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
     },
-  },
-});
+  });
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  wrapper.displayName = 'QueryClientWrapper';
+  return wrapper;
+};
 
-const wrapper = ({ children }: { children: ReactNode }) => (
-  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-);
+describe('useAdmin hooks', () => {
+  let queryClient: QueryClient;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let invalidateQueriesSpy: any;
 
-describe('useAdmin Hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    queryClient.clear();
+    queryClient = new QueryClient();
+    invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
   });
 
   describe('useRegisterFisherman', () => {
-    it('calls registerFisherman API on mutate', async () => {
-      vi.mocked(registerFisherman).mockResolvedValueOnce(true);
+    it('should register a fisherman', async () => {
+      vi.mocked(registerFisherman).mockResolvedValue(true);
+      const { result } = renderHook(() => useRegisterFisherman(), { wrapper: createWrapper() });
 
-      const { result } = renderHook(() => useRegisterFisherman(), { wrapper });
-
-      await result.current.registerFisherman({ name: 'Fisherman 1' });
-
-      expect(registerFisherman).toHaveBeenCalledWith('Fisherman 1');
-    });
-  });
-
-  describe('useFishermen', () => {
-    it('fetches fishermen', async () => {
-      const mockData = [{ id: 1, name: 'Fisherman 1' }];
-      vi.mocked(getFishermen).mockResolvedValueOnce(mockData);
-
-      const { result } = renderHook(() => useFishermen(), { wrapper });
-
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-      expect(result.current.fishermen).toEqual(mockData);
+      await result.current.registerFisherman({ name: 'Fisher 1' });
+      expect(registerFisherman).toHaveBeenCalledWith('Fisher 1');
     });
   });
 
   describe('useRegisterBuyer', () => {
-    it('calls registerBuyer API on mutate', async () => {
-      vi.mocked(registerBuyer).mockResolvedValueOnce(true);
-
-      const { result } = renderHook(() => useRegisterBuyer(), { wrapper });
+    it('should register a buyer', async () => {
+      vi.mocked(registerBuyer).mockResolvedValue(true);
+      const { result } = renderHook(() => useRegisterBuyer(), { wrapper: createWrapper() });
 
       await result.current.registerBuyer({
         name: 'Buyer 1',
-        email: 'buyer1@example.com',
+        email: 'buyer@example.com',
         password: 'password123',
         organization: 'Org 1',
-        contactInfo: 'Contact 1',
+        contactInfo: 'Address 1',
       });
-
       expect(registerBuyer).toHaveBeenCalledWith({
         name: 'Buyer 1',
-        email: 'buyer1@example.com',
+        email: 'buyer@example.com',
         password: 'password123',
         organization: 'Org 1',
-        contactInfo: 'Contact 1',
+        contactInfo: 'Address 1',
       });
-    });
-  });
-
-  describe('useBuyers', () => {
-    it('fetches buyers', async () => {
-      const mockData = [{ id: 2, name: 'Buyer 1' }];
-      vi.mocked(getBuyers).mockResolvedValueOnce(mockData);
-
-      const { result } = renderHook(() => useBuyers(), { wrapper });
-
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-      expect(result.current.buyers).toEqual(mockData);
     });
   });
 
   describe('useRegisterItem', () => {
-    it('calls registerItem API on mutate and invalidates queries', async () => {
-      vi.mocked(registerItem).mockResolvedValueOnce(true);
-      const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    it('should register an item and invalidate queries', async () => {
+      vi.mocked(registerItem).mockResolvedValue(true);
+
+      // We need to use the same queryClient instance in the hook
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      );
+      wrapper.displayName = 'RegisterItemWrapper';
 
       const { result } = renderHook(() => useRegisterItem(), { wrapper });
 
       await result.current.registerItem({
         auctionId: 1,
-        fishermanId: 1,
         fishType: 'Item 1',
-        quantity: 100,
+        quantity: 10,
         unit: 'kg',
+        fishermanId: 1,
       });
 
       expect(registerItem).toHaveBeenCalledWith(expect.objectContaining({ fishType: 'Item 1' }));
 
       await waitFor(() =>
-        expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['items'] }),
+        expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: itemKeys.all }),
       );
+    });
+  });
+
+  describe('useFishermen', () => {
+    it('should fetch fishermen', async () => {
+      const mockData = [{ id: 1, name: 'Fisher 1' }];
+      vi.mocked(getFishermen).mockResolvedValue(mockData);
+
+      const { result } = renderHook(() => useFishermen(), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.fishermen).toEqual(mockData));
+      expect(getFishermen).toHaveBeenCalled();
+    });
+  });
+
+  describe('useBuyers', () => {
+    it('should fetch buyers', async () => {
+      const mockData = [{ id: 1, name: 'Buyer 1' }];
+      vi.mocked(getBuyers).mockResolvedValue(mockData);
+
+      const { result } = renderHook(() => useBuyers(), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.buyers).toEqual(mockData));
+      expect(getBuyers).toHaveBeenCalled();
     });
   });
 });

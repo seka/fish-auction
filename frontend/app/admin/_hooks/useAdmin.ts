@@ -8,6 +8,9 @@ import {
 } from '@/src/api/admin';
 import { RegisterItemParams } from '@/src/models';
 import { BuyerFormData } from '@/src/models/schemas/admin';
+import { itemKeys } from '@/src/hooks/item/queryKey';
+import { fishermanKeys } from '@/src/hooks/fisherman/queryKey';
+import { buyerKeys } from '@/src/hooks/buyer/queryKey';
 
 export const useRegisterFisherman = () => {
   const mutation = useMutation({
@@ -39,7 +42,7 @@ export const useRegisterItem = () => {
   const mutation = useMutation({
     mutationFn: (item: RegisterItemParams) => registerItem(item),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: itemKeys.all });
     },
   });
 
@@ -52,7 +55,7 @@ export const useRegisterItem = () => {
 
 export const useFishermen = () => {
   const { data, error, isLoading } = useQuery({
-    queryKey: ['fishermen'],
+    queryKey: fishermanKeys.all,
     queryFn: getFishermen,
   });
 
@@ -65,7 +68,7 @@ export const useFishermen = () => {
 
 export const useBuyers = () => {
   const { data, error, isLoading } = useQuery({
-    queryKey: ['buyers'],
+    queryKey: buyerKeys.all,
     queryFn: getBuyers,
   });
 
