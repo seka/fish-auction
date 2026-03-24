@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getVenues } from '@/src/api/venue';
-import { venueKeys } from './keys';
+import { adminVenueKeys } from './keys';
 
 export const useVenueQuery = () => {
   const {
@@ -8,7 +8,7 @@ export const useVenueQuery = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: venueKeys.all,
+    queryKey: adminVenueKeys.all,
     queryFn: getVenues,
   });
 
