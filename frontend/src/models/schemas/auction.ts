@@ -10,7 +10,7 @@ export const venueSchema = z.object({
 
 export const auctionSchema = z.object({
   id: z.number().optional(),
-  venueId: z.coerce.number().min(1, '会場を選択してください'),
+  venueId: z.union([z.string(), z.number()]).transform(Number).refine(n => n >= 1, '会場を選択してください'),
   auctionDate: z.string().min(1, '開催日を入力してください'),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
@@ -29,5 +29,6 @@ export const bidSchema = z.object({
 });
 
 export type VenueFormData = z.infer<typeof venueSchema>;
-export type AuctionFormData = z.infer<typeof auctionSchema>;
+export type AuctionFormInput = z.input<typeof auctionSchema>;
+export type AuctionFormData = z.output<typeof auctionSchema>;
 export type BidFormData = z.infer<typeof bidSchema>;
