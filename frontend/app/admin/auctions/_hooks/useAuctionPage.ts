@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { auctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
-import { useAuctionQuery } from '@/src/hooks/adminAuction/useQuery';
-import { useAuctionMutation } from '@/src/hooks/adminAuction/useMutation';
-import { useVenueQuery } from '@/src/hooks/adminVenue/useQuery';
+import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
+import { useAuctionMutation } from '@/src/data/queries/adminAuction/useMutation';
+import { useVenueQuery } from '@/src/data/queries/adminVenue/useQuery';
 import { Auction } from '@/src/models/auction';
 import { ApiError } from '@/src/core/api/client';
 

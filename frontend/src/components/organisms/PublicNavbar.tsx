@@ -6,10 +6,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Box, Button, HStack, Text } from '@atoms';
 // Button, Text等は src/components からインポート
 import { useTranslations } from 'next-intl';
-import { getCurrentBuyer, logoutBuyer } from '@/src/api/buyer_auth';
+import { getCurrentBuyer, logoutBuyer } from '@/src/data/api/buyer_auth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { css } from 'styled-system/css';
-import { authKeys } from '@/src/hooks/auth/keys';
+import { authKeys } from '@/src/data/queries/auth/keys';
 
 export const PublicNavbar = () => {
   const pathname = usePathname();

@@ -1,25 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { getAuctions } from '@/src/api/auction';
 import { useTranslations } from 'next-intl';
 import { Box, Stack, HStack, Text, Card } from '@atoms';
 import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
-import { auctionKeys } from '@/src/hooks/auction/keys';
-
-import { usePublicVenues } from './_hooks/usePublicVenues';
+import { useAuctionQuery } from '@/src/data/queries/publicAuction/useQuery';
+import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
 
 export default function AuctionsListPage() {
   const t = useTranslations();
   // Fetch all auctions
-  const { data: allAuctions, isLoading } = useQuery({
-    queryKey: auctionKeys.publicList(undefined),
-    queryFn: () => getAuctions(),
-  });
+  const { auctions: allAuctions, isLoading } = useAuctionQuery();
 
-  const { venues } = usePublicVenues();
+  const { venues } = useVenueQuery();
 
   if (isLoading) {
     return (

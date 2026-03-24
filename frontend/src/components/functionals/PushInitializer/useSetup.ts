@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { usePushSubscription } from '@/src/hooks/notification/usePushSubscription';
-import { useAuthQuery } from '@/src/hooks/auth/useQuery';
-import { useToast } from '@/src/hooks/ui/useToast';
+import { usePushSubscription } from '@/src/components/functionals/PushInitializer/usePushSubscription';
+import { useAuthQuery } from '@/src/data/queries/auth/useQuery';
+import { useToast } from '@/src/components/functionals/ToastProvider/useToast';
 
 export const useSetup = () => {
   const { isSupported, subscription, subscribeToPush } = usePushSubscription();

@@ -3,7 +3,7 @@ import { PublicNavbar } from './PublicNavbar';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
-import * as buyerAuth from '@/src/api/buyer_auth';
+import * as buyerAuth from '@/src/data/api/buyer_auth';
 import { Buyer } from '@/src/models';
 
 // Mocks

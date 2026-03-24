@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Text, HStack } from '@atoms';
-import { useToast, Toast } from '@/src/hooks/ui/useToast';
+import { useToast, Toast } from '@/src/components/functionals/ToastProvider/useToast';
 import { css } from 'styled-system/css';
 import { useRouter } from 'next/navigation';
 

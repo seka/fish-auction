@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
-import { loginBuyer } from '@/src/api/buyer_auth';
+import { loginBuyer } from '@/src/data/api/buyer_auth';
 import Link from 'next/link';
 import { Box, Text, Button, Input, Stack, Card } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import { authKeys } from '@/src/hooks/auth/keys';
+import { authKeys } from '@/src/data/queries/auth/keys';
 
 export default function BuyerLoginPage() {
   const [isLoading, setIsLoading] = useState(false);

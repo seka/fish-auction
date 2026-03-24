@@ -3,16 +3,17 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginBuyer } from '@/src/api/buyer_auth';
+import { loginBuyer } from '@/src/data/api/buyer_auth';
 import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
-import { useAuctionData } from './useAuctionData';
-import { useBidMutation } from './useBidMutation';
-import { useAuthQuery } from '@/src/hooks/auth/useQuery';
+import { useAuctionDetailQuery } from '@/src/data/queries/publicAuction/useQuery';
+import { useItemsByAuction } from '@/src/data/queries/publicItem/useQuery';
+import { useBidMutation as useCentralBidMutation } from '@/src/data/queries/buyerAuction/useMutation';
+import { useAuthQuery } from '@/src/data/queries/auth/useQuery';
 import { isAuctionActive, getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import { authKeys } from '@/src/hooks/auth/keys';
+import { authKeys } from '@/src/data/queries/auth/keys';
 import { AuctionItem } from '@/src/models';
 
 export const useAuctionDetailPage = (auctionId: number) => {
@@ -22,8 +23,10 @@ export const useAuctionDetailPage = (auctionId: number) => {
   const [message, setMessage] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const { auction, items, isLoading, refetchItems } = useAuctionData(auctionId);
-  const { submitBid, isLoading: isBidLoading } = useBidMutation();
+  const { auction, isLoading: isAuctionLoading } = useAuctionDetailQuery(auctionId);
+  const { items, isLoading: isItemsLoading, refetch: refetchItems } = useItemsByAuction(auctionId);
+  const { submitBid, isLoading: isBidLoading } = useCentralBidMutation();
+  const isLoading = isAuctionLoading || isItemsLoading;
   const { isLoggedIn, isChecking } = useAuthQuery();
 
   const bidForm = useForm<BidFormData>({

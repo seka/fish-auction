@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionDetailPage from './page';
-import { ToastProvider } from '@/src/hooks/ui/useToast';
+import { ToastProvider } from '@/src/components/functionals/ToastProvider/useToast';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
@@ -102,7 +102,9 @@ describe('AuctionDetailPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useAuctionDetailPage).mockReturnValue(defaultMockValue as unknown as ReturnType<typeof useAuctionDetailPage>);
+    vi.mocked(useAuctionDetailPage).mockReturnValue(
+      defaultMockValue as unknown as ReturnType<typeof useAuctionDetailPage>,
+    );
   });
 
   const params = Promise.resolve({ id: '1' });

@@ -1,22 +1,22 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionsListPage from './page';
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { usePublicVenues } from './_hooks/usePublicVenues';
-import { Auction } from '@/src/models';
+import { useAuctionQuery } from '@/src/data/queries/publicAuction/useQuery';
+import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
+import { Auction, Venue } from '@/src/models';
 
 // Mocks
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(),
-}));
-
 vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => (key: string) =>
     namespace ? `${namespace}.${key}` : key,
 }));
 
-vi.mock('./_hooks/usePublicVenues', () => ({
-  usePublicVenues: vi.fn(),
+vi.mock('@/src/data/queries/publicAuction/useQuery', () => ({
+  useAuctionQuery: vi.fn(),
+}));
+
+vi.mock('@/src/data/queries/publicVenue/useQuery', () => ({
+  useVenueQuery: vi.fn(),
 }));
 
 vi.mock('@/src/api/auction', () => ({
@@ -26,31 +26,27 @@ vi.mock('@/src/api/auction', () => ({
 describe('AuctionsListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(usePublicVenues).mockReturnValue({
+    vi.mocked(useVenueQuery).mockReturnValue({
       venues: [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }],
-    });
+    } as unknown as { venues: Venue[]; isLoading: boolean; error: Error | null });
   });
 
   it('renders loading state', () => {
-    vi.mocked(useQuery).mockReturnValue({
-      data: undefined,
+    vi.mocked(useAuctionQuery).mockReturnValue({
+      auctions: [],
       isLoading: true,
-      isFetching: true,
       error: null,
-      refetch: vi.fn(),
-    } as unknown as UseQueryResult<Auction[], Error>);
+    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
     render(<AuctionsListPage />);
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
 
   it('renders empty state when no auctions', () => {
-    vi.mocked(useQuery).mockReturnValue({
-      data: [],
+    vi.mocked(useAuctionQuery).mockReturnValue({
+      auctions: [],
       isLoading: false,
-      isFetching: false,
       error: null,
-      refetch: vi.fn(),
-    } as unknown as UseQueryResult<Auction[], Error>);
+    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
     render(<AuctionsListPage />);
     expect(screen.getByText('Public.Auctions.no_auctions')).toBeInTheDocument();
   });
@@ -78,13 +74,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       },
     ];
-    vi.mocked(useQuery).mockReturnValue({
-      data: mockAuctions,
+    vi.mocked(useAuctionQuery).mockReturnValue({
+      auctions: mockAuctions as Auction[],
       isLoading: false,
-      isFetching: false,
       error: null,
-      refetch: vi.fn(),
-    } as unknown as UseQueryResult<Auction[], Error>);
+    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
 
     render(<AuctionsListPage />);
 
@@ -125,13 +119,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       }, // Should be second (earlier than 2023-12-05)
     ];
-    vi.mocked(useQuery).mockReturnValue({
-      data: mockAuctions,
+    vi.mocked(useAuctionQuery).mockReturnValue({
+      auctions: mockAuctions as Auction[],
       isLoading: false,
-      isFetching: false,
       error: null,
-      refetch: vi.fn(),
-    } as unknown as UseQueryResult<Auction[], Error>);
+    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
     render(<AuctionsListPage />);
 
     const cards = screen
@@ -144,9 +136,9 @@ describe('AuctionsListPage', () => {
   });
 
   it('resolves and displays venue name', () => {
-    vi.mocked(usePublicVenues).mockReturnValue({
+    vi.mocked(useVenueQuery).mockReturnValue({
       venues: [{ id: 99, name: 'Special Venue', createdAt: new Date().toISOString() }],
-    });
+    } as unknown as { venues: Venue[]; isLoading: boolean; error: Error | null });
     const mockAuctions = [
       {
         id: 1,
@@ -159,13 +151,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       },
     ];
-    vi.mocked(useQuery).mockReturnValue({
-      data: mockAuctions,
+    vi.mocked(useAuctionQuery).mockReturnValue({
+      auctions: mockAuctions as Auction[],
       isLoading: false,
-      isFetching: false,
       error: null,
-      refetch: vi.fn(),
-    } as unknown as UseQueryResult<Auction[], Error>);
+    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
     render(<AuctionsListPage />);
     expect(screen.getByText('Special Venue')).toBeInTheDocument();
   });
@@ -193,13 +183,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       },
     ];
-    vi.mocked(useQuery).mockReturnValue({
-      data: mockAuctions,
+    vi.mocked(useAuctionQuery).mockReturnValue({
+      auctions: mockAuctions as Auction[],
       isLoading: false,
-      isFetching: false,
       error: null,
-      refetch: vi.fn(),
-    } as unknown as UseQueryResult<Auction[], Error>);
+    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
     render(<AuctionsListPage />);
     expect(screen.getByText(/AuctionStatus.cancelled/)).toBeInTheDocument();
     expect(screen.getByText(/AuctionStatus.completed/)).toBeInTheDocument();

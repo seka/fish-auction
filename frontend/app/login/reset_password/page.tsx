@@ -7,7 +7,7 @@ import {
   confirmPasswordReset,
   verifyResetToken,
   ResetPasswordConfirmRequest,
-} from '@/src/api/auth_reset';
+} from '@/src/data/api/auth_reset';
 import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';

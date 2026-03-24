@@ -5,10 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { DragEndEvent } from '@dnd-kit/core';
 import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
-import { useItemQuery } from '@/src/hooks/adminItem/useQuery';
-import { useItemMutation } from '@/src/hooks/adminItem/useMutation';
-import { useFishermanQuery } from '@/src/hooks/adminFisherman/useQuery';
-import { useAuctionQuery } from '@/src/hooks/adminAuction/useQuery';
+import { useItemQuery } from '@/src/data/queries/adminItem/useQuery';
+import { useItemMutation } from '@/src/data/queries/adminItem/useMutation';
+import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
+import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
 import { AuctionItem } from '@/src/models';
 
 export const useItemPage = () => {

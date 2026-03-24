@@ -3,8 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
-import { useBuyerQuery } from '@/src/hooks/adminBuyer/useQuery';
-import { useBuyerMutation } from '@/src/hooks/adminBuyer/useMutation';
+import { useBuyerQuery } from '@/src/data/queries/adminBuyer/useQuery';
+import { useBuyerMutation } from '@/src/data/queries/adminBuyer/useMutation';
 
 export const useBuyerPage = () => {
   const t = useTranslations();

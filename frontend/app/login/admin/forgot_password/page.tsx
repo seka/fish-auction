@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { requestAdminPasswordReset, ResetPasswordRequest } from '@/src/api/admin_auth_reset';
+import { requestAdminPasswordReset, ResetPasswordRequest } from '@/src/data/api/admin_auth_reset';
 import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
