@@ -7,7 +7,8 @@ import {
   reorderItems,
 } from '@/src/api/admin';
 import { ReorderItemsParams, AuctionItem } from '@/src/models';
-import { itemKeys } from './keys';
+import { itemKeys } from '../item/keys'; // For public invalidation
+import { adminItemKeys } from './keys';
 
 export const useItemMutation = () => {
   const queryClient = useQueryClient();
@@ -15,21 +16,24 @@ export const useItemMutation = () => {
   const createMutation = useMutation({
     mutationFn: registerItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: itemKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminItemKeys.all });
+      queryClient.invalidateQueries({ queryKey: itemKeys.publicAll });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: updateItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: itemKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminItemKeys.all });
+      queryClient.invalidateQueries({ queryKey: itemKeys.publicAll });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: itemKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminItemKeys.all });
+      queryClient.invalidateQueries({ queryKey: itemKeys.publicAll });
     },
   });
 
@@ -60,7 +64,8 @@ export const useItemMutation = () => {
       }
     },
     onSettled: (data, error, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: context?.queryKey || itemKeys.all });
+      queryClient.invalidateQueries({ queryKey: context?.queryKey || adminItemKeys.all });
+      queryClient.invalidateQueries({ queryKey: itemKeys.publicAll });
     },
   });
 
@@ -90,7 +95,8 @@ export const useItemMutation = () => {
       }
     },
     onSettled: (data, error, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: context?.queryKey || itemKeys.all });
+      queryClient.invalidateQueries({ queryKey: context?.queryKey || adminItemKeys.all });
+      queryClient.invalidateQueries({ queryKey: itemKeys.publicAll });
     },
   });
 
