@@ -8,9 +8,9 @@ import {
 } from '@/src/api/admin';
 import { RegisterItemParams } from '@/src/models';
 import { BuyerFormData } from '@/src/models/schemas/admin';
-import { itemKeys } from '@/src/hooks/item/queryKey';
-import { fishermanKeys } from '@/src/hooks/fisherman/queryKey';
-import { buyerKeys } from '@/src/hooks/buyer/queryKey';
+import { itemKeys } from '@/src/hooks/item/keys';
+import { fishermanKeys } from '@/src/hooks/fisherman/keys';
+import { buyerKeys } from '@/src/hooks/buyer/keys';
 
 export const useRegisterFisherman = () => {
   const mutation = useMutation({

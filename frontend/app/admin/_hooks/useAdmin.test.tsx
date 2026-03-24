@@ -16,7 +16,7 @@ import {
 } from '@/src/api/admin';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import { itemKeys } from '@/src/hooks/item/queryKey';
+import { itemKeys } from '@/src/hooks/item/keys';
 
 // Mock API
 vi.mock('@/src/api/admin', () => ({
