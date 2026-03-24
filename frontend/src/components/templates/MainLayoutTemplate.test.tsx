@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MainLayoutTemplate } from './MainLayoutTemplate';
 import { describe, it, expect } from 'vitest';
-import { ToastProvider } from '@/src/hooks/useToast';
+import { ToastProvider } from '@/src/hooks/ui/useToast';
 
 describe('MainLayoutTemplate', () => {
   it('renders children correctly', () => {

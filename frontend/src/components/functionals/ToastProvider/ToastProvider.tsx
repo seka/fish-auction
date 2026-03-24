@@ -1,6 +1,6 @@
 'use client';
 
-import { ToastProvider as BaseToastProvider } from '@/src/hooks/useToast';
+import { ToastProvider as BaseToastProvider } from '@/src/hooks/ui/useToast';
 import { ReactNode } from 'react';
 
 export function ToastProvider({ children }: { children: ReactNode }) {
