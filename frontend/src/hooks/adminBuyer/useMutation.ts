@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerBuyer, deleteBuyer } from '@/src/api/admin';
-import { buyerKeys } from './keys';
+import { adminBuyerKeys } from './keys';
 
 export const useBuyerMutation = () => {
   const queryClient = useQueryClient();
@@ -14,14 +14,14 @@ export const useBuyerMutation = () => {
       contactInfo: string;
     }) => registerBuyer(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: buyerKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminBuyerKeys.all });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteBuyer,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: buyerKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminBuyerKeys.all });
     },
   });
 

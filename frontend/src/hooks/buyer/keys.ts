@@ -2,6 +2,7 @@
  * 中買人関連のクエリキー
  */
 export const buyerKeys = {
-  all: ['buyers'] as const,
-  purchases: ['purchases'] as const,
+  // Buyer My Page (API: /api/buyer/me/...)
+  mePurchases: () => ['buyer', 'me', 'purchases'] as const,
+  meAuctions: () => ['buyer', 'me', 'auctions'] as const,
 } as const;
