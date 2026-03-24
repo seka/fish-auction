@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { getFishermen } from '@/src/api/admin';
-import { fishermanKeys } from './keys';
+import { adminFishermanKeys } from './keys';
 
 export const useFishermanQuery = () => {
   const { data, error, isLoading } = useQuery({
-    queryKey: fishermanKeys.all,
+    queryKey: adminFishermanKeys.all,
     queryFn: getFishermen,
   });
 

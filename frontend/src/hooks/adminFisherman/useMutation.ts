@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { registerFisherman, deleteFisherman } from '@/src/api/admin';
-import { fishermanKeys } from './keys';
+import { adminFishermanKeys } from './keys';
 
 export const useFishermanMutation = () => {
   const queryClient = useQueryClient();
@@ -8,14 +8,14 @@ export const useFishermanMutation = () => {
   const createMutation = useMutation({
     mutationFn: (data: { name: string }) => registerFisherman(data.name),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: fishermanKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminFishermanKeys.all });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteFisherman,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: fishermanKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminFishermanKeys.all });
     },
   });
 
