@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getInvoices } from '@/src/api/invoice';
-import { invoiceKeys } from './keys';
+import { adminInvoiceKeys } from './keys';
 
 export const useInvoiceQuery = () => {
   const {
@@ -8,7 +8,7 @@ export const useInvoiceQuery = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: invoiceKeys.all,
+    queryKey: adminInvoiceKeys.all,
     queryFn: getInvoices,
   });
 
