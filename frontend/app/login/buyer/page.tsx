@@ -11,6 +11,7 @@ import { Box, Text, Button, Input, Stack, Card } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
+import { authKeys } from '@/src/hooks/auth/queryKey';
 
 export default function BuyerLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,7 @@ export default function BuyerLoginPage() {
     try {
       const buyer = await loginBuyer(data);
       if (buyer) {
-        await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+        await queryClient.invalidateQueries({ queryKey: authKeys.me() });
         router.push('/auctions');
       } else {
         setLoginError(t('Public.Login.error_credentials'));

@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { getCurrentBuyer, logoutBuyer } from '@/src/api/buyer_auth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { css } from 'styled-system/css';
+import { authKeys } from '@/src/hooks/auth/queryKey';
 
 export const PublicNavbar = () => {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export const PublicNavbar = () => {
 
   // Auth check
   const { data: buyer } = useQuery({
-    queryKey: ['currentBuyer'],
+    queryKey: authKeys.me(),
     queryFn: getCurrentBuyer,
     retry: false,
   });
@@ -27,7 +28,7 @@ export const PublicNavbar = () => {
 
   const handleLogout = async () => {
     await logoutBuyer();
-    queryClient.setQueryData(['currentBuyer'], null);
+    queryClient.setQueryData(authKeys.me(), null);
     router.push('/login/buyer');
   };
 

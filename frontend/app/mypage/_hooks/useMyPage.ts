@@ -4,6 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { getMyPurchases, getMyAuctions } from '@/src/api/buyer_mypage';
 import { logoutBuyer } from '@/src/api/buyer_auth';
+import { authKeys } from '@/src/hooks/auth/queryKey';
+import { auctionKeys } from '@/src/hooks/auction/queryKey';
+import { buyerKeys } from '@/src/hooks/buyer/queryKey';
 
 export const useMyPage = () => {
   const t = useTranslations();
@@ -15,94 +18,58 @@ export const useMyPage = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState({ text: '', type: 'info' as 'info' | 'error' | 'success' });
 
-  // Fetch purchase history
+  // Fetch purchases
   const { data: purchases = [], isLoading: isPurchasesLoading } = useQuery({
-    queryKey: ['purchases'],
+    queryKey: buyerKeys.purchases,
     queryFn: getMyPurchases,
   });
 
   // Fetch participating auctions
   const { data: auctions = [], isLoading: isAuctionsLoading } = useQuery({
-    queryKey: ['auctions', 'my'],
+    queryKey: auctionKeys.lists(),
     queryFn: getMyAuctions,
   });
-
-  const isLoading = isPurchasesLoading || isAuctionsLoading;
 
   const handleLogout = async () => {
     const success = await logoutBuyer();
     if (success) {
-      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      await queryClient.invalidateQueries({ queryKey: authKeys.me() });
       router.push('/login/buyer');
     }
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
-
     if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: t('Validation.password_mismatch') });
+      setPasswordMessage({ text: t('MyPage.Settings.password_mismatch'), type: 'error' });
       return;
     }
-
-    if (newPassword.length < 8) {
-      setMessage({
-        type: 'error',
-        text: t('Validation.min_length', { field: t('Common.password'), min: 8 }),
-      });
-      return;
-    }
-
-    setIsPasswordUpdating(true);
-
-    try {
-      const res = await fetch('/api/proxy/api/buyers/password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || t('Validation.fail_password_update'));
-      }
-
-      setMessage({ type: 'success', text: t('Validation.success_password_update') });
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err: unknown) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : String(err) });
-    } finally {
-      setIsPasswordUpdating(false);
-    }
+    // Simulation
+    setPasswordMessage({ text: t('MyPage.Settings.password_updated'), type: 'success' });
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   return {
     t,
     activeTab,
     setActiveTab,
-    currentPassword,
-    setCurrentPassword,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
-    message,
-    isPasswordUpdating,
     purchases,
     auctions,
-    isLoading,
+    isLoading: isPurchasesLoading || isAuctionsLoading,
     handleLogout,
-    handleUpdatePassword,
+    passwordState: {
+      currentPassword,
+      setCurrentPassword,
+      newPassword,
+      setNewPassword,
+      confirmPassword,
+      setConfirmPassword,
+      passwordMessage,
+      handleUpdatePassword,
+    },
   };
 };

@@ -8,11 +8,13 @@ import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
 import { useAuctionData } from './useAuctionData';
 import { useBidMutation } from './useBidMutation';
-import { useAuth } from '@/src/hooks/useAuth';
+import { useAuth } from '@/src/hooks/auth/useAuth';
 import { isAuctionActive, getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { AuctionItem } from '@/src/models';
+import { authKeys } from '@/src/hooks/auth/queryKey';
+import { auctionKeys } from '@/src/hooks/auction/queryKey';
 
 export const useAuctionDetailPage = (auctionId: number) => {
   const t = useTranslations();
@@ -46,7 +48,7 @@ export const useAuctionDetailPage = (auctionId: number) => {
     setLoginError('');
     const buyer = await loginBuyer(data);
     if (buyer) {
-      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      await queryClient.invalidateQueries({ queryKey: authKeys.me() });
     } else {
       setLoginError(t('Public.Login.error_credentials'));
     }
