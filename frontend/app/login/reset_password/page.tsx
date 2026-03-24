@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { confirmPasswordReset, verifyResetToken, ResetPasswordConfirmRequest } from '@/src/api/auth_reset';
+import {
+  confirmPasswordReset,
+  verifyResetToken,
+  ResetPasswordConfirmRequest,
+} from '@/src/api/auth_reset';
 import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
@@ -233,7 +237,9 @@ function ResetPasswordForm() {
             </Box>
 
             <Button type="submit" w="full" disabled={isSubmitting}>
-              {isSubmitting ? t('Auth.ResetPassword.changing') : t('Auth.ResetPassword.submit_change')}
+              {isSubmitting
+                ? t('Auth.ResetPassword.changing')
+                : t('Auth.ResetPassword.submit_change')}
             </Button>
           </Stack>
         </form>

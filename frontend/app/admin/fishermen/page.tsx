@@ -4,7 +4,6 @@ import { useFishermanPage } from './_hooks/useFishermanPage';
 import { Box, Button, Card, HStack, Stack, Text, Input, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 
-
 export default function AdminFishermenPage() {
   const { state, form, actions, t } = useFishermanPage();
 

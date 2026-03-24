@@ -1,7 +1,6 @@
 import { cva, type RecipeVariantProps } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 
-
 // Box: 汎用コンテナ
 const boxRecipe = cva({
   base: {},

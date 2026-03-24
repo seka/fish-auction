@@ -236,7 +236,9 @@ function AdminResetPasswordForm() {
             </Box>
 
             <Button type="submit" w="full" disabled={isSubmitting} variant="primary">
-              {isSubmitting ? t('Auth.ResetPassword.changing') : t('Auth.ResetPassword.submit_change')}
+              {isSubmitting
+                ? t('Auth.ResetPassword.changing')
+                : t('Auth.ResetPassword.submit_change')}
             </Button>
           </Stack>
         </form>
