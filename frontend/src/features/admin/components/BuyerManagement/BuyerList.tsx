@@ -1,8 +1,7 @@
-'use client';
-
-import { Box, Button, HStack, Stack, Text } from '@atoms';
+import { Box, Stack, Text } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
+import { BuyerListItem } from './BuyerListItem';
 
 interface Buyer {
   id?: number;
@@ -38,36 +37,13 @@ export const BuyerList = ({ buyers, isLoading, isDeleting, onDelete }: BuyerList
   return (
     <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
       {buyers.map((buyer) => (
-        <Box as="li" key={buyer.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
-          <HStack justify="between" align="center">
-            <Box>
-              <Text
-                as="h3"
-                fontSize="lg"
-                fontWeight="bold"
-                className={css({ color: 'green.900' })}
-              >
-                {buyer.name}
-              </Text>
-              <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="1">
-                ID: {buyer.id}
-              </Text>
-            </Box>
-            <Button
-              variant="outline"
-              size="sm"
-              className={css({
-                color: 'red.500',
-                borderColor: 'red.200',
-                _hover: { bg: 'red.50', borderColor: 'red.500' },
-              })}
-              onClick={() => buyer.id && onDelete(buyer.id)}
-              disabled={isDeleting}
-            >
-              {t('Common.delete')}
-            </Button>
-          </HStack>
-        </Box>
+        <BuyerListItem
+          key={buyer.id}
+          buyer={buyer}
+          isDeleting={isDeleting}
+          onDelete={onDelete}
+          t={t}
+        />
       ))}
     </Stack>
   );
