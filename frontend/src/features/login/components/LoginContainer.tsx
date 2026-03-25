@@ -25,7 +25,7 @@ export const LoginContainer = () => {
       } else {
         setError(t('Admin.Login.error_invalid_password'));
       }
-    } catch (err: any) {
+    } catch (_err: unknown) {
       setError(t('Admin.Login.error_invalid_password'));
     }
   };

@@ -6,15 +6,19 @@ import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
 
 interface AdminResetPasswordFormProps {
-  register: UseFormRegister<Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }>;
+  register: UseFormRegister<
+    Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }
+  >;
   handleSubmit: UseFormHandleSubmit<
     Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }
   >;
-  onSubmit: (data: Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }) => Promise<void>;
+  onSubmit: (
+    data: Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string },
+  ) => Promise<void>;
   errors: FieldErrors<Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }>;
   isSubmitting: boolean;
   newPasswordValue: string;
-  t: (key: string, values?: Record<string, any>) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export const AdminResetPasswordForm = ({
@@ -91,7 +95,8 @@ export const AdminResetPasswordForm = ({
             <input
               type="password"
               {...register('confirm_password', {
-                validate: (value) => value === newPasswordValue || t('Validation.password_mismatch'),
+                validate: (value) =>
+                  value === newPasswordValue || t('Validation.password_mismatch'),
               })}
               className={css({
                 w: 'full',

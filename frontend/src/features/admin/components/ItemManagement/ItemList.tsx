@@ -30,7 +30,7 @@ interface ItemListProps {
   onDragEnd: (event: DragEndEvent) => void;
   onEdit: (item: AuctionItem) => void;
   onDelete: (id: number) => void;
-  t: (key: string, values?: Record<string, any>) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export const ItemList = ({
@@ -127,5 +127,3 @@ export const ItemList = ({
     </Box>
   );
 };
-
-

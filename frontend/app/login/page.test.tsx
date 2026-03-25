@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, it, vi, beforeEach } from 'vitest';
 import LoginPage from './page';
 import { useLogin } from '@/src/features/login';
 
@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/src/features/login', () => ({
-  LoginContainer: ({ children }: any) => <div>{children}</div>,
+  LoginContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useLogin: vi.fn(),
 }));
 
@@ -28,7 +28,7 @@ describe('LoginPage', () => {
       login: mockLogin,
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof useLogin>);
   });
 
   it('renders login container', () => {

@@ -64,7 +64,7 @@ describe('useMyPage', () => {
     });
     vi.mocked(useQueryClient).mockReturnValue({
       invalidateQueries: vi.fn(),
-    } as any);
+    } as unknown as ReturnType<typeof useQueryClient>);
   });
 
   it('returns initial state', async () => {
