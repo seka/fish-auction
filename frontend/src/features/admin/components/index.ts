@@ -8,3 +8,6 @@ export * from './BuyerManagement/BuyerForm';
 export * from './ItemManagement/ItemManagementContainer';
 export * from './ItemManagement/ItemForm';
 export * from './ItemManagement/SortableRow';
+export * from './VenueManagement/VenueManagementContainer';
+export * from './VenueManagement/VenueList';
+export * from './VenueManagement/VenueForm';

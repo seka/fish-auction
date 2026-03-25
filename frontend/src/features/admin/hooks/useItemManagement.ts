@@ -38,13 +38,7 @@ export const useItemManagement = () => {
     isSorting,
   } = useItemMutation();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<ItemFormData>({
+  const form = useForm<ItemFormData>({
     resolver: zodResolver(itemSchema),
     defaultValues: {
       auctionId: initialAuctionId || '',
@@ -55,9 +49,11 @@ export const useItemManagement = () => {
     setPrevInitialId(initialAuctionId);
     setFilterAuctionId(initialAuctionId ? parseInt(initialAuctionId) : undefined);
     if (initialAuctionId) {
-      setValue('auctionId', initialAuctionId);
+      form.setValue('auctionId', initialAuctionId);
     }
   }
+
+  const { reset, handleSubmit, setValue } = form;
 
   const onSubmit = async (data: ItemFormData) => {
     try {

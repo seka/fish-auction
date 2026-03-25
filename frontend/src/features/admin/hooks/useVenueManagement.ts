@@ -7,39 +7,35 @@ import { useVenueQuery } from '@/src/data/queries/adminVenue/useQuery';
 import { useVenueMutation } from '@/src/data/queries/adminVenue/useMutation';
 import { Venue } from '@/src/models/venue';
 
-export const useVenuePage = () => {
+export const useVenueManagement = () => {
   const t = useTranslations();
   const [message, setMessage] = useState('');
-  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
   const { venues, isLoading } = useVenueQuery();
-  const { createVenue, updateVenue, deleteVenue, isCreating, isUpdating, isDeleting } =
+  const { createVenue, isCreating, deleteVenue, isDeleting, updateVenue, isUpdating } =
     useVenueMutation();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<VenueFormData>({
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+
+  const form = useForm<VenueFormData>({
     resolver: zodResolver(venueSchema),
   });
+
+  const { reset, handleSubmit, setValue } = form;
 
   const onSubmit = async (data: VenueFormData) => {
     try {
       if (editingVenue) {
-        await updateVenue({ id: editingVenue.id, data });
+        await updateVenue({ ...editingVenue, ...data });
         setMessage(t('Admin.Venues.success_update'));
         setEditingVenue(null);
       } else {
         await createVenue(data);
-        setMessage(t('Admin.Venues.success_create'));
+        setMessage(t('Admin.Venues.success_register'));
       }
       reset();
-    } catch (e) {
-      console.error(e);
-      setMessage(t('Common.error_occurred'));
+    } catch {
+      setMessage(editingVenue ? t('Admin.Venues.fail_update') : t('Admin.Venues.fail_register'));
     }
   };
 
@@ -56,23 +52,6 @@ export const useVenuePage = () => {
   };
 
   const onDelete = async (id: number) => {
-    if (confirm(t('Common.confirm_delete'))) {
-      try {
-        await deleteVenue(id);
-        setMessage(t('Admin.Venues.success_delete'));
-      } catch (e: unknown) {
-        console.error(e);
-        let errorMsg = t('Admin.Venues.fail_delete');
-        if (e && typeof e === 'object' && 'name' in e && e.name === 'ApiError') {
-          const apiError = e as { status?: number; message?: string };
-          if (apiError.status === 409) {
-            errorMsg = t('Admin.Venues.error_delete_conflict');
-          } else if (apiError.status === 500 || apiError.message === 'An internal error occurred') {
-            errorMsg = t('Common.error_occurred');
-          } else if (apiError.message) {
-            errorMsg = apiError.message;
-          }
-        }
         setMessage(errorMsg);
       }
     }
