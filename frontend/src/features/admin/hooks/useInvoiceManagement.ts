@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useInvoiceQuery } from '@/src/data/queries/adminInvoice/useQuery';
 import { InvoiceItem } from '@/src/models';
 
-export const useInvoicePage = () => {
+export const useInvoiceManagement = () => {
+  const t = useTranslations();
   const { invoices, isLoading } = useInvoiceQuery();
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceItem | null>(null);
 
@@ -15,5 +16,6 @@ export const useInvoicePage = () => {
     actions: {
       setSelectedInvoice,
     },
+    t,
   };
 };

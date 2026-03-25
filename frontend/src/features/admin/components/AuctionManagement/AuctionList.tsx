@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, HStack, Text } from '@atoms';
+import { Box, Button, HStack, Text } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th, Td, AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
@@ -146,5 +146,4 @@ export const AuctionList = ({
   );
 };
 
-// Internal Box component to avoid import issues in this snippet
-const Box = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+
