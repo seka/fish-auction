@@ -1,39 +1,7 @@
-'use client';
-
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { Box, Card, Text, HStack, Select, EmptyState } from '@atoms';
-import { Table, Thead, Tbody, Tr, Th } from '@molecules';
-import { css } from 'styled-system/css';
-import { useItemManagement } from '../../hooks/useItemManagement';
-import { SortableRow } from './SortableRow';
-import { ItemForm } from './ItemForm';
+import { ItemList } from './ItemList';
 
 export const ItemManagementContainer = () => {
   const { state, form, actions, t } = useItemManagement();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
 
   return (
     <Box maxW="6xl" mx="auto" p="6">
@@ -119,70 +87,17 @@ export const ItemManagementContainer = () => {
               </HStack>
             </Box>
 
-            {state.isItemsLoading && state.items.length === 0 ? (
-              <Box p="6" textAlign="center" className={css({ color: 'gray.600' })}>
-                {t('Common.loading')}
-              </Box>
-            ) : !state.filterAuctionId ? (
-              <Box p="10" textAlign="center">
-                <Text className={css({ color: 'gray.500' })}>
-                  {t('Admin.Items.placeholder_select_auction')}
-                </Text>
-              </Box>
-            ) : state.items.length === 0 ? (
-              <EmptyState
-                message={t('Common.no_data')}
-                icon={
-                  <span role="img" aria-label="item">
-                    🐟
-                  </span>
-                }
-              />
-            ) : (
-              <Box overflowX="auto">
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={actions.onDragEnd}
-                  modifiers={[restrictToVerticalAxis]}
-                >
-                  <Table>
-                    <Thead>
-                      <Tr>
-                        <Th width="120px">{t('Admin.Items.sort_order')}</Th>
-                        <Th>{t('Admin.Items.fish_type')}</Th>
-                        <Th>{t('Admin.Items.fisherman')}</Th>
-                        <Th>{t('Admin.Items.quantity')}</Th>
-                        <Th className={css({ textAlign: 'right' })}>
-                          {t('Admin.Auctions.action')}
-                        </Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      <SortableContext
-                        items={state.items.map((i) => i.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {state.items.map((item) => {
-                          const fisherman = state.fishermen.find((f) => f.id === item.fishermanId);
-                          return (
-                            <SortableRow
-                              key={item.id}
-                              item={item}
-                              fisherman={fisherman}
-                              onEdit={actions.onEdit}
-                              onDelete={actions.onDelete}
-                              isDeleting={state.isDeleting}
-                              t={t}
-                            />
-                          );
-                        })}
-                      </SortableContext>
-                    </Tbody>
-                  </Table>
-                </DndContext>
-              </Box>
-            )}
+            <ItemList
+              items={state.items}
+              fishermen={state.fishermen}
+              isItemsLoading={state.isItemsLoading}
+              filterAuctionId={state.filterAuctionId}
+              isDeleting={state.isDeleting}
+              onDragEnd={actions.onDragEnd}
+              onEdit={actions.onEdit}
+              onDelete={actions.onDelete}
+              t={t}
+            />
           </Card>
         </Box>
       </Box>
