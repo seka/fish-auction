@@ -11,7 +11,7 @@ import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
 import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
 import { AuctionItem } from '@/src/models';
 
-export const useItemPage = () => {
+export const useItemManagement = () => {
   const t = useTranslations();
   const [message, setMessage] = useState('');
 
@@ -157,11 +157,7 @@ export const useItemPage = () => {
       filterAuctionId,
       editingItem,
     },
-    form: {
-      register,
-      errors,
-      reset,
-    },
+    form,
     actions: {
       onSubmit: handleSubmit(onSubmit),
       onEdit,

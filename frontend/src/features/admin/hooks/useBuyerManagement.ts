@@ -6,6 +6,13 @@ import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
 import { useBuyerQuery } from '@/src/data/queries/adminBuyer/useQuery';
 import { useBuyerMutation } from '@/src/data/queries/adminBuyer/useMutation';
 
+export const useBuyerManagement = () => {
+  const t = useTranslations();
+  const [message, setMessage] = useState('');
+
+  const { buyers, isLoading } = useBuyerQuery();
+  const { createBuyer, isCreating, deleteBuyer, isDeleting } = useBuyerMutation();
+
   const form = useForm<BuyerFormData>({
     resolver: zodResolver(buyerSchema),
   });
