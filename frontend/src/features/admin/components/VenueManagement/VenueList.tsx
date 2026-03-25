@@ -33,13 +33,7 @@ export const VenueList = ({ venues, isLoading, onEdit, onDelete }: VenueListProp
   return (
     <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
       {venues.map((venue) => (
-        <VenueListCell
-          key={venue.id}
-          venue={venue}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          t={t}
-        />
+        <VenueListCell key={venue.id} venue={venue} onEdit={onEdit} onDelete={onDelete} t={t} />
       ))}
     </Stack>
   );

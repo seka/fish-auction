@@ -31,12 +31,7 @@ export const InvoiceList = ({ invoices }: InvoiceListProps) => {
           }
         />
       ) : (
-        invoices.map((invoice, index) => (
-          <InvoiceListCell
-            key={index}
-            invoice={invoice}
-          />
-        ))
+        invoices.map((invoice, index) => <InvoiceListCell key={index} invoice={invoice} />)
       )}
     </Stack>
   );

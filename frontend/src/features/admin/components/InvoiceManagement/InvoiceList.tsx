@@ -48,11 +48,7 @@ export const InvoiceList = ({ invoices, isLoading, onSelect }: InvoiceListProps)
       </Thead>
       <Tbody>
         {invoices.map((invoice) => (
-          <InvoiceListCell
-            key={invoice.buyerId}
-            invoice={invoice}
-            onSelect={onSelect}
-          />
+          <InvoiceListCell key={invoice.buyerId} invoice={invoice} onSelect={onSelect} />
         ))}
       </Tbody>
     </Table>

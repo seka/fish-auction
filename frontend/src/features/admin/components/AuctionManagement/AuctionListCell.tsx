@@ -28,11 +28,7 @@ export const AuctionListCell = ({
   return (
     <Tr>
       <Td>
-        <Text
-          fontSize="sm"
-          fontWeight="medium"
-          className={css({ color: 'gray.900' })}
-        >
+        <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>
           {auction.auctionDate}
         </Text>
         <Text fontSize="sm" className={css({ color: 'gray.500' })}>
@@ -92,11 +88,7 @@ export const AuctionListCell = ({
               📦 {t('Admin.Auctions.manage_items')}
             </Button>
           </Link>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onEdit(auction)}
-          >
+          <Button size="sm" variant="outline" onClick={() => onEdit(auction)}>
             {t('Common.edit')}
           </Button>
           <Button

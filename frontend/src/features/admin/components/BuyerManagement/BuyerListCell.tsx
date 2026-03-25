@@ -20,12 +20,7 @@ export const BuyerListCell = ({ buyer, isDeleting, onDelete, t }: BuyerListCellP
     <Box as="li" p="6" _hover={{ bg: 'gray.50' }} transition="colors">
       <HStack justify="between" align="center">
         <Box>
-          <Text
-            as="h3"
-            fontSize="lg"
-            fontWeight="bold"
-            className={css({ color: 'green.900' })}
-          >
+          <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'green.900' })}>
             {buyer.name}
           </Text>
           <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="1">

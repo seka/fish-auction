@@ -65,5 +65,3 @@ export const AuctionList = ({
     </Box>
   );
 };
-
-

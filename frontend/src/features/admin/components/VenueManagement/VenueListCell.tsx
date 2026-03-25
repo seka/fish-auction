@@ -16,12 +16,7 @@ export const VenueListCell = ({ venue, onEdit, onDelete, t }: VenueListCellProps
     <Box as="li" key={venue.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
       <HStack justify="between" align="start">
         <Box>
-          <Text
-            as="h3"
-            fontSize="lg"
-            fontWeight="bold"
-            className={css({ color: 'indigo.900' })}
-          >
+          <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })}>
             {venue.name}
           </Text>
           {venue.location && (

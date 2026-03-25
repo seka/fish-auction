@@ -22,20 +22,10 @@ export const FishermanListCell = ({
   t,
 }: FishermanListCellProps) => {
   return (
-    <Box
-      as="li"
-      p="6"
-      _hover={{ bg: 'gray.50' }}
-      transition="colors"
-    >
+    <Box as="li" p="6" _hover={{ bg: 'gray.50' }} transition="colors">
       <HStack justify="between" align="center">
         <Box>
-          <Text
-            as="h3"
-            fontSize="lg"
-            fontWeight="bold"
-            className={css({ color: 'indigo.900' })}
-          >
+          <Text as="h3" fontSize="lg" fontWeight="bold" className={css({ color: 'indigo.900' })}>
             {fisherman.name}
           </Text>
           <Text fontSize="sm" className={css({ color: 'gray.600' })} mt="1">
