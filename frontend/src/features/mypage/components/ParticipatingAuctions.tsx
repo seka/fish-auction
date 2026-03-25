@@ -70,7 +70,12 @@ export const ParticipatingAuctions = ({ auctions }: ParticipatingAuctionsProps) 
                     </Box>
                     <AuctionStatusBadge status={auction.status as AuctionStatus} />
                   </HStack>
-                  <Text fontSize="lg" fontWeight="bold" className={css({ color: 'gray.900' })} mb="1">
+                  <Text
+                    fontSize="lg"
+                    fontWeight="bold"
+                    className={css({ color: 'gray.900' })}
+                    mb="1"
+                  >
                     {auction.auctionDate}
                   </Text>
                   {auction.startTime && auction.endTime && (

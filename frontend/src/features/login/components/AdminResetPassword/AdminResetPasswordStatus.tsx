@@ -9,7 +9,11 @@ interface AdminResetPasswordStatusProps {
   t: (key: string) => string;
 }
 
-export const AdminResetPasswordStatus = ({ type, onButtonClick, t }: AdminResetPasswordStatusProps) => {
+export const AdminResetPasswordStatus = ({
+  type,
+  onButtonClick,
+  t,
+}: AdminResetPasswordStatusProps) => {
   if (type === 'verifying') {
     return (
       <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.100">

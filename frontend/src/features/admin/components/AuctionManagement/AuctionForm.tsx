@@ -78,11 +78,7 @@ export const AuctionForm = ({
             >
               {t('Admin.Auctions.date')}
             </Text>
-            <Input
-              type="date"
-              {...register('auctionDate')}
-              error={!!errors.auctionDate}
-            />
+            <Input type="date" {...register('auctionDate')} error={!!errors.auctionDate} />
             {errors.auctionDate && (
               <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">
                 {String(errors.auctionDate.message)}
@@ -101,11 +97,7 @@ export const AuctionForm = ({
               >
                 {t('Admin.Auctions.start_time')}
               </Text>
-              <Input
-                type="time"
-                {...register('startTime')}
-                error={!!errors.startTime}
-              />
+              <Input type="time" {...register('startTime')} error={!!errors.startTime} />
             </Box>
             <Box flex="1">
               <Text
@@ -118,11 +110,7 @@ export const AuctionForm = ({
               >
                 {t('Admin.Auctions.end_time')}
               </Text>
-              <Input
-                type="time"
-                {...register('endTime')}
-                error={!!errors.endTime}
-              />
+              <Input type="time" {...register('endTime')} error={!!errors.endTime} />
             </Box>
           </HStack>
 

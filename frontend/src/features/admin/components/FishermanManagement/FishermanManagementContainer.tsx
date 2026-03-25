@@ -48,11 +48,7 @@ export const FishermanManagementContainer = () => {
       >
         {/* Form Section */}
         <Box className={css({ md: { gridColumn: '1 / 2' } })}>
-          <FishermanForm
-            form={form}
-            onSubmit={actions.onSubmit}
-            isCreating={state.isCreating}
-          />
+          <FishermanForm form={form} onSubmit={actions.onSubmit} isCreating={state.isCreating} />
         </Box>
 
         {/* List Section */}

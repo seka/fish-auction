@@ -35,11 +35,7 @@ export const AuctionsList = ({ auctions, venues }: AuctionsListProps) => {
       gap="6"
     >
       {auctions.map((auction) => (
-        <AuctionCard
-          key={auction.id}
-          auction={auction}
-          venueName={getVenueName(auction.venueId)}
-        />
+        <AuctionCard key={auction.id} auction={auction} venueName={getVenueName(auction.venueId)} />
       ))}
     </Box>
   );

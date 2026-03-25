@@ -88,7 +88,12 @@ export const BuyerForm = ({ form, onSubmit, isCreating }: BuyerFormProps) => {
             >
               {t('Validation.field_name.password')}
             </Text>
-            <Input type="password" {...register('password')} placeholder="********" error={!!errors.password} />
+            <Input
+              type="password"
+              {...register('password')}
+              placeholder="********"
+              error={!!errors.password}
+            />
             {errors.password && (
               <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">
                 {String(errors.password.message)}

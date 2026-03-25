@@ -80,8 +80,8 @@ export const PurchaseHistory = ({ purchases }: PurchaseHistoryProps) => {
                   {purchase.unit}
                 </Text>
                 <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-                  {t('Public.MyPage.auction_id')}: {purchase.auctionId} |{' '}
-                  {t('Public.MyPage.date')}: {purchase.auctionDate}
+                  {t('Public.MyPage.auction_id')}: {purchase.auctionId} | {t('Public.MyPage.date')}:{' '}
+                  {purchase.auctionDate}
                 </Text>
               </Box>
               <Box textAlign="right">

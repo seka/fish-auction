@@ -59,7 +59,7 @@ export const ItemForm = ({
               <option value="">{t('Admin.Items.placeholder_select_auction')}</option>
               {auctions.map((auction) => (
                 <option key={auction.id} value={auction.id}>
-                  {auction.auctionDate} {auction.startTime?.substring(0, 5)} - {' '}
+                  {auction.auctionDate} {auction.startTime?.substring(0, 5)} -{' '}
                   {auction.endTime?.substring(0, 5)} (ID: {auction.id})
                 </option>
               ))}
@@ -178,12 +178,7 @@ export const ItemForm = ({
                   : t('Common.register')}
             </Button>
             {editingItem && (
-              <Button
-                type="button"
-                onClick={onCancelEdit}
-                width="full"
-                variant="outline"
-              >
+              <Button type="button" onClick={onCancelEdit} width="full" variant="outline">
                 {t('Common.cancel')}
               </Button>
             )}

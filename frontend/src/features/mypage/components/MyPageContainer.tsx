@@ -3,12 +3,7 @@
 import { Box, HStack, Text, Button } from '@atoms';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
-import {
-  PurchaseHistory,
-  ParticipatingAuctions,
-  InvoiceList,
-  SettingsForm,
-} from '.';
+import { PurchaseHistory, ParticipatingAuctions, InvoiceList, SettingsForm } from '.';
 import { useMyPage } from '../hooks/useMyPage';
 import { MyPageTab } from '../types';
 
