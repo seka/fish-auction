@@ -1,6 +1,7 @@
 export * from './components/LoginContainer';
 export * from './components/LoginForm';
 export * from './components/BuyerLoginContainer';
+export * from './components/BuyerLoginForm';
 export * from './components/AdminForgotPasswordContainer';
 export * from './components/AdminResetPasswordContainer';
 export * from './components/PublicForgotPasswordContainer';

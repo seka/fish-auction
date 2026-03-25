@@ -2,7 +2,7 @@
 
 import { useAuctionDetail } from '../hooks/useAuctionDetail';
 import { AuctionHeader } from './AuctionHeader';
-import { BuyerLoginForm } from './BuyerLoginForm';
+import { BuyerLoginForm } from '../../login';
 import { AuctionUsageGuide } from './AuctionUsageGuide';
 import { AuctionItemList } from './AuctionItemList';
 import { BiddingPanel } from './BiddingPanel';
