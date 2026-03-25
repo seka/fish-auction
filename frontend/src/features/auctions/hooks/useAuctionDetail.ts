@@ -16,7 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { authKeys } from '@/src/data/queries/auth/keys';
 import { AuctionItem } from '@/src/models';
 
-export const useAuctionDetailPage = (auctionId: number) => {
+export const useAuctionDetail = (auctionId: number) => {
   const t = useTranslations();
   const queryClient = useQueryClient();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
