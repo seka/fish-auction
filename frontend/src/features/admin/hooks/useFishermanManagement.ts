@@ -6,7 +6,7 @@ import { fishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
 import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
 import { useFishermanMutation } from '@/src/data/queries/adminFisherman/useMutation';
 
-export const useFishermanPage = () => {
+export const useFishermanManagement = () => {
   const t = useTranslations();
   const [message, setMessage] = useState('');
 
