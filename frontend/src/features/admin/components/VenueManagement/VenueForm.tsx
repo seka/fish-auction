@@ -4,36 +4,10 @@ import { Box, Button, Stack, Text, Input, Card, HStack } from '@atoms';
 import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 import { useTranslations } from 'next-intl';
-import { UseFormReturn } from 'react-hook-form';
-import { VenueFormData } from '@/src/models/schemas/admin';
+import { VenueFormData } from '@/src/models/schemas/auction';
+import { Venue } from '@/src/models';
 
-// Textarea component with similar styling to Input
-const Textarea = styled('textarea', {
-  base: {
-    display: 'block',
-    width: 'full',
-    px: '3',
-    py: '2',
-    bg: 'white',
-    color: 'gray.900',
-    border: '1px solid',
-    borderColor: 'gray.300',
-    borderRadius: 'md',
-    fontSize: 'sm',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    resize: 'vertical',
-    _focus: {
-      borderColor: 'indigo.500',
-      ring: '1px',
-      ringColor: 'indigo.500',
-    },
-    _disabled: {
-      bg: 'gray.50',
-      cursor: 'not-allowed',
-    },
-  },
-});
+// ... (Textarea definition)
 
 interface VenueFormProps {
   form: UseFormReturn<VenueFormData>;
@@ -41,7 +15,7 @@ interface VenueFormProps {
   onCancelEdit: () => void;
   isCreating: boolean;
   isUpdating: boolean;
-  editingVenue: any;
+  editingVenue: Venue | null;
 }
 
 export const VenueForm = ({

@@ -11,3 +11,6 @@ export * from './ItemManagement/SortableRow';
 export * from './VenueManagement/VenueManagementContainer';
 export * from './VenueManagement/VenueList';
 export * from './VenueManagement/VenueForm';
+export * from './AuctionManagement/AuctionManagementContainer';
+export * from './AuctionManagement/AuctionList';
+export * from './AuctionManagement/AuctionForm';

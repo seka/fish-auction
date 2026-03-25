@@ -26,7 +26,7 @@ export const useVenueManagement = () => {
   const onSubmit = async (data: VenueFormData) => {
     try {
       if (editingVenue) {
-        await updateVenue({ ...editingVenue, ...data });
+        await updateVenue({ id: editingVenue.id, data });
         setMessage(t('Admin.Venues.success_update'));
         setEditingVenue(null);
       } else {
@@ -52,8 +52,12 @@ export const useVenueManagement = () => {
   };
 
   const onDelete = async (id: number) => {
-        setMessage(errorMsg);
-      }
+    if (!window.confirm(t('Common.confirm_delete'))) return;
+    try {
+      await deleteVenue(id);
+      setMessage(t('Common.success_delete'));
+    } catch {
+      setMessage(t('Common.error_occurred'));
     }
   };
 
@@ -62,15 +66,12 @@ export const useVenueManagement = () => {
       message,
       venues,
       isLoading,
-      editingVenue,
       isCreating,
-      isUpdating,
       isDeleting,
+      isUpdating,
+      editingVenue,
     },
-    form: {
-      register,
-      errors,
-    },
+    form,
     actions: {
       onSubmit: handleSubmit(onSubmit),
       onEdit,

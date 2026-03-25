@@ -9,7 +9,7 @@ import { useVenueQuery } from '@/src/data/queries/adminVenue/useQuery';
 import { Auction } from '@/src/models/auction';
 import { ApiError } from '@/src/core/api/client';
 
-export const useAuctionPage = () => {
+export const useAuctionManagement = () => {
   const t = useTranslations();
   const [message, setMessage] = useState('');
   const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
@@ -28,15 +28,11 @@ export const useAuctionPage = () => {
     isDeleting,
   } = useAuctionMutation();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<AuctionFormInput>({
+  const form = useForm<AuctionFormInput>({
     resolver: zodResolver(auctionSchema),
   });
+
+  const { reset, handleSubmit, setValue } = form;
 
   const onSubmit = async (data: AuctionFormInput) => {
     try {
@@ -76,7 +72,6 @@ export const useAuctionPage = () => {
     setValue('auctionDate', auction.auctionDate);
     setValue('startTime', auction.startTime || '');
     setValue('endTime', auction.endTime || '');
-    setValue('status', auction.status);
   };
 
   const onCancelEdit = () => {
@@ -125,10 +120,7 @@ export const useAuctionPage = () => {
       onStatusChange,
       onSubmit: handleSubmit(onSubmit),
     },
-    form: {
-      register,
-      errors,
-    },
-    t, // Helper to access translations if needed
+    form,
+    t,
   };
 };
