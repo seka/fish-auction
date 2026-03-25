@@ -6,21 +6,11 @@ import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
 import { useBuyerQuery } from '@/src/data/queries/adminBuyer/useQuery';
 import { useBuyerMutation } from '@/src/data/queries/adminBuyer/useMutation';
 
-export const useBuyerPage = () => {
-  const t = useTranslations();
-  const [message, setMessage] = useState('');
-
-  const { buyers, isLoading } = useBuyerQuery();
-  const { createBuyer, isCreating, deleteBuyer, isDeleting } = useBuyerMutation();
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<BuyerFormData>({
+  const form = useForm<BuyerFormData>({
     resolver: zodResolver(buyerSchema),
   });
+
+  const { reset, handleSubmit } = form;
 
   const onSubmit = async (data: BuyerFormData) => {
     try {
@@ -52,10 +42,7 @@ export const useBuyerPage = () => {
       isCreating,
       isDeleting,
     },
-    form: {
-      register,
-      errors,
-    },
+    form,
     actions: {
       onSubmit: handleSubmit(onSubmit),
       onDelete,

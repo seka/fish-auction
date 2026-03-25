@@ -17,7 +17,7 @@ export const useFishermanManagement = () => {
     resolver: zodResolver(fishermanSchema),
   });
 
-  const { reset, handleSubmit, formState: { errors } } = form;
+  const { reset, handleSubmit } = form;
 
   const onSubmit = async (data: FishermanFormData) => {
     try {
