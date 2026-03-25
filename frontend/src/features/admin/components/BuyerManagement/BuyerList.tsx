@@ -1,7 +1,7 @@
 import { Box, Stack, Text } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { BuyerListItem } from './BuyerListItem';
+import { BuyerListCell } from './BuyerListCell';
 
 interface Buyer {
   id?: number;
@@ -37,7 +37,7 @@ export const BuyerList = ({ buyers, isLoading, isDeleting, onDelete }: BuyerList
   return (
     <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
       {buyers.map((buyer) => (
-        <BuyerListItem
+        <BuyerListCell
           key={buyer.id}
           buyer={buyer}
           isDeleting={isDeleting}

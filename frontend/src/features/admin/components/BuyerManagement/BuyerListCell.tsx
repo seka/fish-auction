@@ -8,14 +8,14 @@ interface Buyer {
   name: string;
 }
 
-interface BuyerListItemProps {
+interface BuyerListCellProps {
   buyer: Buyer;
   isDeleting: boolean;
   onDelete: (id: number) => void;
   t: (key: string) => string;
 }
 
-export const BuyerListItem = ({ buyer, isDeleting, onDelete, t }: BuyerListItemProps) => {
+export const BuyerListCell = ({ buyer, isDeleting, onDelete, t }: BuyerListCellProps) => {
   return (
     <Box as="li" p="6" _hover={{ bg: 'gray.50' }} transition="colors">
       <HStack justify="between" align="center">

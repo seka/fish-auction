@@ -9,11 +9,11 @@ interface Invoice {
   totalAmount: number;
 }
 
-interface InvoiceListItemProps {
+interface InvoiceListCellProps {
   invoice: Invoice;
 }
 
-export const InvoiceListItem = ({ invoice }: InvoiceListItemProps) => {
+export const InvoiceListCell = ({ invoice }: InvoiceListCellProps) => {
   return (
     <Card
       padding="lg"

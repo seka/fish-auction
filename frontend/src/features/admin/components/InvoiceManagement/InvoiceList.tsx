@@ -5,7 +5,7 @@ import { Box, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { InvoiceItem } from '@/src/models';
-import { InvoiceListRow } from './InvoiceListRow';
+import { InvoiceListCell } from './InvoiceListCell';
 
 interface InvoiceListProps {
   invoices: InvoiceItem[];
@@ -48,7 +48,7 @@ export const InvoiceList = ({ invoices, isLoading, onSelect }: InvoiceListProps)
       </Thead>
       <Tbody>
         {invoices.map((invoice) => (
-          <InvoiceListRow
+          <InvoiceListCell
             key={invoice.buyerId}
             invoice={invoice}
             onSelect={onSelect}

@@ -16,7 +16,7 @@ interface FishermanListProps {
   onDelete: (id: number) => void;
 }
 
-import { FishermanListItem } from './FishermanListItem';
+import { FishermanListCell } from './FishermanListCell';
 
 export const FishermanList = ({
   fishermen,
@@ -45,7 +45,7 @@ export const FishermanList = ({
   return (
     <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
       {fishermen.map((fisherman) => (
-        <FishermanListItem
+        <FishermanListCell
           key={fisherman.id}
           fisherman={fisherman}
           isDeleting={isDeleting}

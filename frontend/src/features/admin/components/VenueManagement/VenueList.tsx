@@ -2,7 +2,7 @@ import { Box, Stack, Text } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { Venue } from '@/src/models';
-import { VenueListItem } from './VenueListItem';
+import { VenueListCell } from './VenueListCell';
 
 interface VenueListProps {
   venues: Venue[];
@@ -33,7 +33,7 @@ export const VenueList = ({ venues, isLoading, onEdit, onDelete }: VenueListProp
   return (
     <Stack as="ul" spacing="0" divideY="1px" divideColor="gray.200">
       {venues.map((venue) => (
-        <VenueListItem
+        <VenueListCell
           key={venue.id}
           venue={venue}
           onEdit={onEdit}

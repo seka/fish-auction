@@ -19,7 +19,7 @@ import { Box, EmptyState, Text } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th } from '@molecules';
 import { css } from 'styled-system/css';
 import { AuctionItem, Fisherman } from '@/src/models';
-import { SortableRow } from './SortableRow';
+import { ItemListCell } from './ItemListCell';
 
 interface ItemListProps {
   items: AuctionItem[];
@@ -109,7 +109,7 @@ export const ItemList = ({
               {items.map((item) => {
                 const fisherman = fishermen.find((f) => f.id === item.fishermanId);
                 return (
-                  <SortableRow
+                  <ItemListCell
                     key={item.id}
                     item={item}
                     fisherman={fisherman}

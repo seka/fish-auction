@@ -1,7 +1,7 @@
 import { Text, Stack, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { InvoiceListItem } from './InvoiceListItem';
+import { InvoiceListCell } from './InvoiceListCell';
 
 interface Invoice {
   buyerName: string;
@@ -32,7 +32,7 @@ export const InvoiceList = ({ invoices }: InvoiceListProps) => {
         />
       ) : (
         invoices.map((invoice, index) => (
-          <InvoiceListItem
+          <InvoiceListCell
             key={index}
             invoice={invoice}
           />

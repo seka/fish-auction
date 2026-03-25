@@ -4,14 +4,14 @@ import { Box, Button, HStack, Text } from '@atoms';
 import { css } from 'styled-system/css';
 import { Venue } from '@/src/models';
 
-interface VenueListItemProps {
+interface VenueListCellProps {
   venue: Venue;
   onEdit: (venue: Venue) => void;
   onDelete: (id: number) => void;
   t: (key: string) => string;
 }
 
-export const VenueListItem = ({ venue, onEdit, onDelete, t }: VenueListItemProps) => {
+export const VenueListCell = ({ venue, onEdit, onDelete, t }: VenueListCellProps) => {
   return (
     <Box as="li" key={venue.id} p="6" _hover={{ bg: 'gray.50' }} transition="colors">
       <HStack justify="between" align="start">

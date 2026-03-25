@@ -6,7 +6,7 @@ import { css } from 'styled-system/css';
 import Link from 'next/link';
 import { Auction, Venue } from '@/src/models';
 
-interface AuctionListRowProps {
+interface AuctionListCellProps {
   auction: Auction;
   venue?: Venue;
   isUpdatingStatus: boolean;
@@ -16,7 +16,7 @@ interface AuctionListRowProps {
   t: (key: string) => string;
 }
 
-export const AuctionListRow = ({
+export const AuctionListCell = ({
   auction,
   venue,
   isUpdatingStatus,
@@ -24,7 +24,7 @@ export const AuctionListRow = ({
   onDelete,
   onStatusChange,
   t,
-}: AuctionListRowProps) => {
+}: AuctionListCellProps) => {
   return (
     <Tr>
       <Td>

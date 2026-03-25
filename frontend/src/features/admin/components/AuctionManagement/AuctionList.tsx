@@ -5,7 +5,7 @@ import { Table, Thead, Tbody, Tr, Th } from '@molecules';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { Auction, Venue } from '@/src/models';
-import { AuctionListRow } from './AuctionListRow';
+import { AuctionListCell } from './AuctionListCell';
 
 interface AuctionListProps {
   auctions: Auction[];
@@ -49,7 +49,7 @@ export const AuctionList = ({
         </Thead>
         <Tbody>
           {auctions.map((auction) => (
-            <AuctionListRow
+            <AuctionListCell
               key={auction.id}
               auction={auction}
               venue={venues.find((v) => v.id === auction.venueId)}

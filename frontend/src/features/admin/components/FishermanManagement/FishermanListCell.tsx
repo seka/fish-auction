@@ -8,19 +8,19 @@ interface Fisherman {
   name: string;
 }
 
-interface FishermanListItemProps {
+interface FishermanListCellProps {
   fisherman: Fisherman;
   isDeleting: boolean;
   onDelete: (id: number) => void;
   t: (key: string) => string;
 }
 
-export const FishermanListItem = ({
+export const FishermanListCell = ({
   fisherman,
   isDeleting,
   onDelete,
   t,
-}: FishermanListItemProps) => {
+}: FishermanListCellProps) => {
   return (
     <Box
       as="li"

@@ -7,7 +7,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { AuctionItem, Fisherman } from '@/src/models';
 
-interface SortableRowProps {
+interface ItemListCellProps {
   item: AuctionItem;
   fisherman: Fisherman | undefined;
   onEdit: (item: AuctionItem) => void;
@@ -16,14 +16,14 @@ interface SortableRowProps {
   t: (key: string) => string;
 }
 
-export const SortableRow = ({
+export const ItemListCell = ({
   item,
   fisherman,
   onEdit,
   onDelete,
   isDeleting,
   t,
-}: SortableRowProps) => {
+}: ItemListCellProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
