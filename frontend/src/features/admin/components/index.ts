@@ -17,3 +17,5 @@ export * from './AuctionManagement/AuctionForm';
 export * from './InvoiceManagement/InvoiceManagementContainer';
 export * from './InvoiceManagement/InvoiceList';
 export * from './InvoiceManagement/InvoiceDetailModal';
+export * from './SettingsManagement/SettingsManagementContainer';
+export * from './SettingsManagement/PasswordResetForm';
