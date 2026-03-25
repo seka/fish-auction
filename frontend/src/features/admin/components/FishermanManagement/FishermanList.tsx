@@ -5,7 +5,7 @@ import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 
 interface Fisherman {
-  id: number;
+  id?: number;
   name: string;
 }
 
@@ -35,7 +35,7 @@ export const FishermanList = ({
   if (fishermen.length === 0) {
     return (
       <Box p="12" textAlign="center">
-        <Text color="gray.500">{t('Common.no_data')}</Text>
+        <Text color="muted">{t('Common.no_data')}</Text>
       </Box>
     );
   }

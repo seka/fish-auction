@@ -13,14 +13,11 @@ export const useFishermanManagement = () => {
   const { fishermen, isLoading } = useFishermanQuery();
   const { createFisherman, isCreating, deleteFisherman, isDeleting } = useFishermanMutation();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FishermanFormData>({
+  const form = useForm<FishermanFormData>({
     resolver: zodResolver(fishermanSchema),
   });
+
+  const { reset, handleSubmit, formState: { errors } } = form;
 
   const onSubmit = async (data: FishermanFormData) => {
     try {
@@ -52,10 +49,7 @@ export const useFishermanManagement = () => {
       isCreating,
       isDeleting,
     },
-    form: {
-      register,
-      errors,
-    },
+    form,
     actions: {
       onSubmit: handleSubmit(onSubmit),
       onDelete,
