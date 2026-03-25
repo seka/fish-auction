@@ -11,10 +11,9 @@ interface Invoice {
 
 interface InvoiceListItemProps {
   invoice: Invoice;
-  t: (key: string) => string;
 }
 
-export const InvoiceListItem = ({ invoice, t }: InvoiceListItemProps) => {
+export const InvoiceListItem = ({ invoice }: InvoiceListItemProps) => {
   return (
     <Card
       padding="lg"

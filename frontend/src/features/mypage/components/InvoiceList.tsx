@@ -1,4 +1,4 @@
-import { Box, Text, Stack, EmptyState } from '@atoms';
+import { Text, Stack, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { InvoiceListItem } from './InvoiceListItem';
@@ -35,7 +35,6 @@ export const InvoiceList = ({ invoices }: InvoiceListProps) => {
           <InvoiceListItem
             key={index}
             invoice={invoice}
-            t={t}
           />
         ))
       )}

@@ -52,7 +52,6 @@ export const InvoiceList = ({ invoices, isLoading, onSelect }: InvoiceListProps)
             key={invoice.buyerId}
             invoice={invoice}
             onSelect={onSelect}
-            t={t}
           />
         ))}
       </Tbody>
