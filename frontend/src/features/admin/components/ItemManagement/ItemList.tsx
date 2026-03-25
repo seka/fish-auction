@@ -7,7 +7,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  SensorOptions,
+  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -15,22 +15,22 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { Box, EmptyState } from '@atoms';
+import { Box, EmptyState, Text } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th } from '@molecules';
 import { css } from 'styled-system/css';
-import { Item, Fisherman } from '@/src/models';
+import { AuctionItem, Fisherman } from '@/src/models';
 import { SortableRow } from './SortableRow';
 
 interface ItemListProps {
-  items: Item[];
+  items: AuctionItem[];
   fishermen: Fisherman[];
   isItemsLoading: boolean;
   filterAuctionId?: number;
   isDeleting: boolean;
-  onDragEnd: (event: any) => void;
-  onEdit: (item: Item) => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  onEdit: (item: AuctionItem) => void;
   onDelete: (id: number) => void;
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: Record<string, any>) => string;
 }
 
 export const ItemList = ({
@@ -128,5 +128,4 @@ export const ItemList = ({
   );
 };
 
-// Internal Text import for placeholder
-import { Text } from '@atoms';
+// ListItem component reference in JSDoc if needed

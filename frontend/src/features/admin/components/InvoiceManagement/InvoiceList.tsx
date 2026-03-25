@@ -1,14 +1,16 @@
 'use client';
 
-import { Table, Thead, Tbody, Tr, Th, Td } from '@molecules';
-import { Box, Text, EmptyState } from '@atoms';
+import { Table, Thead, Tbody, Tr, Th } from '@molecules';
+import { Box, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
+import { InvoiceItem } from '@/src/models';
+import { InvoiceListRow } from './InvoiceListRow';
 
 interface InvoiceListProps {
-  invoices: any[];
+  invoices: InvoiceItem[];
   isLoading: boolean;
-  onSelect: (invoice: any) => void;
+  onSelect: (invoice: InvoiceItem) => void;
 }
 
 export const InvoiceList = ({ invoices, isLoading, onSelect }: InvoiceListProps) => {
@@ -38,7 +40,7 @@ export const InvoiceList = ({ invoices, isLoading, onSelect }: InvoiceListProps)
   return (
     <Table>
       <Thead>
-        <Tr className={css({ cursor: 'default', _hover: { bg: 'gray.50' } })}>
+        <Tr className={css({ cursor: 'default' })}>
           <Th>{t('Admin.Invoice.buyer_id')}</Th>
           <Th>{t('Admin.Invoice.buyer_name')}</Th>
           <Th className={css({ textAlign: 'right' })}>{t('Admin.Invoice.total_amount')}</Th>
@@ -46,24 +48,12 @@ export const InvoiceList = ({ invoices, isLoading, onSelect }: InvoiceListProps)
       </Thead>
       <Tbody>
         {invoices.map((invoice) => (
-          <Tr key={invoice.buyerId} onClick={() => onSelect(invoice)}>
-            <Td className={css({ fontSize: 'sm', color: 'gray.500', fontFamily: 'mono' })}>
-              {invoice.buyerId}
-            </Td>
-            <Td className={css({ fontSize: 'sm', fontWeight: 'bold', color: 'gray.900' })}>
-              {invoice.buyerName}
-            </Td>
-            <Td
-              className={css({
-                textAlign: 'right',
-                fontWeight: 'bold',
-                color: 'indigo.700',
-                fontSize: 'lg',
-              })}
-            >
-              ¥{invoice.totalAmount.toLocaleString()}
-            </Td>
-          </Tr>
+          <InvoiceListRow
+            key={invoice.buyerId}
+            invoice={invoice}
+            onSelect={onSelect}
+            t={t}
+          />
         ))}
       </Tbody>
     </Table>
