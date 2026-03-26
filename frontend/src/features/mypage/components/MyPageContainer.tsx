@@ -3,7 +3,7 @@
 import { Box, HStack, Text, Button } from '@atoms';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
-import { PurchaseHistory, ParticipatingAuctions, InvoiceList, SettingsForm } from '.';
+import { PurchaseHistory, ParticipatingAuctions, SettingsForm } from '.';
 import { useMyPage } from '../hooks/useMyPage';
 import { MyPageTab } from '../types';
 
@@ -12,10 +12,6 @@ export const MyPageContainer = () => {
     t,
     activeTab,
     setActiveTab,
-    purchases,
-    auctions,
-    invoices,
-    isLoading,
     handleLogout,
     passwordState,
   } = useMyPage();
@@ -31,16 +27,6 @@ export const MyPageContainer = () => {
     handleUpdatePassword,
     isPasswordUpdating,
   } = passwordState;
-
-  if (isLoading) {
-    return (
-      <Box minH="screen" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-        <Text fontSize="xl" className={css({ color: 'gray.700' })}>
-          {t('Common.loading')}
-        </Text>
-      </Box>
-    );
-  }
 
   return (
     <Box minH="screen" bg="gray.50" py="8" px="4">
@@ -81,7 +67,6 @@ export const MyPageContainer = () => {
             {[
               { id: 'purchases', label: t('Public.MyPage.purchase_history') },
               { id: 'auctions', label: t('Public.MyPage.participating_auctions') },
-              { id: 'invoices', label: t('Public.MyPage.invoices') },
               { id: 'settings', label: t('Public.MyPage.settings') },
             ].map((tab) => (
               <Box
@@ -105,9 +90,8 @@ export const MyPageContainer = () => {
 
         {/* Content */}
         <Box>
-          {activeTab === 'purchases' && <PurchaseHistory purchases={purchases} />}
-          {activeTab === 'auctions' && <ParticipatingAuctions auctions={auctions} />}
-          {activeTab === 'invoices' && <InvoiceList invoices={invoices} />}
+          {activeTab === 'purchases' && <PurchaseHistory />}
+          {activeTab === 'auctions' && <ParticipatingAuctions />}
           {activeTab === 'settings' && (
             <SettingsForm
               currentPassword={currentPassword}
