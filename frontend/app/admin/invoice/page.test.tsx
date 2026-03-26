@@ -1,20 +1,28 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import InvoicePage from './page';
-import { useInvoicePage } from './_hooks/useInvoicePage';
+import { useInvoiceManagement } from '@/src/features/admin/states/useInvoiceManagement';
+import { useTranslations } from 'next-intl';
 
 // Mock hook
-vi.mock('./_hooks/useInvoicePage');
+vi.mock('@/src/features/admin/states/useInvoiceManagement');
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
 describe('InvoicePage', () => {
   const mockSetSelectedInvoice = vi.fn();
+  const tMock = Object.assign((key: string) => key, {
+    rich: vi.fn(),
+    markup: vi.fn(),
+    raw: vi.fn(),
+    has: vi.fn(),
+  });
+
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useInvoicePage).mockReturnValue({
+    vi.mocked(useInvoiceManagement).mockReturnValue({
       state: {
         invoices: [{ buyerId: 1, buyerName: 'Buyer 1', totalAmount: 1000 }],
         isLoading: false,
@@ -23,6 +31,7 @@ describe('InvoicePage', () => {
       actions: {
         setSelectedInvoice: mockSetSelectedInvoice,
       },
+      t: tMock as ReturnType<typeof useTranslations>,
     });
   });
 
@@ -41,7 +50,7 @@ describe('InvoicePage', () => {
   });
 
   it('renders detail modal when selected', () => {
-    vi.mocked(useInvoicePage).mockReturnValue({
+    vi.mocked(useInvoiceManagement).mockReturnValue({
       state: {
         invoices: [],
         isLoading: false,
@@ -50,6 +59,7 @@ describe('InvoicePage', () => {
       actions: {
         setSelectedInvoice: mockSetSelectedInvoice,
       },
+      t: tMock as ReturnType<typeof useTranslations>,
     });
     render(<InvoicePage />);
     expect(screen.getByText('Admin.Invoice.modal_title')).toBeInTheDocument();
@@ -57,7 +67,7 @@ describe('InvoicePage', () => {
   });
 
   it('closes detail modal', () => {
-    vi.mocked(useInvoicePage).mockReturnValue({
+    vi.mocked(useInvoiceManagement).mockReturnValue({
       state: {
         invoices: [],
         isLoading: false,
@@ -66,6 +76,7 @@ describe('InvoicePage', () => {
       actions: {
         setSelectedInvoice: mockSetSelectedInvoice,
       },
+      t: tMock as ReturnType<typeof useTranslations>,
     });
     render(<InvoicePage />);
     const closeButton = screen.getByText('Admin.Invoice.close');
@@ -74,7 +85,7 @@ describe('InvoicePage', () => {
   });
 
   it('renders empty state', () => {
-    vi.mocked(useInvoicePage).mockReturnValue({
+    vi.mocked(useInvoiceManagement).mockReturnValue({
       state: {
         invoices: [],
         isLoading: false,
@@ -83,6 +94,7 @@ describe('InvoicePage', () => {
       actions: {
         setSelectedInvoice: mockSetSelectedInvoice,
       },
+      t: tMock as ReturnType<typeof useTranslations>,
     });
     render(<InvoicePage />);
     expect(screen.getByText('Admin.Invoice.no_data')).toBeInTheDocument();

@@ -3,8 +3,11 @@
 import { Box, HStack, Text, Button } from '@atoms';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
-import { PurchaseHistory, ParticipatingAuctions, SettingsForm } from '.';
-import { useMyPage } from '../hooks/useMyPage';
+import { PurchaseHistory } from './PurchaseHistory';
+import { ParticipatingAuctions } from './ParticipatingAuctions';
+import { SettingsForm } from './SettingsForm';
+
+import { useMyPage } from '../states/useMyPage';
 import { MyPageTab } from '../types';
 
 export const MyPageContainer = () => {

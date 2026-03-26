@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MyPage from './page';
-import { useMyPage } from './_hooks/useMyPage';
+import { useMyPage } from '@/src/features/mypage/states/useMyPage';
 
 // Mocks
 vi.mock('next-intl', () => ({
@@ -9,7 +9,7 @@ vi.mock('next-intl', () => ({
     namespace ? `${namespace}.${key}` : key,
 }));
 
-vi.mock('./_hooks/useMyPage', () => ({
+vi.mock('@/src/features/mypage/states/useMyPage', () => ({
   useMyPage: vi.fn(),
 }));
 

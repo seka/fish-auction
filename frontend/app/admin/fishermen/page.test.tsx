@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AdminFishermenPage from './page';
-import { useFishermanPage } from './_hooks/useFishermanPage';
+import { useFishermanManagement } from '@/src/features/admin/states/useFishermanManagement';
 
 // Mock hook
-vi.mock('./_hooks/useFishermanPage');
+vi.mock('@/src/features/admin/states/useFishermanManagement');
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
@@ -21,7 +21,7 @@ describe('AdminFishermenPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useFishermanPage).mockReturnValue({
+    vi.mocked(useFishermanManagement).mockReturnValue({
       state: {
         fishermen: [
           { id: 1, name: 'Fisherman 1' },
@@ -35,12 +35,12 @@ describe('AdminFishermenPage', () => {
       form: {
         register: mockRegister,
         errors: { name: undefined },
-      } as unknown as ReturnType<typeof useFishermanPage>['form'],
+      } as unknown as ReturnType<typeof useFishermanManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onDelete: vi.fn(),
       },
-      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useFishermanManagement>['t'],
     });
   });
 
@@ -58,26 +58,26 @@ describe('AdminFishermenPage', () => {
   });
 
   it('shows loading state', () => {
-    vi.mocked(useFishermanPage).mockReturnValue({
+    vi.mocked(useFishermanManagement).mockReturnValue({
       state: { fishermen: [], isLoading: true, isCreating: false, isDeleting: false, message: '' },
       form: { register: mockRegister, errors: {} } as unknown as ReturnType<
-        typeof useFishermanPage
+        typeof useFishermanManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
-      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useFishermanManagement>['t'],
     });
     render(<AdminFishermenPage />);
     expect(screen.getAllByText('Common.loading').length).toBeGreaterThan(0);
   });
 
   it('shows empty state', () => {
-    vi.mocked(useFishermanPage).mockReturnValue({
+    vi.mocked(useFishermanManagement).mockReturnValue({
       state: { fishermen: [], isLoading: false, isCreating: false, isDeleting: false, message: '' },
       form: { register: mockRegister, errors: {} } as unknown as ReturnType<
-        typeof useFishermanPage
+        typeof useFishermanManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
-      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useFishermanManagement>['t'],
     });
     render(<AdminFishermenPage />);
     expect(screen.getByText('Common.no_data')).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('AdminFishermenPage', () => {
 
   it('calls delete action', () => {
     const mockOnDelete = vi.fn();
-    vi.mocked(useFishermanPage).mockReturnValue({
+    vi.mocked(useFishermanManagement).mockReturnValue({
       state: {
         fishermen: [{ id: 1, name: 'Fisherman 1' }],
         isLoading: false,
@@ -101,10 +101,10 @@ describe('AdminFishermenPage', () => {
         message: '',
       },
       form: { register: mockRegister, errors: {} } as unknown as ReturnType<
-        typeof useFishermanPage
+        typeof useFishermanManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
-      t: tMock as unknown as ReturnType<typeof useFishermanPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useFishermanManagement>['t'],
     });
     render(<AdminFishermenPage />);
     fireEvent.click(screen.getAllByText('Common.delete')[0]);

@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AdminItemsPage from './page';
-import { useItemPage } from './_hooks/useItemPage';
+import { useItemManagement } from '@/src/features/admin/states/useItemManagement';
 
 // Mock hook
-vi.mock('./_hooks/useItemPage');
+vi.mock('@/src/features/admin/states/useItemManagement');
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
@@ -15,7 +15,7 @@ describe('AdminItemsPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useItemPage).mockReturnValue({
+    vi.mocked(useItemManagement).mockReturnValue({
       state: {
         auctions: [
           {
@@ -48,7 +48,7 @@ describe('AdminItemsPage', () => {
         onSubmit: mockOnSubmit,
       } as unknown,
       t: ((key: string) => key) as unknown,
-    } as unknown as ReturnType<typeof useItemPage>);
+    } as unknown as ReturnType<typeof useItemManagement>);
   });
 
   it('renders form elements', () => {

@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionsPage from './page';
-import { useAuctionPage } from './_hooks/useAuctionPage';
+import { useAuctionManagement } from '@/src/features/admin/states/useAuctionManagement';
 
 // Mock hook
-vi.mock('./_hooks/useAuctionPage');
+vi.mock('@/src/features/admin/states/useAuctionManagement');
 vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => (key: string) =>
     namespace ? `${namespace}.${key}` : key,
@@ -22,7 +22,7 @@ describe('AuctionsPage', () => {
   });
 
   beforeEach(() => {
-    vi.mocked(useAuctionPage).mockReturnValue({
+    vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
@@ -55,7 +55,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      } as unknown as ReturnType<typeof useAuctionPage>['form'],
+      } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -64,7 +64,7 @@ describe('AuctionsPage', () => {
         onCancelEdit: vi.fn(),
         onDelete: vi.fn(),
       },
-      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useAuctionManagement>['t'],
     });
   });
 
@@ -92,7 +92,7 @@ describe('AuctionsPage', () => {
 
   it('handles filter change', () => {
     const mockSetFilterVenueId = vi.fn();
-    vi.mocked(useAuctionPage).mockReturnValue({
+    vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [
           { id: 1, name: 'Venue 1', createdAt: '2023-01-01' },
@@ -111,7 +111,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      } as unknown as ReturnType<typeof useAuctionPage>['form'],
+      } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -120,7 +120,7 @@ describe('AuctionsPage', () => {
         onCancelEdit: vi.fn(),
         onDelete: vi.fn(),
       },
-      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useAuctionManagement>['t'],
     });
 
     render(<AuctionsPage />);
@@ -133,7 +133,7 @@ describe('AuctionsPage', () => {
     const mockOnDelete = vi.fn();
     const mockOnEdit = vi.fn();
 
-    vi.mocked(useAuctionPage).mockReturnValue({
+    vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
@@ -158,7 +158,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      } as unknown as ReturnType<typeof useAuctionPage>['form'],
+      } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -167,7 +167,7 @@ describe('AuctionsPage', () => {
         onEdit: mockOnEdit,
         onCancelEdit: vi.fn(),
       },
-      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useAuctionManagement>['t'],
     });
 
     render(<AuctionsPage />);
@@ -182,7 +182,7 @@ describe('AuctionsPage', () => {
   });
 
   it('calls status change (finish)', () => {
-    vi.mocked(useAuctionPage).mockReturnValue({
+    vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
@@ -207,7 +207,7 @@ describe('AuctionsPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      } as unknown as ReturnType<typeof useAuctionPage>['form'],
+      } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onStatusChange: mockOnStatusChange,
@@ -216,7 +216,7 @@ describe('AuctionsPage', () => {
         onEdit: vi.fn(),
         onCancelEdit: vi.fn(),
       },
-      t: tMock as unknown as ReturnType<typeof useAuctionPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useAuctionManagement>['t'],
     });
 
     render(<AuctionsPage />);

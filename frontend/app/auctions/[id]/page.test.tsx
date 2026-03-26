@@ -27,15 +27,16 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 
-vi.mock('./_hooks/useAuctionDetailPage', () => ({
-  useAuctionDetailPage: vi.fn(),
+vi.mock('@/src/features/auctions/states/useAuctionDetail', () => ({
+  useAuctionDetail: vi.fn(),
 }));
 
 vi.mock('@/src/api/buyer_auth', () => ({
   loginBuyer: vi.fn(),
 }));
 
-import { useAuctionDetailPage } from './_hooks/useAuctionDetailPage';
+import { useAuctionDetail } from '@/src/features/auctions/states/useAuctionDetail';
+
 
 describe('AuctionDetailPage', () => {
   const mockOnSelectItem = vi.fn();
@@ -102,19 +103,19 @@ describe('AuctionDetailPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useAuctionDetailPage).mockReturnValue(
-      defaultMockValue as unknown as ReturnType<typeof useAuctionDetailPage>,
+    vi.mocked(useAuctionDetail).mockReturnValue(
+      defaultMockValue as unknown as ReturnType<typeof useAuctionDetail>,
     );
   });
 
   const params = Promise.resolve({ id: '1' });
 
   it('renders loading state', () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       isLoading: true,
       auction: null,
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -124,10 +125,10 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders login form if not logged in', () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       isLoggedIn: false,
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -148,11 +149,11 @@ describe('AuctionDetailPage', () => {
   });
 
   it('selects an item and allows bidding', async () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       selectedItem: defaultMockValue.items[0],
       selectedItemId: 101,
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
 
     render(
       <ToastProvider>
@@ -171,10 +172,10 @@ describe('AuctionDetailPage', () => {
   });
 
   it('shows error message if provided', () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       message: 'Success Message',
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -184,11 +185,11 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders checking state', () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       isChecking: true,
       isLoggedIn: false,
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -198,11 +199,11 @@ describe('AuctionDetailPage', () => {
   });
 
   it('renders no data when auction not found', () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       auction: null,
       isLoading: false,
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
         <AuctionDetailPage params={params} />
@@ -212,10 +213,10 @@ describe('AuctionDetailPage', () => {
   });
 
   it('handles login flow', async () => {
-    vi.mocked(useAuctionDetailPage).mockReturnValue({
+    vi.mocked(useAuctionDetail).mockReturnValue({
       ...defaultMockValue,
       isLoggedIn: false,
-    } as unknown as ReturnType<typeof useAuctionDetailPage>);
+    } as unknown as ReturnType<typeof useAuctionDetail>);
 
     render(
       <ToastProvider>

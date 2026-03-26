@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AdminVenuesPage from './page';
-import { useVenuePage } from './_hooks/useVenuePage';
+import { useVenueManagement } from '@/src/features/admin/states/useVenueManagement';
 
 // Mock hook
-vi.mock('./_hooks/useVenuePage');
+vi.mock('@/src/features/admin/states/useVenueManagement');
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
@@ -23,7 +23,7 @@ describe('AdminVenuesPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useVenuePage).mockReturnValue({
+    vi.mocked(useVenueManagement).mockReturnValue({
       state: {
         venues: [
           {
@@ -44,14 +44,14 @@ describe('AdminVenuesPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      } as unknown as ReturnType<typeof useVenuePage>['form'],
+      } as unknown as ReturnType<typeof useVenueManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onEdit: mockOnEdit,
         onCancelEdit: vi.fn(),
         onDelete: mockOnDelete,
       },
-      t: tMock as unknown as ReturnType<typeof useVenuePage>['t'],
+      t: tMock as unknown as ReturnType<typeof useVenueManagement>['t'],
     });
   });
 

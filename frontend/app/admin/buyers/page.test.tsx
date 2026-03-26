@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AdminBuyersPage from './page';
-import { useBuyerPage } from './_hooks/useBuyerPage';
+import { useBuyerManagement } from '@/src/features/admin/states/useBuyerManagement';
 
 // Mock hook
-vi.mock('./_hooks/useBuyerPage');
+vi.mock('@/src/features/admin/states/useBuyerManagement');
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
@@ -21,7 +21,7 @@ describe('AdminBuyersPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useBuyerPage).mockReturnValue({
+    vi.mocked(useBuyerManagement).mockReturnValue({
       state: {
         buyers: [{ id: 1, name: 'Buyer 1' }],
         isLoading: false,
@@ -32,12 +32,12 @@ describe('AdminBuyersPage', () => {
       form: {
         register: mockRegister,
         errors: {},
-      } as unknown as ReturnType<typeof useBuyerPage>['form'],
+      } as unknown as ReturnType<typeof useBuyerManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
         onDelete: vi.fn(),
       },
-      t: tMock as unknown as ReturnType<typeof useBuyerPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useBuyerManagement>['t'],
     });
   });
 
@@ -61,7 +61,7 @@ describe('AdminBuyersPage', () => {
   it('calls delete action', () => {
     const mockOnDelete = vi.fn();
 
-    vi.mocked(useBuyerPage).mockReturnValue({
+    vi.mocked(useBuyerManagement).mockReturnValue({
       state: {
         buyers: [{ id: 1, name: 'Buyer 1' }],
         isLoading: false,
@@ -70,10 +70,10 @@ describe('AdminBuyersPage', () => {
         message: '',
       },
       form: { register: mockRegister, errors: {} } as unknown as ReturnType<
-        typeof useBuyerPage
+        typeof useBuyerManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
-      t: tMock as unknown as ReturnType<typeof useBuyerPage>['t'],
+      t: tMock as unknown as ReturnType<typeof useBuyerManagement>['t'],
     });
     render(<AdminBuyersPage />);
     fireEvent.click(screen.getAllByText('Common.delete')[0]);
