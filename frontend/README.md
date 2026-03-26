@@ -5,77 +5,63 @@
 ## 技術構成 (Tech Stack)
 
 - **Framework**: Next.js 16 (App Router)
+- **Library**: React 19
 - **Language**: TypeScript
-- **Styling**: Vanilla CSS, [Panda CSS](https://panda-css.com/) (Design Tokens)
-- **State Management**: [TanStack Query](https://tanstack.com/query/latest) (React Query)
+- **Styling**: [Panda CSS](https://panda-css.com/) (Styled System, Atomic CSS)
+- **Data Fetching**: [TanStack Query v5](https://tanstack.com/query/latest)
+- **Forms**: React Hook Form + Zod
+- **I18n**: next-intl
 - **Testing**: Vitest / React Testing Library
-- **Authentication**: クッキーベースの認証
 
-### コンポーネント設計 (Atomic Design)
+## アーキテクチャ (Architecture)
 
-- **Atoms**: 最小単位のボタン、入力フォーム、アイコンなどの汎用パーツ。
-- **Molecules**: Atoms を組み合わせた、特定の役割を持つ塊（ステータスラベル、入力フィールド）。
-- **Organisms**: ドメイン知識を伴う、より具体的で機能的なコンポーネント（入札ダイアログ、アイテムカード）。
-- **Templates**: ページ全体のレイアウト構造を定義する枠組み。
+ドメイン駆動の「Feature-based」構造と、関心の分離（Separation of Concerns）を意識したレイヤード構造を採用しています。
 
-### データフロー (Data Flow)
-
-```mermaid
-graph LR
-    User([User]) -- Action --> UI[UI Context / Hooks]
-    UI -- "Mutation/Query" --> Repo[Repository]
-    Repo -- "Request" --> API[API Client]
-    API -- "Fetch" --> Server[(Backend API)]
-
-    Server -- "Response" --> API
-    API -- "DTO" --> Repo
-    Repo -- "Model" --> UI
-    UI -- "Render" --> User
-```
+詳細は [ARCHITECTURE.md](./docs/ARCHITECTURE.md) を参照してください。
 
 ### ディレクトリ構成
 
 ```text
 frontend/
-├── app/               # Next.js App Router (Pages, Templates, Organisms)
-│   ├── auctions/      # オークション関連ページ
-│   ├── items/         # アイテム管理ページ
-│   └── _components/   # ページ共有の構成要素 (Organisms, Templates)
+├── app/                  # Next.js App Router (Routing & Layouts)
 ├── src/
-│   └── core/          # 基盤機能
-│       ├── ui/        # 汎用UIコンポーネント (Atoms, Molecules)
-│       ├── repository/# TanStack Query によるサーバー状態管理
-│       └── api/       # API クライアント
-├── hooks/             # UI ロジックを抽象化するカスタムフック
-└── public/            # 静的アセット
+│   ├── features/         # ドメインごとの機能カプセル化
+│   │   └── [feature]/
+│   │       ├── components/  # 機能固有の UI
+│   │       ├── states/      # UI ロジック・状態管理 (useXXXManagement)
+│   │       └── queries/     # 機能固有のデータフェッチ
+│   ├── data/             # データフェッチレイヤー
+│   │   ├── api/          # プリミティブな API 呼び出し (apiClient)
+│   │   └── queries/      # ドメインごとの TanStack Query フック & キー
+│   ├── components/       # 共有 UI コンポーネント (Atomic Design)
+│   │   ├── atoms/        # 汎用パーツ (Button, Input, Text)
+│   │   ├── molecules/    # 複数の Atom を組み合わせた塊
+│   │   ├── organisms/    # 具体的かつ機能的なコンポーネント
+│   │   ├── templates/    # ページレイアウト
+│   │   └── functionals/  # Context Provider や初期化ロジック
+│   ├── core/             # アプリケーション基盤
+│   │   ├── api/          # API クライアント (fetch ラッパー)
+│   │   ├── styles/       # グローバルスタイル
+│   │   └── utils/        # 汎用ユーティリティ
+│   ├── models/           # 型定義、Zod スキーマ
+│   └── libs/             # 外部ライブラリ設定・生成物 (Panda CSS 等)
 ```
 
 ## 開発環境 (Development)
 
-フロントエンドのみを個別に操作する場合の主なコマンドです。
-
 ### 前提条件
 
-- **Node.js** (v20+)
-- **Yarn**
+- **Node.js**: v20+
+- **npm / yarn**
 
-### 1. 依存関係のインストール
+### コマンド
 
 ```bash
 cd frontend
-yarn install
-```
-
-### 2. 開発サーバーの起動
-
-```bash
-yarn dev
+npm install   # 依存関係のインストール
+npm run dev   # 開発サーバー起動
+npm run test  # テスト実行
+npm run lint  # リンター起動
 ```
 
 ブラウザで `https://localhost` (Nginx 経由) または `http://localhost:3000` (直通) を開いてください。
-
-### 3. テストの実行
-
-```bash
-yarn test
-```
