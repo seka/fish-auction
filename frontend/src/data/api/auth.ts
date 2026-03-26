@@ -9,3 +9,12 @@ export const login = async (email: string, password: string): Promise<boolean> =
     return false;
   }
 };
+export const logout = async (): Promise<boolean> => {
+  try {
+    await apiClient.post('/api/admin/logout', {});
+    return true;
+  } catch (e) {
+    console.error('Logout error:', e);
+    return false;
+  }
+};

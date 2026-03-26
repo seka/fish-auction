@@ -163,6 +163,19 @@ export const Sidebar = () => {
         <SidebarItem href="/admin/settings" icon="⚙️">
           {t('settings')}
         </SidebarItem>
+
+        <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
+
+        <SidebarItem
+          onClick={async () => {
+            const { logout } = await import('@/src/data/api/auth');
+            await logout();
+            window.location.href = '/login/admin';
+          }}
+          icon="🚪"
+        >
+          {t('logout') || 'ログアウト'}
+        </SidebarItem>
       </Stack>
 
       {/* Footer / User info could go here */}
