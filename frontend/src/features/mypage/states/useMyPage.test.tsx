@@ -1,8 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useMyPage } from './useMyPage';
-import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
-import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
 import { logoutBuyer } from '@/src/data/api/buyer_auth';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,13 +15,6 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('@/src/data/queries/buyerAuction/useQuery', () => ({
-  useParticipatingAuctions: vi.fn(),
-}));
-
-vi.mock('@/src/data/queries/buyerPurchase/useQuery', () => ({
-  useMyPurchases: vi.fn(),
-}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: vi.fn(),
@@ -46,12 +37,6 @@ describe('useMyPage', () => {
       refresh: vi.fn(),
       prefetch: vi.fn(),
     } as unknown as AppRouterInstance);
-    vi.mocked(useMyPurchases).mockReturnValue({ purchases: [], isLoading: false, error: null });
-    vi.mocked(useParticipatingAuctions).mockReturnValue({
-      auctions: [],
-      isLoading: false,
-      error: null,
-    });
     vi.mocked(useQueryClient).mockReturnValue({
       invalidateQueries: vi.fn(),
     } as unknown as ReturnType<typeof useQueryClient>);
@@ -62,7 +47,6 @@ describe('useMyPage', () => {
 
     expect(result.current.activeTab).toBe('purchases');
     expect(result.current.passwordState.currentPassword).toBe('');
-    expect(useMyPurchases).toHaveBeenCalled();
   });
 
   it('handles logout', async () => {

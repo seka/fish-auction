@@ -5,10 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { DragEndEvent } from '@dnd-kit/core';
 import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
-import { useItemQuery } from '@/src/data/queries/adminItem/useQuery';
-import { useItemMutation } from '@/src/data/queries/adminItem/useMutation';
-import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
-import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
+import { useAdminItems, useAdminItemMutations } from '../queries/useItems';
+import { useAdminFishermen } from '../queries/useFishermen';
+import { useAdminAuctions } from '../queries/useAuctions';
 import { AuctionItem } from '@/src/models';
 
 export const useItemManagement = () => {
@@ -24,9 +23,9 @@ export const useItemManagement = () => {
   const [prevInitialId, setPrevInitialId] = useState(initialAuctionId);
   const [editingItem, setEditingItem] = useState<AuctionItem | null>(null);
 
-  const { fishermen } = useFishermanQuery();
-  const { auctions } = useAuctionQuery({});
-  const { data: items, isLoading: isItemsLoading } = useItemQuery(filterAuctionId);
+  const { fishermen } = useAdminFishermen();
+  const { auctions } = useAdminAuctions({});
+  const { data: items, isLoading: isItemsLoading } = useAdminItems(filterAuctionId);
   const {
     createItem,
     isCreating,
@@ -36,7 +35,7 @@ export const useItemManagement = () => {
     isUpdating,
     reorderItems,
     isSorting,
-  } = useItemMutation();
+  } = useAdminItemMutations();
 
   const form = useForm<ItemFormData>({
     resolver: zodResolver(itemSchema),

@@ -6,11 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginBuyer } from '@/src/data/api/buyer_auth';
 import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
 import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
-import { useAuctionDetailQuery } from '@/src/data/queries/publicAuction/useQuery';
-import { useItemsByAuction } from '@/src/data/queries/publicItem/useQuery';
-import { useBidMutation as useCentralBidMutation } from '@/src/data/queries/buyerAuction/useMutation';
+import { useAuctionDetailData, useBidSubmit } from '../queries/useAuctions';
 import { useAuthQuery } from '@/src/data/queries/auth/useQuery';
-import { isAuctionActive, getMinimumBidIncrement } from '@/src/utils/auction';
+import { getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { authKeys } from '@/src/data/queries/auth/keys';
@@ -34,11 +32,10 @@ export const useAuctionDetail = (auctionId: number) => {
     };
   }, [messageTimeoutRef]);
 
-  const { auction, isLoading: isAuctionLoading } = useAuctionDetailQuery(auctionId);
-  const { items, isLoading: isItemsLoading, refetch: refetchItems } = useItemsByAuction(auctionId);
-  const { submitBid, isLoading: isBidLoading } = useCentralBidMutation();
-  const isLoading = isAuctionLoading || isItemsLoading;
+  const { auction, items, isLoading: isDataLoading, refetchItems } = useAuctionDetailData(auctionId);
+  const { submitBid, isLoading: isBidLoading } = useBidSubmit();
   const { isLoggedIn, isChecking } = useAuthQuery();
+  const isLoading = isDataLoading;
 
   const bidForm = useForm<BidFormData>({
     resolver: zodResolver(bidSchema),
@@ -49,7 +46,7 @@ export const useAuctionDetail = (auctionId: number) => {
   });
 
   const selectedItem = items?.find((i: AuctionItem) => i.id === selectedItemId) || null;
-  const auctionActive = auction ? isAuctionActive(auction) : false;
+  const auctionActive = auction?.isActive || false;
 
   const onSelectItem = (id: number) => {
     setSelectedItemId(id);

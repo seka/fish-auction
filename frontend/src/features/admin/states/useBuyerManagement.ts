@@ -2,38 +2,37 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { fishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
-import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
-import { useFishermanMutation } from '@/src/data/queries/adminFisherman/useMutation';
+import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
+import { useAdminBuyers, useAdminBuyerMutations } from '../queries/useBuyers';
 
-export const useFishermanManagement = () => {
+export const useBuyerManagement = () => {
   const t = useTranslations();
   const [message, setMessage] = useState('');
 
-  const { fishermen, isLoading } = useFishermanQuery();
-  const { createFisherman, isCreating, deleteFisherman, isDeleting } = useFishermanMutation();
+  const { buyers, isLoading } = useAdminBuyers();
+  const { createBuyer, isCreating, deleteBuyer, isDeleting } = useAdminBuyerMutations();
 
-  const form = useForm<FishermanFormData>({
-    resolver: zodResolver(fishermanSchema),
+  const form = useForm<BuyerFormData>({
+    resolver: zodResolver(buyerSchema),
   });
 
   const { reset, handleSubmit } = form;
 
-  const onSubmit = async (data: FishermanFormData) => {
+  const onSubmit = async (data: BuyerFormData) => {
     try {
-      await createFisherman({ name: data.name });
-      setMessage(t('Admin.Fishermen.success_register'));
+      await createBuyer(data);
+      setMessage(t('Admin.Buyers.success_register'));
       reset();
     } catch (e) {
       console.error(e);
-      setMessage(t('Admin.Fishermen.fail_register'));
+      setMessage(t('Admin.Buyers.fail_register'));
     }
   };
 
   const onDelete = async (id: number) => {
     if (!window.confirm(t('Common.confirm_delete'))) return;
     try {
-      await deleteFisherman(id);
+      await deleteBuyer(id);
       setMessage(t('Common.success_delete'));
     } catch (e) {
       console.error(e);
@@ -44,7 +43,7 @@ export const useFishermanManagement = () => {
   return {
     state: {
       message,
-      fishermen,
+      buyers,
       isLoading,
       isCreating,
       isDeleting,

@@ -3,17 +3,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { venueSchema, VenueFormData } from '@/src/models/schemas/auction';
-import { useVenueQuery } from '@/src/data/queries/adminVenue/useQuery';
-import { useVenueMutation } from '@/src/data/queries/adminVenue/useMutation';
+import { useAdminVenues, useAdminVenueMutations } from '../queries/useVenues';
 import { Venue } from '@/src/models/venue';
 
 export const useVenueManagement = () => {
   const t = useTranslations();
   const [message, setMessage] = useState('');
 
-  const { venues, isLoading } = useVenueQuery();
+  const { venues, isLoading } = useAdminVenues();
   const { createVenue, isCreating, deleteVenue, isDeleting, updateVenue, isUpdating } =
-    useVenueMutation();
+    useAdminVenueMutations();
 
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 

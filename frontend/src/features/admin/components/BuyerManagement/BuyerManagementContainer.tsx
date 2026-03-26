@@ -1,6 +1,6 @@
 'use client';
 
-import { useBuyerManagement } from '../../hooks/useBuyerManagement';
+import { useBuyerManagement } from '../../states/useBuyerManagement';
 import { BuyerList } from './BuyerList';
 import { BuyerForm } from './BuyerForm';
 import { Box, Card, Text } from '@atoms';

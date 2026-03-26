@@ -1,16 +1,12 @@
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { logoutBuyer } from '@/src/data/api/buyer_auth';
-import { authKeys } from '@/src/data/queries/auth/keys';
+import { useMyPageAuth } from '../queries/useAuth';
 
 import { MyPageTab } from '../types';
 
 export const useMyPage = () => {
   const t = useTranslations();
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const { handleLogout } = useMyPageAuth();
   const [activeTab, setActiveTab] = useState<MyPageTab>('purchases');
 
   // Password state
@@ -22,13 +18,6 @@ export const useMyPage = () => {
     type: 'info' as 'info' | 'error' | 'success',
   });
 
-  const handleLogout = async () => {
-    const success = await logoutBuyer();
-    if (success) {
-      await queryClient.invalidateQueries({ queryKey: authKeys.me() });
-      router.push('/login/buyer');
-    }
-  };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLogin } from '../hooks/useLogin';
+import { useLogin } from '../states/useLogin';
 import { LoginForm } from './LoginForm';
 import { LoginFormData } from '@/src/models/schemas/auth';
 import { Box } from '@atoms';

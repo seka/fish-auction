@@ -3,9 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { auctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
-import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
-import { useAuctionMutation } from '@/src/data/queries/adminAuction/useMutation';
-import { useVenueQuery } from '@/src/data/queries/adminVenue/useQuery';
+import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
+import { useAdminVenues } from '../queries/useVenues';
 import { Auction } from '@/src/models/auction';
 import { ApiError } from '@/src/core/api/client';
 
@@ -15,8 +14,8 @@ export const useAuctionManagement = () => {
   const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
   const [filterVenueId, setFilterVenueId] = useState<number | undefined>(undefined);
 
-  const { venues } = useVenueQuery();
-  const { auctions, isLoading } = useAuctionQuery({ venueId: filterVenueId });
+  const { venues } = useAdminVenues();
+  const { auctions, isLoading } = useAdminAuctions({ venueId: filterVenueId });
   const {
     createAuction,
     updateAuction,
@@ -26,7 +25,7 @@ export const useAuctionManagement = () => {
     isUpdating,
     isUpdatingStatus,
     isDeleting,
-  } = useAuctionMutation();
+  } = useAdminAuctionMutations();
 
   const form = useForm<AuctionFormInput>({
     resolver: zodResolver(auctionSchema),

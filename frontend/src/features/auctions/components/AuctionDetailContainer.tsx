@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuctionDetail } from '../hooks/useAuctionDetail';
+import { useAuctionDetail } from '../states/useAuctionDetail';
 import { AuctionHeader } from './AuctionHeader';
 import { BuyerLoginForm } from '../../login';
 import { AuctionUsageGuide } from './AuctionUsageGuide';

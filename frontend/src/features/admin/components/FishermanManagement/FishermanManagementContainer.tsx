@@ -1,6 +1,6 @@
 'use client';
 
-import { useFishermanManagement } from '../../hooks/useFishermanManagement';
+import { useFishermanManagement } from '../../states/useFishermanManagement';
 import { FishermanList } from './FishermanList';
 import { FishermanForm } from './FishermanForm';
 import { Box, Card, Text } from '@atoms';

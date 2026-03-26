@@ -1,6 +1,6 @@
 'use client';
 
-import { useSettingsManagement } from '../../hooks/useSettingsManagement';
+import { useSettingsManagement } from '../../states/useSettingsManagement';
 import { PasswordResetForm } from './PasswordResetForm';
 import { Box, Text } from '@atoms';
 import { css } from 'styled-system/css';

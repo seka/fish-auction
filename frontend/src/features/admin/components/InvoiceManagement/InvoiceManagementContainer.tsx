@@ -1,6 +1,6 @@
 'use client';
 
-import { useInvoiceManagement } from '../../hooks/useInvoiceManagement';
+import { useInvoiceManagement } from '../../states/useInvoiceManagement';
 import { InvoiceList } from './InvoiceList';
 import { InvoiceDetailModal } from './InvoiceDetailModal';
 import { Box, Card, Text } from '@atoms';

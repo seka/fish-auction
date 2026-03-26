@@ -1,6 +1,6 @@
 'use client';
 
-import { useVenueManagement } from '../../hooks/useVenueManagement';
+import { useVenueManagement } from '../../states/useVenueManagement';
 import { VenueList } from './VenueList';
 import { VenueForm } from './VenueForm';
 import { Box, Card, Text } from '@atoms';
