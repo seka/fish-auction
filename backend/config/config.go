@@ -48,7 +48,7 @@ func Load() (*Config, error) {
 		CacheTTL:        time.Duration(cacheTTL) * time.Second,
 		SessionTTL:      time.Duration(sessionTTL) * time.Second,
 		AppEnv:          getEnv("APP_ENV", "production"),
-		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "http://localhost:3000,https://localhost"),
 		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:        getEnv("SMTP_PORT", "1025"),
 		SMTPFrom:        getEnv("SMTP_FROM", "noreply@fish-auction.com"),
