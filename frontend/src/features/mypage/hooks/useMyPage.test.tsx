@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useMyPage } from './useMyPage';
 import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
 import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
-import { useMyInvoiceQuery } from '@/src/data/queries/buyerInvoice/useQuery';
 import { logoutBuyer } from '@/src/data/api/buyer_auth';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,10 +23,6 @@ vi.mock('@/src/data/queries/buyerAuction/useQuery', () => ({
 
 vi.mock('@/src/data/queries/buyerPurchase/useQuery', () => ({
   useMyPurchases: vi.fn(),
-}));
-
-vi.mock('@/src/data/queries/buyerInvoice/useQuery', () => ({
-  useMyInvoiceQuery: vi.fn(),
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -54,11 +49,6 @@ describe('useMyPage', () => {
     vi.mocked(useMyPurchases).mockReturnValue({ purchases: [], isLoading: false, error: null });
     vi.mocked(useParticipatingAuctions).mockReturnValue({
       auctions: [],
-      isLoading: false,
-      error: null,
-    });
-    vi.mocked(useMyInvoiceQuery).mockReturnValue({
-      invoices: [],
       isLoading: false,
       error: null,
     });

@@ -20,15 +20,10 @@ export interface Auction {
   endTime?: string | null;
 }
 
-export interface Invoice {
-  buyerName: string;
-  buyerId: number;
-  totalAmount: number;
-}
 
 export interface PasswordMessage {
   text: string;
   type: 'info' | 'error' | 'success';
 }
 
-export type MyPageTab = 'purchases' | 'auctions' | 'settings' | 'invoices';
+export type MyPageTab = 'purchases' | 'auctions' | 'settings';

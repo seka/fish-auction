@@ -4,17 +4,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { logoutBuyer } from '@/src/data/api/buyer_auth';
 import { authKeys } from '@/src/data/queries/auth/keys';
-import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
-import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
-import { useMyInvoiceQuery } from '@/src/data/queries/buyerInvoice/useQuery';
+
+import { MyPageTab } from '../types';
 
 export const useMyPage = () => {
   const t = useTranslations();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'purchases' | 'auctions' | 'settings' | 'invoices'>(
-    'purchases',
-  );
+  const [activeTab, setActiveTab] = useState<MyPageTab>('purchases');
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -24,15 +21,6 @@ export const useMyPage = () => {
     text: '',
     type: 'info' as 'info' | 'error' | 'success',
   });
-
-  // Fetch purchases
-  const { purchases, isLoading: isPurchasesLoading } = useMyPurchases();
-
-  // Fetch participating auctions
-  const { auctions, isLoading: isAuctionsLoading } = useParticipatingAuctions();
-
-  // Fetch invoices
-  const { invoices, isLoading: isInvoicesLoading } = useMyInvoiceQuery();
 
   const handleLogout = async () => {
     const success = await logoutBuyer();
@@ -59,10 +47,6 @@ export const useMyPage = () => {
     t,
     activeTab,
     setActiveTab,
-    purchases,
-    auctions,
-    invoices,
-    isLoading: isPurchasesLoading || isAuctionsLoading || isInvoicesLoading,
     handleLogout,
     passwordState: {
       currentPassword,
