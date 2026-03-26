@@ -8,14 +8,14 @@ export function middleware(request: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith('/admin') || pathname.startsWith('/invoice')) {
-    if (!adminSession || adminSession.value !== 'authenticated') {
+    if (!adminSession) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
   // Protect auction routes
   if (pathname.startsWith('/auction')) {
-    if (!buyerSession || buyerSession.value !== 'authenticated') {
+    if (!buyerSession) {
       return NextResponse.redirect(new URL('/login/buyer', request.url));
     }
   }
