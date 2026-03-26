@@ -1,10 +1,4 @@
-/**
- * 請求書関連のクエリキー
- */
-export const invoiceKeys = {
-  // Public
-  publicAll: ['invoices'] as const,
-
-  // Buyer
-  meAll: () => ['buyer', 'me', 'invoices'] as const,
-} as const;
+export const buyerInvoiceKeys = {
+  all: ['buyerInvoice'] as const,
+  meAll: () => [...buyerInvoiceKeys.all, 'me'] as const,
+};
