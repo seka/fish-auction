@@ -107,5 +107,6 @@ func run() error {
 	}
 
 	fmt.Println("Database seeded successfully!")
+	fmt.Println("Default buyer password: 'password123'")
 	return nil
 }

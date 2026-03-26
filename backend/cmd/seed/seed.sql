@@ -29,6 +29,7 @@ SELECT '佐藤 三郎'
 WHERE NOT EXISTS (SELECT 1 FROM fishermen WHERE name = '佐藤 三郎');
 
 -- Buyers
+-- Default password for all seeded buyers is 'password123'
 -- Buyer 1
 DO $$
 DECLARE
