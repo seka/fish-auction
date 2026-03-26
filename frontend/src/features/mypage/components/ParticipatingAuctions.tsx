@@ -5,22 +5,16 @@ import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
 import { AuctionStatus } from '@/src/models/auction';
 
-interface Auction {
-  id: number;
-  status: AuctionStatus;
-  auctionDate: string;
-  startTime?: string | null;
-  endTime?: string | null;
-}
-
-interface ParticipatingAuctionsProps {
-  auctions: Auction[];
-}
-
-export const ParticipatingAuctions = ({ auctions }: ParticipatingAuctionsProps) => {
+export const ParticipatingAuctions = () => {
   const t = useTranslations();
+  const { auctions, isLoading } = useParticipatingAuctions();
+
+  if (isLoading) {
+    return <Text>{t('Common.loading')}</Text>;
+  }
 
   return (
     <Stack spacing="4">

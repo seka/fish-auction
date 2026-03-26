@@ -3,25 +3,15 @@
 import { Box, Card, HStack, Text, Stack, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
+import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
 
-interface Purchase {
-  id: number;
-  itemId: number;
-  createdAt: string;
-  fishType: string;
-  quantity: number;
-  unit: string;
-  auctionId: number;
-  auctionDate: string;
-  price: number;
-}
-
-interface PurchaseHistoryProps {
-  purchases: Purchase[];
-}
-
-export const PurchaseHistory = ({ purchases }: PurchaseHistoryProps) => {
+export const PurchaseHistory = () => {
   const t = useTranslations();
+  const { purchases, isLoading } = useMyPurchases();
+
+  if (isLoading) {
+    return <Text>{t('Common.loading')}</Text>;
+  }
 
   return (
     <Stack spacing="4">
