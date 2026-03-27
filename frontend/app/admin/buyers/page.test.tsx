@@ -31,7 +31,7 @@ describe('AdminBuyersPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown as ReturnType<typeof useBuyerManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
@@ -69,7 +69,7 @@ describe('AdminBuyersPage', () => {
         isDeleting: false,
         message: '',
       },
-      form: { register: mockRegister, errors: {} } as unknown as ReturnType<
+      form: { register: mockRegister, formState: { errors: {} } } as unknown as ReturnType<
         typeof useBuyerManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },

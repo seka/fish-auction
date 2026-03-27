@@ -34,7 +34,7 @@ describe('AdminFishermenPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: { name: undefined },
+        formState: { errors: { name: undefined } },
       } as unknown as ReturnType<typeof useFishermanManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
@@ -60,7 +60,7 @@ describe('AdminFishermenPage', () => {
   it('shows loading state', () => {
     vi.mocked(useFishermanManagement).mockReturnValue({
       state: { fishermen: [], isLoading: true, isCreating: false, isDeleting: false, message: '' },
-      form: { register: mockRegister, errors: {} } as unknown as ReturnType<
+      form: { register: mockRegister, formState: { errors: {} } } as unknown as ReturnType<
         typeof useFishermanManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
@@ -73,7 +73,7 @@ describe('AdminFishermenPage', () => {
   it('shows empty state', () => {
     vi.mocked(useFishermanManagement).mockReturnValue({
       state: { fishermen: [], isLoading: false, isCreating: false, isDeleting: false, message: '' },
-      form: { register: mockRegister, errors: {} } as unknown as ReturnType<
+      form: { register: mockRegister, formState: { errors: {} } } as unknown as ReturnType<
         typeof useFishermanManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: vi.fn() },
@@ -100,7 +100,7 @@ describe('AdminFishermenPage', () => {
         isDeleting: false,
         message: '',
       },
-      form: { register: mockRegister, errors: {} } as unknown as ReturnType<
+      form: { register: mockRegister, formState: { errors: {} } } as unknown as ReturnType<
         typeof useFishermanManagement
       >['form'],
       actions: { onSubmit: mockOnSubmit, onDelete: mockOnDelete },
