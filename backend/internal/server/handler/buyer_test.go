@@ -476,9 +476,9 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 	}
 
 	tests := []testCase{
-		{name: "Login_Post", method: http.MethodPost, path: "/api/buyers/login", wantStatus: http.StatusOK},
-		{name: "Login_Get", method: http.MethodGet, path: "/api/buyers/login", wantStatus: http.StatusMethodNotAllowed},
-		{name: "Logout_Post", method: http.MethodPost, path: "/api/buyers/logout", wantStatus: http.StatusOK},
+		{name: "Login_Post", method: http.MethodPost, path: "/api/buyer/login", wantStatus: http.StatusOK},
+		{name: "Login_Get", method: http.MethodGet, path: "/api/buyer/login", wantStatus: http.StatusMethodNotAllowed},
+		{name: "Logout_Post", method: http.MethodPost, path: "/api/buyer/logout", wantStatus: http.StatusOK},
 	}
 
 	mockReg := &mock.MockRegistry{
@@ -497,7 +497,7 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 				body, _ = json.Marshal(map[string]string{"email": "", "password": ""})
 			}
 			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(body))
-			if tc.path == "/api/buyers/logout" {
+			if tc.path == "/api/buyer/logout" {
 				req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
 			}
 

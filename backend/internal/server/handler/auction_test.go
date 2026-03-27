@@ -501,6 +501,7 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 		DeleteAuctionUC:       &mock.MockDeleteAuctionUseCase{ExecuteFunc: func(_ context.Context, _ int) error { return nil }},
 		GetAuctionItemsUC:     &mock.MockGetAuctionItemsUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
 		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error { return nil }},
+		ReorderItemsUC:        &mock.MockReorderItemsUseCase{ExecuteFunc: func(_ context.Context, _ int, _ []int) error { return nil }},
 	}
 
 	t.Run("Public", func(t *testing.T) {
@@ -521,11 +522,36 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
+		// Create
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{"auction_date":"2023-01-01"}`))
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
 		if w.Code != http.StatusOK {
-			t.Errorf("expected 200, got %d", w.Code)
+			t.Errorf("Create: expected 200, got %d", w.Code)
+		}
+
+		// Reorder - Success (204)
+		req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/1/reorder", strings.NewReader(`{"ids":[1,2,3]}`))
+		w = httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusNoContent {
+			t.Errorf("Reorder Success: expected 204, got %d", w.Code)
+		}
+
+		// Reorder - Invalid JSON (400)
+		req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/1/reorder", strings.NewReader(`invalid json`))
+		w = httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("Reorder Invalid JSON: expected 400, got %d", w.Code)
+		}
+
+		// Reorder - Invalid Auction ID (400)
+		req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/invalid/reorder", strings.NewReader(`{"ids":[1,2,3]}`))
+		w = httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("Reorder Invalid ID: expected 400, got %d", w.Code)
 		}
 	})
 }
