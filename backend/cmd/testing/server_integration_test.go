@@ -66,6 +66,7 @@ func TestServerIntegration(t *testing.T) {
 		SMTPHost:   getEnvOrDefault("SMTP_HOST", "localhost"),
 		SMTPPort:   getEnvOrDefault("SMTP_PORT", "1025"),
 		SMTPFrom:   getEnvOrDefault("SMTP_FROM", "test@example.com"),
+		DBSslMode:  cfg.DBSslMode,
 	}
 
 	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
@@ -83,12 +84,16 @@ func TestServerIntegration(t *testing.T) {
 	fishermanHandler := handler.NewFishermanHandler(useCaseReg)
 	sessionRepo := repoReg.NewSessionRepository()
 	buyerHandler := handler.NewBuyerHandler(useCaseReg, sessionRepo)
-	itemHandler := handler.NewItemHandler(useCaseReg)
+	adminBuyerHandler := handler.NewAdminBuyerHandler(useCaseReg)
+	publicItemHandler := handler.NewPublicItemHandler(useCaseReg)
+	adminItemHandler := handler.NewAdminItemHandler(useCaseReg)
 	bidHandler := handler.NewBidHandler(useCaseReg)
 	invoiceHandler := handler.NewInvoiceHandler(useCaseReg)
 	authHandler := handler.NewAuthHandler(useCaseReg, sessionRepo)
-	venueHandler := handler.NewVenueHandler(useCaseReg)
-	auctionHandler := handler.NewAuctionHandler(useCaseReg)
+	publicVenueHandler := handler.NewPublicVenueHandler(useCaseReg)
+	adminVenueHandler := handler.NewAdminVenueHandler(useCaseReg)
+	publicAuctionHandler := handler.NewPublicAuctionHandler(useCaseReg)
+	adminAuctionHandler := handler.NewAdminAuctionHandler(useCaseReg)
 	adminHandler := handler.NewAdminHandler(useCaseReg)
 	authResetHandler := handler.NewAuthResetHandler(useCaseReg)
 	adminAuthResetHandler := handler.NewAdminAuthResetHandler(useCaseReg)
@@ -99,12 +104,16 @@ func TestServerIntegration(t *testing.T) {
 		healthHandler,
 		fishermanHandler,
 		buyerHandler,
-		itemHandler,
+		adminBuyerHandler,
+		publicItemHandler,
+		adminItemHandler,
 		bidHandler,
 		invoiceHandler,
 		authHandler,
-		venueHandler,
-		auctionHandler,
+		publicVenueHandler,
+		adminVenueHandler,
+		publicAuctionHandler,
+		adminAuctionHandler,
 		adminHandler,
 		authResetHandler,
 		adminAuthResetHandler,

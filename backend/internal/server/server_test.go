@@ -44,12 +44,16 @@ func TestServer_SecurityRoutes(t *testing.T) {
 	hHealth := handler.NewHealthHandler()
 	hFisherman := handler.NewFishermanHandler(mockReg)
 	hBuyer := handler.NewBuyerHandler(mockReg, sessionRepo)
-	hItem := handler.NewItemHandler(mockReg)
+	hAdminBuyer := handler.NewAdminBuyerHandler(mockReg)
+	hPublicItem := handler.NewPublicItemHandler(mockReg)
+	hAdminItem := handler.NewAdminItemHandler(mockReg)
 	hBid := handler.NewBidHandler(mockReg)
 	hInvoice := handler.NewInvoiceHandler(mockReg)
 	hAuth := handler.NewAuthHandler(mockReg, sessionRepo)
-	hVenue := handler.NewVenueHandler(mockReg)
-	hAuction := handler.NewAuctionHandler(mockReg)
+	hPublicVenue := handler.NewPublicVenueHandler(mockReg)
+	hAdminVenue := handler.NewAdminVenueHandler(mockReg)
+	hPublicAuction := handler.NewPublicAuctionHandler(mockReg)
+	hAdminAuction := handler.NewAdminAuctionHandler(mockReg)
 	hAdmin := handler.NewAdminHandler(mockReg)
 	hAuthReset := handler.NewAuthResetHandler(mockReg)
 	hAdminAuthReset := handler.NewAdminAuthResetHandler(mockReg)
@@ -60,12 +64,16 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hHealth,
 		hFisherman,
 		hBuyer,
-		hItem,
+		hAdminBuyer,
+		hPublicItem,
+		hAdminItem,
 		hBid,
 		hInvoice,
 		hAuth,
-		hVenue,
-		hAuction,
+		hPublicVenue,
+		hAdminVenue,
+		hPublicAuction,
+		hAdminAuction,
 		hAdmin,
 		hAuthReset,
 		hAdminAuthReset,
