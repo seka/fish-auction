@@ -32,11 +32,14 @@ description: Use when working through a change in fish-auction and you need the 
 - 既存ファイルの構成、命名、責務分離に合わせる
 - unrelated な差分は巻き込まない
 
-## Before finishing
+## Verification in Sandbox
 
-- `git status` で意図しない変更がないか見る
-- `git diff` で不要な差分、デバッグコード、説明不足を確認する
-- 追加した変更に対して、必要なテストや CI 観点を整理する
+サンドボックス環境下でローカルテスト（`make test`, `yarn test`）が権限エラーで失敗する場合、Docker を利用して検証を行います。
+
+- **Backend**: `docker-compose run --rm backend make app.test`
+- **Frontend**: `docker-compose run --rm frontend yarn test`
+
+これにより、ホスト側の権限制限を受けずにクリーンな環境でテストを実行できます。
 
 ## PR and CI
 
