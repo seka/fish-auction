@@ -11,6 +11,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
+	"github.com/seka/fish-auction/backend/internal/usecase/item"
 )
 
 // AdminAuctionHandler handles admin HTTP requests related to auctions.
@@ -19,6 +20,7 @@ type AdminAuctionHandler struct {
 	updateUseCase       auction.UpdateAuctionUseCase
 	updateStatusUseCase auction.UpdateAuctionStatusUseCase
 	deleteUseCase       auction.DeleteAuctionUseCase
+	reorderItemsUseCase item.ReorderItemsUseCase
 }
 
 // NewAdminAuctionHandler creates a new AdminAuctionHandler instance.
@@ -28,6 +30,7 @@ func NewAdminAuctionHandler(r registry.UseCase) *AdminAuctionHandler {
 		updateUseCase:       r.NewUpdateAuctionUseCase(),
 		updateStatusUseCase: r.NewUpdateAuctionStatusUseCase(),
 		deleteUseCase:       r.NewDeleteAuctionUseCase(),
+		reorderItemsUseCase: r.NewReorderItemsUseCase(),
 	}
 }
 
@@ -155,6 +158,25 @@ func (h *AdminAuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+// Reorder handles the request to reorder items within an auction.
+func (h *AdminAuctionHandler) Reorder(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	auctionID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid auction ID", http.StatusBadRequest)
+		return
+	}
+	var req dto.ReorderItemsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+	if err := h.reorderItemsUseCase.Execute(r.Context(), auctionID, req.IDs); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
 
 // RegisterRoutes registers the admin auction handler routes to the given mux.
 func (h *AdminAuctionHandler) RegisterRoutes(mux *http.ServeMux) {
@@ -162,4 +184,5 @@ func (h *AdminAuctionHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /auctions/{id}", h.Update)
 	mux.HandleFunc("PATCH /auctions/{id}/status", h.UpdateStatus)
 	mux.HandleFunc("DELETE /auctions/{id}", h.Delete)
+	mux.HandleFunc("PUT /auctions/{id}/reorder", h.Reorder)
 }

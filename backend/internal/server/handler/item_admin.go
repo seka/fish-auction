@@ -18,7 +18,6 @@ type AdminItemHandler struct {
 	updateUseCase          item.UpdateItemUseCase
 	deleteUseCase          item.DeleteItemUseCase
 	updateSortOrderUseCase item.UpdateItemSortOrderUseCase
-	reorderItemsUseCase    item.ReorderItemsUseCase
 }
 
 // NewAdminItemHandler creates a new AdminItemHandler instance.
@@ -28,7 +27,6 @@ func NewAdminItemHandler(r registry.UseCase) *AdminItemHandler {
 		updateUseCase:          r.NewUpdateItemUseCase(),
 		deleteUseCase:          r.NewDeleteItemUseCase(),
 		updateSortOrderUseCase: r.NewUpdateItemSortOrderUseCase(),
-		reorderItemsUseCase:    r.NewReorderItemsUseCase(),
 	}
 }
 
@@ -131,28 +129,6 @@ func (h *AdminItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Reorder handles the request to reorder items within an auction.
-func (h *AdminItemHandler) Reorder(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	auctionID, err := strconv.Atoi(idStr)
-	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid auction id")
-		return
-	}
-
-	var req dto.ReorderItemsRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	if err := h.reorderItemsUseCase.Execute(r.Context(), auctionID, req.IDs); err != nil {
-		util.HandleError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
 
 func (h *AdminItemHandler) toResponse(it *model.AuctionItem) dto.ItemResponse {
 	var highestBid *int
