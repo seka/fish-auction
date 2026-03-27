@@ -113,13 +113,35 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: func() *model.Auction {
 				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 				now := time.Now().In(jst)
-				startTime := now.Add(-1 * time.Hour)
-				endTime := now.Add(2 * time.Minute) // Within 5 mins -> Trigger extension
+
+				// Use a fixed date part from 'now' to ensure consistency
+				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+				
+				// To avoid crossing midnight boundaries during the test, 
+				// we set a safe time window within 'today'.
+				// If it's very early (00:xx), we use 10 mins after midnight as start.
+				// If it's late (23:xx), we use 10 mins before midnight as end.
+				// For most times, -1h and +2m works EXCEPT when it crosses midnight.
+				
+				var startTime, endTime time.Time
+				if now.Hour() == 0 {
+					// Morning: start at 00:00, end later
+					startTime = today
+					endTime = now.Add(2 * time.Minute)
+				} else if now.Hour() == 23 {
+					// Night: start earlier, end at 23:59
+					startTime = now.Add(-1 * time.Hour)
+					endTime = today.Add(23*time.Hour + 59*time.Minute)
+				} else {
+					// Normal
+					startTime = now.Add(-1 * time.Hour)
+					endTime = now.Add(2 * time.Minute)
+				}
 
 				return &model.Auction{
 					ID:      1,
 					VenueID: 1,
-					Period:  model.NewAuctionPeriod(now, &startTime, &endTime),
+					Period:  model.NewAuctionPeriod(today, &startTime, &endTime),
 					Status:  model.AuctionStatusInProgress,
 				}
 			}(),
@@ -158,12 +180,17 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: func() *model.Auction {
 				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 				now := time.Now().In(jst)
+				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+				
 				endTime := now.Add(2 * time.Minute)
+				if now.Hour() == 23 && endTime.Day() != now.Day() {
+					endTime = today.Add(23*time.Hour + 59*time.Minute)
+				}
 
 				return &model.Auction{
 					ID:      1,
 					VenueID: 1,
-					Period:  model.NewAuctionPeriod(now, nil, &endTime),
+					Period:  model.NewAuctionPeriod(today, nil, &endTime),
 					Status:  model.AuctionStatusInProgress,
 				}
 			}(),

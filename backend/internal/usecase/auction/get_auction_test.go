@@ -88,11 +88,35 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 		{
 			name: "UpdateStatusError",
 			id:   1,
-			mockAuc: &model.Auction{
-				ID:     1,
-				Status: model.AuctionStatusInProgress,
-				Period: model.NewAuctionPeriod(time.Now(), new(time.Now().Add(-2*time.Hour)), new(time.Now().Add(-1*time.Hour))),
-			},
+			mockAuc: func() *model.Auction {
+				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+				now := time.Now().In(jst)
+				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+				startTime := today.Add(10 * time.Hour) // 10:00 Today
+				endTime := today.Add(11 * time.Hour)   // 11:00 Today
+
+				// If now is already past 11:00 today, this will work. 
+				// But we want to ensure ShouldBeCompleted returns true.
+				// ShouldBeCompleted is true if now > endTime.
+				// So let's make endTime definitely in the past.
+				if now.After(today.Add(2 * time.Hour)) {
+					// now is after 02:00, so 00:00-01:00 is in the past.
+					startTime = today
+					endTime = today.Add(1 * time.Hour)
+				} else {
+					// now is early (e.g. 00:30), so we use yesterday.
+					yesterday := today.Add(-24 * time.Hour)
+					startTime = yesterday.Add(10 * time.Hour)
+					endTime = yesterday.Add(11 * time.Hour)
+					today = yesterday
+				}
+
+				return &model.Auction{
+					ID:     1,
+					Status: model.AuctionStatusInProgress,
+					Period: model.NewAuctionPeriod(today, &startTime, &endTime),
+				}
+			}(),
 			mockUpdateStatusErr: errors.New("update failed"),
 			wantErr:             true,
 		},
