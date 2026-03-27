@@ -215,8 +215,8 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 // RegisterPublicRoutes registers the public buyer handler routes to the given mux.
 func (h *BuyerHandler) RegisterPublicRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/buyers/login", h.Login)
-	mux.HandleFunc("POST /api/buyers/logout", h.Logout)
+	mux.HandleFunc("/api/buyer/login", h.Login)
+	mux.HandleFunc("/api/buyer/logout", h.Logout)
 }
 
 // RegisterBuyerRoutes registers the authenticated buyer handler routes to the given mux.
