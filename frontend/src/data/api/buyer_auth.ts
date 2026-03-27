@@ -24,7 +24,7 @@ export const logoutBuyer = async (): Promise<boolean> => {
 // 現在ログインしているバイヤー情報を取得（認証チェック）
 export const getCurrentBuyer = async (): Promise<Buyer | null> => {
   try {
-    return await apiClient.get<Buyer>('/api/buyer/me');
+    return await apiClient.get<Buyer>('/api/buyers/me');
   } catch {
     // 未認証の場合は 401 エラーになるので null を返す
     return null;

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getCurrentBuyer, loginBuyer } from './buyer_auth';
 import { apiClient } from '@/src/core/api/client';
+import { Buyer } from '@/src/models';
 
 // Mock the apiClient
 vi.mock('@/src/core/api/client', () => ({
@@ -15,9 +16,13 @@ describe('Buyer Auth API', () => {
     vi.clearAllMocks();
   });
 
-  it('getCurrentBuyer calls singular /api/buyer/me', async () => {
+  it('getCurrentBuyer calls plural /api/buyers/me', async () => {
+    const mockBuyer: Buyer = { id: 1, name: "Test Buyer" };
+    (apiClient.get as any).mockResolvedValue(mockBuyer);
+
     await getCurrentBuyer();
-    expect(apiClient.get).toHaveBeenCalledWith('/api/buyer/me');
+
+    expect(apiClient.get).toHaveBeenCalledWith('/api/buyers/me');
   });
 
   it('loginBuyer calls singular /api/buyers/login (Wait, checking handler... handler is registered at /api/buyers/login)', async () => {
