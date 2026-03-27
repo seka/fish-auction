@@ -16,10 +16,10 @@
 | /api/health | GET | 50 | ヘルスチェック |
 | /api/items | GET | 20 | アイテム一覧 |
 | /api/items | POST | 5 | アイテム作成 |
-| /api/fishermen | GET | 10 | 漁師一覧 |
-| /api/fishermen | POST | 5 | 漁師作成 |
-| /api/buyers | GET | 5 | 買い手一覧 |
-| /api/buyers | POST | 5 | 買い手作成 |
+| /api/admin/fishermen | GET | 10 | 漁師一覧 |
+| /api/admin/fishermen | POST | 5 | 漁師作成 |
+| /api/admin/buyers | GET | 5 | 買い手一覧 |
+| /api/admin/buyers | POST | 5 | 買い手作成 |
 
 ## 環境変数
 
