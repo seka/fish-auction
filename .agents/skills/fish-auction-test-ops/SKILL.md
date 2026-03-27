@@ -9,24 +9,39 @@ description: Use ONLY when explicitly instructed to run tests or heavyweight ope
 
 - ユーザーから「テストを実行して」「テストを確認して」と明示的に指示されたとき
 - 実装の最終確認として、クリーンな環境での整合性を検証したいとき
-- サンドボックス環境の制限によりローカルコマンド（`make test`等）が失敗し、Docker での回避が必要なとき
 
 ## Docker-based Verification
 
 ビルドキャッシュやディレクトリ権限の問題を回避するため、Docker コンテナ内でテストを実行します。これらのコマンドは実行に時間がかかる場合があるため、必要最小限の範囲で実行してください。
 
-### Backend Tests
+### Backend Tests & Quality
 ```bash
+# ユニットテスト
 docker-compose run --rm backend make app.test
-```
-*統合テストも含める場合:*
-```bash
+
+# 統合テスト
 docker-compose run --rm backend make app.integration-test
+
+# 静的解析 (Lint)
+docker-compose run --rm backend make app.lint
+
+# コード整形
+docker-compose run --rm backend make app.fmt
 ```
 
-### Frontend Tests
+### Frontend Tests & Quality
 ```bash
+# テスト
 docker-compose run --rm frontend yarn test
+
+# 静的解析 (Lint)
+docker-compose run --rm frontend yarn lint
+
+# 型チェック
+docker-compose run --rm frontend yarn typecheck
+
+# コード整形
+docker-compose run --rm frontend yarn format
 ```
 
 ## Working rule
