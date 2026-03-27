@@ -150,7 +150,7 @@ func TestBuyerHandler_Login(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyers/login", bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyer/login", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Login(w, req)
@@ -455,7 +455,7 @@ func TestBuyerHandler_Logout(t *testing.T) {
 		},
 	}
 	h := handler.NewBuyerHandler(&mock.MockRegistry{}, sessionRepo)
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyers/logout", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyer/logout", nil)
 	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
 	w := httptest.NewRecorder()
 	h.Logout(w, req)
@@ -467,7 +467,7 @@ func TestBuyerHandler_Logout(t *testing.T) {
 	}
 }
 
-func TestBuyerHandler_RegisterRoutes(t *testing.T) {
+func TestBuyerHandler_RegisterPublicRoutes(t *testing.T) {
 	type testCase struct {
 		name       string
 		method     string
@@ -499,6 +499,70 @@ func TestBuyerHandler_RegisterRoutes(t *testing.T) {
 			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(body))
 			if tc.path == "/api/buyer/logout" {
 				req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
+			}
+
+			w := httptest.NewRecorder()
+			mux.ServeHTTP(w, req)
+
+			if w.Code != tc.wantStatus {
+				t.Errorf("expected status %d, got %d", tc.wantStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestBuyerHandler_RegisterBuyerRoutes(t *testing.T) {
+	type testCase struct {
+		name        string
+		method      string
+		path        string
+		body        []byte
+		withContext bool
+		wantStatus  int
+	}
+
+	tests := []testCase{
+		{name: "Me_Get", method: http.MethodGet, path: "/me", withContext: true, wantStatus: http.StatusOK},
+		{name: "Me_Post", method: http.MethodPost, path: "/me", wantStatus: http.StatusMethodNotAllowed},
+		{name: "Purchases_Get", method: http.MethodGet, path: "/me/purchases", withContext: true, wantStatus: http.StatusOK},
+		{name: "Purchases_Post", method: http.MethodPost, path: "/me/purchases", wantStatus: http.StatusMethodNotAllowed},
+		{name: "Auctions_Get", method: http.MethodGet, path: "/me/auctions", withContext: true, wantStatus: http.StatusOK},
+		{name: "Password_Put", method: http.MethodPut, path: "/password", body: []byte(`{"current_password":"old","new_password":"new"}`), withContext: true, wantStatus: http.StatusOK},
+		{name: "Password_Post", method: http.MethodPost, path: "/password", wantStatus: http.StatusMethodNotAllowed},
+	}
+
+	mockReg := &mock.MockRegistry{
+		GetBuyerUC: &mock.MockGetBuyerUseCase{
+			ExecuteFunc: func(_ context.Context, _ int) (*model.Buyer, error) {
+				return &model.Buyer{ID: 1, Name: "B1"}, nil
+			},
+		},
+		GetBuyerPurchasesUC: &mock.MockGetBuyerPurchasesUseCase{
+			ExecuteFunc: func(_ context.Context, _ int) ([]model.Purchase, error) {
+				return []model.Purchase{}, nil
+			},
+		},
+		GetBuyerAuctionsUC: &mock.MockGetBuyerAuctionsUseCase{
+			ExecuteFunc: func(_ context.Context, _ int) ([]model.Auction, error) {
+				return []model.Auction{}, nil
+			},
+		},
+		UpdateBuyerPasswordUC: &mock.MockBuyerUpdatePasswordUseCase{
+			ExecuteFunc: func(_ context.Context, _ int, _, _ string) error {
+				return nil
+			},
+		},
+	}
+
+	h := handler.NewBuyerHandler(mockReg, &mock.MockSessionRepository{})
+	mux := http.NewServeMux()
+	h.RegisterBuyerRoutes(mux)
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(tc.body))
+			if tc.withContext {
+				req = withBuyerID(req, 1)
 			}
 
 			w := httptest.NewRecorder()
