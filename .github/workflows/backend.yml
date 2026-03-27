@@ -2,7 +2,6 @@ name: Backend CI
 
 on:
   push:
-    # branches: [ master ] # Removed to trigger on all branches
     paths:
       - 'backend/**'
       - '.github/workflows/backend.yml'
