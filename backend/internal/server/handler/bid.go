@@ -68,5 +68,5 @@ func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the bid handler routes to the given mux.
 func (h *BidHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/bids", h.Create)
+	mux.HandleFunc("POST /bids", h.Create)
 }

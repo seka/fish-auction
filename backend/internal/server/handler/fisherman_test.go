@@ -27,7 +27,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateFishermanRequest{Name: "Tuna Corp"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/fishermen", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -48,7 +48,7 @@ func TestFishermanHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateFishermanRequest{Name: "Tuna Corp"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/admin/fishermen", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/fishermen", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -69,7 +69,7 @@ func TestFishermanHandler_List(t *testing.T) {
 		mockReg := &mock.MockRegistry{ListFishermenUC: mockListUC}
 		h := handler.NewFishermanHandler(mockReg)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/fishermen", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/fishermen", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -91,7 +91,7 @@ func TestFishermanHandler_RegisterRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 	h.RegisterRoutes(mux)
 
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/fishermen", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/fishermen", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {

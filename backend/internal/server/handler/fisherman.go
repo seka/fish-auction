@@ -82,7 +82,7 @@ func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the fisherman handler routes to the given mux.
 func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/fishermen", h.List)
-	mux.HandleFunc("POST /api/fishermen", h.Create)
-	mux.HandleFunc("DELETE /api/fishermen/{id}", h.Delete)
+	mux.HandleFunc("GET /fishermen", h.List)
+	mux.HandleFunc("POST /fishermen", h.Create)
+	mux.HandleFunc("DELETE /fishermen/{id}", h.Delete)
 }

@@ -43,5 +43,5 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the invoice handler routes to the given mux.
 func (h *InvoiceHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/invoices", h.List)
+	mux.HandleFunc("GET /invoices", h.List)
 }

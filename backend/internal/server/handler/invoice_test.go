@@ -24,7 +24,7 @@ func TestInvoiceHandler_List(t *testing.T) {
 		mockReg := &mock.MockRegistry{ListInvoicesUC: mockListUC}
 		h := handler.NewInvoiceHandler(mockReg)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/invoices", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/invoices", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -43,7 +43,7 @@ func TestInvoiceHandler_List(t *testing.T) {
 		mockReg := &mock.MockRegistry{ListInvoicesUC: mockListUC}
 		h := handler.NewInvoiceHandler(mockReg)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/invoices", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/invoices", nil)
 		w := httptest.NewRecorder()
 
 		h.List(w, req)
@@ -61,7 +61,7 @@ func TestInvoiceHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/invoices", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/invoices", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)

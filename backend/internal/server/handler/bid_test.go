@@ -32,7 +32,7 @@ func TestBidHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateBidRequest{ItemID: 10, Price: 500}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/bids", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/bids", bytes.NewReader(body))
 
 		// Inject buyer_id into context (simulating middleware)
 		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
@@ -53,7 +53,7 @@ func TestBidHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateBidRequest{ItemID: 10, Price: 500}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/bids", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/bids", bytes.NewReader(body))
 		// No Context
 
 		w := httptest.NewRecorder()
@@ -76,7 +76,7 @@ func TestBidHandler_Create(t *testing.T) {
 
 		reqBody := dto.CreateBidRequest{ItemID: 10, Price: 500}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/bids", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/bids", bytes.NewReader(body))
 		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
 		req = req.WithContext(ctx)
 
@@ -97,7 +97,7 @@ func TestBidHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/bids", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/bids", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)

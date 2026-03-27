@@ -51,11 +51,5 @@ func (h *AdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the admin handler routes to the given mux.
 func (h *AdminHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/admin/password", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPut {
-			h.UpdatePassword(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("PUT /password", h.UpdatePassword)
 }

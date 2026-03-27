@@ -55,5 +55,5 @@ func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the push notification handler routes to the given mux.
 func (h *PushHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/push/subscribe", h.Subscribe)
+	mux.HandleFunc("POST /push/subscribe", h.Subscribe)
 }

@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -16,13 +15,10 @@ import (
 
 // BuyerHandler handles HTTP requests related to buyers.
 type BuyerHandler struct {
-	createUseCase         buyer.CreateBuyerUseCase
-	listUseCase           buyer.ListBuyersUseCase
 	loginUseCase          buyer.LoginBuyerUseCase
 	getPurchasesUseCase   buyer.GetBuyerPurchasesUseCase
 	getAuctionsUseCase    buyer.GetBuyerAuctionsUseCase
 	updatePasswordUseCase buyer.UpdatePasswordUseCase
-	deleteUseCase         buyer.DeleteBuyerUseCase
 	getBuyerUseCase       buyer.GetBuyerUseCase
 	sessionRepo           repository.SessionRepository
 }
@@ -30,51 +26,13 @@ type BuyerHandler struct {
 // NewBuyerHandler creates a new BuyerHandler instance.
 func NewBuyerHandler(r registry.UseCase, sessionRepo repository.SessionRepository) *BuyerHandler {
 	return &BuyerHandler{
-		createUseCase:         r.NewCreateBuyerUseCase(),
-		listUseCase:           r.NewListBuyersUseCase(),
 		loginUseCase:          r.NewLoginBuyerUseCase(),
 		getPurchasesUseCase:   r.NewGetBuyerPurchasesUseCase(),
 		getAuctionsUseCase:    r.NewGetBuyerAuctionsUseCase(),
 		updatePasswordUseCase: r.NewBuyerUpdatePasswordUseCase(),
-		deleteUseCase:         r.NewDeleteBuyerUseCase(),
 		getBuyerUseCase:       r.NewGetBuyerUseCase(),
 		sessionRepo:           sessionRepo,
 	}
-}
-
-// Create handles the buyer creation request.
-func (h *BuyerHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req dto.CreateBuyerRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		util.HandleError(w, err)
-		return
-	}
-	buy, err := h.createUseCase.Execute(r.Context(), req.Name, req.Email, req.Password, req.Organization, req.ContactInfo)
-	if err != nil {
-		util.HandleError(w, err)
-		return
-	}
-	resp := dto.BuyerResponse{ID: buy.ID, Name: buy.Name}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		util.HandleError(w, err)
-		return
-	}
-}
-
-// List handles the request to list buyers.
-func (h *BuyerHandler) List(w http.ResponseWriter, r *http.Request) {
-	buyers, err := h.listUseCase.Execute(r.Context())
-	if err != nil {
-		util.HandleError(w, err)
-		return
-	}
-	resp := make([]dto.BuyerResponse, len(buyers))
-	for i, b := range buyers {
-		resp[i] = dto.BuyerResponse{ID: b.ID, Name: b.Name}
-	}
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Login handles the buyer login request.
@@ -255,29 +213,16 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Delete handles the buyer deletion request.
-func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid buyer id")
-		return
-	}
-
-	if err := h.deleteUseCase.Execute(r.Context(), id); err != nil {
-		util.HandleError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// RegisterRoutes registers the buyer handler routes to the given mux.
-func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
+// RegisterPublicRoutes registers the public buyer handler routes to the given mux.
+func (h *BuyerHandler) RegisterPublicRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/buyers/login", h.Login)
 	mux.HandleFunc("POST /api/buyers/logout", h.Logout)
-	mux.HandleFunc("GET /api/buyers/me", h.GetCurrentBuyer)
-	mux.HandleFunc("GET /api/buyers/me/purchases", h.GetMyPurchases)
-	mux.HandleFunc("GET /api/buyers/me/auctions", h.GetMyAuctions)
-	mux.HandleFunc("PUT /api/buyers/password", h.UpdatePassword)
+}
+
+// RegisterBuyerRoutes registers the authenticated buyer handler routes to the given mux.
+func (h *BuyerHandler) RegisterBuyerRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /me", h.GetCurrentBuyer)
+	mux.HandleFunc("GET /me/purchases", h.GetMyPurchases)
+	mux.HandleFunc("GET /me/auctions", h.GetMyAuctions)
+	mux.HandleFunc("PUT /password", h.UpdatePassword)
 }
