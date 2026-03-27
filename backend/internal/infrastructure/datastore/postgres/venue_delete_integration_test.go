@@ -15,6 +15,8 @@ import (
 // TestVenueStore_Delete_Conflict_Integration tests actual DB behavior
 // usage: go test -v -tags=integration ./internal/infrastructure/datastore/postgres/venue_delete_integration_test.go
 func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
+	requireIntegrationTests(t)
+
 	// 1. Connect to DB
 	connStr := getTestDBConnStr()
 	db, err := sql.Open("postgres", connStr)
@@ -50,13 +52,10 @@ func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
 	`, createdVenue.ID, now, now.Add(1*time.Hour), now).Scan(&auctionID)
 	assert.NoError(t, err)
 
-	// 2c. Create User (Fisherman)
+	// 2c. Create Fisherman
 	var fishermanID int
-	err = db.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('Test Fisherman', 'FISHERMAN', CURRENT_TIMESTAMP) RETURNING id").Scan(&fishermanID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.fishermen (name) VALUES ('Test Fisherman') RETURNING id").Scan(&fishermanID)
 	assert.NoError(t, err)
-
-	// Create Fisherman Profile
-	_, _ = db.ExecContext(ctx, "INSERT INTO public.fishermen (id, name) VALUES ($1, 'Test Fisherman')", fishermanID)
 
 	// 2d. Create Item (linked to Auction)
 	var itemID int
@@ -67,13 +66,10 @@ func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
 	`, fishermanID, auctionID).Scan(&itemID)
 	assert.NoError(t, err)
 
-	// 2e. Create User (Buyer)
+	// 2e. Create Buyer
 	var buyerID int
-	err = db.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('Test Buyer', 'BUYER', CURRENT_TIMESTAMP) RETURNING id").Scan(&buyerID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.buyers (name, organization, contact_info) VALUES ('Test Buyer', '', '') RETURNING id").Scan(&buyerID)
 	assert.NoError(t, err)
-
-	// Create Buyer Profile
-	_, _ = db.ExecContext(ctx, "INSERT INTO public.buyers (id, name) VALUES ($1, 'Test Buyer')", buyerID)
 
 	// 2f. Create Transaction (Linked to Item) -> This should BLOCK delete
 	_, err = db.ExecContext(ctx, `
