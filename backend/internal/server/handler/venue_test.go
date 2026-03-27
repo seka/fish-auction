@@ -15,7 +15,7 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
-func TestVenueHandler_Create(t *testing.T) {
+func TestAdminVenueHandler_Create(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockCreateUC := &mock.MockCreateVenueUseCase{
 			ExecuteFunc: func(_ context.Context, venue *model.Venue) (*model.Venue, error) {
@@ -24,11 +24,11 @@ func TestVenueHandler_Create(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{CreateVenueUC: mockCreateUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewAdminVenueHandler(mockReg)
 
 		reqBody := dto.CreateVenueRequest{Name: "Tokyo Market", Location: "Toyosu"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/venues", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/venues", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -45,11 +45,11 @@ func TestVenueHandler_Create(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{CreateVenueUC: mockCreateUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewAdminVenueHandler(mockReg)
 
 		reqBody := dto.CreateVenueRequest{Name: "Tokyo Market", Location: "Toyosu"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/venues", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/venues", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -60,7 +60,7 @@ func TestVenueHandler_Create(t *testing.T) {
 	})
 }
 
-func TestVenueHandler_List(t *testing.T) {
+func TestPublicVenueHandler_List(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockListUC := &mock.MockListVenuesUseCase{
 			ExecuteFunc: func(_ context.Context) ([]model.Venue, error) {
@@ -68,7 +68,7 @@ func TestVenueHandler_List(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{ListVenuesUC: mockListUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewPublicVenueHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/venues", nil)
 		w := httptest.NewRecorder()
@@ -81,7 +81,7 @@ func TestVenueHandler_List(t *testing.T) {
 	})
 }
 
-func TestVenueHandler_Get(t *testing.T) {
+func TestPublicVenueHandler_Get(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockGetUC := &mock.MockGetVenueUseCase{
 			ExecuteFunc: func(_ context.Context, _ int) (*model.Venue, error) {
@@ -89,7 +89,7 @@ func TestVenueHandler_Get(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{GetVenueUC: mockGetUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewPublicVenueHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/venues/1", nil)
 		req.SetPathValue("id", "1")
@@ -109,7 +109,7 @@ func TestVenueHandler_Get(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{GetVenueUC: mockGetUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewPublicVenueHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/venues/999", nil)
 		req.SetPathValue("id", "999")
@@ -117,13 +117,13 @@ func TestVenueHandler_Get(t *testing.T) {
 
 		h.Get(w, req)
 
-		if w.Code != http.StatusNotFound && w.Code != http.StatusInternalServerError {
-			t.Errorf("expected error status, got %d", w.Code)
+		if w.Code != http.StatusInternalServerError {
+			t.Errorf("expected error status 500, got %d", w.Code)
 		}
 	})
 }
 
-func TestVenueHandler_Update(t *testing.T) {
+func TestAdminVenueHandler_Update(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockUpdateUC := &mock.MockUpdateVenueUseCase{
 			ExecuteFunc: func(_ context.Context, venue *model.Venue) error {
@@ -134,11 +134,11 @@ func TestVenueHandler_Update(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{UpdateVenueUC: mockUpdateUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewAdminVenueHandler(mockReg)
 
 		reqBody := dto.UpdateVenueRequest{Name: "Updated V1"}
 		body, _ := json.Marshal(reqBody)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/venues/1", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/venues/1", bytes.NewReader(body))
 		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 
@@ -150,7 +150,7 @@ func TestVenueHandler_Update(t *testing.T) {
 	})
 }
 
-func TestVenueHandler_Delete(t *testing.T) {
+func TestAdminVenueHandler_Delete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockDeleteUC := &mock.MockDeleteVenueUseCase{
 			ExecuteFunc: func(_ context.Context, id int) error {
@@ -161,9 +161,9 @@ func TestVenueHandler_Delete(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{DeleteVenueUC: mockDeleteUC}
-		h := handler.NewVenueHandler(mockReg)
+		h := handler.NewAdminVenueHandler(mockReg)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/api/venues/1", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/venues/1", nil)
 		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 
@@ -176,19 +176,34 @@ func TestVenueHandler_Delete(t *testing.T) {
 }
 
 func TestVenueHandler_RegisterRoutes(t *testing.T) {
-	t.Run("MethodNotAllowed", func(t *testing.T) {
-		mockReg := &mock.MockRegistry{}
-		h := handler.NewVenueHandler(mockReg)
+	mockReg := &mock.MockRegistry{
+		ListVenuesUC:  &mock.MockListVenuesUseCase{ExecuteFunc: func(_ context.Context) ([]model.Venue, error) { return []model.Venue{}, nil }},
+		CreateVenueUC: &mock.MockCreateVenueUseCase{ExecuteFunc: func(_ context.Context, v *model.Venue) (*model.Venue, error) { return v, nil }},
+	}
+
+	t.Run("Public", func(t *testing.T) {
+		h := handler.NewPublicVenueHandler(mockReg)
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/venues", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/venues", nil)
 		w := httptest.NewRecorder()
-
 		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("expected 200, got %d", w.Code)
+		}
+	})
 
-		if w.Code != http.StatusMethodNotAllowed {
-			t.Errorf("expected status 405, got %d", w.Code)
+	t.Run("Admin", func(t *testing.T) {
+		h := handler.NewAdminVenueHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
+
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/venues", bytes.NewReader([]byte("{}")))
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("expected 200, got %d", w.Code)
 		}
 	})
 }

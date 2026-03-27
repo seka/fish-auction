@@ -14,7 +14,7 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
-func TestItemHandler_Create(t *testing.T) {
+func TestAdminItemHandler_Create(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockCreateUC := &mock.MockCreateItemUseCase{
 			ExecuteFunc: func(_ context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
@@ -23,17 +23,11 @@ func TestItemHandler_Create(t *testing.T) {
 				return item, nil
 			},
 		}
-		mockListUC := &mock.MockListItemsUseCase{}
-
 		mockReg := &mock.MockRegistry{
-			CreateItemUC:          mockCreateUC,
-			ListItemsUC:           mockListUC,
-			UpdateItemUC:          &mock.MockUpdateItemUseCase{},
-			DeleteItemUC:          &mock.MockDeleteItemUseCase{},
-			UpdateItemSortOrderUC: &mock.MockUpdateItemSortOrderUseCase{},
+			CreateItemUC: mockCreateUC,
 		}
 
-		h := handler.NewItemHandler(mockReg)
+		h := handler.NewAdminItemHandler(mockReg)
 
 		reqBody := dto.CreateItemRequest{
 			FishermanID: 1,
@@ -43,7 +37,7 @@ func TestItemHandler_Create(t *testing.T) {
 		}
 		body, _ := json.Marshal(reqBody)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/items", bytes.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/items", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -63,17 +57,10 @@ func TestItemHandler_Create(t *testing.T) {
 	})
 
 	t.Run("Error_InvalidJSON", func(t *testing.T) {
-		mockReg := &mock.MockRegistry{
-			CreateItemUC:          &mock.MockCreateItemUseCase{},
-			ListItemsUC:           &mock.MockListItemsUseCase{},
-			UpdateItemUC:          &mock.MockUpdateItemUseCase{},
-			DeleteItemUC:          &mock.MockDeleteItemUseCase{},
-			UpdateItemSortOrderUC: &mock.MockUpdateItemSortOrderUseCase{},
-		}
+		mockReg := &mock.MockRegistry{}
+		h := handler.NewAdminItemHandler(mockReg)
 
-		h := handler.NewItemHandler(mockReg)
-
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/items", bytes.NewReader([]byte("invalid json")))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/items", bytes.NewReader([]byte("invalid json")))
 		w := httptest.NewRecorder()
 
 		h.Create(w, req)
@@ -84,7 +71,7 @@ func TestItemHandler_Create(t *testing.T) {
 	})
 }
 
-func TestItemHandler_List(t *testing.T) {
+func TestPublicItemHandler_List(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockListUC := &mock.MockListItemsUseCase{
 			ExecuteFunc: func(_ context.Context, _ string) ([]model.AuctionItem, error) {
@@ -95,14 +82,10 @@ func TestItemHandler_List(t *testing.T) {
 		}
 
 		mockReg := &mock.MockRegistry{
-			CreateItemUC:          &mock.MockCreateItemUseCase{},
-			ListItemsUC:           mockListUC,
-			UpdateItemUC:          &mock.MockUpdateItemUseCase{},
-			DeleteItemUC:          &mock.MockDeleteItemUseCase{},
-			UpdateItemSortOrderUC: &mock.MockUpdateItemSortOrderUseCase{},
+			ListItemsUC: mockListUC,
 		}
 
-		h := handler.NewItemHandler(mockReg)
+		h := handler.NewPublicItemHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/items?status=Available", nil)
 		w := httptest.NewRecorder()
@@ -116,26 +99,34 @@ func TestItemHandler_List(t *testing.T) {
 }
 
 func TestItemHandler_RegisterRoutes(t *testing.T) {
-	t.Run("MethodNotAllowed", func(t *testing.T) {
-		mockReg := &mock.MockRegistry{
-			CreateItemUC:          &mock.MockCreateItemUseCase{},
-			ListItemsUC:           &mock.MockListItemsUseCase{},
-			UpdateItemUC:          &mock.MockUpdateItemUseCase{},
-			DeleteItemUC:          &mock.MockDeleteItemUseCase{},
-			UpdateItemSortOrderUC: &mock.MockUpdateItemSortOrderUseCase{},
-		}
-		h := handler.NewItemHandler(mockReg)
+	mockReg := &mock.MockRegistry{
+		ListItemsUC:  &mock.MockListItemsUseCase{ExecuteFunc: func(_ context.Context, _ string) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
+		CreateItemUC: &mock.MockCreateItemUseCase{ExecuteFunc: func(_ context.Context, i *model.AuctionItem) (*model.AuctionItem, error) { return i, nil }},
+	}
+
+	t.Run("Public", func(t *testing.T) {
+		h := handler.NewPublicItemHandler(mockReg)
 		mux := http.NewServeMux()
-		authMiddleware := func(next http.Handler) http.Handler { return next }
-		h.RegisterRoutes(mux, authMiddleware)
+		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, "/api/items", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/items", nil)
 		w := httptest.NewRecorder()
-
 		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("expected 200, got %d", w.Code)
+		}
+	})
 
-		if w.Code != http.StatusMethodNotAllowed {
-			t.Errorf("expected status 405, got %d", w.Code)
+	t.Run("Admin", func(t *testing.T) {
+		h := handler.NewAdminItemHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
+
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/items", bytes.NewReader([]byte("{}")))
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusCreated {
+			t.Errorf("expected 201, got %d", w.Code)
 		}
 	})
 }

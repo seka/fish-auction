@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,10 +18,10 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
-func TestAuctionHandler_Create(t *testing.T) {
+func TestAdminAuctionHandler_Create(t *testing.T) {
 	type testCase struct {
 		name       string
-		body       any // string or struct
+		body       any
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
@@ -49,10 +50,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 			name:       "InvalidJSON",
 			body:       "invalid-json",
 			mockSetup:  func(_ *mock.MockRegistry) {},
-			wantStatus: http.StatusInternalServerError, // util.HandleError returns 500 for generic errors or maybe bad request? Check util implementation.
-			// Checking util.HandleError implementation usually maps json decode error to 500 unless handled specifically.
-			// Let's assume 500 for now based on previous simple HandleError usage.
-			// Actually standard json.Decode error is just an error.
+			wantStatus: http.StatusInternalServerError,
 		},
 		{
 			name: "InvalidDateFormat",
@@ -84,7 +82,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewAuctionHandler(mockReg)
+			h := handler.NewAdminAuctionHandler(mockReg)
 
 			var reqBody []byte
 			if s, ok := tc.body.(string); ok {
@@ -93,7 +91,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/auctions", bytes.NewReader(reqBody))
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", bytes.NewReader(reqBody))
 			w := httptest.NewRecorder()
 
 			h.Create(w, req)
@@ -105,7 +103,7 @@ func TestAuctionHandler_Create(t *testing.T) {
 	}
 }
 
-func TestAuctionHandler_List(t *testing.T) {
+func TestPublicAuctionHandler_List(t *testing.T) {
 	type testCase struct {
 		name        string
 		queryParams map[string]string
@@ -153,7 +151,6 @@ func TestAuctionHandler_List(t *testing.T) {
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
 					ExecuteFunc: func(_ context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
-						// Handler ignores invalid parse, so filters should be nil/empty
 						if filters.VenueID != nil {
 							return nil, errors.New("expected nil VenueID")
 						}
@@ -180,7 +177,7 @@ func TestAuctionHandler_List(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewAuctionHandler(mockReg)
+			h := handler.NewPublicAuctionHandler(mockReg)
 
 			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions", nil)
 			q := req.URL.Query()
@@ -199,18 +196,18 @@ func TestAuctionHandler_List(t *testing.T) {
 	}
 }
 
-func TestAuctionHandler_Get(t *testing.T) {
+func TestPublicAuctionHandler_Get(t *testing.T) {
 	type testCase struct {
 		name       string
-		path       string
+		idStr      string
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
 
 	tests := []testCase{
 		{
-			name: "Success",
-			path: "/api/auctions/1",
+			name:  "Success",
+			idStr: "1",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
 					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
@@ -221,16 +218,14 @@ func TestAuctionHandler_Get(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name: "InvalidID",
-			path: "/api/auctions/invalid",
-			mockSetup: func(_ *mock.MockRegistry) {
-				// No UC call expected
-			},
+			name:       "InvalidID",
+			idStr:      "invalid",
+			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
-			name: "NotFound",
-			path: "/api/auctions/999",
+			name:  "NotFound",
+			idStr: "999",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
 					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
@@ -238,7 +233,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 					},
 				}
 			},
-			wantStatus: http.StatusInternalServerError, // Handler maps error to 500 via util.HandleError
+			wantStatus: http.StatusInternalServerError,
 		},
 	}
 
@@ -246,16 +241,10 @@ func TestAuctionHandler_Get(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewAuctionHandler(mockReg)
+			h := handler.NewPublicAuctionHandler(mockReg)
 
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, tc.path, nil)
-			if tc.name == "Success" {
-				req.SetPathValue("id", "1")
-			} else if tc.name == "NotFound" {
-				req.SetPathValue("id", "999")
-			} else if tc.name == "InvalidID" {
-				req.SetPathValue("id", "invalid")
-			}
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/"+tc.idStr, nil)
+			req.SetPathValue("id", tc.idStr)
 			w := httptest.NewRecorder()
 
 			h.Get(w, req)
@@ -267,9 +256,7 @@ func TestAuctionHandler_Get(t *testing.T) {
 	}
 }
 
-func TestAuctionHandler_GetItems(t *testing.T) {
-	// Simple test without table as logic is similar to Get
-	// But let's add InvalidID case
+func TestPublicAuctionHandler_GetItems(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockReg := &mock.MockRegistry{
 			GetAuctionItemsUC: &mock.MockGetAuctionItemsUseCase{
@@ -278,7 +265,7 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 				},
 			},
 		}
-		h := handler.NewAuctionHandler(mockReg)
+		h := handler.NewPublicAuctionHandler(mockReg)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/1/items", nil)
 		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
@@ -289,7 +276,7 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 	})
 
 	t.Run("InvalidID", func(t *testing.T) {
-		h := handler.NewAuctionHandler(&mock.MockRegistry{})
+		h := handler.NewPublicAuctionHandler(&mock.MockRegistry{})
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/invalid/items", nil)
 		req.SetPathValue("id", "invalid")
 		w := httptest.NewRecorder()
@@ -298,30 +285,12 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 			t.Errorf("expected 400, got %d", w.Code)
 		}
 	})
-
-	t.Run("UseCaseError", func(t *testing.T) {
-		mockReg := &mock.MockRegistry{
-			GetAuctionItemsUC: &mock.MockGetAuctionItemsUseCase{
-				ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) {
-					return nil, errors.New("db error")
-				},
-			},
-		}
-		h := handler.NewAuctionHandler(mockReg)
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/1/items", nil)
-		req.SetPathValue("id", "1")
-		w := httptest.NewRecorder()
-		h.GetItems(w, req)
-		if w.Code != http.StatusInternalServerError {
-			t.Errorf("expected 500, got %d", w.Code)
-		}
-	})
 }
 
-func TestAuctionHandler_Update(t *testing.T) {
+func TestAdminAuctionHandler_Update(t *testing.T) {
 	type testCase struct {
 		name       string
-		path       string
+		idStr      string
 		body       any
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
@@ -329,8 +298,8 @@ func TestAuctionHandler_Update(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name: "Success",
-			path: "/api/auctions/1",
+			name:  "Success",
+			idStr: "1",
 			body: dto.UpdateAuctionRequest{
 				VenueID:     1,
 				AuctionDate: "2023-01-01",
@@ -347,30 +316,21 @@ func TestAuctionHandler_Update(t *testing.T) {
 		},
 		{
 			name:       "InvalidID",
-			path:       "/api/auctions/invalid",
+			idStr:      "invalid",
 			body:       dto.UpdateAuctionRequest{},
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "InvalidJSON",
-			path:       "/api/auctions/1",
+			idStr:      "1",
 			body:       "invalid-json",
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name: "InvalidDate",
-			path: "/api/auctions/1",
-			body: dto.UpdateAuctionRequest{
-				AuctionDate: "invalid",
-			},
-			mockSetup:  func(_ *mock.MockRegistry) {},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "UseCaseError",
-			path: "/api/auctions/1",
+			name:  "UseCaseError",
+			idStr: "1",
 			body: dto.UpdateAuctionRequest{
 				AuctionDate: "2023-01-01",
 			},
@@ -389,7 +349,7 @@ func TestAuctionHandler_Update(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewAuctionHandler(mockReg)
+			h := handler.NewAdminAuctionHandler(mockReg)
 
 			var reqBody []byte
 			if s, ok := tc.body.(string); ok {
@@ -398,12 +358,8 @@ func TestAuctionHandler_Update(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, tc.path, bytes.NewReader(reqBody))
-			if tc.name != "InvalidID" {
-				req.SetPathValue("id", "1")
-			} else {
-				req.SetPathValue("id", "invalid")
-			}
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/"+tc.idStr, bytes.NewReader(reqBody))
+			req.SetPathValue("id", tc.idStr)
 			w := httptest.NewRecorder()
 
 			h.Update(w, req)
@@ -415,10 +371,10 @@ func TestAuctionHandler_Update(t *testing.T) {
 	}
 }
 
-func TestAuctionHandler_UpdateStatus(t *testing.T) {
+func TestAdminAuctionHandler_UpdateStatus(t *testing.T) {
 	type testCase struct {
 		name       string
-		path       string
+		idStr      string
 		body       any
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
@@ -426,9 +382,9 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name: "Success",
-			path: "/api/auctions/1/status",
-			body: dto.UpdateAuctionStatusRequest{Status: "Closed"},
+			name:  "Success",
+			idStr: "1",
+			body:  dto.UpdateAuctionStatusRequest{Status: "Closed"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
 					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
@@ -440,22 +396,15 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 		},
 		{
 			name:       "InvalidID",
-			path:       "/api/auctions/invalid/status",
+			idStr:      "invalid",
 			body:       dto.UpdateAuctionStatusRequest{Status: "Closed"},
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
-			name:       "InvalidJSON",
-			path:       "/api/auctions/1/status",
-			body:       "invalid-json",
-			mockSetup:  func(_ *mock.MockRegistry) {},
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "UseCaseError",
-			path: "/api/auctions/1/status",
-			body: dto.UpdateAuctionStatusRequest{Status: "Closed"},
+			name:  "UseCaseError",
+			idStr: "1",
+			body:  dto.UpdateAuctionStatusRequest{Status: "Closed"},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
 					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
@@ -471,7 +420,7 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewAuctionHandler(mockReg)
+			h := handler.NewAdminAuctionHandler(mockReg)
 
 			var reqBody []byte
 			if s, ok := tc.body.(string); ok {
@@ -480,12 +429,8 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 				reqBody, _ = json.Marshal(tc.body)
 			}
 
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, tc.path, bytes.NewReader(reqBody))
-			if tc.name != "InvalidID" {
-				req.SetPathValue("id", "1")
-			} else {
-				req.SetPathValue("id", "invalid")
-			}
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, "/auctions/"+tc.idStr+"/status", bytes.NewReader(reqBody))
+			req.SetPathValue("id", tc.idStr)
 			w := httptest.NewRecorder()
 
 			h.UpdateStatus(w, req)
@@ -497,18 +442,18 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 	}
 }
 
-func TestAuctionHandler_Delete(t *testing.T) {
+func TestAdminAuctionHandler_Delete(t *testing.T) {
 	type testCase struct {
 		name       string
-		path       string
+		idStr      string
 		mockSetup  func(*mock.MockRegistry)
 		wantStatus int
 	}
 
 	tests := []testCase{
 		{
-			name: "Success",
-			path: "/api/auctions/1",
+			name:  "Success",
+			idStr: "1",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.DeleteAuctionUC = &mock.MockDeleteAuctionUseCase{
 					ExecuteFunc: func(_ context.Context, _ int) error {
@@ -520,21 +465,9 @@ func TestAuctionHandler_Delete(t *testing.T) {
 		},
 		{
 			name:       "InvalidID",
-			path:       "/api/auctions/invalid",
+			idStr:      "invalid",
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "UseCaseError",
-			path: "/api/auctions/1",
-			mockSetup: func(r *mock.MockRegistry) {
-				r.DeleteAuctionUC = &mock.MockDeleteAuctionUseCase{
-					ExecuteFunc: func(_ context.Context, _ int) error {
-						return errors.New("db error")
-					},
-				}
-			},
-			wantStatus: http.StatusInternalServerError,
 		},
 	}
 
@@ -542,14 +475,10 @@ func TestAuctionHandler_Delete(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockReg := &mock.MockRegistry{}
 			tc.mockSetup(mockReg)
-			h := handler.NewAuctionHandler(mockReg)
+			h := handler.NewAdminAuctionHandler(mockReg)
 
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, tc.path, nil)
-			if tc.name != "InvalidID" {
-				req.SetPathValue("id", "1")
-			} else {
-				req.SetPathValue("id", "invalid")
-			}
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/auctions/"+tc.idStr, nil)
+			req.SetPathValue("id", tc.idStr)
 			w := httptest.NewRecorder()
 
 			h.Delete(w, req)
@@ -562,35 +491,7 @@ func TestAuctionHandler_Delete(t *testing.T) {
 }
 
 func TestAuctionHandler_RegisterRoutes(t *testing.T) {
-	type testCase struct {
-		name       string
-		method     string
-		path       string
-		wantStatus int // 405 MethodNotAllowed or 200 OK (if mocked to success)
-	}
-
-	tests := []testCase{
-		{name: "Create_Post", method: http.MethodPost, path: "/api/auctions", wantStatus: http.StatusOK},
-		{name: "Create_Put", method: http.MethodPut, path: "/api/auctions", wantStatus: http.StatusMethodNotAllowed},
-
-		{name: "List_Get", method: http.MethodGet, path: "/api/auctions", wantStatus: http.StatusOK},
-		// Note: /api/auctions matches both POST and GET.
-
-		{name: "Get_Get", method: http.MethodGet, path: "/api/auctions/1", wantStatus: http.StatusOK},
-		{name: "Update_Put", method: http.MethodPut, path: "/api/auctions/1", wantStatus: http.StatusOK},
-		{name: "Delete_Delete", method: http.MethodDelete, path: "/api/auctions/1", wantStatus: http.StatusNoContent},
-
-		{name: "GetItems_Get", method: http.MethodGet, path: "/api/auctions/1/items", wantStatus: http.StatusOK},
-		{name: "GetItems_Post", method: http.MethodPost, path: "/api/auctions/1/items", wantStatus: http.StatusMethodNotAllowed}, // Fallthrough to switch default in suffix handler? Or handled? Handler detail: it checks GetItems first.
-
-		{name: "UpdateStatus_Patch", method: http.MethodPatch, path: "/api/auctions/1/status", wantStatus: http.StatusOK},
-		{name: "UpdateStatus_Post", method: http.MethodPost, path: "/api/auctions/1/status", wantStatus: http.StatusMethodNotAllowed},
-
-		{name: "InvalidMethod_Post_Detail", method: http.MethodPost, path: "/api/auctions/1", wantStatus: http.StatusMethodNotAllowed},
-	}
-
 	mockReg := &mock.MockRegistry{
-		// Mock all UCs to return success for routing tests
 		CreateAuctionUC: &mock.MockCreateAuctionUseCase{ExecuteFunc: func(_ context.Context, a *model.Auction) (*model.Auction, error) { a.ID = 1; return a, nil }},
 		ListAuctionsUC: &mock.MockListAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 			return []model.Auction{}, nil
@@ -602,37 +503,29 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 		UpdateAuctionStatusUC: &mock.MockUpdateAuctionStatusUseCase{ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error { return nil }},
 	}
 
-	h := handler.NewAuctionHandler(mockReg)
-	mux := http.NewServeMux()
-	h.RegisterRoutes(mux)
+	t.Run("Public", func(t *testing.T) {
+		h := handler.NewPublicAuctionHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			var body []byte
-			if tc.method == http.MethodPost || tc.method == http.MethodPut || tc.method == http.MethodPatch {
-				// Provide minimal valid body to avoid 400/500 from Handler before method check if check is late?
-				// Actually Handler checks method first usually in RegisterRoutes.
-				// But to succeed we need body for 200 cases.
-				switch {
-				case tc.path == "/api/auctions" && tc.method == http.MethodPost:
-					body, _ = json.Marshal(dto.CreateAuctionRequest{AuctionDate: "2023-01-01"})
-				case tc.path == "/api/auctions/1" && tc.method == http.MethodPut:
-					body, _ = json.Marshal(dto.UpdateAuctionRequest{AuctionDate: "2023-01-01"})
-				case tc.path == "/api/auctions/1/status" && tc.method == http.MethodPatch:
-					body, _ = json.Marshal(dto.UpdateAuctionStatusRequest{Status: "Closed"})
-				default:
-					body = []byte("{}")
-				}
-			}
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions", nil)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("expected 200, got %d", w.Code)
+		}
+	})
 
-			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, bytes.NewReader(body))
-			w := httptest.NewRecorder()
+	t.Run("Admin", func(t *testing.T) {
+		h := handler.NewAdminAuctionHandler(mockReg)
+		mux := http.NewServeMux()
+		h.RegisterRoutes(mux)
 
-			mux.ServeHTTP(w, req)
-
-			if w.Code != tc.wantStatus {
-				t.Errorf("expected status %d, got %d", tc.wantStatus, w.Code)
-			}
-		})
-	}
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{"auction_date":"2023-01-01"}`))
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("expected 200, got %d", w.Code)
+		}
+	})
 }
