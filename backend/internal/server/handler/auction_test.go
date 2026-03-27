@@ -545,6 +545,10 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("Reorder Invalid JSON: expected 400, got %d", w.Code)
 		}
+		var errResp dto.ErrorResponse
+		if err := json.NewDecoder(w.Body).Decode(&errResp); err != nil {
+			t.Errorf("Reorder Invalid JSON: expected JSON error response, got error: %v", err)
+		}
 
 		// Reorder - Invalid Auction ID (400)
 		req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/invalid/reorder", strings.NewReader(`{"ids":[1,2,3]}`))
@@ -552,6 +556,9 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 		mux.ServeHTTP(w, req)
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("Reorder Invalid ID: expected 400, got %d", w.Code)
+		}
+		if err := json.NewDecoder(w.Body).Decode(&errResp); err != nil {
+			t.Errorf("Reorder Invalid ID: expected JSON error response, got error: %v", err)
 		}
 	})
 }

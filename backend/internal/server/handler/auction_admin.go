@@ -163,12 +163,12 @@ func (h *AdminAuctionHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	auctionID, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid auction ID", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid auction ID")
 		return
 	}
 	var req dto.ReorderItemsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 	if err := h.reorderItemsUseCase.Execute(r.Context(), auctionID, req.IDs); err != nil {
