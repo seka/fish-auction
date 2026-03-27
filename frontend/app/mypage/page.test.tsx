@@ -73,10 +73,10 @@ describe('MyPage', () => {
   });
 
   it('renders loading state', () => {
-    vi.mocked(useMyPage).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useMyPurchases).mockReturnValue({
+      purchases: [],
       isLoading: true,
-    } as unknown as ReturnType<typeof useMyPage>);
+    } as unknown as ReturnType<typeof useMyPurchases>);
     render(<MyPage />);
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
