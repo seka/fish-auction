@@ -18,12 +18,16 @@ type handlers struct {
 	health         *handler.HealthHandler
 	fisherman      *handler.FishermanHandler
 	buyer          *handler.BuyerHandler
-	item           *handler.ItemHandler
+	adminBuyer     *handler.AdminBuyerHandler
+	publicItem     *handler.PublicItemHandler
+	adminItem      *handler.AdminItemHandler
 	bid            *handler.BidHandler
 	invoice        *handler.InvoiceHandler
 	auth           *handler.AuthHandler
-	venue          *handler.VenueHandler
-	auction        *handler.AuctionHandler
+	publicVenue    *handler.PublicVenueHandler
+	adminVenue     *handler.AdminVenueHandler
+	publicAuction  *handler.PublicAuctionHandler
+	adminAuction   *handler.AdminAuctionHandler
 	admin          *handler.AdminHandler
 	authReset      *handler.AuthResetHandler
 	adminAuthReset *handler.AdminAuthResetHandler
@@ -59,23 +63,27 @@ func run() error {
 
 	// Initialize Handlers
 	sessionRepo := repoReg.NewSessionRepository()
-	handlers := buildHandlers(useCaseReg, sessionRepo)
+	h := buildHandlers(useCaseReg, sessionRepo)
 
 	// Initialize Server
 	srv := server.NewServer(
-		handlers.health,
-		handlers.fisherman,
-		handlers.buyer,
-		handlers.item,
-		handlers.bid,
-		handlers.invoice,
-		handlers.auth,
-		handlers.venue,
-		handlers.auction,
-		handlers.admin,
-		handlers.authReset,
-		handlers.adminAuthReset,
-		handlers.push,
+		h.health,
+		h.fisherman,
+		h.buyer,
+		h.adminBuyer,
+		h.publicItem,
+		h.adminItem,
+		h.bid,
+		h.invoice,
+		h.auth,
+		h.publicVenue,
+		h.adminVenue,
+		h.publicAuction,
+		h.adminAuction,
+		h.admin,
+		h.authReset,
+		h.adminAuthReset,
+		h.push,
 		sessionRepo,
 		strings.Split(cfg.AllowedOrigins, ","),
 		cfg.ReadTimeoutSec,
@@ -95,12 +103,16 @@ func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepositor
 		health:         handler.NewHealthHandler(),
 		fisherman:      handler.NewFishermanHandler(reg),
 		buyer:          handler.NewBuyerHandler(reg, sessionRepo),
-		item:           handler.NewItemHandler(reg),
+		adminBuyer:     handler.NewAdminBuyerHandler(reg),
+		publicItem:     handler.NewPublicItemHandler(reg),
+		adminItem:      handler.NewAdminItemHandler(reg),
 		bid:            handler.NewBidHandler(reg),
 		invoice:        handler.NewInvoiceHandler(reg),
 		auth:           handler.NewAuthHandler(reg, sessionRepo),
-		venue:          handler.NewVenueHandler(reg),
-		auction:        handler.NewAuctionHandler(reg),
+		publicVenue:    handler.NewPublicVenueHandler(reg),
+		adminVenue:     handler.NewAdminVenueHandler(reg),
+		publicAuction:  handler.NewPublicAuctionHandler(reg),
+		adminAuction:   handler.NewAdminAuctionHandler(reg),
 		admin:          handler.NewAdminHandler(reg),
 		authReset:      handler.NewAuthResetHandler(reg),
 		adminAuthReset: handler.NewAdminAuthResetHandler(reg),

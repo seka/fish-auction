@@ -22,12 +22,16 @@ type Server struct {
 	healthHandler         *handler.HealthHandler
 	fishermanHandler      *handler.FishermanHandler
 	buyerHandler          *handler.BuyerHandler
-	itemHandler           *handler.ItemHandler
+	adminBuyerHandler     *handler.AdminBuyerHandler
+	publicItemHandler     *handler.PublicItemHandler
+	adminItemHandler      *handler.AdminItemHandler
 	bidHandler            *handler.BidHandler
 	invoiceHandler        *handler.InvoiceHandler
 	authHandler           *handler.AuthHandler
-	venueHandler          *handler.VenueHandler
-	auctionHandler        *handler.AuctionHandler
+	publicVenueHandler    *handler.PublicVenueHandler
+	adminVenueHandler     *handler.AdminVenueHandler
+	publicAuctionHandler  *handler.PublicAuctionHandler
+	adminAuctionHandler   *handler.AdminAuctionHandler
 	adminHandler          *handler.AdminHandler
 	adminAuthResetHandler *handler.AdminAuthResetHandler
 	authResetHandler      *handler.AuthResetHandler
@@ -51,12 +55,16 @@ func NewServer(
 	healthHandler *handler.HealthHandler,
 	fishermanHandler *handler.FishermanHandler,
 	buyerHandler *handler.BuyerHandler,
-	itemHandler *handler.ItemHandler,
+	adminBuyerHandler *handler.AdminBuyerHandler,
+	publicItemHandler *handler.PublicItemHandler,
+	adminItemHandler *handler.AdminItemHandler,
 	bidHandler *handler.BidHandler,
 	invoiceHandler *handler.InvoiceHandler,
 	authHandler *handler.AuthHandler,
-	venueHandler *handler.VenueHandler,
-	auctionHandler *handler.AuctionHandler,
+	publicVenueHandler *handler.PublicVenueHandler,
+	adminVenueHandler *handler.AdminVenueHandler,
+	publicAuctionHandler *handler.PublicAuctionHandler,
+	adminAuctionHandler *handler.AdminAuctionHandler,
 	adminHandler *handler.AdminHandler,
 	authResetHandler *handler.AuthResetHandler,
 	adminAuthResetHandler *handler.AdminAuthResetHandler,
@@ -72,12 +80,16 @@ func NewServer(
 		healthHandler:         healthHandler,
 		fishermanHandler:      fishermanHandler,
 		buyerHandler:          buyerHandler,
-		itemHandler:           itemHandler,
+		adminBuyerHandler:     adminBuyerHandler,
+		publicItemHandler:     publicItemHandler,
+		adminItemHandler:      adminItemHandler,
 		bidHandler:            bidHandler,
 		invoiceHandler:        invoiceHandler,
 		authHandler:           authHandler,
-		venueHandler:          venueHandler,
-		auctionHandler:        auctionHandler,
+		publicVenueHandler:    publicVenueHandler,
+		adminVenueHandler:     adminVenueHandler,
+		publicAuctionHandler:  publicAuctionHandler,
+		adminAuctionHandler:   adminAuctionHandler,
 		adminHandler:          adminHandler,
 		authResetHandler:      authResetHandler,
 		adminAuthResetHandler: adminAuthResetHandler,
@@ -107,49 +119,25 @@ func (s *Server) routes() {
 
 func (s *Server) registerPublicRoutes() {
 	s.healthHandler.RegisterRoutes(s.router)
-
 	s.authHandler.RegisterRoutes(s.router)
-
 	s.authResetHandler.RegisterRoutes(s.router)
 	s.adminAuthResetHandler.RegisterRoutes(s.router)
-
-	s.router.HandleFunc("GET /api/items", s.itemHandler.List)
-	s.router.HandleFunc("GET /api/auctions", s.auctionHandler.List)
-	s.router.HandleFunc("GET /api/auctions/{id}", s.auctionHandler.Get)
-	s.router.HandleFunc("GET /api/auctions/{id}/items", s.auctionHandler.GetItems)
-	s.router.HandleFunc("GET /api/venues", s.venueHandler.List)
-	s.router.HandleFunc("GET /api/venues/{id}", s.venueHandler.Get)
-
-	s.invoiceHandler.RegisterRoutes(s.router)
+	s.publicItemHandler.RegisterRoutes(s.router)
+	s.publicAuctionHandler.RegisterRoutes(s.router)
+	s.publicVenueHandler.RegisterRoutes(s.router)
+	s.buyerHandler.RegisterPublicRoutes(s.router)
 }
 
 func (s *Server) registerAdminRoutes() {
 	adminMux := http.NewServeMux()
 
-	adminMux.HandleFunc("POST /items", s.itemHandler.Create)
-	adminMux.HandleFunc("PUT /items/{id}", s.itemHandler.Update)
-	adminMux.HandleFunc("DELETE /items/{id}", s.itemHandler.Delete)
-	adminMux.HandleFunc("PUT /items/{id}/sort-order", s.itemHandler.UpdateSortOrder)
-
-	adminMux.HandleFunc("GET /fishermen", s.fishermanHandler.List)
-	adminMux.HandleFunc("POST /fishermen", s.fishermanHandler.Create)
-	adminMux.HandleFunc("DELETE /fishermen/{id}", s.fishermanHandler.Delete)
-
-	adminMux.HandleFunc("GET /buyers", s.buyerHandler.List)
-	adminMux.HandleFunc("POST /buyers", s.buyerHandler.Create)
-	adminMux.HandleFunc("DELETE /buyers/{id}", s.buyerHandler.Delete)
-
-	adminMux.HandleFunc("POST /auctions", s.auctionHandler.Create)
-	adminMux.HandleFunc("PUT /auctions/{id}", s.auctionHandler.Update)
-	adminMux.HandleFunc("DELETE /auctions/{id}", s.auctionHandler.Delete)
-	adminMux.HandleFunc("PATCH /auctions/{id}/status", s.auctionHandler.UpdateStatus)
-	adminMux.HandleFunc("PUT /auctions/{id}/reorder", s.itemHandler.Reorder)
-
-	adminMux.HandleFunc("POST /venues", s.venueHandler.Create)
-	adminMux.HandleFunc("PUT /venues/{id}", s.venueHandler.Update)
-	adminMux.HandleFunc("DELETE /venues/{id}", s.venueHandler.Delete)
-
-	adminMux.HandleFunc("PUT /password", s.adminHandler.UpdatePassword)
+	s.adminItemHandler.RegisterRoutes(adminMux)
+	s.fishermanHandler.RegisterRoutes(adminMux)
+	s.adminBuyerHandler.RegisterRoutes(adminMux)
+	s.adminAuctionHandler.RegisterRoutes(adminMux)
+	s.adminVenueHandler.RegisterRoutes(adminMux)
+	s.adminHandler.RegisterRoutes(adminMux)
+	s.invoiceHandler.RegisterRoutes(adminMux)
 
 	s.router.Handle("/api/admin/", s.adminAuth.Handle(http.StripPrefix("/api/admin", adminMux)))
 }
@@ -157,14 +145,9 @@ func (s *Server) registerAdminRoutes() {
 func (s *Server) registerBuyerRoutes() {
 	buyerMux := http.NewServeMux()
 
-	buyerMux.HandleFunc("POST /bids", s.bidHandler.Create)
-
-	buyerMux.HandleFunc("GET /me", s.buyerHandler.GetCurrentBuyer)
-	buyerMux.HandleFunc("GET /me/purchases", s.buyerHandler.GetMyPurchases)
-	buyerMux.HandleFunc("GET /me/auctions", s.buyerHandler.GetMyAuctions)
-	buyerMux.HandleFunc("PUT /password", s.buyerHandler.UpdatePassword)
-
-	buyerMux.HandleFunc("POST /push/subscribe", s.pushHandler.Subscribe)
+	s.bidHandler.RegisterRoutes(buyerMux)
+	s.buyerHandler.RegisterBuyerRoutes(buyerMux)
+	s.pushHandler.RegisterRoutes(buyerMux)
 
 	s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))
 }
