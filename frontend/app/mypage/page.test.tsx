@@ -2,6 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MyPage from './page';
 import { useMyPage } from '@/src/features/mypage/states/useMyPage';
+import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
+import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
 
 // Mocks
 vi.mock('next-intl', () => ({
@@ -14,11 +16,11 @@ vi.mock('@/src/features/mypage/states/useMyPage', () => ({
 }));
 
 vi.mock('@/src/data/queries/buyerPurchase/useQuery', () => ({
-  useMyPurchases: vi.fn(() => ({ purchases: [], isLoading: false })),
+  useMyPurchases: vi.fn(),
 }));
 
 vi.mock('@/src/data/queries/buyerAuction/useQuery', () => ({
-  useParticipatingAuctions: vi.fn(() => ({ auctions: [], isLoading: false })),
+  useParticipatingAuctions: vi.fn(),
 }));
 
 // Mock Styled System components if necessary, but we seem to rely on implementation's imports which are real.
@@ -60,6 +62,14 @@ describe('MyPage', () => {
     vi.mocked(useMyPage).mockReturnValue(
       defaultMockValues as unknown as ReturnType<typeof useMyPage>,
     );
+    vi.mocked(useMyPurchases).mockReturnValue({
+      purchases: [],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useMyPurchases>);
+    vi.mocked(useParticipatingAuctions).mockReturnValue({
+      auctions: [],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useParticipatingAuctions>);
   });
 
   it('renders loading state', () => {
@@ -93,6 +103,11 @@ describe('MyPage', () => {
         createdAt: '2023-12-01T10:00:00Z',
       },
     ];
+    vi.mocked(useMyPurchases).mockReturnValue({
+      purchases: mockPurchases,
+      isLoading: false,
+    } as unknown as ReturnType<typeof useMyPurchases>);
+
     vi.mocked(useMyPage).mockReturnValue({
       ...defaultMockValues,
       activeTab: 'purchases',
