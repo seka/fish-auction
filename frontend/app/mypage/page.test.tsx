@@ -13,6 +13,14 @@ vi.mock('@/src/features/mypage/states/useMyPage', () => ({
   useMyPage: vi.fn(),
 }));
 
+vi.mock('@/src/data/queries/buyerPurchase/useQuery', () => ({
+  useMyPurchases: vi.fn(() => ({ purchases: [], isLoading: false })),
+}));
+
+vi.mock('@/src/data/queries/buyerAuction/useQuery', () => ({
+  useParticipatingAuctions: vi.fn(() => ({ auctions: [], isLoading: false })),
+}));
+
 // Mock Styled System components if necessary, but we seem to rely on implementation's imports which are real.
 // If Styled System components cause issues in JSDOM (unlikely for basic ones), we might need to mock them,
 // but usually they render as normal elements with classes.
