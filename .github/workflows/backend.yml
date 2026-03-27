@@ -66,3 +66,11 @@ jobs:
       - name: Run tests
         run: go test -v ./...
         working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: fish_auction
+          DB_SSLMODE: disable
+          REDIS_ADDR: localhost:6379
