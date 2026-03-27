@@ -64,7 +64,7 @@ jobs:
         env:
           PGPASSWORD: postgres
 
-      - name: Run tests
+      - name: Run unit tests
         run: go test -v ./...
         working-directory: backend
         env:
@@ -75,3 +75,22 @@ jobs:
           DB_NAME: fish_auction
           DB_SSLMODE: disable
           REDIS_ADDR: localhost:6379
+          RUN_INTEGRATION_TESTS: "false"
+          RUN_STRESS_TESTS: "false"
+
+      - name: Run integration tests
+        run: |
+          go test -v ./cmd/testing -run 'TestServerIntegration'
+          go test -v ./internal/infrastructure/datastore/postgres -run 'TestItemStore_FindByID_IncludesHighestBid|TestItemStore_FindByID_NoBids'
+          go test -v ./internal/infrastructure/datastore/postgres -run 'TestVenueStore_Delete_Conflict_Integration'
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: fish_auction
+          DB_SSLMODE: disable
+          REDIS_ADDR: localhost:6379
+          RUN_INTEGRATION_TESTS: "true"
+          RUN_STRESS_TESTS: "false"
