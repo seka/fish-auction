@@ -97,3 +97,16 @@ func (m *MockDeleteAuctionUseCase) Execute(ctx context.Context, id int) error {
 	}
 	return nil
 }
+
+// MockReorderItemsUseCase is a mock implementation of ReorderItemsUseCase for testing.
+type MockReorderItemsUseCase struct {
+	ExecuteFunc func(ctx context.Context, auctionID int, ids []int) error
+}
+
+// Execute executes the use case logic.
+func (m *MockReorderItemsUseCase) Execute(ctx context.Context, auctionID int, ids []int) error {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, auctionID, ids)
+	}
+	return nil
+}

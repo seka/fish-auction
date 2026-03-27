@@ -168,14 +168,14 @@ func (h *AdminAuctionHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 	}
 	var req dto.ReorderItemsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		util.HandleError(w, err)
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 	if err := h.reorderItemsUseCase.Execute(r.Context(), auctionID, req.IDs); err != nil {
 		util.HandleError(w, err)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // RegisterRoutes registers the admin auction handler routes to the given mux.
