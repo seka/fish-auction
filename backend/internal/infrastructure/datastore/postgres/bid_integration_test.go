@@ -26,6 +26,8 @@ func getTestDBConnStr() string {
 // TestItemStore_FindByID_IncludesHighestBid tests if FindByID returns the highest bid info.
 // This is critical for CreateBidUseCase validation.
 func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
+	requireIntegrationTests(t)
+
 	// 1. Connect to DB
 	connStr := getTestDBConnStr()
 	db, err := sql.Open("postgres", connStr)
@@ -68,13 +70,10 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	`, venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
 	require.NoError(t, err)
 
-	// User (Fisherman)
+	// Fisherman
 	var fishermanID int
-	err = tx.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('Bid Test Fisherman', 'FISHERMAN', CURRENT_TIMESTAMP) RETURNING id").Scan(&fishermanID)
+	err = tx.QueryRowContext(ctx, "INSERT INTO public.fishermen (name) VALUES ('Bid Test Fisherman') RETURNING id").Scan(&fishermanID)
 	require.NoError(t, err)
-
-	// Fisherman Profile (optional but good practice if table exists)
-	_, _ = tx.ExecContext(ctx, "INSERT INTO public.fishermen (id, name) VALUES ($1, 'Bid Test Fisherman')", fishermanID)
 
 	// Item
 	var itemID int
@@ -91,14 +90,10 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	// Clear cache for this new item just in case
 	_ = itemCache.Delete(ctx, itemID)
 
-	// User (Buyer)
+	// Buyer
 	var buyerID int
-	err = db.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('Bid Test Buyer', 'BUYER', CURRENT_TIMESTAMP) RETURNING id").Scan(&buyerID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.buyers (name, organization, contact_info) VALUES ('Bid Test Buyer', '', '') RETURNING id").Scan(&buyerID)
 	require.NoError(t, err)
-
-	// Buyer profile
-	_, err = db.ExecContext(ctx, "INSERT INTO public.buyers (id, name) VALUES ($1, 'Bid Test Buyer')", buyerID)
-	assert.NoError(t, err)
 
 	// Transaction (The First Bid: 1000)
 	_, err = db.ExecContext(ctx, `
@@ -136,6 +131,8 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 }
 
 func TestItemStore_FindByID_NoBids(t *testing.T) {
+	requireIntegrationTests(t)
+
 	// 1. Connect
 	connStr := getTestDBConnStr()
 	db, err := sql.Open("postgres", connStr)
@@ -161,13 +158,10 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 	var auctionID int
 	_ = db.QueryRowContext(ctx, "INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id", venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
 
-	// User (Fisherman)
+	// Fisherman
 	var fishermanID int
-	err = db.QueryRowContext(ctx, "INSERT INTO public.users (name, role, created_at) VALUES ('NoBid Fisherman', 'FISHERMAN', CURRENT_TIMESTAMP) RETURNING id").Scan(&fishermanID)
+	err = db.QueryRowContext(ctx, "INSERT INTO public.fishermen (name) VALUES ('NoBid Fisherman') RETURNING id").Scan(&fishermanID)
 	require.NoError(t, err)
-
-	// Fisherman profile (optional)
-	_, _ = db.ExecContext(ctx, "INSERT INTO public.fishermen (id, name) VALUES ($1, 'NoBid Fisherman')", fishermanID)
 
 	var itemID int
 	err = db.QueryRowContext(ctx, "INSERT INTO public.auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order) VALUES ($1, $2, 'Iwashi', 50, 'kg', 'Pending', 1) RETURNING id", fishermanID, auctionID).Scan(&itemID)

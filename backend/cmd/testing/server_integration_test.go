@@ -22,6 +22,8 @@ import (
 )
 
 func TestServerIntegration(t *testing.T) {
+	requireIntegrationTests(t)
+
 	// Define a root context for the entire test
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

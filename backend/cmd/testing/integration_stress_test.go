@@ -37,6 +37,8 @@ type Metrics struct {
 }
 
 func TestLoadTest(t *testing.T) {
+	requireStressTests(t)
+
 	if testing.Short() {
 		t.Skip("Skipping load test in short mode")
 	}
