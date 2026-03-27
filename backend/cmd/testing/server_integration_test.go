@@ -177,7 +177,7 @@ func TestServerIntegration(t *testing.T) {
 		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
 
 		// 5. Login Buyer
-		buyerCookies := login(t, client, serverURL+"/api/buyers/login", `{"email": "ishmael@example.com", "password": "password123"}`)
+		buyerCookies := login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
 
 		// 6. Create Venue (as Admin)
 		// POST /api/admin/venues
@@ -203,13 +203,14 @@ func TestServerIntegration(t *testing.T) {
 		// Let's just use the one item we created.
 
 		// 9. List Auctions (Public GET /api/auctions)
-		// Verify valid JSON response
+		// 9. Public Listing (Items)
 		listResources(t, client, serverURL+"/api/auctions")
 
 		// 10. Place Bid (as Buyer)
-		// POST /api/buyers/bids
+		// POST /api/buyer/bids
+		buyerCookies = login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
 		bidBody := fmt.Sprintf(`{"item_id": %d, "price": 5000}`, itemID)
-		postResource(t, client, serverURL+"/api/buyers/bids", bidBody, buyerCookies)
+		postResource(t, client, serverURL+"/api/buyer/bids", bidBody, buyerCookies)
 
 		// 11. Verify Bid via Auction Details or Item Details
 		verifyBid(t, client, serverURL+fmt.Sprintf("/api/auctions/%d/items", auctionID), itemID, 5000)
