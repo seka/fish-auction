@@ -11,6 +11,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -35,14 +36,6 @@ type Metrics struct {
 	mu              sync.Mutex
 }
 
-// エンドポイント定義（重み付き）
-var endpoints = []Endpoint{
-	{Method: "GET", Path: "/api/health", Weight: 30, Body: nil},
-	{Method: "GET", Path: "/api/items", Weight: 40, Body: nil},
-	{Method: "GET", Path: "/api/auctions", Weight: 30, Body: nil},
-	// Note: /api/auctions/{id} requires valid IDs. Skipped for simple random stress test to avoid high 404 rate skewing results.
-}
-
 func TestLoadTest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping load test in short mode")
@@ -53,9 +46,11 @@ func TestLoadTest(t *testing.T) {
 	totalRequests := getEnvInt("LOAD_TEST_REQUESTS", 10000)
 	duration := getEnvInt("LOAD_TEST_DURATION", 0) // 0 = 無制限
 	targetURL := getEnv("LOAD_TEST_TARGET_URL", "http://localhost:8080")
+	endpoints := buildEndpoints()
 
 	t.Logf("Starting load test: concurrency=%d, requests=%d, duration=%ds, target=%s",
 		concurrency, totalRequests, duration, targetURL)
+	t.Logf("Configured endpoints: %d", len(endpoints))
 
 	// メトリクスを初期化
 	metrics := &Metrics{
@@ -79,7 +74,7 @@ func TestLoadTest(t *testing.T) {
 	// ワーカー起動
 	for range concurrency {
 		wg.Add(1)
-		go worker(&wg, requestChan, stopChan, targetURL, totalWeight, metrics)
+		go worker(&wg, requestChan, stopChan, targetURL, endpoints, totalWeight, metrics)
 	}
 
 	// 期間指定の場合はタイマーを設定
@@ -123,7 +118,7 @@ func sendRequests(duration, totalRequests int, requestChan chan<- struct{}, stop
 }
 
 // worker は並行してリクエストを送信するワーカー
-func worker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL string, totalWeight int, metrics *Metrics) {
+func worker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL string, endpoints []Endpoint, totalWeight int, metrics *Metrics) {
 	defer wg.Done()
 
 	client := &http.Client{
@@ -140,7 +135,7 @@ func worker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL
 			}
 
 			// ランダムにエンドポイントを選択
-			endpoint := selectEndpoint(totalWeight)
+			endpoint := selectEndpoint(endpoints, totalWeight)
 
 			// リクエストを送信
 			start := time.Now()
@@ -166,7 +161,7 @@ func worker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL
 }
 
 // selectEndpoint は重みに基づいてランダムにエンドポイントを選択
-func selectEndpoint(totalWeight int) Endpoint {
+func selectEndpoint(endpoints []Endpoint, totalWeight int) Endpoint {
 	if totalWeight <= 0 {
 		return endpoints[0]
 	}
@@ -185,6 +180,58 @@ func selectEndpoint(totalWeight int) Endpoint {
 	}
 
 	return endpoints[0]
+}
+
+func buildEndpoints() []Endpoint {
+	endpoints := []Endpoint{
+		{Method: "GET", Path: "/api/health", Weight: 20},
+		{Method: "GET", Path: "/api/items", Weight: 25},
+		{Method: "GET", Path: "/api/auctions", Weight: 20},
+		{Method: "GET", Path: "/api/venues", Weight: 15},
+		{Method: "GET", Path: "/api/invoices", Weight: 10},
+		{Method: "GET", Path: "/api/items?status=Available", Weight: 10},
+	}
+
+	for _, auctionID := range parseIDsEnv("LOAD_TEST_AUCTION_IDS") {
+		endpoints = append(endpoints,
+			Endpoint{Method: "GET", Path: fmt.Sprintf("/api/auctions/%d", auctionID), Weight: 12},
+			Endpoint{Method: "GET", Path: fmt.Sprintf("/api/auctions/%d/items", auctionID), Weight: 18},
+		)
+	}
+
+	for _, venueID := range parseIDsEnv("LOAD_TEST_VENUE_IDS") {
+		endpoints = append(endpoints, Endpoint{
+			Method: "GET",
+			Path:   fmt.Sprintf("/api/venues/%d", venueID),
+			Weight: 10,
+		})
+	}
+
+	return endpoints
+}
+
+func parseIDsEnv(key string) []int {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return nil
+	}
+
+	parts := strings.Split(raw, ",")
+	ids := make([]int, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
+		id, err := strconv.Atoi(part)
+		if err != nil || id <= 0 {
+			continue
+		}
+		ids = append(ids, id)
+	}
+
+	return ids
 }
 
 // sendRequest はHTTPリクエストを送信
@@ -287,7 +334,6 @@ func percentile(durations []time.Duration, p int) time.Duration {
 	}
 	return durations[index]
 }
-
 
 // getEnv は環境変数を取得（デフォルト値あり）
 func getEnv(key, defaultValue string) string {
