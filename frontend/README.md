@@ -28,7 +28,7 @@ frontend/
 │   ├── features/         # ドメインごとの機能カプセル化
 │   │   └── [feature]/
 │   │       ├── components/  # 機能固有の UI
-│   │       ├── states/      # UI ロジック・状態管理 (useXXXManagement)
+│   │       ├── states/      # UI ロジック・状態管理 (useLogin などのカスタムフック)
 │   │       └── queries/     # 機能固有のデータフェッチ
 │   ├── data/             # データフェッチレイヤー
 │   │   ├── api/          # プリミティブな API 呼び出し (apiClient)
@@ -41,8 +41,8 @@ frontend/
 │   │   └── functionals/  # Context Provider や初期化ロジック
 │   ├── core/             # アプリケーション基盤
 │   │   ├── api/          # API クライアント (fetch ラッパー)
-│   │   ├── styles/       # グローバルスタイル
-│   │   └── utils/        # 汎用ユーティリティ
+│   │   ├── i18n/         # 国際化メッセージとリクエスト設定
+│   │   └── styles/       # グローバルスタイル
 │   ├── models/           # 型定義、Zod スキーマ
 │   └── libs/             # 外部ライブラリ設定・生成物 (Panda CSS 等)
 ```
@@ -52,7 +52,7 @@ frontend/
 ### 前提条件
 
 - **Node.js**: v20+
-- **npm / yarn**
+- **npm**: CI と README の手順は npm ベースです
 
 ### コマンド
 

@@ -19,7 +19,7 @@
 - `Atoms` / `Molecules` はドメイン知識を持たない純粋な UI 担い、`Organisms` 以上でドメイン知識を注入します。
 
 ### 2. Logic Layer (`src/features/*/states`)
-- `useXXXManagement` という命名規則のカスタムフック。
+- feature に応じたカスタムフックを配置します。実コードでは `useLogin` のような軽量な命名も使われています。
 - 以下の役割を持ちます：
   - `react-hook-form` によるフォーム状態の管理。
   - `TanStack Query` のフック呼び出し。

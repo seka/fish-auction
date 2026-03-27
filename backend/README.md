@@ -8,7 +8,8 @@
 - **Database**: PostgreSQL
 - **Cache**: Redis
 - **Framework/Libraries**:
-  - `net/http` & [gorilla/mux](https://github.com/gorilla/mux) (Router)
+  - `net/http` (`http.ServeMux`)
+  - [gorilla/mux](https://github.com/gorilla/mux) (Admin 配下のサブルーター)
   - [Air](https://github.com/cosmtrek/air) (Live Reload)
   - `database/sql` (Standard Library for DB access)
   - `lib/pq` (PostgreSQL Driver)
