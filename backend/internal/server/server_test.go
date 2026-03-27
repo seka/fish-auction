@@ -120,13 +120,13 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		// 3. Buyer Routes Security Verification (Must be 401 without cookie)
 		// --------------------------------------------------------------------
 		// My Page
-		{name: "Buyer_GetMe_NoAuth", method: http.MethodGet, path: "/api/buyer/me", expectedStatus: http.StatusUnauthorized},
-		{name: "Buyer_GetPurchases_NoAuth", method: http.MethodGet, path: "/api/buyer/me/purchases", expectedStatus: http.StatusUnauthorized},
-		{name: "Buyer_GetAuctions_NoAuth", method: http.MethodGet, path: "/api/buyer/me/auctions", expectedStatus: http.StatusUnauthorized},
+		{name: "Buyer_GetMe_NoAuth", method: http.MethodGet, path: "/api/buyers/me", expectedStatus: http.StatusUnauthorized},
+		{name: "Buyer_GetPurchases_NoAuth", method: http.MethodGet, path: "/api/buyers/me/purchases", expectedStatus: http.StatusUnauthorized},
+		{name: "Buyer_GetAuctions_NoAuth", method: http.MethodGet, path: "/api/buyers/me/auctions", expectedStatus: http.StatusUnauthorized},
 		// Bids
-		{name: "Buyer_CreateBid_NoAuth", method: http.MethodPost, path: "/api/buyer/bids", expectedStatus: http.StatusUnauthorized},
+		{name: "Buyer_CreateBid_NoAuth", method: http.MethodPost, path: "/api/buyers/bids", expectedStatus: http.StatusUnauthorized},
 		// Password
-		{name: "Buyer_UpdatePassword_NoAuth", method: http.MethodPut, path: "/api/buyer/password", expectedStatus: http.StatusUnauthorized},
+		{name: "Buyer_UpdatePassword_NoAuth", method: http.MethodPut, path: "/api/buyers/password", expectedStatus: http.StatusUnauthorized},
 
 		// --------------------------------------------------------------------
 		// 4. Authorized Access Verification (Sample check with cookie)
@@ -171,7 +171,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		{
 			name:           "Buyer_GetMe_Authorized",
 			method:         http.MethodGet,
-			path:           "/api/buyer/me",
+			path:           "/api/buyers/me",
 			cookieName:     "buyer_session",
 			cookieValue:    "buyer-session-1",
 			expectedStatus: http.StatusOK,

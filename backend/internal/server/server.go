@@ -149,7 +149,7 @@ func (s *Server) registerBuyerRoutes() {
 	s.buyerHandler.RegisterBuyerRoutes(buyerMux)
 	s.pushHandler.RegisterRoutes(buyerMux)
 
-	s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))
+	s.router.Handle("/api/buyers/", s.buyerAuth.Handle(http.StripPrefix("/api/buyers", buyerMux)))
 }
 
 // Start provides Start related functionality.

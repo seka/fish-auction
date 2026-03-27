@@ -207,9 +207,9 @@ func TestServerIntegration(t *testing.T) {
 		listResources(t, client, serverURL+"/api/auctions")
 
 		// 10. Place Bid (as Buyer)
-		// POST /api/buyer/bids
+		// POST /api/buyers/bids
 		bidBody := fmt.Sprintf(`{"item_id": %d, "price": 5000}`, itemID)
-		postResource(t, client, serverURL+"/api/buyer/bids", bidBody, buyerCookies)
+		postResource(t, client, serverURL+"/api/buyers/bids", bidBody, buyerCookies)
 
 		// 11. Verify Bid via Auction Details or Item Details
 		verifyBid(t, client, serverURL+fmt.Sprintf("/api/auctions/%d/items", auctionID), itemID, 5000)
