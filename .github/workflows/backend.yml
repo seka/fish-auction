@@ -5,10 +5,11 @@ on:
     # branches: [ master ] # Removed to trigger on all branches
     paths:
       - 'backend/**'
+      - '.github/workflows/backend.yml'
   pull_request:
-    branches: [ master ]
     paths:
       - 'backend/**'
+      - '.github/workflows/backend.yml'
 
 jobs:
   test:
