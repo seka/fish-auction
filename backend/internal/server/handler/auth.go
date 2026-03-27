@@ -80,11 +80,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the auth handler routes to the given mux.
 func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.Login(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("POST /api/login", h.Login)
+	mux.HandleFunc("POST /api/admin/logout", h.Logout)
 }

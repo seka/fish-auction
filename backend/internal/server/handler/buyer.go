@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -256,9 +257,10 @@ func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the buyer deletion request.
 func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := util.ParseID(r)
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.HandleError(w, err)
+		util.WriteError(w, http.StatusBadRequest, "invalid buyer id")
 		return
 	}
 
@@ -272,51 +274,10 @@ func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the buyer handler routes to the given mux.
 func (h *BuyerHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.Login(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/buyers/logout", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			h.Logout(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/buyers/me", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.GetCurrentBuyer(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/buyers/me/purchases", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.GetMyPurchases(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/buyers/me/auctions", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.GetMyAuctions(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/buyers/password", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPut {
-			h.UpdatePassword(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("POST /api/buyers/login", h.Login)
+	mux.HandleFunc("POST /api/buyers/logout", h.Logout)
+	mux.HandleFunc("GET /api/buyers/me", h.GetCurrentBuyer)
+	mux.HandleFunc("GET /api/buyers/me/purchases", h.GetMyPurchases)
+	mux.HandleFunc("GET /api/buyers/me/auctions", h.GetMyAuctions)
+	mux.HandleFunc("PUT /api/buyers/password", h.UpdatePassword)
 }

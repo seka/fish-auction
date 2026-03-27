@@ -89,7 +89,7 @@ func (h *VenueHandler) List(w http.ResponseWriter, r *http.Request) {
 
 // Get handles the request to get a specific venue.
 func (h *VenueHandler) Get(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/api/venues/"):]
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -116,7 +116,7 @@ func (h *VenueHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 // Update handles the request to update a specific venue.
 func (h *VenueHandler) Update(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/api/venues/"):]
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -146,7 +146,7 @@ func (h *VenueHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the venue deletion request.
 func (h *VenueHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/api/venues/"):]
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -163,27 +163,9 @@ func (h *VenueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the venue handler routes to the given mux.
 func (h *VenueHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/venues", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			h.Create(w, r)
-		case http.MethodGet:
-			h.List(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/venues/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			h.Get(w, r)
-		case http.MethodPut:
-			h.Update(w, r)
-		case http.MethodDelete:
-			h.Delete(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("POST /api/venues", h.Create)
+	mux.HandleFunc("GET /api/venues", h.List)
+	mux.HandleFunc("GET /api/venues/{id}", h.Get)
+	mux.HandleFunc("PUT /api/venues/{id}", h.Update)
+	mux.HandleFunc("DELETE /api/venues/{id}", h.Delete)
 }

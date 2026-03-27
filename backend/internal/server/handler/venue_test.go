@@ -92,6 +92,7 @@ func TestVenueHandler_Get(t *testing.T) {
 		h := handler.NewVenueHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/venues/1", nil)
+		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 
 		h.Get(w, req)
@@ -111,6 +112,7 @@ func TestVenueHandler_Get(t *testing.T) {
 		h := handler.NewVenueHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/venues/999", nil)
+		req.SetPathValue("id", "999")
 		w := httptest.NewRecorder()
 
 		h.Get(w, req)
@@ -137,6 +139,7 @@ func TestVenueHandler_Update(t *testing.T) {
 		reqBody := dto.UpdateVenueRequest{Name: "Updated V1"}
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/api/venues/1", bytes.NewReader(body))
+		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 
 		h.Update(w, req)
@@ -161,6 +164,7 @@ func TestVenueHandler_Delete(t *testing.T) {
 		h := handler.NewVenueHandler(mockReg)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/api/venues/1", nil)
+		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 
 		h.Delete(w, req)

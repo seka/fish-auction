@@ -43,11 +43,5 @@ func (h *InvoiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the invoice handler routes to the given mux.
 func (h *InvoiceHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/invoices", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("GET /api/invoices", h.List)
 }

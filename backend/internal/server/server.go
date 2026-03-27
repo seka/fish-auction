@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
@@ -107,185 +106,66 @@ func (s *Server) routes() {
 }
 
 func (s *Server) registerPublicRoutes() {
-	// Health
 	s.healthHandler.RegisterRoutes(s.router)
 
-	// Auth (Login/Logout)
-	s.router.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.authHandler.Login(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	s.router.HandleFunc("/api/admin/logout", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.authHandler.Logout(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	s.authHandler.RegisterRoutes(s.router)
 
 	s.authResetHandler.RegisterRoutes(s.router)
 	s.adminAuthResetHandler.RegisterRoutes(s.router)
 
-	s.router.HandleFunc("/api/buyers/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.buyerHandler.Login(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	s.router.HandleFunc("/api/buyers/logout", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.buyerHandler.Logout(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	s.router.HandleFunc("GET /api/items", s.itemHandler.List)
+	s.router.HandleFunc("GET /api/auctions", s.auctionHandler.List)
+	s.router.HandleFunc("GET /api/auctions/{id}", s.auctionHandler.Get)
+	s.router.HandleFunc("GET /api/auctions/{id}/items", s.auctionHandler.GetItems)
+	s.router.HandleFunc("GET /api/venues", s.venueHandler.List)
+	s.router.HandleFunc("GET /api/venues/{id}", s.venueHandler.Get)
 
-	// Public Resources (Read Only)
-	s.router.HandleFunc("/api/items", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.itemHandler.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	s.router.HandleFunc("/api/auctions", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.auctionHandler.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	s.router.HandleFunc("/api/auctions/", func(w http.ResponseWriter, r *http.Request) {
-		// Public Get Detail
-		if r.Method == http.MethodGet {
-			s.auctionHandler.Get(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	s.router.HandleFunc("/api/venues", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.venueHandler.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	s.router.HandleFunc("/api/venues/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.venueHandler.Get(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	// Legacy Invoice
 	s.invoiceHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) registerAdminRoutes() {
-	// Mount Admin Router
-	adminRouter := mux.NewRouter()
-	adminSub := adminRouter.PathPrefix("/api/admin").Subrouter()
-	adminSub.Use(s.adminAuth.Handle)
+	adminMux := http.NewServeMux()
 
-	// Since we are moving to gorilla/mux, let's register the item routes properly
-	// Note: ItemHandler.RegisterRoutes adds "/api/items" prefix,
-	// but adminSub is already at "/api/admin".
-	// The paths in RegisterRoutes might need adjustment or we register manually.
+	adminMux.HandleFunc("POST /items", s.itemHandler.Create)
+	adminMux.HandleFunc("PUT /items/{id}", s.itemHandler.Update)
+	adminMux.HandleFunc("DELETE /items/{id}", s.itemHandler.Delete)
+	adminMux.HandleFunc("PUT /items/{id}/sort-order", s.itemHandler.UpdateSortOrder)
 
-	// Items (Create, Update, Delete, Sort)
-	adminSub.HandleFunc("/items", s.itemHandler.Create).Methods(http.MethodPost)
-	adminSub.HandleFunc("/items/{id:[0-9]+}", s.itemHandler.Update).Methods(http.MethodPut)
-	adminSub.HandleFunc("/items/{id:[0-9]+}", s.itemHandler.Delete).Methods(http.MethodDelete)
-	adminSub.HandleFunc("/items/{id:[0-9]+}/sort-order", s.itemHandler.UpdateSortOrder).Methods(http.MethodPut)
+	adminMux.HandleFunc("GET /fishermen", s.fishermanHandler.List)
+	adminMux.HandleFunc("POST /fishermen", s.fishermanHandler.Create)
+	adminMux.HandleFunc("DELETE /fishermen/{id}", s.fishermanHandler.Delete)
 
-	// Fishermen
-	adminSub.HandleFunc("/fishermen", s.fishermanHandler.List).Methods(http.MethodGet)
-	adminSub.HandleFunc("/fishermen", s.fishermanHandler.Create).Methods(http.MethodPost)
-	adminSub.HandleFunc("/fishermen/{id:[0-9]+}", s.fishermanHandler.Delete).Methods(http.MethodDelete)
+	adminMux.HandleFunc("GET /buyers", s.buyerHandler.List)
+	adminMux.HandleFunc("POST /buyers", s.buyerHandler.Create)
+	adminMux.HandleFunc("DELETE /buyers/{id}", s.buyerHandler.Delete)
 
-	// Buyers
-	adminSub.HandleFunc("/buyers", s.buyerHandler.List).Methods(http.MethodGet)
-	adminSub.HandleFunc("/buyers", s.buyerHandler.Create).Methods(http.MethodPost)
-	adminSub.HandleFunc("/buyers/{id:[0-9]+}", s.buyerHandler.Delete).Methods(http.MethodDelete)
+	adminMux.HandleFunc("POST /auctions", s.auctionHandler.Create)
+	adminMux.HandleFunc("PUT /auctions/{id}", s.auctionHandler.Update)
+	adminMux.HandleFunc("DELETE /auctions/{id}", s.auctionHandler.Delete)
+	adminMux.HandleFunc("PATCH /auctions/{id}/status", s.auctionHandler.UpdateStatus)
+	adminMux.HandleFunc("PUT /auctions/{id}/reorder", s.itemHandler.Reorder)
 
-	// Auctions
-	adminSub.HandleFunc("/auctions", s.auctionHandler.Create).Methods(http.MethodPost)
-	adminSub.HandleFunc("/auctions/{id:[0-9]+}", s.auctionHandler.Update).Methods(http.MethodPut)
-	adminSub.HandleFunc("/auctions/{id:[0-9]+}", s.auctionHandler.Delete).Methods(http.MethodDelete)
-	adminSub.HandleFunc("/auctions/{id:[0-9]+}/status", s.auctionHandler.UpdateStatus).Methods(http.MethodPatch)
-	adminSub.HandleFunc("/auctions/{id:[0-9]+}/reorder", s.itemHandler.Reorder).Methods(http.MethodPut)
+	adminMux.HandleFunc("POST /venues", s.venueHandler.Create)
+	adminMux.HandleFunc("PUT /venues/{id}", s.venueHandler.Update)
+	adminMux.HandleFunc("DELETE /venues/{id}", s.venueHandler.Delete)
 
-	// Venues
-	adminSub.HandleFunc("/venues", s.venueHandler.Create).Methods(http.MethodPost)
-	adminSub.HandleFunc("/venues/{id:[0-9]+}", s.venueHandler.Update).Methods(http.MethodPut)
-	adminSub.HandleFunc("/venues/{id:[0-9]+}", s.venueHandler.Delete).Methods(http.MethodDelete)
+	adminMux.HandleFunc("PUT /password", s.adminHandler.UpdatePassword)
 
-	// Settings
-	adminSub.HandleFunc("/password", s.adminHandler.UpdatePassword).Methods(http.MethodPut)
-
-	// Use the router for all /api/admin requests
-	s.router.Handle("/api/admin/", adminRouter)
+	s.router.Handle("/api/admin/", s.adminAuth.Handle(http.StripPrefix("/api/admin", adminMux)))
 }
 
 func (s *Server) registerBuyerRoutes() {
 	buyerMux := http.NewServeMux()
 
-	// Bids
-	buyerMux.HandleFunc("/bids", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.bidHandler.Create(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	buyerMux.HandleFunc("POST /bids", s.bidHandler.Create)
 
-	// My Page related
-	buyerMux.HandleFunc("/me", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.buyerHandler.GetCurrentBuyer(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	buyerMux.HandleFunc("/me/purchases", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.buyerHandler.GetMyPurchases(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	buyerMux.HandleFunc("/me/auctions", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			s.buyerHandler.GetMyAuctions(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	buyerMux.HandleFunc("/password", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPut {
-			s.buyerHandler.UpdatePassword(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	buyerMux.HandleFunc("GET /me", s.buyerHandler.GetCurrentBuyer)
+	buyerMux.HandleFunc("GET /me/purchases", s.buyerHandler.GetMyPurchases)
+	buyerMux.HandleFunc("GET /me/auctions", s.buyerHandler.GetMyAuctions)
+	buyerMux.HandleFunc("PUT /password", s.buyerHandler.UpdatePassword)
 
-	// Push Notification
-	buyerMux.HandleFunc("/push/subscribe", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			s.pushHandler.Subscribe(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	buyerMux.HandleFunc("POST /push/subscribe", s.pushHandler.Subscribe)
 
-	// Mount Buyer Mux
 	s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))
 }
 

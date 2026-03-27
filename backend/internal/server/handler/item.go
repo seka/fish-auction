@@ -3,11 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
-
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
@@ -82,17 +79,7 @@ func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
 
 // Update handles the request to update a specific item.
 func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
-	// Extract ID from path: /items/{id} or /api/admin/items/{id}
-	path := r.URL.Path
-	segments := strings.Split(strings.Trim(path, "/"), "/")
-	var idStr string
-	for i, s := range segments {
-		if s == "items" && i+1 < len(segments) {
-			idStr = segments[i+1]
-			break
-		}
-	}
-
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		util.WriteError(w, http.StatusBadRequest, "invalid item id")
@@ -126,17 +113,7 @@ func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the item deletion request.
 func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	// Extract ID from path: /items/{id}
-	path := r.URL.Path
-	segments := strings.Split(strings.Trim(path, "/"), "/")
-	var idStr string
-	for i, s := range segments {
-		if s == "items" && i+1 < len(segments) {
-			idStr = segments[i+1]
-			break
-		}
-	}
-
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		util.WriteError(w, http.StatusBadRequest, "invalid item id")
@@ -153,8 +130,8 @@ func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // UpdateSortOrder handles the request to update an item's sort order.
 func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		util.WriteError(w, http.StatusBadRequest, "invalid item id")
 		return
@@ -176,8 +153,8 @@ func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
 
 // Reorder handles the request to reorder items within an auction.
 func (h *ItemHandler) Reorder(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	auctionID, err := strconv.Atoi(vars["id"])
+	idStr := r.PathValue("id")
+	auctionID, err := strconv.Atoi(idStr)
 	if err != nil {
 		util.WriteError(w, http.StatusBadRequest, "invalid auction id")
 		return
@@ -219,11 +196,11 @@ func (h *ItemHandler) toResponse(it *model.AuctionItem) dto.ItemResponse {
 	}
 }
 
-// RegisterRoutes registers the item handler routes to the given router.
-func (h *ItemHandler) RegisterRoutes(r *mux.Router, authMiddleware func(http.Handler) http.Handler) {
-	r.HandleFunc("/api/items", h.List).Methods(http.MethodGet)
-	r.Handle("/api/items", authMiddleware(http.HandlerFunc(h.Create))).Methods(http.MethodPost)
-	r.Handle("/api/items/{id:[0-9]+}", authMiddleware(http.HandlerFunc(h.Update))).Methods(http.MethodPut)
-	r.Handle("/api/items/{id:[0-9]+}", authMiddleware(http.HandlerFunc(h.Delete))).Methods(http.MethodDelete)
-	r.Handle("/api/items/{id:[0-9]+}/sort-order", authMiddleware(http.HandlerFunc(h.UpdateSortOrder))).Methods(http.MethodPut)
+// RegisterRoutes registers the item handler routes to the given mux.
+func (h *ItemHandler) RegisterRoutes(mux *http.ServeMux, authMiddleware func(http.Handler) http.Handler) {
+	mux.HandleFunc("GET /api/items", h.List)
+	mux.Handle("POST /api/items", authMiddleware(http.HandlerFunc(h.Create)))
+	mux.Handle("PUT /api/items/{id}", authMiddleware(http.HandlerFunc(h.Update)))
+	mux.Handle("DELETE /api/items/{id}", authMiddleware(http.HandlerFunc(h.Delete)))
+	mux.Handle("PUT /api/items/{id}/sort-order", authMiddleware(http.HandlerFunc(h.UpdateSortOrder)))
 }

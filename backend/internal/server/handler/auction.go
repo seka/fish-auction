@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -157,18 +156,7 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 
 // Get handles the request to get a specific auction.
 func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/auctions/")
-	// Handle /items suffix
-	if strings.HasSuffix(idStr, "/items") {
-		h.GetItems(w, r)
-		return
-	}
-	// Handle /status suffix
-	if strings.HasSuffix(idStr, "/status") {
-		// This should be handled by PATCH method in RegisterRoutes, but just in case
-		return
-	}
-
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -198,7 +186,7 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 // GetItems handles the request to get items for a specific auction.
 func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/auctions/"), "/items")
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -241,7 +229,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 
 // Update handles the request to update a specific auction.
 func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -277,8 +265,7 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // UpdateStatus handles the request to update the status of an auction.
 func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimSuffix(r.URL.Path, "/status")
-	idStr := path[strings.LastIndex(path, "/")+1:]
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -302,7 +289,7 @@ func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the request to delete a specific auction.
 func (h *AuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
+	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
@@ -319,40 +306,11 @@ func (h *AuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the auction handler routes to the given mux.
 func (h *AuctionHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/auctions", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			h.Create(w, r)
-		case http.MethodGet:
-			h.List(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/auctions/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/items") {
-			if r.Method == http.MethodGet {
-				h.GetItems(w, r)
-				return
-			}
-		}
-		if strings.HasSuffix(r.URL.Path, "/status") {
-			if r.Method == http.MethodPatch {
-				h.UpdateStatus(w, r)
-				return
-			}
-		}
-
-		switch r.Method {
-		case http.MethodGet:
-			h.Get(w, r)
-		case http.MethodPut:
-			h.Update(w, r)
-		case http.MethodDelete:
-			h.Delete(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("POST /api/auctions", h.Create)
+	mux.HandleFunc("GET /api/auctions", h.List)
+	mux.HandleFunc("GET /api/auctions/{id}", h.Get)
+	mux.HandleFunc("GET /api/auctions/{id}/items", h.GetItems)
+	mux.HandleFunc("PUT /api/auctions/{id}", h.Update)
+	mux.HandleFunc("PATCH /api/auctions/{id}/status", h.UpdateStatus)
+	mux.HandleFunc("DELETE /api/auctions/{id}", h.Delete)
 }

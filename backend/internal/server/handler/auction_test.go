@@ -240,19 +240,6 @@ func TestAuctionHandler_Get(t *testing.T) {
 			},
 			wantStatus: http.StatusInternalServerError, // Handler maps error to 500 via util.HandleError
 		},
-		// Special suffixes routed to other methods
-		{
-			name: "RouteToItems",
-			path: "/api/auctions/1/items",
-			mockSetup: func(r *mock.MockRegistry) {
-				r.GetAuctionItemsUC = &mock.MockGetAuctionItemsUseCase{
-					ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) {
-						return []model.AuctionItem{}, nil
-					},
-				}
-			},
-			wantStatus: http.StatusOK,
-		},
 	}
 
 	for _, tc := range tests {
@@ -262,6 +249,13 @@ func TestAuctionHandler_Get(t *testing.T) {
 			h := handler.NewAuctionHandler(mockReg)
 
 			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, tc.path, nil)
+			if tc.name == "Success" {
+				req.SetPathValue("id", "1")
+			} else if tc.name == "NotFound" {
+				req.SetPathValue("id", "999")
+			} else if tc.name == "InvalidID" {
+				req.SetPathValue("id", "invalid")
+			}
 			w := httptest.NewRecorder()
 
 			h.Get(w, req)
@@ -286,6 +280,7 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 		}
 		h := handler.NewAuctionHandler(mockReg)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/1/items", nil)
+		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 		h.GetItems(w, req)
 		if w.Code != http.StatusOK {
@@ -296,6 +291,7 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 	t.Run("InvalidID", func(t *testing.T) {
 		h := handler.NewAuctionHandler(&mock.MockRegistry{})
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/invalid/items", nil)
+		req.SetPathValue("id", "invalid")
 		w := httptest.NewRecorder()
 		h.GetItems(w, req)
 		if w.Code != http.StatusBadRequest {
@@ -313,6 +309,7 @@ func TestAuctionHandler_GetItems(t *testing.T) {
 		}
 		h := handler.NewAuctionHandler(mockReg)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/1/items", nil)
+		req.SetPathValue("id", "1")
 		w := httptest.NewRecorder()
 		h.GetItems(w, req)
 		if w.Code != http.StatusInternalServerError {
@@ -402,6 +399,11 @@ func TestAuctionHandler_Update(t *testing.T) {
 			}
 
 			req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, tc.path, bytes.NewReader(reqBody))
+			if tc.name != "InvalidID" {
+				req.SetPathValue("id", "1")
+			} else {
+				req.SetPathValue("id", "invalid")
+			}
 			w := httptest.NewRecorder()
 
 			h.Update(w, req)
@@ -479,6 +481,11 @@ func TestAuctionHandler_UpdateStatus(t *testing.T) {
 			}
 
 			req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, tc.path, bytes.NewReader(reqBody))
+			if tc.name != "InvalidID" {
+				req.SetPathValue("id", "1")
+			} else {
+				req.SetPathValue("id", "invalid")
+			}
 			w := httptest.NewRecorder()
 
 			h.UpdateStatus(w, req)
@@ -538,6 +545,11 @@ func TestAuctionHandler_Delete(t *testing.T) {
 			h := handler.NewAuctionHandler(mockReg)
 
 			req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, tc.path, nil)
+			if tc.name != "InvalidID" {
+				req.SetPathValue("id", "1")
+			} else {
+				req.SetPathValue("id", "invalid")
+			}
 			w := httptest.NewRecorder()
 
 			h.Delete(w, req)

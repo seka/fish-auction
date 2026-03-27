@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 	"github.com/seka/fish-auction/backend/internal/server/handler"
@@ -126,14 +125,14 @@ func TestItemHandler_RegisterRoutes(t *testing.T) {
 			UpdateItemSortOrderUC: &mock.MockUpdateItemSortOrderUseCase{},
 		}
 		h := handler.NewItemHandler(mockReg)
-		r := mux.NewRouter()
+		mux := http.NewServeMux()
 		authMiddleware := func(next http.Handler) http.Handler { return next }
-		h.RegisterRoutes(r, authMiddleware)
+		h.RegisterRoutes(mux, authMiddleware)
 
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPatch, "/api/items", nil)
 		w := httptest.NewRecorder()
 
-		r.ServeHTTP(w, req)
+		mux.ServeHTTP(w, req)
 
 		if w.Code != http.StatusMethodNotAllowed {
 			t.Errorf("expected status 405, got %d", w.Code)

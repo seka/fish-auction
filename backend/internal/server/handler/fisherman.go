@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
@@ -64,9 +65,10 @@ func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the fisherman deletion request.
 func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := util.ParseID(r)
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.HandleError(w, err)
+		util.WriteError(w, http.StatusBadRequest, "invalid fisherman id")
 		return
 	}
 
@@ -80,11 +82,7 @@ func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the fisherman handler routes to the given mux.
 func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api/fishermen", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			h.List(w, r)
-		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("GET /api/fishermen", h.List)
+	mux.HandleFunc("POST /api/fishermen", h.Create)
+	mux.HandleFunc("DELETE /api/fishermen/{id}", h.Delete)
 }
