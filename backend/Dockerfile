@@ -1,5 +1,5 @@
-# Base stage
 FROM golang:1.26-alpine AS base
+RUN apk add --no-cache make
 WORKDIR /app
 COPY go.mod ./
 # COPY go.sum ./
