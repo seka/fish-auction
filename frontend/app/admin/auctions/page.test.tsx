@@ -54,7 +54,7 @@ describe('AuctionsPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
@@ -110,7 +110,7 @@ describe('AuctionsPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
@@ -157,7 +157,7 @@ describe('AuctionsPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
@@ -206,7 +206,7 @@ describe('AuctionsPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown as ReturnType<typeof useAuctionManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,
