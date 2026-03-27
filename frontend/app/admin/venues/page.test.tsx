@@ -43,7 +43,7 @@ describe('AdminVenuesPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown as ReturnType<typeof useVenueManagement>['form'],
       actions: {
         onSubmit: mockOnSubmit,

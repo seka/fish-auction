@@ -42,7 +42,7 @@ describe('AdminItemsPage', () => {
       },
       form: {
         register: mockRegister,
-        errors: {},
+        formState: { errors: {} },
       } as unknown,
       actions: {
         onSubmit: mockOnSubmit,
