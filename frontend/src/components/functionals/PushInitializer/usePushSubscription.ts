@@ -53,7 +53,7 @@ export const usePushSubscription = () => {
     try {
       // Assuming we have a way to make authenticated requests.
       // If we are using fetch directly, we rely on cookies being sent automatically.
-      const response = await fetch('/api/buyers/push/subscribe', {
+      const response = await fetch('/api/buyer/push/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
