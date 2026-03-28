@@ -64,14 +64,13 @@ func TestPasswordResetStore_FindByTokenHash(t *testing.T) {
 			WithArgs(tokenHash).
 			WillReturnRows(rows)
 
-		gotUserID, gotRole, gotExpiresAt, err := repo.FindByTokenHash(context.Background(), tokenHash)
+		got, err := repo.FindByTokenHash(context.Background(), tokenHash)
 		assert.NoError(t, err)
-		assert.Equal(t, userID, gotUserID)
-		assert.Equal(t, role, gotRole)
-		// Compare times loosely or exactly? time.Now() serialization might lose precision.
-		// Usually Assert.Equal handles time comparison well if zone matches. SQL driver might return slightly different pointer.
-		// Let's assume standard behavior. If flaky, check assert.WithinDuration.
-		assert.Equal(t, expiresAt, gotExpiresAt)
+		assert.NotNil(t, got)
+		assert.Equal(t, userID, got.UserID)
+		assert.Equal(t, role, got.Role)
+		assert.Equal(t, tokenHash, got.TokenHash)
+		assert.Equal(t, expiresAt.Unix(), got.ExpiresAt.Unix()) // Compare unix timestamps to avoid precision issues
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
@@ -79,10 +78,9 @@ func TestPasswordResetStore_FindByTokenHash(t *testing.T) {
 			WithArgs(tokenHash).
 			WillReturnError(sql.ErrNoRows)
 
-		gotUserID, gotRole, _, err := repo.FindByTokenHash(context.Background(), tokenHash)
-		assert.NoError(t, err) // Should return nil error and zero values
-		assert.Equal(t, 0, gotUserID)
-		assert.Equal(t, "", gotRole)
+		got, err := repo.FindByTokenHash(context.Background(), tokenHash)
+		assert.NoError(t, err)
+		assert.Nil(t, got)
 	})
 }
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	dserrors "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres/errors"
@@ -34,17 +35,18 @@ func (r *PasswordResetStore) Create(ctx context.Context, userID int, role, token
 }
 
 // FindByTokenHash returns password reset information by token hash.
-func (r *PasswordResetStore) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
+func (r *PasswordResetStore) FindByTokenHash(ctx context.Context, tokenHash string) (*model.PasswordResetToken, error) {
 	query := `SELECT user_id, user_role, expires_at FROM password_reset_tokens WHERE token_hash = $1`
-	err = r.db.QueryRow(ctx, query, tokenHash).Scan(&userID, &role, &expiresAt)
+	var res model.PasswordResetToken
+	err := r.db.QueryRow(ctx, query, tokenHash).Scan(&res.UserID, &res.Role, &res.ExpiresAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, "", time.Time{}, nil
+			return nil, nil
 		}
-		return 0, "", time.Time{}, dserrors.HandleError(err, "PasswordReset", 0, "FindByTokenHash")
+		return nil, dserrors.HandleError(err, "PasswordReset", 0, "FindByTokenHash")
 	}
-	return userID, role, expiresAt, nil
-
+	res.TokenHash = tokenHash
+	return &res, nil
 }
 
 // DeleteByTokenHash removes a password reset token.
