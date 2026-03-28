@@ -5,23 +5,8 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/registry"
+	"github.com/seka/fish-auction/backend/internal/server/dto"
 )
-
-// ResetPasswordRequest provides ResetPasswordRequest related functionality.
-type ResetPasswordRequest struct {
-	Email string `json:"email"`
-}
-
-// ResetPasswordVerifyRequest provides ResetPasswordVerifyRequest related functionality.
-type ResetPasswordVerifyRequest struct {
-	Token string `json:"token"`
-}
-
-// ResetPasswordConfirmRequest provides ResetPasswordConfirmRequest related functionality.
-type ResetPasswordConfirmRequest struct {
-	Token       string `json:"token"`
-	NewPassword string `json:"new_password"`
-}
 
 // AuthResetHandler handles HTTP requests related to password resets.
 type AuthResetHandler struct {
@@ -35,7 +20,7 @@ func NewAuthResetHandler(r registry.UseCase) *AuthResetHandler {
 
 // RequestReset handles the password reset request.
 func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) {
-	var req ResetPasswordRequest
+	var req dto.ResetPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -75,7 +60,7 @@ func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, _ *http.Request) {
 
 // ConfirmReset provides ConfirmReset related functionality.
 func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) {
-	var req ResetPasswordConfirmRequest
+	var req dto.ResetPasswordConfirmRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
