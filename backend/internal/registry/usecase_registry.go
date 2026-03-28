@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
@@ -58,13 +59,15 @@ type UseCase interface {
 type useCaseRegistry struct {
 	repo    Repository
 	service Service
+	cfg     *config.Config
 }
 
 // NewUseCaseRegistry creates a new UseCase registry
-func NewUseCaseRegistry(repo Repository, service Service) UseCase {
+func NewUseCaseRegistry(repo Repository, service Service, cfg *config.Config) UseCase {
 	return &useCaseRegistry{
 		repo:    repo,
 		service: service,
+		cfg:     cfg,
 	}
 }
 
@@ -219,6 +222,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
 		u.service.NewBuyerEmailService(),
+		u.cfg.FrontendURL,
 	)
 }
 
@@ -234,6 +238,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 		u.repo.NewAdminRepository(),
 		u.repo.PasswordReset(),
 		u.service.NewAdminEmailService(),
+		u.cfg.FrontendURL,
 	)
 }
 

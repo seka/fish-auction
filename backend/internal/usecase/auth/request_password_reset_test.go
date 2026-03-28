@@ -3,6 +3,7 @@ package auth_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 	"time"
 
@@ -179,7 +180,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				defer cleanup()
 			}
 
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService)
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, func() *url.URL { u, _ := url.Parse("https://localhost"); return u }())
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {

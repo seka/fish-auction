@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -30,6 +31,7 @@ type Config struct {
 	ReadTimeoutSec  time.Duration
 	WriteTimeoutSec time.Duration
 	IdleTimeoutSec  time.Duration
+	FrontendURL     *url.URL
 }
 
 // Load provides Load related functionality.
@@ -48,7 +50,7 @@ func Load() (*Config, error) {
 		CacheTTL:        time.Duration(cacheTTL) * time.Second,
 		SessionTTL:      time.Duration(sessionTTL) * time.Second,
 		AppEnv:          getEnv("APP_ENV", "production"),
-		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "http://localhost:3000,https://localhost"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
 		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:        getEnv("SMTP_PORT", "1025"),
 		SMTPFrom:        getEnv("SMTP_FROM", "noreply@fish-auction.com"),
@@ -59,6 +61,17 @@ func Load() (*Config, error) {
 		ReadTimeoutSec:  time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
 		WriteTimeoutSec: time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeoutSec:  time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
+		FrontendURL: func() *url.URL {
+			frontendURLStr := getEnv("FRONTEND_URL", "https://localhost")
+			frontendURL, err := url.Parse(frontendURLStr)
+			if err != nil {
+				return nil
+			}
+			if frontendURL.Scheme == "" || frontendURL.Host == "" {
+				return nil
+			}
+			return frontendURL
+		}(),
 	}
 
 	if cfg.ServerAddress == "" {
@@ -67,6 +80,10 @@ func Load() (*Config, error) {
 
 	if cfg.DBHost == "" || cfg.DBPort == "" || cfg.DBUser == "" || cfg.DBPassword == "" || cfg.DBName == "" {
 		return nil, fmt.Errorf("missing required environment variables")
+	}
+
+	if cfg.FrontendURL == nil {
+		return nil, fmt.Errorf("invalid or missing FRONTEND_URL")
 	}
 
 	return cfg, nil

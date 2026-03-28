@@ -10,7 +10,7 @@ import (
 )
 
 func TestCORSMiddleware_Handle(t *testing.T) {
-	allowedOrigins := []string{"http://localhost:3000", "https://example.com"}
+	allowedOrigins := []string{"https://localhost", "http://localhost:3000", "https://example.com"}
 	mw := NewCORSMiddleware(allowedOrigins)
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -19,13 +19,13 @@ func TestCORSMiddleware_Handle(t *testing.T) {
 
 	t.Run("Allowed Origin", func(t *testing.T) {
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/test", nil)
-		req.Header.Set("Origin", "http://localhost:3000")
+		req.Header.Set("Origin", "https://localhost")
 		w := httptest.NewRecorder()
 
 		mw.Handle(nextHandler).ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, "http://localhost:3000", w.Header().Get("Access-Control-Allow-Origin"))
+		assert.Equal(t, "https://localhost", w.Header().Get("Access-Control-Allow-Origin"))
 		assert.Equal(t, "true", w.Header().Get("Access-Control-Allow-Credentials"))
 	})
 
