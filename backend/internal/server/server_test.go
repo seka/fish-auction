@@ -79,7 +79,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hAdminAuthReset,
 		hPush,
 		sessionRepo,
-		[]string{"http://localhost:3000"},
+		[]string{"https://localhost"},
 		10*time.Second,
 		10*time.Second,
 		10*time.Second,

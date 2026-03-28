@@ -50,7 +50,7 @@ func Load() (*Config, error) {
 		CacheTTL:        time.Duration(cacheTTL) * time.Second,
 		SessionTTL:      time.Duration(sessionTTL) * time.Second,
 		AppEnv:          getEnv("APP_ENV", "production"),
-		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "http://localhost:3000,https://localhost"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "https://localhost"),
 		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:        getEnv("SMTP_PORT", "1025"),
 		SMTPFrom:        getEnv("SMTP_FROM", "noreply@fish-auction.com"),
@@ -62,7 +62,7 @@ func Load() (*Config, error) {
 		WriteTimeoutSec: time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeoutSec:  time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 	}
-	frontendURLStr := getEnv("FRONTEND_URL", "http://localhost:3000")
+	frontendURLStr := getEnv("FRONTEND_URL", "https://localhost")
 	frontendURL, err := url.Parse(frontendURLStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid FRONTEND_URL: %w", err)

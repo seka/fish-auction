@@ -180,7 +180,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				defer cleanup()
 			}
 
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, func() *url.URL { u, _ := url.Parse("http://localhost:3000"); return u }())
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, func() *url.URL { u, _ := url.Parse("https://localhost"); return u }())
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {
