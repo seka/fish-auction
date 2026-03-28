@@ -42,16 +42,16 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	tokenHash := hex.EncodeToString(hash[:])
 
 	// 2. Find token in DB
-	buyerID, role, expiresAt, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
+	resetToken, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
 		return err
 	}
-	if buyerID == 0 || role != "buyer" { // Check role
+	if resetToken == nil || resetToken.Role != "buyer" { // Check role
 		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
 	// 3. Check expiry
-	if time.Now().After(expiresAt) {
+	if time.Now().After(resetToken.ExpiresAt) {
 		// Clean up expired token
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
 		return fmt.Errorf("token expired")
@@ -64,12 +64,12 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	}
 
 	// 5. Update user password
-	if err := u.authRepo.UpdatePassword(ctx, buyerID, string(hashedPassword)); err != nil {
+	if err := u.authRepo.UpdatePassword(ctx, resetToken.UserID, string(hashedPassword)); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
 	// Invalidate token
-	_ = u.pwdResetRepo.DeleteAllByUserID(ctx, buyerID, "buyer")
+	_ = u.pwdResetRepo.DeleteAllByUserID(ctx, resetToken.UserID, "buyer")
 
 	return nil
 }

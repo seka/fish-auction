@@ -51,7 +51,9 @@ type UseCase interface {
 	NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUseCase
 	NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase
 	NewResetPasswordUseCase() auth.ResetPasswordUseCase
+	NewVerifyResetTokenUseCase() auth.VerifyResetTokenUseCase
 	NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase
+	NewVerifyAdminResetTokenUseCase() admin.VerifyResetTokenUseCase
 	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
 	NewPushNotificationUseCase() notification.PushNotificationUseCase
 }
@@ -233,6 +235,10 @@ func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 	)
 }
 
+func (u *useCaseRegistry) NewVerifyResetTokenUseCase() auth.VerifyResetTokenUseCase {
+	return auth.NewVerifyResetTokenUseCase(u.repo.PasswordReset())
+}
+
 func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
@@ -240,6 +246,10 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 		u.service.NewAdminEmailService(),
 		u.cfg.FrontendURL,
 	)
+}
+
+func (u *useCaseRegistry) NewVerifyAdminResetTokenUseCase() admin.VerifyResetTokenUseCase {
+	return admin.NewVerifyResetTokenUseCase(u.repo.PasswordReset())
 }
 
 func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {

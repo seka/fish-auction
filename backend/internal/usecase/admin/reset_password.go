@@ -40,15 +40,15 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
-	adminID, role, expiresAt, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash) // Changed to tokenHash from hashedToken
+	resetToken, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
 		return err
 	}
-	if adminID == 0 || role != "admin" {
+	if resetToken == nil || resetToken.Role != "admin" {
 		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
-	if time.Now().After(expiresAt) {
+	if time.Now().After(resetToken.ExpiresAt) {
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
 		return fmt.Errorf("token expired")
 	}
@@ -58,12 +58,12 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	if err := u.adminRepo.UpdatePassword(ctx, adminID, string(hashedPassword)); err != nil {
+	if err := u.adminRepo.UpdatePassword(ctx, resetToken.UserID, string(hashedPassword)); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
 	// Invalidate token
-	_ = u.pwdResetRepo.DeleteAllByUserID(ctx, adminID, "admin")
+	_ = u.pwdResetRepo.DeleteAllByUserID(ctx, resetToken.UserID, "admin")
 
 	return nil
 }

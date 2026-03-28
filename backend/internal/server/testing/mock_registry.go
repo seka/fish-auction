@@ -50,6 +50,8 @@ type MockRegistry struct {
 	GetBuyerUC                  buyer.GetBuyerUseCase
 	RequestPasswordResetUC      auth.RequestPasswordResetUseCase
 	ResetPasswordUC             auth.ResetPasswordUseCase
+	VerifyResetTokenUC          auth.VerifyResetTokenUseCase
+	VerifyAdminResetTokenUC     admin.VerifyResetTokenUseCase
 	RequestAdminPasswordResetUC admin.RequestPasswordResetUseCase
 	ResetAdminPasswordUC        admin.ResetPasswordUseCase
 	DeleteFishermanUC           fisherman.DeleteFishermanUseCase
@@ -247,9 +249,19 @@ func (m *MockRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 	return m.ResetPasswordUC
 }
 
+// NewVerifyResetTokenUseCase creates a new VerifyResetTokenUseCase instance.
+func (m *MockRegistry) NewVerifyResetTokenUseCase() auth.VerifyResetTokenUseCase {
+	return m.VerifyResetTokenUC
+}
+
 // NewRequestAdminPasswordResetUseCase creates a new RequestAdminPasswordResetUseCase instance.
 func (m *MockRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
 	return m.RequestAdminPasswordResetUC
+}
+
+// NewVerifyAdminResetTokenUseCase creates a new VerifyAdminResetTokenUseCase instance.
+func (m *MockRegistry) NewVerifyAdminResetTokenUseCase() admin.VerifyResetTokenUseCase {
+	return m.VerifyAdminResetTokenUC
 }
 
 // NewResetAdminPasswordUseCase creates a new ResetAdminPasswordUseCase instance.
