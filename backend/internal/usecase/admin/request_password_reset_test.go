@@ -43,9 +43,12 @@ func (m *mockPwdResetRepoForReqPwd) Create(ctx context.Context, userID int, role
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
-func (m *mockPwdResetRepoForReqPwd) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
+func (m *mockPwdResetRepoForReqPwd) FindByTokenHash(ctx context.Context, tokenHash string) (*model.PasswordResetToken, error) {
 	args := m.Called(ctx, tokenHash)
-	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
 }
 func (m *mockPwdResetRepoForReqPwd) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
 	args := m.Called(ctx, tokenHash)

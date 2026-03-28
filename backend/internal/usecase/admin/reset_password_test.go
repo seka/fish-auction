@@ -40,9 +40,12 @@ func (m *mockAdminPasswordResetRepositoryForReset) Create(ctx context.Context, u
 	return args.Error(0)
 }
 
-func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
+func (m *mockAdminPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (*model.PasswordResetToken, error) {
 	args := m.Called(ctx, tokenHash)
-	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
 }
 
 func (m *mockAdminPasswordResetRepositoryForReset) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
@@ -135,14 +138,17 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 
 			switch {
 			case tt.mockFindErr != nil:
-				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, tt.mockFindErr)
+				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, tt.mockFindErr)
 			case tt.mockTokenHash == "": // Token not found scenario
-				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, nil)
+				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, nil)
 			default: // Token found
-				// Ensure that the mockTokenHash in test case matches expectedHash?
-				// Actually for the "Success" case, tt.mockTokenHash is validTokenHash, and tt.token is validToken. So they match.
-				// For "TokenExpired", same.
-				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(tt.mockAdminID, "admin", tt.mockExpiresAt, nil)
+				resetToken := &model.PasswordResetToken{
+					UserID:    tt.mockAdminID,
+					Role:      "admin",
+					ExpiresAt: tt.mockExpiresAt,
+					TokenHash: expectedHash,
+				}
+				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(resetToken, nil)
 
 				if tt.mockAdminID != 0 {
 					if tt.mockExpiresAt.After(time.Now()) {

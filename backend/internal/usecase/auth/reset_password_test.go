@@ -53,9 +53,12 @@ func (m *mockBuyerPasswordResetRepositoryForReset) Create(ctx context.Context, u
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
-func (m *mockBuyerPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (userID int, role string, expiresAt time.Time, err error) {
+func (m *mockBuyerPasswordResetRepositoryForReset) FindByTokenHash(ctx context.Context, tokenHash string) (*model.PasswordResetToken, error) {
 	args := m.Called(ctx, tokenHash)
-	return args.Int(0), args.String(1), args.Get(2).(time.Time), args.Error(3)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
 }
 func (m *mockBuyerPasswordResetRepositoryForReset) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
 	args := m.Called(ctx, tokenHash)
@@ -146,11 +149,17 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 
 			switch {
 			case tt.mockFindErr != nil:
-				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, tt.mockFindErr)
+				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, tt.mockFindErr)
 			case tt.mockTokenHash == "": // Token not found scenario
-				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(0, "", time.Time{}, nil)
+				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, nil)
 			default: // Token found scenario
-				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(tt.mockBuyerID, "buyer", tt.mockExpiresAt, nil)
+				resetModel := &model.PasswordResetToken{
+					UserID:    tt.mockBuyerID,
+					Role:      "buyer",
+					ExpiresAt: tt.mockExpiresAt,
+					TokenHash: expectedHash,
+				}
+				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(resetModel, nil)
 				if tt.mockBuyerID != 0 {
 					if tt.mockExpiresAt.After(time.Now()) {
 						// Valid
