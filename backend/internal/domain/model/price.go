@@ -2,13 +2,13 @@ package model
 
 const (
 	// MinBidIncrementUnder1k provides MinBidIncrementUnder1k related functionality.
-	MinBidIncrementUnder1k   = 100
+	MinBidIncrementUnder1k = 100
 	// MinBidIncrementUnder10k provides MinBidIncrementUnder10k related functionality.
-	MinBidIncrementUnder10k  = 500
+	MinBidIncrementUnder10k = 500
 	// MinBidIncrementUnder100k provides MinBidIncrementUnder100k related functionality.
 	MinBidIncrementUnder100k = 1000
-// MinBidIncrementDefault represents a minbidincrementdefault in the system.
-	MinBidIncrementDefault   = 5000
+	// MinBidIncrementDefault represents a minbidincrementdefault in the system.
+	MinBidIncrementDefault = 5000
 )
 
 // BidPrice represents a price of a bid.

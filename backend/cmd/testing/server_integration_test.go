@@ -57,19 +57,19 @@ func TestServerIntegration(t *testing.T) {
 	}()
 
 	appCfg := &config.Config{
-		DBHost:     cfg.DBHost,
-		DBPort:     cfg.DBPort,
-		DBUser:     cfg.DBUser,
-		DBPassword: cfg.DBPassword,
-		DBName:     testDBName,
-		RedisAddr:  getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
-		CacheTTL:   5 * time.Minute,
-		SessionTTL: 24 * time.Hour,
-		AppEnv:     "test",
-		SMTPHost:   getEnvOrDefault("SMTP_HOST", "localhost"),
-		SMTPPort:   getEnvOrDefault("SMTP_PORT", "1025"),
-		SMTPFrom:   getEnvOrDefault("SMTP_FROM", "test@example.com"),
-		DBSslMode:  cfg.DBSslMode,
+		DBHost:      cfg.DBHost,
+		DBPort:      cfg.DBPort,
+		DBUser:      cfg.DBUser,
+		DBPassword:  cfg.DBPassword,
+		DBName:      testDBName,
+		RedisAddr:   getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
+		CacheTTL:    5 * time.Minute,
+		SessionTTL:  24 * time.Hour,
+		AppEnv:      "test",
+		SMTPHost:    getEnvOrDefault("SMTP_HOST", "localhost"),
+		SMTPPort:    getEnvOrDefault("SMTP_PORT", "1025"),
+		SMTPFrom:    getEnvOrDefault("SMTP_FROM", "test@example.com"),
+		DBSslMode:   cfg.DBSslMode,
 		FrontendURL: func() *url.URL { u, _ := url.Parse("https://localhost"); return u }(),
 	}
 

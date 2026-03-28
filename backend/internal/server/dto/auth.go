@@ -1,6 +1,5 @@
 package dto
 
-
 // LoginRequest is a data transfer object.
 type LoginRequest struct {
 	Email    string `json:"email"`

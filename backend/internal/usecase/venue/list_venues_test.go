@@ -27,7 +27,7 @@ func (m *mockVenueRepository) List(_ context.Context) ([]model.Venue, error) {
 	return m.venues, nil
 }
 func (m *mockVenueRepository) Update(_ context.Context, _ *model.Venue) error { return nil }
-func (m *mockVenueRepository) Delete(_ context.Context, _ int) error             { return nil }
+func (m *mockVenueRepository) Delete(_ context.Context, _ int) error          { return nil }
 
 func TestListVenuesUseCase_Execute(t *testing.T) {
 	venues := []model.Venue{

@@ -95,7 +95,7 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 				startTime := today.Add(10 * time.Hour) // 10:00 Today
 				endTime := today.Add(11 * time.Hour)   // 11:00 Today
 
-				// If now is already past 11:00 today, this will work. 
+				// If now is already past 11:00 today, this will work.
 				// But we want to ensure ShouldBeCompleted returns true.
 				// ShouldBeCompleted is true if now > endTime.
 				// So let's make endTime definitely in the past.

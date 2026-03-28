@@ -2,7 +2,6 @@ package dto
 
 import "time"
 
-
 // CreateAuctionRequest is a data transfer object.
 type CreateAuctionRequest struct {
 	VenueID     int     `json:"venue_id"`

@@ -2,7 +2,6 @@ package dto
 
 import "time"
 
-
 // CreateItemRequest is a data transfer object.
 type CreateItemRequest struct {
 	AuctionID   int    `json:"auction_id"`

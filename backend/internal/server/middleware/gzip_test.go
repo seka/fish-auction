@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"context"
 	"compress/gzip"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"

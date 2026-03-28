@@ -9,13 +9,13 @@ type AuctionStatus string
 
 const (
 	// AuctionStatusScheduled provides AuctionStatusScheduled related functionality.
-	AuctionStatusScheduled  AuctionStatus = "scheduled"
+	AuctionStatusScheduled AuctionStatus = "scheduled"
 	// AuctionStatusInProgress provides AuctionStatusInProgress related functionality.
 	AuctionStatusInProgress AuctionStatus = "in_progress"
 	// AuctionStatusCompleted provides AuctionStatusCompleted related functionality.
-	AuctionStatusCompleted  AuctionStatus = "completed"
-// AuctionStatusCancelled represents a auctionstatuscancelled in the system.
-	AuctionStatusCancelled  AuctionStatus = "canceled"
+	AuctionStatusCompleted AuctionStatus = "completed"
+	// AuctionStatusCancelled represents a auctionstatuscancelled in the system.
+	AuctionStatusCancelled AuctionStatus = "canceled"
 )
 
 // IsValid checks if the auction status is valid

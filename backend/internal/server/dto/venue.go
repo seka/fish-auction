@@ -2,7 +2,6 @@ package dto
 
 import "time"
 
-
 // CreateVenueRequest is a data transfer object.
 type CreateVenueRequest struct {
 	Name        string `json:"name"`
