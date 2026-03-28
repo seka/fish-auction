@@ -123,7 +123,7 @@ func TestServerIntegration(t *testing.T) {
 		adminAuthResetHandler,
 		pushHandler,
 		sessionRepo,
-		[]string{"https://localhost"},
+		[]string{"https://localhost", "http://localhost:3000"},
 		time.Minute,
 		time.Minute,
 		time.Minute,

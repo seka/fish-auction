@@ -64,4 +64,4 @@ npm run test  # テスト実行
 npm run lint  # リンター起動
 ```
 
-ブラウザで https://localhost を開いてください。
+ブラウザで `https://localhost` (Nginx 経由) または `http://localhost:3000` (直通) を開いてください。

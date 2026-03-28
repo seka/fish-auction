@@ -50,7 +50,7 @@ func Load() (*Config, error) {
 		CacheTTL:        time.Duration(cacheTTL) * time.Second,
 		SessionTTL:      time.Duration(sessionTTL) * time.Second,
 		AppEnv:          getEnv("APP_ENV", "production"),
-		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "https://localhost"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
 		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:        getEnv("SMTP_PORT", "1025"),
 		SMTPFrom:        getEnv("SMTP_FROM", "noreply@fish-auction.com"),
@@ -66,6 +66,9 @@ func Load() (*Config, error) {
 	frontendURL, err := url.Parse(frontendURLStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid FRONTEND_URL: %w", err)
+	}
+	if frontendURL.Scheme == "" || frontendURL.Host == "" {
+		return nil, fmt.Errorf("invalid FRONTEND_URL: scheme and host are required")
 	}
 	cfg.FrontendURL = frontendURL
 

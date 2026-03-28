@@ -10,7 +10,7 @@ import (
 )
 
 func TestCORSMiddleware_Handle(t *testing.T) {
-	allowedOrigins := []string{"https://localhost", "https://example.com"}
+	allowedOrigins := []string{"https://localhost", "http://localhost:3000", "https://example.com"}
 	mw := NewCORSMiddleware(allowedOrigins)
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

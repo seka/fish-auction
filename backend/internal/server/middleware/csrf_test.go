@@ -8,7 +8,7 @@ import (
 )
 
 func TestCSRFMiddleware(t *testing.T) {
-	allowedOrigins := []string{"https://localhost"}
+	allowedOrigins := []string{"https://localhost", "http://localhost:3000"}
 	middleware := NewCSRFMiddleware(allowedOrigins)
 
 	handler := middleware.Handle(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
