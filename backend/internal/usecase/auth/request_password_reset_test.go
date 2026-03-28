@@ -179,7 +179,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				defer cleanup()
 			}
 
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService)
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, "http://localhost:3000")
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {

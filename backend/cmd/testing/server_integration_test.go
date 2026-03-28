@@ -69,6 +69,7 @@ func TestServerIntegration(t *testing.T) {
 		SMTPPort:   getEnvOrDefault("SMTP_PORT", "1025"),
 		SMTPFrom:   getEnvOrDefault("SMTP_FROM", "test@example.com"),
 		DBSslMode:  cfg.DBSslMode,
+		FrontendURL: "http://localhost:3000",
 	}
 
 	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
@@ -79,7 +80,7 @@ func TestServerIntegration(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	serviceReg := registry.NewServiceRegistry(appCfg)
-	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, appCfg)
 
 	// 6. Handlers を初期化
 	healthHandler := handler.NewHealthHandler()

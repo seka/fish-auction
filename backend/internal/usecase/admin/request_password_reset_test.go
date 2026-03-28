@@ -146,7 +146,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 			emailService := &mockEmailServiceForReqPwd{sndErr: tt.mockSndErr}
 
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService)
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, "http://localhost:3000")
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantErr {
