@@ -45,7 +45,23 @@ mkdir -p nginx/certs
 mkcert -key-file nginx/certs/key.pem -cert-file nginx/certs/cert.pem localhost 127.0.0.1
 ```
 
-#### 3. アプリケーションの起動
+#### 3. 環境変数の設定 (.env)
+プロジェクトルートの `.env.example` をコピーして `.env` を作成し、必要な値を設定してください。
+
+```bash
+cp .env.example .env
+```
+
+#### 4. VAPID 鍵の生成 (プッシュ通知用)
+プッシュ通知に使用する VAPID 鍵を生成し、`.env` の `VAPID_PUBLIC_KEY` と `VAPID_PRIVATE_KEY` に設定してください。
+
+`npx` を使用して生成できます。
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+#### 5. アプリケーションの起動
 
 ```bash
 docker-compose up -d --build
