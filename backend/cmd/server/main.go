@@ -59,7 +59,7 @@ func run() error {
 	serviceReg := registry.NewServiceRegistry(cfg)
 
 	// Initialize UseCase Registry
-	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
 	// Initialize Handlers
 	sessionRepo := repoReg.NewSessionRepository()
