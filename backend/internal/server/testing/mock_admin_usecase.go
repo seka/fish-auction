@@ -42,3 +42,16 @@ func (m *MockAdminResetPasswordUseCase) Execute(ctx context.Context, token, newP
 	}
 	return nil
 }
+
+// MockAdminVerifyResetTokenUseCase is a mock implementation of VerifyResetTokenUseCase for testing.
+type MockAdminVerifyResetTokenUseCase struct {
+	ExecuteFunc func(ctx context.Context, token string) error
+}
+
+// Execute executes the use case logic.
+func (m *MockAdminVerifyResetTokenUseCase) Execute(ctx context.Context, token string) error {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, token)
+	}
+	return nil
+}

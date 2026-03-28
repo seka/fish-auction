@@ -44,3 +44,16 @@ func (m *MockResetPasswordUseCase) Execute(ctx context.Context, token, newPasswo
 	}
 	return nil
 }
+
+// MockVerifyResetTokenUseCase is a mock implementation of VerifyResetTokenUseCase for testing.
+type MockVerifyResetTokenUseCase struct {
+	ExecuteFunc func(ctx context.Context, token string) error
+}
+
+// Execute executes the use case logic.
+func (m *MockVerifyResetTokenUseCase) Execute(ctx context.Context, token string) error {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, token)
+	}
+	return nil
+}

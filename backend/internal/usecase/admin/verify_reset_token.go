@@ -20,6 +20,8 @@ type verifyResetTokenUseCase struct {
 	pwdResetRepo repository.PasswordResetRepository
 }
 
+var _ VerifyResetTokenUseCase = (*verifyResetTokenUseCase)(nil)
+
 // NewVerifyResetTokenUseCase creates a new VerifyResetTokenUseCase instance.
 func NewVerifyResetTokenUseCase(pwdResetRepo repository.PasswordResetRepository) VerifyResetTokenUseCase {
 	return &verifyResetTokenUseCase{pwdResetRepo: pwdResetRepo}
