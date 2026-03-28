@@ -66,7 +66,7 @@ func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Requ
 
 	uc := h.reg.NewResetAdminPasswordUseCase()
 	if err := uc.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
-		if err.Error() == "invalid or expired token" || err.Error() == "token expired" {
+		if err.Error() == "Invalid or expired token" || err.Error() == "token expired" {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
