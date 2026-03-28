@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -30,7 +31,7 @@ type Config struct {
 	ReadTimeoutSec  time.Duration
 	WriteTimeoutSec time.Duration
 	IdleTimeoutSec  time.Duration
-	FrontendURL     string
+	FrontendURL     *url.URL
 }
 
 // Load provides Load related functionality.
@@ -60,8 +61,13 @@ func Load() (*Config, error) {
 		ReadTimeoutSec:  time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
 		WriteTimeoutSec: time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeoutSec:  time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
-		FrontendURL:     getEnv("FRONTEND_URL", "http://localhost:3000"),
 	}
+	frontendURLStr := getEnv("FRONTEND_URL", "http://localhost:3000")
+	frontendURL, err := url.Parse(frontendURLStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid FRONTEND_URL: %w", err)
+	}
+	cfg.FrontendURL = frontendURL
 
 	if cfg.ServerAddress == "" {
 		cfg.ServerAddress = ":8080"
