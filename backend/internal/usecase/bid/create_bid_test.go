@@ -363,7 +363,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
 			itemFound:    false,
 			listItemsErr: nil,
-			wantErr:      &domainErrors.ValidationError{Field: "item_id"},
+			wantErr:      &domainErrors.NotFoundError{Resource: "Item"},
 			wantTxCalled: true,
 		},
 		{
@@ -422,10 +422,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
-			buyerFound: true,
+			buyerFound:   true,
 			buyerRepoErr: dbErr,
-			txErr:      nil,
-			wantErr:    dbErr,
+			txErr:        nil,
+			wantErr:      dbErr,
 			wantTxCalled: true,
 		},
 		{

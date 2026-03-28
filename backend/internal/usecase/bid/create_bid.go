@@ -120,9 +120,9 @@ func (uc *createBidUseCase) getAndValidateItem(ctx context.Context, itemID int, 
 		return nil, err
 	}
 	if item == nil {
-		return nil, &errors.ValidationError{
-			Field:   "item_id",
-			Message: "Item not found",
+		return nil, &errors.NotFoundError{
+			Resource: "Item",
+			ID:       itemID,
 		}
 	}
 
