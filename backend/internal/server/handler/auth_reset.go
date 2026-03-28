@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
+	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/dto"
 )
@@ -44,7 +46,12 @@ func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 
 	uc := h.reg.NewVerifyResetTokenUseCase()
 	if err := uc.Execute(r.Context(), req.Token); err != nil {
-		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		var unauthErr *domainErrors.UnauthorizedError
+		if errors.As(err, &unauthErr) {
+			http.Error(w, unauthErr.Message, http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -62,8 +69,9 @@ func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) 
 
 	uc := h.reg.NewResetPasswordUseCase()
 	if err := uc.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
-		if err.Error() == "Invalid or expired token" || err.Error() == "token expired" {
-			http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+		var unauthErr *domainErrors.UnauthorizedError
+		if errors.As(err, &unauthErr) {
+			http.Error(w, unauthErr.Message, http.StatusBadRequest)
 			return
 		}
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
@@ -50,7 +49,7 @@ func (u *verifyResetTokenUseCase) Execute(ctx context.Context, token string) err
 	if time.Now().After(resetToken.ExpiresAt) {
 		// Clean up expired token
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
-		return fmt.Errorf("token expired")
+		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
 	return nil

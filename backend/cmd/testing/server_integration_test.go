@@ -181,7 +181,7 @@ func TestServerIntegration(t *testing.T) {
 		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
 
 		// 5. Login Buyer
-		buyerCookies := login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
+		_ = login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
 
 		// 6. Create Venue (as Admin)
 		// POST /api/admin/venues
@@ -212,7 +212,7 @@ func TestServerIntegration(t *testing.T) {
 
 		// 10. Place Bid (as Buyer)
 		// POST /api/buyer/bids
-		buyerCookies = login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
+		buyerCookies := login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
 		bidBody := fmt.Sprintf(`{"item_id": %d, "price": 5000}`, itemID)
 		postResource(t, client, serverURL+"/api/buyer/bids", bidBody, buyerCookies)
 
@@ -250,7 +250,7 @@ func dropTestDatabase(db *sql.DB, dbName string) error {
 }
 
 // waitForServer はサーバーが起動するまで待機
-func waitForServer(url string) error {
+func waitForServer(targetURL string) error {
 	timeout := time.After(10 * time.Second)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
@@ -263,7 +263,7 @@ func waitForServer(url string) error {
 		case <-timeout:
 			return fmt.Errorf("timeout waiting for server to start")
 		case <-ticker.C:
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, http.NoBody)
 			if err != nil {
 				return fmt.Errorf("failed to create request: %w", err)
 			}

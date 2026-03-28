@@ -14,7 +14,7 @@ func NewHealthHandler() *HealthHandler {
 }
 
 // Check handles the health check request.
-func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) Check(w http.ResponseWriter, _ *http.Request) {
 	_, _ = fmt.Fprintf(w, "Backend is healthy!")
 }
 

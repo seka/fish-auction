@@ -28,9 +28,9 @@ type Config struct {
 	VAPIDPrivateKey string
 	VAPIDSubject    string
 	DBSslMode       string
-	ReadTimeoutSec  time.Duration
-	WriteTimeoutSec time.Duration
-	IdleTimeoutSec  time.Duration
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	IdleTimeout     time.Duration
 	FrontendURL     *url.URL
 }
 
@@ -58,9 +58,9 @@ func Load() (*Config, error) {
 		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
 		VAPIDSubject:    getEnv("VAPID_SUBJECT", "mailto:admin@example.com"),
 		DBSslMode:       getEnv("DB_SSLMODE", "disable"),
-		ReadTimeoutSec:  time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
-		WriteTimeoutSec: time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
-		IdleTimeoutSec:  time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
+		ReadTimeout:     time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
+		WriteTimeout:    time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
+		IdleTimeout:     time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 		FrontendURL: func() *url.URL {
 			frontendURLStr := getEnv("FRONTEND_URL", "https://localhost")
 			frontendURL, err := url.Parse(frontendURLStr)

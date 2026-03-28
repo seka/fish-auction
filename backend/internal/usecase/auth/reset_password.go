@@ -54,7 +54,7 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	if time.Now().After(resetToken.ExpiresAt) {
 		// Clean up expired token
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
-		return fmt.Errorf("token expired")
+		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
 	// 4. Hash new password

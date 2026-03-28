@@ -68,18 +68,18 @@ type mockEmailService struct {
 	err          error
 }
 
-func (m *mockEmailService) SendBuyerPasswordReset(_ context.Context, _, url string) error {
+func (m *mockEmailService) SendBuyerPasswordReset(_ context.Context, _, resetURL string) error {
 	if m.err != nil {
 		return m.err
 	}
-	m.sentBuyerURL = url
+	m.sentBuyerURL = resetURL
 	return nil
 }
-func (m *mockEmailService) SendAdminPasswordReset(_ context.Context, _, url string) error {
+func (m *mockEmailService) SendAdminPasswordReset(_ context.Context, _, resetURL string) error {
 	if m.err != nil {
 		return m.err
 	}
-	m.sentAdminURL = url
+	m.sentAdminURL = resetURL
 	return nil
 }
 
