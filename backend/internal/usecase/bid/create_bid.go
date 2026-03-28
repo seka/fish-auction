@@ -20,6 +20,7 @@ type CreateBidUseCase interface {
 
 type createBidUseCase struct {
 	itemRepo     repository.ItemRepository
+	buyerRepo    repository.BuyerRepository
 	bidRepo      repository.BidRepository
 	auctionRepo  repository.AuctionRepository
 	pushUseCase  notification.PushNotificationUseCase
@@ -32,6 +33,7 @@ var _ CreateBidUseCase = (*createBidUseCase)(nil)
 // NewCreateBidUseCase creates a new instance of CreateBidUseCase.
 func NewCreateBidUseCase(
 	itemRepo repository.ItemRepository,
+	buyerRepo repository.BuyerRepository,
 	bidRepo repository.BidRepository,
 	auctionRepo repository.AuctionRepository,
 	pushUseCase notification.PushNotificationUseCase,
@@ -40,6 +42,7 @@ func NewCreateBidUseCase(
 ) CreateBidUseCase {
 	return &createBidUseCase{
 		itemRepo:     itemRepo,
+		buyerRepo:    buyerRepo,
 		bidRepo:      bidRepo,
 		auctionRepo:  auctionRepo,
 		pushUseCase:  pushUseCase,
@@ -54,41 +57,30 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 	var lockedItem *model.AuctionItem
 
 	err := uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
-		// 1. ロックを取得して最新の商品情報を取得
-		item, err := uc.itemRepo.FindByIDWithLock(txCtx, bid.ItemID)
-		if err != nil {
+		// 1. 購入者の存在確認
+		if err := uc.verifyBuyer(txCtx, bid.BuyerID); err != nil {
 			return err
 		}
-		if item == nil {
-			return &errors.ValidationError{
-				Field:   "item_id",
-				Message: "item not found",
-			}
+
+		// 2. 最新の商品情報を取得（ロック付）して検証
+		item, err := uc.getAndValidateItem(txCtx, bid.ItemID, bid.Price)
+		if err != nil {
+			return err
 		}
 		lockedItem = item
 
-		// 2. 入札価格の検証
-		if err := uc.validateBidPrice(item, bid.Price); err != nil {
-			return err
-		}
-
-		// 3. オークション情報を取得（必要に応じてロック）して入札期間をチェック
-		auction, err := uc.auctionRepo.FindByIDWithLock(txCtx, item.AuctionID)
+		// 3. オークション情報を取得（ロック付）して検証
+		auction, err := uc.getAndValidateAuction(txCtx, item.AuctionID)
 		if err != nil {
 			return err
 		}
 
-		// 4. 入札期間のチェック
-		if err := uc.validateAuctionPeriod(auction); err != nil {
-			return err
-		}
-
-		// 5. 自動延長処理
+		// 4. 自動延長処理
 		if err := uc.extendAuctionIfNeeded(txCtx, auction); err != nil {
 			return err
 		}
 
-		// 6. 入札レコードを作成
+		// 5. 入札レコードを作成
 		created, err := uc.bidRepo.Create(txCtx, bid)
 		if err != nil {
 			return err
@@ -102,11 +94,74 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 		return nil, err
 	}
 
-	// 7. 入札成功後の後処理（トランザクション外）
+	// 入札成功後の後処理（トランザクション外）
 	uc.invalidateCache(ctx, result.ItemID)
 	uc.notifyOutbid(ctx, result, lockedItem)
 
 	return result, nil
+}
+
+func (uc *createBidUseCase) verifyBuyer(ctx context.Context, buyerID int) error {
+	buyer, err := uc.buyerRepo.FindByID(ctx, buyerID)
+	if err != nil {
+		return err
+	}
+	if buyer == nil {
+		return &errors.ForbiddenError{
+			Message: "bidder record not found for authenticated user",
+		}
+	}
+	return nil
+}
+
+func (uc *createBidUseCase) getAndValidateItem(ctx context.Context, itemID int, price model.BidPrice) (*model.AuctionItem, error) {
+	item, err := uc.itemRepo.FindByIDWithLock(ctx, itemID)
+	if err != nil {
+		return nil, err
+	}
+	if item == nil {
+		return nil, &errors.ValidationError{
+			Field:   "item_id",
+			Message: "Item not found",
+		}
+	}
+
+	if item.Status != model.ItemStatusAvailable {
+		return nil, &errors.ConflictError{
+			Message: fmt.Sprintf("bidding is not allowed for item with status %s", item.Status),
+		}
+	}
+
+	if err := uc.validateBidPrice(item, price); err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (uc *createBidUseCase) getAndValidateAuction(ctx context.Context, auctionID int) (*model.Auction, error) {
+	auction, err := uc.auctionRepo.FindByIDWithLock(ctx, auctionID)
+	if err != nil {
+		return nil, err
+	}
+	if auction == nil {
+		return nil, &errors.NotFoundError{
+			Resource: "Auction",
+			ID:       auctionID,
+		}
+	}
+
+	if auction.Status != model.AuctionStatusInProgress {
+		return nil, &errors.ConflictError{
+			Message: fmt.Sprintf("bidding is not allowed for auction with status %s", auction.Status),
+		}
+	}
+
+	if err := uc.validateAuctionPeriod(auction); err != nil {
+		return nil, err
+	}
+
+	return auction, nil
 }
 
 func (uc *createBidUseCase) validateBidPrice(item *model.AuctionItem, bidPrice model.BidPrice) error {

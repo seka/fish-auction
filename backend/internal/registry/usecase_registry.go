@@ -98,9 +98,9 @@ func (u *useCaseRegistry) NewReorderItemsUseCase() item.ReorderItemsUseCase {
 }
 
 func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
-	itemRepo := u.repo.NewItemRepository()
 	return bid.NewCreateBidUseCase(
-		itemRepo,
+		u.repo.NewItemRepository(),
+		u.repo.NewBuyerRepository(),
 		u.repo.NewBidRepository(),
 		u.repo.NewAuctionRepository(),
 		u.NewPushNotificationUseCase(),
