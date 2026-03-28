@@ -18,9 +18,9 @@ services:
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
       - SMTP_FROM=noreply@example.com
-      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
-      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
-      - VAPID_SUBJECT=${VAPID_SUBJECT}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-BNsJHb8gK52F90sri2Y2cWoRz4WKxWKtxtX9_5SF3GtJhbRx3gkIKNcl9g6lGURZGXAO1XryP_6fONu4Az_WQzg}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-CJtvrZsdHJEvDfRsPGy-11hrlEtIqt0HbPU8NJYcdEg}
+      - VAPID_SUBJECT=${VAPID_SUBJECT:-mailto:admin@example.com}
       - FRONTEND_URL=https://localhost
     depends_on:
       - db
@@ -39,7 +39,7 @@ services:
     environment:
       - NODE_ENV=development
       - API_BASE_URL=http://backend:8080
-      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-BNsJHb8gK52F90sri2Y2cWoRz4WKxWKtxtX9_5SF3GtJhbRx3gkIKNcl9g6lGURZGXAO1XryP_6fONu4Az_WQzg}
     volumes:
       - ./frontend:/app
       - /app/node_modules
