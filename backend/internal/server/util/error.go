@@ -30,6 +30,10 @@ func HandleError(w http.ResponseWriter, err error) {
 		status = http.StatusUnauthorized
 		errorType = "unauthorized"
 		message = e.Error()
+	case *errors.ForbiddenError:
+		status = http.StatusForbidden
+		errorType = "forbidden"
+		message = e.Error()
 	default:
 		status = http.StatusInternalServerError
 		errorType = "internal_error"
