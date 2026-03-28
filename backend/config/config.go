@@ -30,6 +30,7 @@ type Config struct {
 	ReadTimeoutSec  time.Duration
 	WriteTimeoutSec time.Duration
 	IdleTimeoutSec  time.Duration
+	FrontendURL     string
 }
 
 // Load provides Load related functionality.
@@ -59,6 +60,7 @@ func Load() (*Config, error) {
 		ReadTimeoutSec:  time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
 		WriteTimeoutSec: time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeoutSec:  time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
+		FrontendURL:     getEnv("FRONTEND_URL", "http://localhost:3000"),
 	}
 
 	if cfg.ServerAddress == "" {
