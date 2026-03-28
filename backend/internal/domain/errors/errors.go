@@ -34,11 +34,20 @@ func (e *ConflictError) Error() string {
 	return e.Message
 }
 
-// UnauthorizedError represents an authentication/authorization error
+// UnauthorizedError represents an authentication error
 type UnauthorizedError struct {
 	Message string
 }
 
 func (e *UnauthorizedError) Error() string {
+	return e.Message
+}
+
+// ForbiddenError represents an authorization error
+type ForbiddenError struct {
+	Message string
+}
+
+func (e *ForbiddenError) Error() string {
 	return e.Message
 }

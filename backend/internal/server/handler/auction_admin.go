@@ -158,6 +158,7 @@ func (h *AdminAuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
 // Reorder handles the request to reorder items within an auction.
 func (h *AdminAuctionHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")

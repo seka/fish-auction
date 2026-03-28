@@ -129,7 +129,6 @@ func (h *AdminItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusNoContent)
 }
 
-
 func (h *AdminItemHandler) toResponse(it *model.AuctionItem) dto.ItemResponse {
 	var highestBid *int
 	if it.HighestBid != nil {

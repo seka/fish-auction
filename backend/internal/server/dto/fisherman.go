@@ -1,6 +1,5 @@
 package dto
 
-
 // CreateFishermanRequest is a data transfer object.
 type CreateFishermanRequest struct {
 	Name string `json:"name"`

@@ -1,6 +1,5 @@
 package dto
 
-
 // CreateBuyerRequest is a data transfer object.
 type CreateBuyerRequest struct {
 	Name         string `json:"name"`

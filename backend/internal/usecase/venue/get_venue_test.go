@@ -26,9 +26,9 @@ func (m *mockVenueRepoForGet) FindByID(_ context.Context, id int) (*model.Venue,
 	}
 	return nil, nil
 }
-func (m *mockVenueRepoForGet) List(_ context.Context) ([]model.Venue, error)      { return nil, nil }
+func (m *mockVenueRepoForGet) List(_ context.Context) ([]model.Venue, error)  { return nil, nil }
 func (m *mockVenueRepoForGet) Update(_ context.Context, _ *model.Venue) error { return nil }
-func (m *mockVenueRepoForGet) Delete(_ context.Context, _ int) error             { return nil }
+func (m *mockVenueRepoForGet) Delete(_ context.Context, _ int) error          { return nil }
 
 func TestGetVenueUseCase_Execute(t *testing.T) {
 	validVenue := &model.Venue{ID: 1, Name: "Venue A"}

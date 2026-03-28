@@ -35,7 +35,7 @@ func (m *mockBuyerRepository) List(_ context.Context) ([]model.Buyer, error) { r
 func (m *mockBuyerRepository) FindByName(_ context.Context, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepository) Count(_ context.Context) (int, error)   { return 0, nil }
+func (m *mockBuyerRepository) Count(_ context.Context) (int, error)  { return 0, nil }
 func (m *mockBuyerRepository) Delete(_ context.Context, _ int) error { return nil }
 
 type mockBuyerPasswordResetRepository struct {

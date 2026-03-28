@@ -5,11 +5,11 @@ type ItemStatus string
 
 const (
 	// ItemStatusPending provides ItemStatusPending related functionality.
-	ItemStatusPending   ItemStatus = "Pending"
+	ItemStatusPending ItemStatus = "Pending"
 	// ItemStatusAvailable provides ItemStatusAvailable related functionality.
 	ItemStatusAvailable ItemStatus = "Available"
 	// ItemStatusSold provides ItemStatusSold related functionality.
-	ItemStatusSold      ItemStatus = "Sold"
+	ItemStatusSold ItemStatus = "Sold"
 )
 
 // IsValid checks if the status is valid

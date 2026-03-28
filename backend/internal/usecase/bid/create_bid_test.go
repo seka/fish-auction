@@ -21,6 +21,10 @@ func bpp(amount int) *model.BidPrice {
 	return &p
 }
 
+func intPtr(i int) *int {
+	return &i
+}
+
 //go:fix inline
 
 func TestCreateBidUseCase_Execute(t *testing.T) {
@@ -46,6 +50,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 		wantUpdateCalled bool
 		wantNotification bool // Check if SendNotification is called
 		mockAuction      *model.Auction
+		buyerFound       bool
+		buyerRepoErr     error
+		itemStatus       model.ItemStatus
 	}{
 		{
 			name: "Success",
@@ -54,7 +61,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:       true,
 			itemFound:        true,
+			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -72,8 +81,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1500), // 1000 + 500 (min increment for < 10000 is 500)
 			},
+			buyerFound:       true,
 			itemFound:        true,
-			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: bpp(1000)}, // Current price 1000
+			itemStatus:       model.ItemStatusAvailable,
+			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, Status: model.ItemStatusAvailable, HighestBid: bpp(1000)}, // Current price 1000
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -91,12 +102,58 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1499), // 1000 + 500 = 1500 required
 			},
+			buyerFound:       true,
 			itemFound:        true,
-			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: bpp(1000)},
+			itemStatus:       model.ItemStatusAvailable,
+			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, Status: model.ItemStatusAvailable, HighestBid: bpp(1000)},
 			wantErr:          &domainErrors.ValidationError{Field: "price"},
 			mockAuction:      nil,
 			wantCreateCalled: false,
-			wantTxCalled:     false,
+			wantTxCalled:     true,
+		},
+		{
+			name: "Error_BuyerNotFound",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   bp(1000),
+			},
+			buyerFound:       false,
+			wantErr:          &domainErrors.ForbiddenError{},
+			wantCreateCalled: false,
+			wantTxCalled:     true,
+		},
+		{
+			name: "Error_ItemStatusNotAvailable",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   bp(1000),
+			},
+			buyerFound:       true,
+			itemFound:        true,
+			itemStatus:       model.ItemStatusPending,
+			wantErr:          &domainErrors.ConflictError{},
+			wantCreateCalled: false,
+			wantTxCalled:     true,
+		},
+		{
+			name: "Error_AuctionStatusNotInProgress",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   bp(1000),
+			},
+			buyerFound: true,
+			itemFound:  true,
+			itemStatus: model.ItemStatusAvailable,
+			mockAuction: &model.Auction{
+				ID:     1,
+				Status: model.AuctionStatusScheduled,
+			},
+			wantErr:          &domainErrors.ConflictError{},
+			wantCreateCalled: false,
+			wantTxCalled:     true,
 		},
 		{
 			name: "Success_AutomaticExtension",
@@ -105,7 +162,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:       true,
 			itemFound:        true,
+			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -116,13 +175,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 				// Use a fixed date part from 'now' to ensure consistency
 				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
-				
-				// To avoid crossing midnight boundaries during the test, 
+
+				// To avoid crossing midnight boundaries during the test,
 				// we set a safe time window within 'today'.
 				// If it's very early (00:xx), we use 10 mins after midnight as start.
 				// If it's late (23:xx), we use 10 mins before midnight as end.
 				// For most times, -1h and +2m works EXCEPT when it crosses midnight.
-				
+
 				var startTime, endTime time.Time
 				if now.Hour() == 0 {
 					// Morning: start at 00:00, end later
@@ -153,7 +212,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:       true,
 			itemFound:        true,
+			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -172,7 +233,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:       true,
 			itemFound:        true,
+			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -181,7 +244,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 				now := time.Now().In(jst)
 				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
-				
+
 				endTime := now.Add(2 * time.Minute)
 				if now.Hour() == 23 && endTime.Day() != now.Day() {
 					endTime = today.Add(23*time.Hour + 59*time.Minute)
@@ -202,7 +265,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:       true,
 			itemFound:        true,
+			itemStatus:       model.ItemStatusAvailable,
 			updateStatusErr:  updateStatusErr,
 			wantErr:          nil,
 			wantTxCalled:     true,
@@ -222,7 +287,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:       true,
 			itemFound:        true,
+			itemStatus:       model.ItemStatusAvailable,
 			createErr:        createBidErr,
 			wantErr:          createBidErr,
 			wantCreateCalled: true,
@@ -241,7 +308,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
+			buyerFound:   true,
 			itemFound:    true,
+			itemStatus:   model.ItemStatusAvailable,
 			txErr:        txErr,
 			wantErr:      txErr,
 			wantTxCalled: true,
@@ -259,8 +328,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 1,
 				Price:   bp(1000),
 			},
-			itemFound: true,
-			wantErr:   &domainErrors.ValidationError{Field: "auction_time"},
+			buyerFound: true,
+			itemFound:  true,
+			itemStatus: model.ItemStatusAvailable,
+			wantErr:    &domainErrors.ValidationError{Field: "auction_time"},
 			mockAuction: func() *model.Auction {
 				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 				now := time.Now().In(jst)
@@ -276,26 +347,44 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 					Status: model.AuctionStatusInProgress,
 				}
 			}(),
+			wantTxCalled: true,
 		},
 		{
 			name:         "Error_ItemRepoError",
+			buyerFound:   true,
 			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
 			listItemsErr: dbErr,
 			wantErr:      dbErr,
+			wantTxCalled: true,
 		},
 		{
 			name:         "Error_ItemNotFound",
+			buyerFound:   true,
 			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
 			itemFound:    false,
 			listItemsErr: nil,
-			wantErr:      &domainErrors.ValidationError{Field: "item_id"},
+			wantErr:      &domainErrors.NotFoundError{Resource: "Item"},
+			wantTxCalled: true,
 		},
 		{
 			name:          "Error_AuctionRepoError",
+			buyerFound:    true,
 			input:         &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
 			itemFound:     true,
+			itemStatus:    model.ItemStatusAvailable,
 			getAuctionErr: dbErr,
 			wantErr:       dbErr,
+			wantTxCalled:  true,
+		},
+		{
+			name:         "Error_AuctionNotFound",
+			buyerFound:   true,
+			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
+			itemFound:    true,
+			itemStatus:   model.ItemStatusAvailable,
+			mockAuction:  nil,
+			wantErr:      &domainErrors.NotFoundError{Resource: "Auction"},
+			wantTxCalled: true,
 		},
 		{
 			name: "Success_SendNotification_WhenOutbid",
@@ -304,13 +393,16 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				BuyerID: 2, // New bidder
 				Price:   bp(2000),
 			},
-			itemFound: true,
+			buyerFound: true,
+			itemFound:  true,
+			itemStatus: model.ItemStatusAvailable,
 			mockItem: &model.AuctionItem{
 				ID:              1,
 				AuctionID:       1,
+				Status:          model.ItemStatusAvailable,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: new(1),
+				HighestBidderID: intPtr(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -324,18 +416,35 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 		},
 		{
+			name: "Error_BuyerRepoError",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 1,
+				Price:   bp(1000),
+			},
+			buyerFound:   true,
+			buyerRepoErr: dbErr,
+			txErr:        nil,
+			wantErr:      dbErr,
+			wantTxCalled: true,
+		},
+		{
 			name: "Success_NoNotification_WhenSameBidder",
 			input: &model.Bid{
 				ItemID:  1,
 				BuyerID: 1, // Same bidder
 				Price:   bp(2000),
 			},
-			itemFound: true,
+			buyerFound: true,
+			itemFound:  true,
+			itemStatus: model.ItemStatusAvailable,
 			mockItem: &model.AuctionItem{
 				ID:              1,
+				AuctionID:       1,
+				Status:          model.ItemStatusAvailable,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: new(1),
+				HighestBidderID: intPtr(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -369,7 +478,20 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 						ID:        tt.input.ItemID,
 						AuctionID: 1,
 						FishType:  "Aji",
+						Status:    tt.itemStatus,
 					}, nil
+				},
+			}
+
+			mockBuyerRepo := &mock.MockBuyerRepository{
+				FindByIDFunc: func(_ context.Context, _ int) (*model.Buyer, error) {
+					if tt.buyerRepoErr != nil {
+						return nil, tt.buyerRepoErr
+					}
+					if !tt.buyerFound {
+						return nil, nil
+					}
+					return &model.Buyer{ID: tt.input.BuyerID}, nil
 				},
 			}
 
@@ -425,7 +547,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBidRepo, mockAuctionRepo, mockPushUseCase, mockTxMgr, mockCacheInv)
+			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBuyerRepo, mockBidRepo, mockAuctionRepo, mockPushUseCase, mockTxMgr, mockCacheInv)
 			created, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr != nil {
@@ -438,8 +560,35 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 					if wantValErr.Field != "" && gotValErr.Field != wantValErr.Field {
 						t.Fatalf("expected field %s, got %s", wantValErr.Field, gotValErr.Field)
 					}
-				} else if !errors.Is(err, tt.wantErr) {
-					t.Fatalf("expected error %v, got %v", tt.wantErr, err)
+				} else {
+					var wantForbErr *domainErrors.ForbiddenError
+					if errors.As(tt.wantErr, &wantForbErr) {
+						var gotForbErr *domainErrors.ForbiddenError
+						if !errors.As(err, &gotForbErr) {
+							t.Fatalf("expected ForbiddenError, got %T: %v", err, err)
+						}
+					} else {
+						var wantNotFoundErr *domainErrors.NotFoundError
+						if errors.As(tt.wantErr, &wantNotFoundErr) {
+							var gotNotFoundErr *domainErrors.NotFoundError
+							if !errors.As(err, &gotNotFoundErr) {
+								t.Fatalf("expected NotFoundError, got %T: %v", err, err)
+							}
+							if wantNotFoundErr.Resource != "" && gotNotFoundErr.Resource != wantNotFoundErr.Resource {
+								t.Fatalf("expected resource %s, got %s", wantNotFoundErr.Resource, gotNotFoundErr.Resource)
+							}
+						} else {
+							var wantConflictErr *domainErrors.ConflictError
+							if errors.As(tt.wantErr, &wantConflictErr) {
+								var gotConflictErr *domainErrors.ConflictError
+								if !errors.As(err, &gotConflictErr) {
+									t.Fatalf("expected ConflictError, got %T: %v", err, err)
+								}
+							} else if !errors.Is(err, tt.wantErr) {
+								t.Fatalf("expected error %v, got %v", tt.wantErr, err)
+							}
+						}
+					}
 				}
 				if created != nil {
 					t.Fatalf("expected nil result, got %+v", created)
@@ -462,8 +611,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			if createCalled != tt.wantCreateCalled {
 				t.Fatalf("Create called = %v, want %v", createCalled, tt.wantCreateCalled)
 			}
-			if !txCalled {
-				t.Fatalf("WithTransaction was not called")
+			if txCalled != tt.wantTxCalled {
+				t.Fatalf("WithTransaction called = %v, want %v", txCalled, tt.wantTxCalled)
 			}
 		})
 	}

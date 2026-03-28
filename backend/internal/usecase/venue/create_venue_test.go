@@ -29,7 +29,7 @@ func (m *mockVenueRepoForCreate) List(_ context.Context) ([]model.Venue, error) 
 	return nil, nil
 }
 func (m *mockVenueRepoForCreate) Update(_ context.Context, _ *model.Venue) error { return nil }
-func (m *mockVenueRepoForCreate) Delete(_ context.Context, _ int) error             { return nil }
+func (m *mockVenueRepoForCreate) Delete(_ context.Context, _ int) error          { return nil }
 
 func TestCreateVenueUseCase_Execute(t *testing.T) {
 	validVenue := &model.Venue{Name: "New Venue"}

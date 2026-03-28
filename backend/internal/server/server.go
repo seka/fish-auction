@@ -45,9 +45,9 @@ type Server struct {
 	gzip                  *middleware.GzipMiddleware
 	maxBody               *middleware.MaxBodyMiddleware
 	recovery              *middleware.RecoveryMiddleware
-	readTimeoutSec        time.Duration
-	writeTimeoutSec       time.Duration
-	idleTimeoutSec        time.Duration
+	readTimeout           time.Duration
+	writeTimeout          time.Duration
+	idleTimeout           time.Duration
 }
 
 // NewServer creates a new Server instance.
@@ -71,9 +71,9 @@ func NewServer(
 	pushHandler *handler.PushHandler,
 	sessionRepo repository.SessionRepository,
 	allowedOrigins []string,
-	readTimeoutSec time.Duration,
-	writeTimeoutSec time.Duration,
-	idleTimeoutSec time.Duration,
+	readTimeout time.Duration,
+	writeTimeout time.Duration,
+	idleTimeout time.Duration,
 ) *Server {
 	s := &Server{
 		router:                http.NewServeMux(),
@@ -103,9 +103,9 @@ func NewServer(
 		gzip:                  middleware.NewGzipMiddleware(),
 		maxBody:               middleware.NewMaxBodyMiddleware(1024 * 1024), // 1MB
 		recovery:              middleware.NewRecoveryMiddleware(),
-		readTimeoutSec:        readTimeoutSec,
-		writeTimeoutSec:       writeTimeoutSec,
-		idleTimeoutSec:        idleTimeoutSec,
+		readTimeout:           readTimeout,
+		writeTimeout:          writeTimeout,
+		idleTimeout:           idleTimeout,
 	}
 	s.routes()
 	return s
@@ -170,10 +170,10 @@ func (s *Server) Start(addr string) error {
 	s.httpServer = &http.Server{
 		Addr:              addr,
 		Handler:           handlerWithRecovery,
-		ReadTimeout:       s.readTimeoutSec,
+		ReadTimeout:       s.readTimeout,
 		ReadHeaderTimeout: 20 * time.Second,
-		WriteTimeout:      s.writeTimeoutSec,
-		IdleTimeout:       s.idleTimeoutSec,
+		WriteTimeout:      s.writeTimeout,
+		IdleTimeout:       s.idleTimeout,
 	}
 
 	go func() {
