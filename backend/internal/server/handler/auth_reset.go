@@ -35,27 +35,21 @@ func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) 
 }
 
 // VerifyToken provides VerifyToken related functionality.
-func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, _ *http.Request) {
-	// Verification is implicitly done by finding the token.
-	// However, we don't have a dedicated "Verify" use case that just checks without consuming.
-	// We could use ResetPassword but that consumes it.
-	// Or we can add a method to Repo/UseCase just to check.
-	// For now, let's skip explicit verification endpoint if not strictly required by frontend flow
-	// or implement a simple check.
-	// The implementation plan mentioned confirm endpoint mostly.
-	// But `verify` endpoint was in the list.
-	// Let's implement it if feasible, or just return 200 for now if frontend just checks by loading page.
-	// Actually, the frontend calls `verify` in plan?
-	// Plan: "POST /api/auth/password-reset/verify (Body: token) -> フロントエンドでの予備チェック用"
-	// So I should implement checks. I can reuse repo FindByTokenHash but need to check expiry.
-	// But `ResetPasswordUseCase` does verify+consume.
-	// I'll skip implementing logic for now or add a VerifyUseCase later if needed.
-	// To save time/complexity, I will return OK for now or simple check if I expose Repo method via UseCase.
-	// Actually, I can't access Repo directly here.
-	// Let's skip logic and return OK, or leave TODO.
-	// Frontend can just try to submit. Or I can add `VerifyResetTokenUseCase`.
+func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
+	var req dto.ResetPasswordVerifyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 
-	w.WriteHeader(http.StatusOK) // Placeholder
+	uc := h.reg.NewVerifyResetTokenUseCase()
+	if err := uc.Execute(r.Context(), req.Token); err != nil {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Token is valid"})
 }
 
 // ConfirmReset provides ConfirmReset related functionality.

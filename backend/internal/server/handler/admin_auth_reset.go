@@ -5,38 +5,31 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/registry"
-	"github.com/seka/fish-auction/backend/internal/usecase/admin"
+	"github.com/seka/fish-auction/backend/internal/server/dto"
 )
 
 // AdminAuthResetHandler handles HTTP requests related to admin password resets.
 type AdminAuthResetHandler struct {
-	requestUseCase admin.RequestPasswordResetUseCase
-	resetUseCase   admin.ResetPasswordUseCase
+	reg registry.UseCase
 }
 
 // NewAdminAuthResetHandler creates a new AdminAuthResetHandler instance.
 func NewAdminAuthResetHandler(r registry.UseCase) *AdminAuthResetHandler {
 	return &AdminAuthResetHandler{
-		requestUseCase: r.NewRequestAdminPasswordResetUseCase(),
-		resetUseCase:   r.NewResetAdminPasswordUseCase(),
+		reg: r,
 	}
 }
 
 // RequestReset handles the admin password reset request.
 func (h *AdminAuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Email string `json:"email"`
-	}
+	var req dto.ResetPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.requestUseCase.Execute(r.Context(), req.Email); err != nil {
-		// Log error but generally return success to prevent email enumeration
-		// Or return 500 if it's a system error?
-		// For now, simple error response if something major fails, or success.
-		// UseCase returns nil if user not found, so this error would be infrastructure.
+	uc := h.reg.NewRequestAdminPasswordResetUseCase()
+	if err := uc.Execute(r.Context(), req.Email); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -46,27 +39,33 @@ func (h *AdminAuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Requ
 }
 
 // VerifyToken provides VerifyToken related functionality.
-func (h *AdminAuthResetHandler) VerifyToken(w http.ResponseWriter, _ *http.Request) {
-	// Optional: verify token validity without resetting password yet
-	// Not strictly required if frontend just prompts for new password.
-	// But nice for UX (show "invalid token" immediately).
-	// Current UseCase doesn't support separate verify, so we skip or enhance UseCase.
-	// For now, skipped to keep simple. Frontend can just let user submit password.
-	w.WriteHeader(http.StatusOK)
-}
-
-// ConfirmReset provides ConfirmReset related functionality.
-func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Token       string `json:"token"`
-		NewPassword string `json:"new_password"`
-	}
+func (h *AdminAuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
+	var req dto.ResetPasswordVerifyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.resetUseCase.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
+	uc := h.reg.NewVerifyAdminResetTokenUseCase()
+	if err := uc.Execute(r.Context(), req.Token); err != nil {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Token is valid"})
+}
+
+// ConfirmReset provides ConfirmReset related functionality.
+func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) {
+	var req dto.ResetPasswordConfirmRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	uc := h.reg.NewResetAdminPasswordUseCase()
+	if err := uc.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
 		if err.Error() == "invalid or expired token" || err.Error() == "token expired" {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
