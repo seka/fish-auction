@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -69,7 +70,7 @@ func TestServerIntegration(t *testing.T) {
 		SMTPPort:   getEnvOrDefault("SMTP_PORT", "1025"),
 		SMTPFrom:   getEnvOrDefault("SMTP_FROM", "test@example.com"),
 		DBSslMode:  cfg.DBSslMode,
-		FrontendURL: "http://localhost:3000",
+		FrontendURL: func() *url.URL { u, _ := url.Parse("http://localhost:3000"); return u }(),
 	}
 
 	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）

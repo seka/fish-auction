@@ -3,6 +3,7 @@ package admin_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 	"time"
 
@@ -146,7 +147,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 			emailService := &mockEmailServiceForReqPwd{sndErr: tt.mockSndErr}
 
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, "http://localhost:3000")
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, func() *url.URL { u, _ := url.Parse("http://localhost:3000"); return u }())
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantErr {
