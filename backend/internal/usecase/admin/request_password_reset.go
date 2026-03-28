@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -74,8 +75,16 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	}
 
 	// 4. Send Email
-	resetURL := fmt.Sprintf("%s/login/admin/reset_password?token=%s", u.frontendURL, token)
-	if err := u.emailService.SendAdminPasswordReset(ctx, email, resetURL); err != nil {
+	baseURL, err := url.Parse(u.frontendURL)
+	if err != nil {
+		return fmt.Errorf("invalid frontend URL: %w", err)
+	}
+	resetURL := baseURL.JoinPath("/login/admin/reset_password")
+	q := resetURL.Query()
+	q.Set("token", token)
+	resetURL.RawQuery = q.Encode()
+
+	if err := u.emailService.SendAdminPasswordReset(ctx, email, resetURL.String()); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
