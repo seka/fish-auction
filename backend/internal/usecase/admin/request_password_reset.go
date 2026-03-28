@@ -24,6 +24,7 @@ type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.PasswordResetRepository
 	emailService service.AdminEmailService
+	frontendURL  string
 }
 
 var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
@@ -33,11 +34,13 @@ func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.AdminEmailService,
+	frontendURL string,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,
 		emailService: emailService,
+		frontendURL:  frontendURL,
 	}
 }
 
@@ -71,7 +74,7 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	}
 
 	// 4. Send Email
-	resetURL := fmt.Sprintf("http://localhost:3000/login/admin/reset_password?token=%s", token) // TODO: config
+	resetURL := fmt.Sprintf("%s/login/admin/reset_password?token=%s", u.frontendURL, token)
 	if err := u.emailService.SendAdminPasswordReset(ctx, email, resetURL); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
