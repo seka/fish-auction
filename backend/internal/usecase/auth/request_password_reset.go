@@ -25,7 +25,7 @@ type requestPasswordResetUseCase struct {
 	buyerRepo    repository.BuyerRepository
 	pwdResetRepo repository.PasswordResetRepository
 	emailService service.BuyerEmailService
-	frontendURL  string
+	frontendURL  *url.URL
 }
 
 var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
@@ -35,7 +35,7 @@ func NewRequestPasswordResetUseCase(
 	buyerRepo repository.BuyerRepository,
 	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.BuyerEmailService,
-	frontendURL string,
+	frontendURL *url.URL,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		buyerRepo:    buyerRepo,
@@ -78,11 +78,7 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	}
 
 	// 4. Send Email
-	baseURL, err := url.Parse(u.frontendURL)
-	if err != nil {
-		return fmt.Errorf("invalid frontend URL: %w", err)
-	}
-	resetURL := baseURL.JoinPath("/login/reset_password")
+	resetURL := u.frontendURL.JoinPath("/login/reset_password")
 	q := resetURL.Query()
 	q.Set("token", token)
 	resetURL.RawQuery = q.Encode()
