@@ -99,6 +99,9 @@ export const BuyerForm = ({ form, onSubmit, isCreating }: BuyerFormProps) => {
                 {String(errors.password.message)}
               </Text>
             )}
+            <Text className={css({ color: 'gray.500', fontSize: 'xs', mt: '1.5' })}>
+              {t('Validation.password_complexity_hint')}
+            </Text>
           </Box>
 
           <Box>
