@@ -57,7 +57,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 		{
 			name:          "AlreadyExists",
 			email:         "existing@example.com",
-			password:      "password123",
+			password:      "Password123",
 			existingAdmin: &model.Admin{ID: 1, Email: "existing@example.com"},
 			wantErr:       true,
 		},
@@ -71,7 +71,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 		{
 			name:      "CreateError",
 			email:     "new@example.com",
-			password:  "password123",
+			password:  "Password123",
 			createErr: errors.New("create failed"),
 			wantErr:   true,
 		},
