@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -54,8 +55,11 @@ func run() error {
 		return nil
 	}
 
-	email := "admin@example.com"
-	password := "Admin-Password123"
+	// Parse flags
+	var email, password string
+	flag.StringVar(&email, "email", "admin@example.com", "admin email")
+	flag.StringVar(&password, "password", "Admin-Password123", "admin password")
+	flag.Parse()
 
 	if _, err = uc.Execute(ctx, email, password); err != nil {
 		return fmt.Errorf("failed to create admin: %w", err)
