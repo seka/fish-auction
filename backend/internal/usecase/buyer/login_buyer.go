@@ -2,13 +2,13 @@ package buyer
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // LockDuration and MaxFailedAttempts are now defined in central usecase package.
@@ -33,9 +33,20 @@ func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo reposit
 
 // Execute authenticates a buyer
 func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string) (*model.Buyer, error) {
+	// 0. Validate password format (optional for login, but good for consistency)
+	pwd, err := model.NewPassword(password)
+	if err != nil {
+		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
+	}
+
 	// Find authentication by email
 	auth, err := uc.authRepo.FindByEmail(ctx, email)
 	if err != nil {
+		// We return UnauthorizedError to mask whether the user exists or not.
+		// However, we can log the real error or wrap it if needed for internal tracing.
+		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
+	}
+	if auth == nil {
 		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
 	}
 
@@ -44,8 +55,8 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 		return nil, &apperrors.UnauthorizedError{Message: "account is locked due to too many failed attempts"}
 	}
 
-	// Verify password
-	if err := bcrypt.CompareHashAndPassword([]byte(auth.PasswordHash), []byte(password)); err != nil {
+	// Verify password using Password VO
+	if err := pwd.CompareWithHash(auth.PasswordHash); err != nil {
 		// Increment failed attempts
 		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
 
@@ -60,12 +71,14 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	}
 
 	// Update last login and reset failed attempts
-	_ = uc.authRepo.UpdateLoginSuccess(ctx, auth.ID, time.Now())
+	if err := uc.authRepo.UpdateLoginSuccess(ctx, auth.ID, time.Now()); err != nil {
+		return nil, fmt.Errorf("failed to update login success: %w", err)
+	}
 
 	// Get buyer details
 	buyer, err := uc.buyerRepo.FindByID(ctx, auth.BuyerID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find buyer details: %w", err)
 	}
 
 	return buyer, nil

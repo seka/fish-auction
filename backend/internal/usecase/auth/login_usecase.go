@@ -3,11 +3,11 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginUseCase defines the interface for user authentication.
@@ -34,17 +34,23 @@ func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*mo
 	if err != nil {
 		var nfErr *apperrors.NotFoundError
 		if errors.As(err, &nfErr) {
-			return nil, nil // Authentication failure (user not found)
+			return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to find admin during login: %w", err)
 	}
 	if admin == nil {
-		return nil, nil
+		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(password))
+	pwd, err := model.NewPassword(password)
 	if err != nil {
-		return nil, nil // Invalid password
+		// Even if the password doesn't meet the current complexity standard,
+		// we should treat it as an auth failure if it doesn't match the hash.
+		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
+	}
+
+	if err := pwd.CompareWithHash(admin.PasswordHash); err != nil {
+		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 	}
 
 	return admin, nil

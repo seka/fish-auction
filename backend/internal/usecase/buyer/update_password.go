@@ -2,26 +2,24 @@ package buyer
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
-// UpdatePasswordUseCase updates an existing record.
+// UpdatePasswordUseCase defines the interface for updating a buyer password.
 type UpdatePasswordUseCase interface {
 	Execute(ctx context.Context, buyerID int, currentPassword, newPassword string) error
 }
-
-var _ UpdatePasswordUseCase = (*updatePasswordUseCase)(nil)
 
 type updatePasswordUseCase struct {
 	authRepo    repository.AuthenticationRepository
 	sessionRepo repository.SessionRepository
 }
 
-// NewUpdatePasswordUseCase creates a new instance of UpdatePasswordUseCase
+// NewUpdatePasswordUseCase creates a new instance of UpdatePasswordUseCase.
 func NewUpdatePasswordUseCase(authRepo repository.AuthenticationRepository, sessionRepo repository.SessionRepository) UpdatePasswordUseCase {
 	return &updatePasswordUseCase{
 		authRepo:    authRepo,
@@ -29,28 +27,45 @@ func NewUpdatePasswordUseCase(authRepo repository.AuthenticationRepository, sess
 	}
 }
 
+// Execute updates the buyer password after verifying the current one.
 func (uc *updatePasswordUseCase) Execute(ctx context.Context, buyerID int, currentPassword, newPassword string) error {
 	auth, err := uc.authRepo.FindByBuyerID(ctx, buyerID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to find authentication: %w", err)
 	}
 	if auth == nil {
-		return errors.New("buyer authentication not found")
+		return &apperrors.NotFoundError{Resource: "authentication", ID: buyerID}
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(auth.PasswordHash), []byte(currentPassword)); err != nil {
-		return errors.New("invalid current password")
-	}
-
-	newHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	// 0. Verify current password
+	currentPwd, err := model.NewPassword(currentPassword)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to validate current password format: %w", err)
+	}
+	if err := currentPwd.CompareWithHash(auth.PasswordHash); err != nil {
+		return &apperrors.UnauthorizedError{Message: "invalid current password"}
 	}
 
-	if err := uc.authRepo.UpdatePassword(ctx, buyerID, string(newHash)); err != nil {
-		return err
+	// 1. Validate and hash new password
+	newPwd, err := model.NewPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to validate new password format: %w", err)
 	}
 
-	// Invalidate all sessions after password change
-	return uc.sessionRepo.DeleteAllByUserID(ctx, buyerID, model.SessionRoleBuyer)
+	hashedPassword, err := newPwd.Hash()
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// 2. Update password
+	if err := uc.authRepo.UpdatePassword(ctx, buyerID, hashedPassword); err != nil {
+		return fmt.Errorf("failed to update password in repository: %w", err)
+	}
+
+	// 3. Invalidate all sessions after password change for security
+	if err := uc.sessionRepo.DeleteAllByUserID(ctx, buyerID, model.SessionRoleBuyer); err != nil {
+		return fmt.Errorf("failed to invalidate sessions: %w", err)
+	}
+
+	return nil
 }

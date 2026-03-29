@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/domain/errors"
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // ResetPasswordUseCase defines the interface for resetting an admin password.
@@ -37,33 +37,40 @@ func NewResetPasswordUseCase(
 }
 
 func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword string) error {
+	pwd, err := model.NewPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
 	resetToken, err := u.pwdResetRepo.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to find reset token: %w", err)
 	}
 	if resetToken == nil || resetToken.Role != "admin" {
-		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
+		return &apperrors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
 	if time.Now().After(resetToken.ExpiresAt) {
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
-		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
+		return &apperrors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	hashedPassword, err := pwd.Hash()
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	if err := u.adminRepo.UpdatePassword(ctx, resetToken.UserID, string(hashedPassword)); err != nil {
+	if err := u.adminRepo.UpdatePassword(ctx, resetToken.UserID, hashedPassword); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
 	// Invalidate token
-	_ = u.pwdResetRepo.DeleteAllByUserID(ctx, resetToken.UserID, "admin")
+	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, resetToken.UserID, "admin"); err != nil {
+		return fmt.Errorf("failed to invalidate reset token after successful reset: %w", err)
+	}
 
 	return nil
 }
