@@ -15,7 +15,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var (
+	email    string
+	password string
+)
+
+func init() {
+	flag.StringVar(&email, "email", "admin@example.com", "admin email")
+	flag.StringVar(&password, "password", "Admin-Password123", "admin password")
+}
+
 func main() {
+	flag.Parse()
+
 	if err := run(); err != nil {
 		log.Printf("Error: %v", err)
 		os.Exit(1)
@@ -54,12 +66,6 @@ func run() error {
 		fmt.Printf("Admin user(s) found (%d). Skipping initialization.\n", count)
 		return nil
 	}
-
-	// Parse flags
-	var email, password string
-	flag.StringVar(&email, "email", "admin@example.com", "admin email")
-	flag.StringVar(&password, "password", "Admin-Password123", "admin password")
-	flag.Parse()
 
 	if _, err = uc.Execute(ctx, email, password); err != nil {
 		return fmt.Errorf("failed to create admin: %w", err)
