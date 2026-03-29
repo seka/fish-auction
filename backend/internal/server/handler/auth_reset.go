@@ -81,11 +81,24 @@ func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) 
 
 	uc := h.reg.NewResetPasswordUseCase()
 	if err := uc.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
+		var notFoundErr *domainErrors.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+			return
+		}
+
 		var unauthErr *domainErrors.UnauthorizedError
 		if errors.As(err, &unauthErr) {
 			http.Error(w, unauthErr.Message, http.StatusBadRequest)
 			return
 		}
+
+		var valErr *domainErrors.ValidationError
+		if errors.As(err, &valErr) {
+			http.Error(w, valErr.Message, http.StatusBadRequest)
+			return
+		}
+
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
