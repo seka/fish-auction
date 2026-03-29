@@ -51,7 +51,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 		{
 			name:     "Success",
 			email:    "new@example.com",
-			password: "password123",
+			password: "NewPassword123!",
 			wantErr:  false,
 		},
 		{
@@ -64,7 +64,7 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 		{
 			name:     "RepoCheckError",
 			email:    "error@example.com",
-			password: "password123",
+			password: "NewPassword123!",
 			repoErr:  errors.New("db error"),
 			wantErr:  true,
 		},

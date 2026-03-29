@@ -32,6 +32,15 @@ func (h *AdminAuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Requ
 
 	uc := h.reg.NewRequestAdminPasswordResetUseCase()
 	if err := uc.Execute(r.Context(), req.Email); err != nil {
+		var notFoundErr *domainErrors.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			// Security: Don't reveal if admin exists.
+			// Return 200 OK even if not found.
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(map[string]string{"message": "Password reset email sent if account exists"})
+			return
+		}
+		// System errors (DB, Email, etc.) are 500
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -73,11 +82,24 @@ func (h *AdminAuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Requ
 
 	uc := h.reg.NewResetAdminPasswordUseCase()
 	if err := uc.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
+		var notFoundErr *domainErrors.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+			return
+		}
+
 		var unauthErr *domainErrors.UnauthorizedError
 		if errors.As(err, &unauthErr) {
 			http.Error(w, unauthErr.Message, http.StatusBadRequest)
 			return
 		}
+
+		var valErr *domainErrors.ValidationError
+		if errors.As(err, &valErr) {
+			http.Error(w, valErr.Message, http.StatusBadRequest)
+			return
+		}
+
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

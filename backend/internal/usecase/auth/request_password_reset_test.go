@@ -9,6 +9,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
+	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -107,12 +108,13 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			email:     "other@example.com",
 			mockBuyer: nil,
 			wantSent:  false,
+			wantError: true,
 		},
 		{
 			name:        "RepoError",
 			email:       "buyer@example.com",
 			mockRepoErr: errors.New("db error"),
-			wantError:   false, // Returns nil for security
+			wantError:   true,
 		},
 		{
 			name:         "EmailError",
@@ -174,6 +176,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			// For RandomError, if it fails before repo, no calls. SetRandRead fails inside Execute?
 			// Random error happens during token generation which is before repo calls. So no repo calls expected.
 			emailService := &mockEmailService{err: tt.mockEmailErr}
+			txMgr := &usetesting.MockTransactionManager{}
 
 			// Mock rand.Read if testing random error
 			if tt.name == "RandomError" {
@@ -183,7 +186,8 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				defer cleanup()
 			}
 
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, func() *url.URL { u, _ := url.Parse("https://localhost"); return u }())
+			frontendURL, _ := url.Parse("https://localhost")
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, frontendURL, txMgr)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {

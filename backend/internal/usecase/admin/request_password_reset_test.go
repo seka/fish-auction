@@ -9,6 +9,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
+	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -92,14 +93,14 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 		{
 			name:      "AdminNotFound",
 			email:     "unknown@example.com",
-			mockAdmin: nil,   // Repo returns nil, nil
-			wantErr:   false, // Should return nil (masking)
+			mockAdmin: nil, // Repo returns nil, nil
+			wantErr:   true,
 		},
 		{
 			name:        "RepoFindError",
 			email:       "test@example.com",
 			mockFindErr: errors.New("db error"),
-			wantErr:     false, // Should return nil (masking)
+			wantErr:     true,
 		},
 		{
 			name:        "RandReadError",
@@ -149,8 +150,10 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			}
 
 			emailService := &mockEmailServiceForReqPwd{sndErr: tt.mockSndErr}
+			txMgr := &usetesting.MockTransactionManager{}
 
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, func() *url.URL { u, _ := url.Parse("https://localhost"); return u }())
+			frontendURL, _ := url.Parse("https://localhost")
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, frontendURL, txMgr)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantErr {

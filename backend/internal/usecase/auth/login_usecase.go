@@ -3,11 +3,11 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginUseCase defines the interface for user authentication.
@@ -28,23 +28,25 @@ func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
 	return &loginUseCase{adminRepo: adminRepo}
 }
 
-// Execute authenticates a user with the provided password
+// Execute authenticates a user with the provided email and password.
 func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
 	admin, err := u.adminRepo.FindOneByEmail(ctx, email)
 	if err != nil {
 		var nfErr *apperrors.NotFoundError
 		if errors.As(err, &nfErr) {
-			return nil, nil // Authentication failure (user not found)
+			return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to find admin during login: %w", err)
 	}
 	if admin == nil {
-		return nil, nil
+		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(password))
-	if err != nil {
-		return nil, nil // Invalid password
+	// For login, we only need to verify the password against the stored hash.
+	// We use HashedPassword which doesn't enforce complexity rules to avoid locking out existing users.
+	hp := model.NewHashedPassword(admin.PasswordHash)
+	if err := hp.Verify(password); err != nil {
+		return nil, err // Verify already returns UnauthorizedError for mismatches
 	}
 
 	return admin, nil

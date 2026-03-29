@@ -10,6 +10,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
+	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -91,7 +92,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 		{
 			name:          "Success",
 			token:         validToken,
-			newPassword:   "new-password",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockBuyerID:   validBuyerID,
 			mockExpiresAt: validExpires,
@@ -100,20 +101,20 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 		{
 			name:        "TokenNotFound",
 			token:       "invalid-token",
-			newPassword: "newPass123",
+			newPassword: "NewPassword123!",
 			wantErr:     true,
 		},
 		{
 			name:        "TokenFindError",
 			token:       validToken,
-			newPassword: "newPass123",
+			newPassword: "NewPassword123!",
 			mockFindErr: errors.New("db error"),
 			wantErr:     true,
 		},
 		{
 			name:          "TokenExpired",
 			token:         validToken,
-			newPassword:   "newPass123",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockBuyerID:   validBuyerID,
 			mockExpiresAt: time.Now().Add(-1 * time.Hour),
@@ -122,7 +123,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 		{
 			name:          "UpdateFailed",
 			token:         validToken,
-			newPassword:   "new-password",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockBuyerID:   validBuyerID,
 			mockExpiresAt: validExpires,
@@ -130,9 +131,9 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			wantErr:       true,
 		},
 		{
-			name:          "PasswordTooLong",
+			name:          "RoleMismatch",
 			token:         validToken,
-			newPassword:   "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockBuyerID:   validBuyerID,
 			mockExpiresAt: validExpires,
@@ -153,9 +154,13 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			case tt.mockTokenHash == "": // Token not found scenario
 				resetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, nil)
 			default: // Token found scenario
+				role := "buyer"
+				if tt.name == "RoleMismatch" {
+					role = "admin" // Wrong role for buyer usecase
+				}
 				resetModel := &model.PasswordResetToken{
 					UserID:    tt.mockBuyerID,
-					Role:      "buyer",
+					Role:      role,
 					ExpiresAt: tt.mockExpiresAt,
 					TokenHash: expectedHash,
 				}
@@ -171,8 +176,9 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 				}
 			}
 			authRepo := &mockAuthRepositoryForReset{err: tt.mockUpdateErr}
+			txMgr := &usetesting.MockTransactionManager{}
 
-			uc := auth.NewResetPasswordUseCase(resetRepo, authRepo)
+			uc := auth.NewResetPasswordUseCase(resetRepo, authRepo, txMgr)
 			err := uc.Execute(context.Background(), tt.token, tt.newPassword)
 
 			if (err != nil) != tt.wantErr {
