@@ -28,7 +28,7 @@ func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
 	return &loginUseCase{adminRepo: adminRepo}
 }
 
-// Execute authenticates a user with the provided password
+// Execute authenticates a user with the provided email and password.
 func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
 	admin, err := u.adminRepo.FindOneByEmail(ctx, email)
 	if err != nil {
@@ -42,15 +42,11 @@ func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*mo
 		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 	}
 
-	pwd, err := model.NewPassword(password)
-	if err != nil {
-		// Even if the password doesn't meet the current complexity standard,
-		// we should treat it as an auth failure if it doesn't match the hash.
-		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
-	}
-
-	if err := pwd.CompareWithHash(admin.PasswordHash); err != nil {
-		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
+	// For login, we only need to verify the password against the stored hash.
+	// We use HashedPassword which doesn't enforce complexity rules to avoid locking out existing users.
+	hp := model.NewHashedPassword(admin.PasswordHash)
+	if err := hp.Verify(password); err != nil {
+		return nil, err // Verify already returns UnauthorizedError for mismatches
 	}
 
 	return admin, nil

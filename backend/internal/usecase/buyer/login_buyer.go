@@ -11,8 +11,6 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase"
 )
 
-// LockDuration and MaxFailedAttempts are now defined in central usecase package.
-
 // LoginBuyerUseCase defines the interface for buyer login
 type LoginBuyerUseCase interface {
 	Execute(ctx context.Context, email, password string) (*model.Buyer, error)
@@ -33,20 +31,14 @@ func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo reposit
 
 // Execute authenticates a buyer
 func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string) (*model.Buyer, error) {
-	// 0. Validate password format (optional for login, but good for consistency)
-	pwd, err := model.NewPassword(password)
-	if err != nil {
-		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
-	}
-
 	// Find authentication by email
 	auth, err := uc.authRepo.FindByEmail(ctx, email)
 	if err != nil {
-		// We return UnauthorizedError to mask whether the user exists or not.
-		// However, we can log the real error or wrap it if needed for internal tracing.
-		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
+		// Return internal error for tracing if it's a real DB fault
+		return nil, fmt.Errorf("failed to find authentication during login: %w", err)
 	}
 	if auth == nil {
+		// Only mask user existence by returning Unauthorized
 		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
 	}
 
@@ -55,8 +47,9 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 		return nil, &apperrors.UnauthorizedError{Message: "account is locked due to too many failed attempts"}
 	}
 
-	// Verify password using Password VO
-	if err := pwd.CompareWithHash(auth.PasswordHash); err != nil {
+	// Verify password using HashedPassword to allow existing simple passwords
+	hp := model.NewHashedPassword(auth.PasswordHash)
+	if err := hp.Verify(password); err != nil {
 		// Increment failed attempts
 		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
 
@@ -67,7 +60,7 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
 		}
 
-		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
+		return nil, err // Verify already returns UnauthorizedError for mismatches
 	}
 
 	// Update last login and reset failed attempts

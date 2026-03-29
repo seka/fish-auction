@@ -38,27 +38,24 @@ func (uc *updatePasswordUseCase) Execute(ctx context.Context, buyerID int, curre
 	}
 
 	// 0. Verify current password
-	currentPwd, err := model.NewPassword(currentPassword)
-	if err != nil {
-		return fmt.Errorf("failed to validate current password format: %w", err)
-	}
-	if err := currentPwd.CompareWithHash(auth.PasswordHash); err != nil {
-		return &apperrors.UnauthorizedError{Message: "invalid current password"}
+	hp := model.NewHashedPassword(auth.PasswordHash)
+	if err := hp.Verify(currentPassword); err != nil {
+		return err
 	}
 
 	// 1. Validate and hash new password
 	newPwd, err := model.NewPassword(newPassword)
 	if err != nil {
-		return fmt.Errorf("failed to validate new password format: %w", err)
+		return err
 	}
 
-	hashedPassword, err := newPwd.Hash()
+	hashedPwd, err := newPwd.Hash()
 	if err != nil {
-		return fmt.Errorf("failed to hash password: %w", err)
+		return err
 	}
 
 	// 2. Update password
-	if err := uc.authRepo.UpdatePassword(ctx, buyerID, hashedPassword); err != nil {
+	if err := uc.authRepo.UpdatePassword(ctx, buyerID, hashedPwd.Raw()); err != nil {
 		return fmt.Errorf("failed to update password in repository: %w", err)
 	}
 

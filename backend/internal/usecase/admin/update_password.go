@@ -41,27 +41,28 @@ func (uc *updatePasswordUseCase) Execute(ctx context.Context, id int, currentPas
 	}
 
 	// 0. Verify current password
-	currentPwd, err := model.NewPassword(currentPassword)
-	if err != nil {
-		return fmt.Errorf("failed to validate current password format: %w", err)
-	}
-	if err := currentPwd.CompareWithHash(admin.PasswordHash); err != nil {
-		return &apperrors.UnauthorizedError{Message: "invalid current password"}
+	// We use HashedPassword to allow existing simple passwords to be verified.
+	hp := model.NewHashedPassword(admin.PasswordHash)
+	if err := hp.Verify(currentPassword); err != nil {
+		// Replace standard UnauthorizedError with more specific context if needed,
+		// but Verify already returns a proper UnauthorizedError.
+		return err
 	}
 
 	// 1. Validate and hash new password
+	// NewPassword enforces strict complexity requirements.
 	newPwd, err := model.NewPassword(newPassword)
 	if err != nil {
-		return fmt.Errorf("failed to validate new password format: %w", err)
+		return err // Returns ValidationError if fails
 	}
 
-	hashedPassword, err := newPwd.Hash()
+	hashedPwd, err := newPwd.Hash()
 	if err != nil {
-		return fmt.Errorf("failed to hash new password: %w", err)
+		return err
 	}
 
 	// 2. Update password
-	if err := uc.adminRepo.UpdatePassword(ctx, id, hashedPassword); err != nil {
+	if err := uc.adminRepo.UpdatePassword(ctx, id, hashedPwd.Raw()); err != nil {
 		return fmt.Errorf("failed to update password in repository: %w", err)
 	}
 

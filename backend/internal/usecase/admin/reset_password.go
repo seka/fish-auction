@@ -37,9 +37,10 @@ func NewResetPasswordUseCase(
 }
 
 func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword string) error {
-	pwd, err := model.NewPassword(newPassword)
+	// 0. Validate new password
+	newPwd, err := model.NewPassword(newPassword)
 	if err != nil {
-		return err
+		return err // Returns ValidationError
 	}
 
 	hash := sha256.Sum256([]byte(token))
@@ -58,12 +59,13 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 		return &apperrors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
 
-	hashedPassword, err := pwd.Hash()
+	// 4. Hash new password
+	hashedPwd, err := newPwd.Hash()
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	if err := u.adminRepo.UpdatePassword(ctx, resetToken.UserID, hashedPassword); err != nil {
+	if err := u.adminRepo.UpdatePassword(ctx, resetToken.UserID, hashedPwd.Raw()); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 

@@ -38,9 +38,9 @@ func NewResetPasswordUseCase(
 
 func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword string) error {
 	// 0. Validate new password
-	pwd, err := model.NewPassword(newPassword)
+	newPwd, err := model.NewPassword(newPassword)
 	if err != nil {
-		return err
+		return err // Returns ValidationError
 	}
 
 	// 1. Hash token to verify
@@ -64,13 +64,13 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	}
 
 	// 4. Hash new password
-	hashedPassword, err := pwd.Hash()
+	hashedPwd, err := newPwd.Hash()
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	// 5. Update user password
-	if err := u.authRepo.UpdatePassword(ctx, resetToken.UserID, hashedPassword); err != nil {
+	if err := u.authRepo.UpdatePassword(ctx, resetToken.UserID, hashedPwd.Raw()); err != nil {
 		return fmt.Errorf("failed to update password: %w", err)
 	}
 
