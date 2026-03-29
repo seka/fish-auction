@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"golang.org/x/crypto/bcrypt"
+
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 )
 
@@ -68,21 +70,16 @@ func TestHashedPassword_Verify(t *testing.T) {
 }
 
 func TestHashedPassword_VerifyWithoutComplexityCheck(t *testing.T) {
-	// Directly create HashedPassword (simulating DB load)
-	// Even if it was hashed from a simple password (e.g. at initial creation before policy),
-	// Verify should still work.
-	
-	// We use p.Hash() here just to get a valid bcrypt hash for a simple string.
-	// But in reality, this would have been done via NewPassword at creation time (if it satisfied the policy then).
-	// If it didn't satisfy the policy, but is somehow in the DB, Verify should still work.
-	
-	// Since NewPassword enforces complexity, let's use a workaround for testing 'already-in-db-simple-password'
-	// Actually, hp.Verify() just calls bcrypt, it doesn't care about our Password complexity rules.
-	
-	p, _ := NewPassword("Valid123") // Satisfies complexity
-	hp, _ := p.Hash()
-	
-	if err := hp.Verify("Valid123"); err != nil {
-		t.Errorf("Verify failed for valid password: %v", err)
+	// 複雑性要件を満たさない既存パスワード（ポリシー導入前に登録されたユーザーを想定）を
+	// bcrypt で直接ハッシュ化し、Verify が複雑性に関係なく照合できることを確認する
+	simple := "simple"
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(simple), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("failed to hash: %v", err)
+	}
+
+	hp := NewHashedPassword(string(hashedBytes))
+	if err := hp.Verify(simple); err != nil {
+		t.Errorf("Verify() failed for pre-policy simple password: %v", err)
 	}
 }

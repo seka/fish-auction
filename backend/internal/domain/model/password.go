@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"unicode"
 
 	"golang.org/x/crypto/bcrypt"
@@ -22,15 +23,15 @@ type Password struct {
 // - At least one uppercase letter
 // - At least one lowercase letter
 // - At least one digit
-func NewPassword(v string) (*Password, error) {
+func NewPassword(v string) (Password, error) {
 	if err := validateComplexity(v); err != nil {
-		return nil, err
+		return Password{}, err
 	}
-	return &Password{value: v}, nil
+	return Password{value: v}, nil
 }
 
 // Hash generates a bcrypt hash of the password.
-func (p *Password) Hash() (HashedPassword, error) {
+func (p Password) Hash() (HashedPassword, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(p.value), bcrypt.DefaultCost)
 	if err != nil {
 		return HashedPassword{}, fmt.Errorf("failed to hash password: %w", err)
@@ -39,7 +40,7 @@ func (p *Password) Hash() (HashedPassword, error) {
 }
 
 // String returns a masked representation of the password.
-func (p *Password) String() string {
+func (p Password) String() string {
 	return "********"
 }
 
@@ -76,12 +77,9 @@ func (hp HashedPassword) Raw() string {
 }
 
 func validateComplexity(p string) error {
-	var (
-		hasUpper   bool
-		hasLower   bool
-		hasNumber  bool
-		minLen     = 8
-		maxLen     = 72 // bcrypt limit
+	const (
+		minLen = 8
+		maxLen = 72 // bcrypt limit
 	)
 
 	if len(p) < minLen || len(p) > maxLen {
@@ -91,18 +89,10 @@ func validateComplexity(p string) error {
 		}
 	}
 
-	for _, char := range p {
-		switch {
-		case unicode.IsUpper(char):
-			hasUpper = true
-		case unicode.IsLower(char):
-			hasLower = true
-		case unicode.IsNumber(char):
-			hasNumber = true
-		}
-	}
-
-	if !hasUpper || !hasLower || !hasNumber {
+	// Use ContainsFunc for semantic complexity validation
+	if !strings.ContainsFunc(p, unicode.IsUpper) ||
+		!strings.ContainsFunc(p, unicode.IsLower) ||
+		!strings.ContainsFunc(p, unicode.IsNumber) {
 		return &domainErrors.ValidationError{
 			Field:   "password",
 			Message: "password must contain at least one uppercase letter, one lowercase letter, and one number",
