@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/seka/fish-auction/backend/config"
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 
@@ -57,17 +59,12 @@ func run() error {
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
 
-	count, err := uc.Count(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to count admins: %w", err)
-	}
-
-	if count > 0 {
-		fmt.Printf("Admin user(s) found (%d). Skipping initialization.\n", count)
-		return nil
-	}
-
 	if _, err = uc.Execute(ctx, email, password); err != nil {
+		var conflictErr *apperrors.ConflictError
+		if errors.As(err, &conflictErr) {
+			fmt.Printf("Admin user with email %s already exists. Skipping.\n", email)
+			return nil
+		}
 		return fmt.Errorf("failed to create admin: %w", err)
 	}
 
