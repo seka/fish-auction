@@ -225,6 +225,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 		u.repo.PasswordReset(),
 		u.service.NewBuyerEmailService(),
 		u.cfg.FrontendURL,
+		u.repo.NewTransactionManager(),
 	)
 }
 
@@ -232,6 +233,7 @@ func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 	return auth.NewResetPasswordUseCase(
 		u.repo.PasswordReset(),
 		u.repo.NewAuthenticationRepository(),
+		u.repo.NewTransactionManager(),
 	)
 }
 
@@ -245,6 +247,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 		u.repo.PasswordReset(),
 		u.service.NewAdminEmailService(),
 		u.cfg.FrontendURL,
+		u.repo.NewTransactionManager(),
 	)
 }
 
@@ -256,6 +259,7 @@ func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseC
 	return admin.NewResetPasswordUseCase(
 		u.repo.PasswordReset(),
 		u.repo.NewAdminRepository(),
+		u.repo.NewTransactionManager(),
 	)
 }
 
