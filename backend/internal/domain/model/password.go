@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
-	"github.com/seka/fish-auction/backend/internal/domain/util/string"
+	"github.com/seka/fish-auction/backend/internal/domain/util"
 )
 
 const (
@@ -90,7 +90,7 @@ func validateComplexity(p string) error {
 		}
 	}
 
-	if strings.ContainsFunc(p, stringutil.IsNonPrintableASCII) {
+	if strings.ContainsFunc(p, util.IsNonPrintableASCII) {
 		return &domainErrors.ValidationError{
 			Field:   "password",
 			Message: "password can only contain alphanumeric characters and standard symbols",
