@@ -156,3 +156,41 @@ BEGIN
     END IF;
 END $$;
 
+-- Auction Items (Toyosu)
+DO $$
+DECLARE
+    fid INTEGER;
+    aid INTEGER;
+BEGIN
+    SELECT id INTO fid FROM fishermen WHERE name = '佐藤 三郎';
+    -- Get today's auction at Toyosu
+    SELECT a.id INTO aid
+    FROM auctions a
+    JOIN venues v ON a.venue_id = v.id
+    WHERE v.name = '豊洲市場' AND a.auction_date = CURRENT_DATE
+    LIMIT 1;
+
+    IF fid IS NOT NULL AND aid IS NOT NULL THEN
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, '本マグロ', 1, '本', 'Pending', 1
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auction_items
+            WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '本マグロ'
+        );
+
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, '天然真鯛', 20, 'kg', 'Pending', 2
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auction_items
+            WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '天然真鯛'
+        );
+
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, '生ウニ', 5, '板', 'Pending', 3
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auction_items
+            WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '生ウニ'
+        );
+    END IF;
+END $$;
+
