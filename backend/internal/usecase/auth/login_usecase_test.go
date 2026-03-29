@@ -81,15 +81,15 @@ func TestLoginUseCase_Execute(t *testing.T) {
 			password:  "wrong-password",
 			mockAdmin: validAdmin,
 			wantFound: false,
-			wantErr:   false,
+			wantErr:   true,
 		},
 		{
 			name:      "UserNotFound",
 			email:     "other@example.com",
 			password:  "admin-password",
-			mockAdmin: validAdmin, // Repo has admin@example.com, but we search for other
+			mockAdmin: validAdmin,
 			wantFound: false,
-			wantErr:   false,
+			wantErr:   true,
 		},
 		{
 			name:      "RepoError",

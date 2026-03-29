@@ -10,6 +10,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
+	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -79,7 +80,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 		{
 			name:          "Success",
 			token:         validToken,
-			newPassword:   "newPass123",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockAdminID:   validAdminID,
 			mockExpiresAt: validExpires,
@@ -101,7 +102,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 		{
 			name:          "TokenExpired",
 			token:         validToken,
-			newPassword:   "newPass123",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockAdminID:   validAdminID,
 			mockExpiresAt: time.Now().Add(-1 * time.Hour),
@@ -118,9 +119,9 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			wantErr:       true,
 		},
 		{
-			name:          "PasswordTooLong",
+			name:          "RoleMismatch",
 			token:         validToken,
-			newPassword:   "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockAdminID:   validAdminID,
 			mockExpiresAt: validExpires,
@@ -142,9 +143,13 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			case tt.mockTokenHash == "": // Token not found scenario
 				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, nil)
 			default: // Token found
+				role := "admin"
+				if tt.name == "RoleMismatch" {
+					role = "buyer"
+				}
 				resetToken := &model.PasswordResetToken{
 					UserID:    tt.mockAdminID,
-					Role:      "admin",
+					Role:      role,
 					ExpiresAt: tt.mockExpiresAt,
 					TokenHash: expectedHash,
 				}
@@ -162,8 +167,9 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			}
 
 			adminRepo := &mockAdminRepositoryForReset{err: tt.mockUpdateErr}
+			txMgr := &usetesting.MockTransactionManager{}
 
-			uc := admin.NewResetPasswordUseCase(pwdResetRepo, adminRepo)
+			uc := admin.NewResetPasswordUseCase(pwdResetRepo, adminRepo, txMgr)
 			err := uc.Execute(context.Background(), tt.token, tt.newPassword)
 
 			if (err != nil) != tt.wantErr {
