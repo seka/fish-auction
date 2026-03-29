@@ -99,7 +99,7 @@ func run() error {
 		fmt.Printf("Admin user(s) found (%d). Skipping default admin creation.\n", count)
 	default:
 		email := "admin@example.com"
-		password := "admin-password"
+		password := "Admin-Password123"
 		if _, err = uc.Execute(ctx, email, password); err != nil {
 			return fmt.Errorf("failed to create admin: %w", err)
 		}
@@ -107,6 +107,7 @@ func run() error {
 	}
 
 	fmt.Println("Database seeded successfully!")
-	fmt.Println("Default buyer password: 'password123'")
+	fmt.Println("Default admin: admin@example.com / Admin-Password123")
+	fmt.Println("Default buyer password: 'Password123'")
 	return nil
 }

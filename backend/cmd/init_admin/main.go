@@ -55,7 +55,7 @@ func run() error {
 	}
 
 	email := "admin@example.com"
-	password := "admin-password"
+	password := "Admin-Password123"
 
 	if _, err = uc.Execute(ctx, email, password); err != nil {
 		return fmt.Errorf("failed to create admin: %w", err)
