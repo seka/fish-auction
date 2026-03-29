@@ -96,6 +96,9 @@ export const PasswordResetForm = ({ state, actions }: PasswordResetFormProps) =>
               minLength={8}
               className={css({ w: 'full' })}
             />
+            <Text className={css({ color: 'gray.500', fontSize: 'xs', mt: '1.5' })}>
+              {t('Validation.password_complexity_hint')}
+            </Text>
           </Box>
 
           <Box>

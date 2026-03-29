@@ -13,6 +13,9 @@ import { useTranslations } from 'next-intl';
 import { AdminResetPasswordForm } from './AdminResetPassword/AdminResetPasswordForm';
 import { AdminResetPasswordStatus } from './AdminResetPassword/AdminResetPasswordStatus';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { resetPasswordSchema } from '@/src/models/schemas/password';
+
 const AdminResetPasswordContent = () => {
   const t = useTranslations();
   const router = useRouter();
@@ -26,10 +29,10 @@ const AdminResetPasswordContent = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
-  } = useForm<Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }>();
-  const newPasswordValue = watch('new_password');
+  } = useForm<{ new_password: string; confirm_password: string }>({
+    resolver: zodResolver(resetPasswordSchema),
+  });
 
   useEffect(() => {
     if (!token) {
@@ -91,7 +94,6 @@ const AdminResetPasswordContent = () => {
           onSubmit={onSubmit}
           errors={errors}
           isSubmitting={isSubmitting}
-          newPasswordValue={newPasswordValue}
           t={t}
         />
       )}

@@ -1,23 +1,15 @@
 'use client';
 
 import { UseFormRegister, FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
-import { ResetPasswordConfirmRequest } from '@/src/data/api/auth_reset';
 import { Box, Button, Text, Stack } from '@atoms';
 import { css } from 'styled-system/css';
 
 interface PublicResetPasswordFormProps {
-  register: UseFormRegister<
-    Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }
-  >;
-  handleSubmit: UseFormHandleSubmit<
-    Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }
-  >;
-  onSubmit: (
-    data: Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string },
-  ) => Promise<void>;
-  errors: FieldErrors<Omit<ResetPasswordConfirmRequest, 'token'> & { confirm_password: string }>;
+  register: UseFormRegister<{ new_password: string; confirm_password: string }>;
+  handleSubmit: UseFormHandleSubmit<{ new_password: string; confirm_password: string }>;
+  onSubmit: (data: { new_password: string; confirm_password: string }) => Promise<void>;
+  errors: FieldErrors<{ new_password: string; confirm_password: string }>;
   isSubmitting: boolean;
-  newPasswordValue: string;
   t: (key: string, values?: Record<string, string | number>) => string;
 }
 
@@ -27,7 +19,6 @@ export const PublicResetPasswordForm = ({
   onSubmit,
   errors,
   isSubmitting,
-  newPasswordValue,
   t,
 }: PublicResetPasswordFormProps) => {
   return (
@@ -56,10 +47,7 @@ export const PublicResetPasswordForm = ({
             </label>
             <input
               type="password"
-              {...register('new_password', {
-                required: t('Validation.required', { field: t('Common.password') }),
-                minLength: { value: 8, message: t('Validation.min_length', { min: 8 }) },
-              })}
+              {...register('new_password')}
               className={css({
                 w: 'full',
                 p: '2.5',
@@ -79,6 +67,9 @@ export const PublicResetPasswordForm = ({
                 {errors.new_password.message}
               </Text>
             )}
+            <Text className={css({ color: 'gray.500', fontSize: 'xs', mt: '1.5' })}>
+              {t('Validation.password_complexity_hint')}
+            </Text>
           </Box>
 
           <Box w="full">
@@ -94,10 +85,7 @@ export const PublicResetPasswordForm = ({
             </label>
             <input
               type="password"
-              {...register('confirm_password', {
-                validate: (value) =>
-                  value === newPasswordValue || t('Validation.password_mismatch'),
-              })}
+              {...register('confirm_password')}
               className={css({
                 w: 'full',
                 p: '2.5',

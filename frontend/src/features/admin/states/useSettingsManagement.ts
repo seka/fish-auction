@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { passwordComplexitySchema } from '@/src/models/schemas/fields/password';
 
 export const useSettingsManagement = () => {
   const t = useTranslations();
@@ -20,8 +21,9 @@ export const useSettingsManagement = () => {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setMessage({ type: 'error', text: t('Validation.password_too_short', { min: 8 }) });
+    const validation = passwordComplexitySchema.safeParse(newPassword);
+    if (!validation.success) {
+      setMessage({ type: 'error', text: validation.error.issues[0].message });
       return;
     }
 
