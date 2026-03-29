@@ -89,13 +89,13 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 		{
 			name:        "TokenNotFound",
 			token:       "invalid",
-			newPassword: "newPass123",
+			newPassword: "NewPassword123!",
 			wantErr:     true,
 		},
 		{
 			name:        "TokenFindError",
 			token:       validToken,
-			newPassword: "newPass123",
+			newPassword: "NewPassword123!",
 			mockFindErr: errors.New("db error"),
 			wantErr:     true,
 		},

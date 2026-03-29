@@ -93,7 +93,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 		{
 			name:      "AdminNotFound",
 			email:     "unknown@example.com",
-			mockAdmin: nil,   // Repo returns nil, nil
+			mockAdmin: nil, // Repo returns nil, nil
 			wantErr:   true,
 		},
 		{
