@@ -2,73 +2,83 @@ package buyer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
-// CreateBuyerUseCase defines the interface for creating a buyer.
+// CreateBuyerUseCase defines the interface for creating a buyer with authentication.
 type CreateBuyerUseCase interface {
-	// Execute creates a new buyer with authentication.
 	Execute(ctx context.Context, name, email, password, organization, contactInfo string) (*model.Buyer, error)
 }
 
-// CreateBuyerUseCase handles the creation of buyers
 type createBuyerUseCase struct {
 	buyerRepo repository.BuyerRepository
 	authRepo  repository.AuthenticationRepository
-	txMgr     repository.TransactionManager
+	txRepo    repository.TransactionManager
 }
 
-var _ CreateBuyerUseCase = (*createBuyerUseCase)(nil)
-
-// NewCreateBuyerUseCase creates a new instance of CreateBuyerUseCase
-func NewCreateBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository, txMgr repository.TransactionManager) CreateBuyerUseCase {
-	return &createBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo, txMgr: txMgr}
+// NewCreateBuyerUseCase creates a new instance of CreateBuyerUseCase.
+func NewCreateBuyerUseCase(
+	buyerRepo repository.BuyerRepository,
+	authRepo repository.AuthenticationRepository,
+	txRepo repository.TransactionManager,
+) CreateBuyerUseCase {
+	return &createBuyerUseCase{
+		buyerRepo: buyerRepo,
+		authRepo:  authRepo,
+		txRepo:    txRepo,
+	}
 }
 
 // Execute creates a new buyer with authentication
 func (uc *createBuyerUseCase) Execute(ctx context.Context, name, email, password, organization, contactInfo string) (*model.Buyer, error) {
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// 0. Validate password
+	pwd, err := model.NewPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
+	// Hash password
+	hashedPassword, err := pwd.Hash()
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
 	var createdBuyer *model.Buyer
-	err = uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
-		// Create buyer
+
+	// 1. Transactional creation
+	err = uc.txRepo.WithTransaction(ctx, func(ctx context.Context) error {
+		// 1-1. Create buyer profile
 		buyer := &model.Buyer{
 			Name:         name,
 			Organization: organization,
 			ContactInfo:  contactInfo,
 		}
-
-		buyerResult, err := uc.buyerRepo.Create(txCtx, buyer)
+		res, err := uc.buyerRepo.Create(ctx, buyer)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create buyer profile: %w", err)
 		}
-		createdBuyer = buyerResult
+		createdBuyer = res
 
-		// Create authentication
+		// 1-2. Create auth record
 		auth := &model.Authentication{
 			BuyerID:      createdBuyer.ID,
 			Email:        email,
-			PasswordHash: string(hashedPassword),
-			AuthType:     "password",
+			PasswordHash: hashedPassword,
+			AuthType:     "buyer",
 		}
-
-		_, err = uc.authRepo.Create(txCtx, auth)
+		_, err = uc.authRepo.Create(ctx, auth)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create auth record: %w", err)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create buyer with transaction: %w", err)
 	}
 
 	return createdBuyer, nil

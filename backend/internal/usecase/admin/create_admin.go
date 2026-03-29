@@ -8,7 +8,6 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateAdminUseCase defines the interface for creating an admin.
@@ -31,44 +30,53 @@ func NewCreateAdminUseCase(adminRepo repository.AdminRepository) CreateAdminUseC
 }
 
 func (u *createAdminUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
+	pwd, err := model.NewPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
 	// 既に管理者が存在するか確認
 	existing, err := u.adminRepo.FindOneByEmail(ctx, email)
 	if err != nil {
 		// NotFound 以外はエラーとして扱う
 		var nfErr *apperrors.NotFoundError
 		if !errors.As(err, &nfErr) {
-			return nil, err
+			return nil, fmt.Errorf("failed to check existing admin email: %w", err)
 		}
 	} else if existing != nil {
-		return nil, fmt.Errorf("admin with email %s already exists", email)
+		return nil, &apperrors.ConflictError{Message: fmt.Sprintf("admin with email %s already exists", email)}
 	}
 
 	// 全体のカウントチェック
 	count, err := u.adminRepo.Count(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to count admins: %w", err)
 	}
 	if count > 0 {
-		return nil, fmt.Errorf("admin already exists")
+		return nil, &apperrors.ConflictError{Message: "admin already exists"}
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := pwd.Hash()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	admin := &model.Admin{
 		Email:        email,
-		PasswordHash: string(hashedPassword),
+		PasswordHash: hashedPassword,
 	}
 
 	if err := u.adminRepo.Create(ctx, admin); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create admin: %w", err)
 	}
 
 	return admin, nil
 }
 
 func (u *createAdminUseCase) Count(ctx context.Context) (int, error) {
-	return u.adminRepo.Count(ctx)
+	count, err := u.adminRepo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count admins: %w", err)
+	}
+	return count, nil
 }
