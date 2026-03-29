@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/util"
 )
 
 const (
@@ -89,9 +90,9 @@ func validateComplexity(p string) error {
 		}
 	}
 
-	// Only allow printable ASCII characters (32-126)
+	// 0. Only allow printable ASCII characters (32-126)
 	if strings.ContainsFunc(p, func(r rune) bool {
-		return r < 32 || r > 126
+		return !util.IsPrintableASCII(r)
 	}) {
 		return &domainErrors.ValidationError{
 			Field:   "password",
