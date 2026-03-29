@@ -1,79 +1,113 @@
 package model
 
 import (
+	"errors"
 	"fmt"
-	"strings"
 	"unicode"
 
-	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"golang.org/x/crypto/bcrypt"
+
+	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 )
 
-const (
-	// minPasswordLength is the minimum required length for a password.
-	minPasswordLength = 8
-	// maxPasswordLength is the maximum allowed length for a password.
-	// 72 is chosen because bcrypt ignores any characters after the 72nd byte.
-	maxPasswordLength = 72
-)
-
-// Password represents a raw password string (Value Object) that is guaranteed to be valid.
-type Password string
-
-// NewPassword validates and creates a new Password instance.
-func NewPassword(v string) (Password, error) {
-	p := Password(v)
-	if err := p.Validate(); err != nil {
-		return "", err
-	}
-	return p, nil
+// Password represents a raw password that meets complexity requirements.
+// It is primarily used when setting or updating a password.
+type Password struct {
+	value string
 }
 
-// Validate checks if the password satisfies complexity rules.
-func (p Password) Validate() error {
-	v := string(p)
-	if len(v) < minPasswordLength {
-		return &errors.ValidationError{
-			Field:   "password",
-			Message: fmt.Sprintf("must be at least %d characters long", minPasswordLength),
-		}
+// NewPassword creates a new Password after validating its complexity.
+// Complexity rules:
+// - At least 8 characters long
+// - At least one uppercase letter
+// - At least one lowercase letter
+// - At least one digit
+func NewPassword(v string) (*Password, error) {
+	if err := validateComplexity(v); err != nil {
+		return nil, err
 	}
-	if len(v) > maxPasswordLength {
-		return &errors.ValidationError{
+	return &Password{value: v}, nil
+}
+
+// Hash generates a bcrypt hash of the password.
+func (p *Password) Hash() (HashedPassword, error) {
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(p.value), bcrypt.DefaultCost)
+	if err != nil {
+		return HashedPassword{}, fmt.Errorf("failed to hash password: %w", err)
+	}
+	return NewHashedPassword(string(hashedBytes)), nil
+}
+
+// String returns a masked representation of the password.
+func (p *Password) String() string {
+	return "********"
+}
+
+// HashedPassword represents a password hash stored in the database.
+// It is used for verifying incoming raw passwords against the stored hash.
+type HashedPassword struct {
+	value string
+}
+
+// NewHashedPassword creates a HashedPassword from an existing hash string.
+func NewHashedPassword(h string) HashedPassword {
+	return HashedPassword{value: h}
+}
+
+// Verify compares a raw password with the hashed password.
+func (hp HashedPassword) Verify(raw string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hp.value), []byte(raw)); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return &domainErrors.UnauthorizedError{Message: "Invalid credentials"}
+		}
+		return fmt.Errorf("failed to verify password: %w", err)
+	}
+	return nil
+}
+
+// String returns a label indicating this is a hashed value.
+func (hp HashedPassword) String() string {
+	return "[hashed]"
+}
+
+// Raw returns the underlying hash string.
+func (hp HashedPassword) Raw() string {
+	return hp.value
+}
+
+func validateComplexity(p string) error {
+	var (
+		hasUpper   bool
+		hasLower   bool
+		hasNumber  bool
+		minLen     = 8
+		maxLen     = 72 // bcrypt limit
+	)
+
+	if len(p) < minLen || len(p) > maxLen {
+		return &domainErrors.ValidationError{
 			Field:   "password",
-			Message: fmt.Sprintf("must be no more than %d characters long", maxPasswordLength),
+			Message: fmt.Sprintf("password must be between %d and %d characters long", minLen, maxLen),
 		}
 	}
 
-	hasUpper := strings.ContainsFunc(v, unicode.IsUpper)
-	hasLower := strings.ContainsFunc(v, unicode.IsLower)
-	hasDigit := strings.ContainsFunc(v, unicode.IsDigit)
+	for _, char := range p {
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsNumber(char):
+			hasNumber = true
+		}
+	}
 
-	if !hasUpper || !hasLower || !hasDigit {
-		return &errors.ValidationError{
+	if !hasUpper || !hasLower || !hasNumber {
+		return &domainErrors.ValidationError{
 			Field:   "password",
-			Message: "must contain at least one uppercase letter, one lowercase letter, and one digit",
+			Message: "password must contain at least one uppercase letter, one lowercase letter, and one number",
 		}
 	}
 
 	return nil
-}
-
-// Hash returns the bcrypt hash of the password.
-func (p Password) Hash() (string, error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(p), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashed), nil
-}
-
-// CompareWithHash verifies the password against a bcrypt hash.
-func (p Password) CompareWithHash(hashedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(p))
-}
-
-// String implements fmt.Stringer to mask the password in logs.
-func (p Password) String() string {
-	return "********"
 }
