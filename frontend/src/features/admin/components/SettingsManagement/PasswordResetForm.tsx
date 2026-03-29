@@ -93,9 +93,11 @@ export const PasswordResetForm = ({ state, actions }: PasswordResetFormProps) =>
               value={state.newPassword}
               onChange={(e) => actions.setNewPassword(e.target.value)}
               required
-              minLength={8}
               className={css({ w: 'full' })}
             />
+            <Text className={css({ color: 'gray.500', fontSize: 'xs', mt: '1.5' })}>
+              {t('Validation.password_complexity_hint')}
+            </Text>
           </Box>
 
           <Box>
@@ -117,7 +119,6 @@ export const PasswordResetForm = ({ state, actions }: PasswordResetFormProps) =>
               value={state.confirmPassword}
               onChange={(e) => actions.setConfirmPassword(e.target.value)}
               required
-              minLength={8}
               className={css({ w: 'full' })}
             />
           </Box>
