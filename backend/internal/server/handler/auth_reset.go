@@ -30,7 +30,19 @@ func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) 
 
 	uc := h.reg.NewRequestPasswordResetUseCase()
 	// Process reset request
-	_ = uc.Execute(r.Context(), req.Email)
+	if err := uc.Execute(r.Context(), req.Email); err != nil {
+		var notFoundErr *domainErrors.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			// Security: Don't reveal if user exists.
+			// Return 200 OK even if not found.
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(map[string]string{"message": "If the email exists, a reset link has been sent."})
+			return
+		}
+		// System errors (DB, Email, etc.) are 500
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]string{"message": "If the email exists, a reset link has been sent."})

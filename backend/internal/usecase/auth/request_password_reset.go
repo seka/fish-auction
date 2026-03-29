@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"time"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
@@ -48,18 +49,18 @@ func NewRequestPasswordResetUseCase(
 func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string) error {
 	buyer, err := u.buyerRepo.FindByEmail(ctx, email)
 	if err != nil {
-		// Security: Don't reveal if user exists.
-		// Return nil even if not found.
-		return nil
+		return fmt.Errorf("failed to find buyer by email: %w", err)
 	}
 	if buyer == nil {
-		return nil
+		// Business logic: if buyer not found, tell the handler.
+		// Obfuscation is handler responsibility.
+		return &apperrors.NotFoundError{Resource: "buyer", ID: email}
 	}
 
 	// 1. Generate secure token
 	tokenBytes := make([]byte, 32)
 	if _, err := randRead(tokenBytes); err != nil {
-		return fmt.Errorf("failed to generate token: %w", err)
+		return fmt.Errorf("failed to generate secure token: %w", err)
 	}
 	token := hex.EncodeToString(tokenBytes)
 
@@ -71,10 +72,10 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	expiresAt := time.Now().Add(30 * time.Minute)
 	// Invalidate old tokens for this user first
 	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, buyer.ID, "buyer"); err != nil {
-		return fmt.Errorf("failed to delete old tokens: %w", err)
+		return fmt.Errorf("failed to invalidate old reset tokens: %w", err)
 	}
 	if err = u.pwdResetRepo.Create(ctx, buyer.ID, "buyer", tokenHash, expiresAt); err != nil {
-		return fmt.Errorf("failed to create reset token: %w", err)
+		return fmt.Errorf("failed to create new reset token: %w", err)
 	}
 
 	// 4. Send Email
@@ -84,7 +85,7 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	resetURL.RawQuery = q.Encode()
 
 	if err := u.emailService.SendBuyerPasswordReset(ctx, email, resetURL.String()); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
+		return fmt.Errorf("failed to send password reset email: %w", err)
 	}
 
 	return nil
