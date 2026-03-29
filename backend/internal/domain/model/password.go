@@ -11,6 +11,11 @@ import (
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 )
 
+const (
+	passwordMinLength = 8
+	passwordMaxLength = 72 // bcrypt limit
+)
+
 // Password represents a raw password that meets complexity requirements.
 // It is primarily used when setting or updating a password.
 type Password struct {
@@ -77,22 +82,27 @@ func (hp HashedPassword) Raw() string {
 }
 
 func validateComplexity(p string) error {
-	const (
-		minLen = 8
-		maxLen = 72 // bcrypt limit
-	)
-
-	if len(p) < minLen || len(p) > maxLen {
+	if len(p) < passwordMinLength || len(p) > passwordMaxLength {
 		return &domainErrors.ValidationError{
 			Field:   "password",
-			Message: fmt.Sprintf("password must be between %d and %d characters long", minLen, maxLen),
+			Message: fmt.Sprintf("password must be between %d and %d characters long", passwordMinLength, passwordMaxLength),
 		}
 	}
 
-	// Use ContainsFunc for semantic complexity validation
-	if !strings.ContainsFunc(p, unicode.IsUpper) ||
-		!strings.ContainsFunc(p, unicode.IsLower) ||
-		!strings.ContainsFunc(p, unicode.IsNumber) {
+	// Only allow printable ASCII characters (32-126)
+	if strings.ContainsFunc(p, func(r rune) bool {
+		return r < 32 || r > 126
+	}) {
+		return &domainErrors.ValidationError{
+			Field:   "password",
+			Message: "password can only contain alphanumeric characters and standard symbols",
+		}
+	}
+
+	isUpper := !strings.ContainsFunc(p, unicode.IsUpper)
+	isLower := !strings.ContainsFunc(p, unicode.IsLower)
+	isNumber := !strings.ContainsFunc(p, unicode.IsNumber)
+	if isUpper || isLower || isNumber {
 		return &domainErrors.ValidationError{
 			Field:   "password",
 			Message: "password must contain at least one uppercase letter, one lowercase letter, and one number",

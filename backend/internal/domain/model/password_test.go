@@ -20,6 +20,9 @@ func TestNewPassword_Complexity(t *testing.T) {
 		{"No lowercase", "PASSWORD123", true},
 		{"No number", "Password", true},
 		{"Valid complexity", "Admin123", false},
+		{"Includes Japanese", "Admin123パス", true},
+		{"Includes Emoji", "Admin123😀", true},
+		{"Includes full-width", "Ａdmin123", true}, // Full-width 'A'
 	}
 
 	for _, tt := range tests {
