@@ -63,7 +63,7 @@ func (u *createAdminUseCase) Execute(ctx context.Context, email, password string
 
 	admin := &model.Admin{
 		Email:        email,
-		PasswordHash: hashedPassword,
+		PasswordHash: hashedPassword.Raw(),
 	}
 
 	if err := u.adminRepo.Create(ctx, admin); err != nil {

@@ -66,8 +66,8 @@ func (uc *createBuyerUseCase) Execute(ctx context.Context, name, email, password
 		auth := &model.Authentication{
 			BuyerID:      createdBuyer.ID,
 			Email:        email,
-			PasswordHash: hashedPassword,
-			AuthType:     "buyer",
+			PasswordHash: hashedPassword.Raw(),
+			AuthType:     "password",
 		}
 		_, err = uc.authRepo.Create(ctx, auth)
 		if err != nil {
