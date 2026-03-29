@@ -84,7 +84,8 @@ func (hp HashedPassword) Raw() string {
 }
 
 func validateComplexity(p string) error {
-	if utf8.RuneCountInString(p) < passwordMinLength || utf8.RuneCountInString(p) > passwordMaxLength {
+	count := utf8.RuneCountInString(p)
+	if count < passwordMinLength || count > passwordMaxLength {
 		return &domainErrors.ValidationError{
 			Field:   "password",
 			Message: fmt.Sprintf("password must be between %d and %d characters long", passwordMinLength, passwordMaxLength),
