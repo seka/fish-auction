@@ -21,6 +21,7 @@ type ResetPasswordUseCase interface {
 type resetPasswordUseCase struct {
 	pwdResetRepo repository.PasswordResetRepository
 	authRepo     repository.AuthenticationRepository
+	txMgr        repository.TransactionManager
 }
 
 var _ ResetPasswordUseCase = (*resetPasswordUseCase)(nil)
@@ -29,10 +30,12 @@ var _ ResetPasswordUseCase = (*resetPasswordUseCase)(nil)
 func NewResetPasswordUseCase(
 	pwdResetRepo repository.PasswordResetRepository,
 	authRepo repository.AuthenticationRepository,
+	txMgr repository.TransactionManager,
 ) ResetPasswordUseCase {
 	return &resetPasswordUseCase{
 		pwdResetRepo: pwdResetRepo,
 		authRepo:     authRepo,
+		txMgr:        txMgr,
 	}
 }
 
@@ -69,16 +72,20 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// 5. Update user password
-	if err := u.authRepo.UpdatePassword(ctx, resetToken.UserID, hashedPwd.Raw()); err != nil {
-		return fmt.Errorf("failed to update password: %w", err)
-	}
+	// 5. Atomic Update password and Invalidate token
+	err = u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Update user password
+		if err := u.authRepo.UpdatePassword(txCtx, resetToken.UserID, hashedPwd.Raw()); err != nil {
+			return fmt.Errorf("failed to update password: %w", err)
+		}
 
-	// Invalidate token
-	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, resetToken.UserID, "buyer"); err != nil {
-		// Non-critical error, just log or wrap if needed
-		return fmt.Errorf("failed to invalidate reset token after successful reset: %w", err)
-	}
+		// Invalidate token
+		if err := u.pwdResetRepo.DeleteAllByUserID(txCtx, resetToken.UserID, "buyer"); err != nil {
+			return fmt.Errorf("failed to invalidate reset token after successful reset: %w", err)
+		}
 
-	return nil
+		return nil
+	})
+
+	return err
 }

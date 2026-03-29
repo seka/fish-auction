@@ -27,6 +27,7 @@ type requestPasswordResetUseCase struct {
 	pwdResetRepo repository.PasswordResetRepository
 	emailService service.BuyerEmailService
 	frontendURL  *url.URL
+	txMgr        repository.TransactionManager
 }
 
 var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
@@ -37,12 +38,14 @@ func NewRequestPasswordResetUseCase(
 	pwdResetRepo repository.PasswordResetRepository,
 	emailService service.BuyerEmailService,
 	frontendURL *url.URL,
+	txMgr repository.TransactionManager,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		buyerRepo:    buyerRepo,
 		pwdResetRepo: pwdResetRepo,
 		emailService: emailService,
 		frontendURL:  frontendURL,
+		txMgr:        txMgr,
 	}
 }
 
@@ -68,14 +71,20 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
-	// 3. Save to DB (expires in 30 mins)
+	// 3. Atomic Save to DB (expires in 30 mins)
 	expiresAt := time.Now().Add(30 * time.Minute)
-	// Invalidate old tokens for this user first
-	if err := u.pwdResetRepo.DeleteAllByUserID(ctx, buyer.ID, "buyer"); err != nil {
-		return fmt.Errorf("failed to invalidate old reset tokens: %w", err)
-	}
-	if err = u.pwdResetRepo.Create(ctx, buyer.ID, "buyer", tokenHash, expiresAt); err != nil {
-		return fmt.Errorf("failed to create new reset token: %w", err)
+	err = u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Invalidate old tokens for this user first
+		if err := u.pwdResetRepo.DeleteAllByUserID(txCtx, buyer.ID, "buyer"); err != nil {
+			return fmt.Errorf("failed to invalidate old reset tokens: %w", err)
+		}
+		if err = u.pwdResetRepo.Create(txCtx, buyer.ID, "buyer", tokenHash, expiresAt); err != nil {
+			return fmt.Errorf("failed to create new reset token: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
 	// 4. Send Email
