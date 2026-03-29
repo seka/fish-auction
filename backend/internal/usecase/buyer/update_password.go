@@ -46,16 +46,16 @@ func (uc *updatePasswordUseCase) Execute(ctx context.Context, buyerID int, curre
 	// 1. Validate and hash new password
 	newPwd, err := model.NewPassword(newPassword)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to validate new password format: %w", err)
 	}
 
-	hashedPwd, err := newPwd.Hash()
+	hp, err = newPwd.Hash()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	// 2. Update password
-	if err := uc.authRepo.UpdatePassword(ctx, buyerID, hashedPwd.Raw()); err != nil {
+	if err := uc.authRepo.UpdatePassword(ctx, buyerID, hp.Raw()); err != nil {
 		return fmt.Errorf("failed to update password in repository: %w", err)
 	}
 

@@ -40,7 +40,7 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	// 0. Validate new password
 	newPwd, err := model.NewPassword(newPassword)
 	if err != nil {
-		return err // Returns ValidationError
+		return err
 	}
 
 	// 1. Hash token to verify
