@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -83,13 +84,14 @@ func (hp HashedPassword) Raw() string {
 }
 
 func validateComplexity(p string) error {
-	if len(p) < passwordMinLength || len(p) > passwordMaxLength {
+	if utf8.RuneCountInString(p) < passwordMinLength || utf8.RuneCountInString(p) > passwordMaxLength {
 		return &domainErrors.ValidationError{
 			Field:   "password",
 			Message: fmt.Sprintf("password must be between %d and %d characters long", passwordMinLength, passwordMaxLength),
 		}
 	}
 
+	// Only allow printable ASCII characters (32-126)
 	if strings.ContainsFunc(p, util.IsNonPrintableASCII) {
 		return &domainErrors.ValidationError{
 			Field:   "password",
@@ -97,10 +99,10 @@ func validateComplexity(p string) error {
 		}
 	}
 
-	isUpper := !strings.ContainsFunc(p, unicode.IsUpper)
-	isLower := !strings.ContainsFunc(p, unicode.IsLower)
-	isNumber := !strings.ContainsFunc(p, unicode.IsNumber)
-	if isUpper || isLower || isNumber {
+	lacksUpper := !strings.ContainsFunc(p, unicode.IsUpper)
+	lacksLower := !strings.ContainsFunc(p, unicode.IsLower)
+	lacksDigit := !strings.ContainsFunc(p, unicode.IsNumber)
+	if lacksUpper || lacksLower || lacksDigit {
 		return &domainErrors.ValidationError{
 			Field:   "password",
 			Message: "password must contain at least one uppercase letter, one lowercase letter, and one number",
