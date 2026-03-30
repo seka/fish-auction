@@ -22,3 +22,13 @@ func BuyerIDFromContext(ctx context.Context) (int, bool) {
 	buyerID, ok := ctx.Value(BuyerIDKey).(int)
 	return buyerID, ok
 }
+
+// WithAdminID returns a new context with the given admin ID.
+func WithAdminID(ctx context.Context, id int) context.Context {
+	return context.WithValue(ctx, AdminIDKey, id)
+}
+
+// WithBuyerID returns a new context with the given buyer ID.
+func WithBuyerID(ctx context.Context, id int) context.Context {
+	return context.WithValue(ctx, BuyerIDKey, id)
+}

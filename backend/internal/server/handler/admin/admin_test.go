@@ -35,7 +35,7 @@ func TestAdminHandler_UpdatePassword(t *testing.T) {
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/password", bytes.NewReader(body))
 
 		// Inject into context
-		ctx := context.WithValue(req.Context(), middleware.AdminIDKey, 1)
+		ctx := middleware.WithAdminID(req.Context(), 1)
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()

@@ -38,7 +38,7 @@ func TestPushHandler_Subscribe(t *testing.T) {
 		reqBody.Keys.Auth = "auth"
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/push/subscribe", bytes.NewReader(body))
-		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+		ctx := middleware.WithBuyerID(req.Context(), 1)
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()

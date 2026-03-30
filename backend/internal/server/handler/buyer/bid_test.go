@@ -35,7 +35,7 @@ func TestBidHandler_Create(t *testing.T) {
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/bids", bytes.NewReader(body))
 
 		// Inject buyer_id into context (simulating middleware)
-		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+		ctx := middleware.WithBuyerID(req.Context(), 1)
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -77,7 +77,7 @@ func TestBidHandler_Create(t *testing.T) {
 		reqBody := request.CreateBid{ItemID: 10, Price: 500}
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/bids", bytes.NewReader(body))
-		ctx := context.WithValue(req.Context(), middleware.BuyerIDKey, 1)
+		ctx := middleware.WithBuyerID(req.Context(), 1)
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()

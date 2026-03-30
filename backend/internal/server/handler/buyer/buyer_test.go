@@ -17,8 +17,8 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
-func withBuyerID(req *http.Request, buyerID any) *http.Request {
-	return req.WithContext(context.WithValue(req.Context(), middleware.BuyerIDKey, buyerID))
+func withBuyerID(req *http.Request, buyerID int) *http.Request {
+	return req.WithContext(middleware.WithBuyerID(req.Context(), buyerID))
 }
 
 func TestBuyerHandler_GetMe(t *testing.T) {
@@ -72,7 +72,7 @@ func TestBuyerHandler_GetMe(t *testing.T) {
 func TestBuyerHandler_GetPurchases(t *testing.T) {
 	type testCase struct {
 		name        string
-		ctxValue    any
+		ctxValue    int
 		withContext bool
 		mockSetup   func(*mock.MockRegistry)
 		wantStatus  int
@@ -127,7 +127,7 @@ func TestBuyerHandler_GetPurchases(t *testing.T) {
 func TestBuyerHandler_GetAuctions(t *testing.T) {
 	type testCase struct {
 		name        string
-		ctxValue    any
+		ctxValue    int
 		withContext bool
 		mockSetup   func(*mock.MockRegistry)
 		wantStatus  int

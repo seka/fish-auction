@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -38,7 +37,7 @@ func (m *AdminAuthMiddleware) Handle(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), AdminIDKey, session.UserID)
+		ctx := WithAdminID(r.Context(), session.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
