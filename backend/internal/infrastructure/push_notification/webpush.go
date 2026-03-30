@@ -10,8 +10,10 @@ import (
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/push_notification/errors"
 )
 
+// NOTE: テストでモックと差し替える際に利用している
 var webpushSendNotification = webpush.SendNotification
 
 // WebpushNotificationService provides WebpushNotificationService related functionality.
@@ -49,36 +51,25 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 		VAPIDPrivateKey: s.cfg.VAPIDPrivateKey,
 		TTL:             30, // seconds
 	})
-
 	if err != nil {
-		return fmt.Errorf("failed to send push notification: %w", err)
+		return errors.HandleError(err, sub.Endpoint)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	log.Printf("Push notification sent to %s, status: %d", sub.Endpoint, resp.StatusCode)
 
 	if resp.StatusCode == 410 || resp.StatusCode == 404 {
-		return &PushNotificationError{
+		return errors.HandleError(&errors.PushNotificationError{
 			StatusCode: resp.StatusCode,
 			Message:    fmt.Sprintf("subscription expired (status %d)", resp.StatusCode),
-		}
+		}, sub.Endpoint)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return &PushNotificationError{
+		return errors.HandleError(&errors.PushNotificationError{
 			StatusCode: resp.StatusCode,
 			Message:    fmt.Sprintf("unexpected status code: %d", resp.StatusCode),
-		}
+		}, sub.Endpoint)
 	}
 
 	return nil
-}
-
-// PushNotificationError represents an error that occurred while sending a push notification.
-type PushNotificationError struct {
-	StatusCode int
-	Message    string
-}
-
-func (e *PushNotificationError) Error() string {
-	return e.Message
 }
