@@ -36,10 +36,17 @@ describe('Admin Schemas', () => {
     });
 
     it('should reject empty name', () => {
-      const result = buyerSchema.safeParse({ name: '' });
+      const result = buyerSchema.safeParse({
+        name: '',
+        email: 'buyer@example.com',
+        password: 'Password123!',
+        organization: '組合',
+        contactInfo: '03-0000-0000',
+      });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('中買人名を入力してください');
+        const nameIssue = result.error.issues.find((i) => i.path[0] === 'name');
+        expect(nameIssue?.message).toContain('中買人名を入力してください');
       }
     });
   });
