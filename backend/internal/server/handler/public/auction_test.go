@@ -227,7 +227,7 @@ func TestPublicAuctionHandler_GetItems(t *testing.T) {
 	}
 }
 
-func TestPublicAuctionHandler_RegisterRoutes(t *testing.T) {
+func TestPublicAuctionHandler_RegisterRoutes(_ *testing.T) {
 	mockReg := &mock.MockRegistry{
 		ListAuctionsUC: &mock.MockListAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
 			return []model.Auction{}, nil
@@ -252,9 +252,7 @@ func TestPublicAuctionHandler_RegisterRoutes(t *testing.T) {
 		req := httptest.NewRequestWithContext(context.Background(), tt.method, tt.path, nil)
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
-		if w.Code != http.StatusOK && w.Code != http.StatusNotFound {
-			// Note: without proper router setup in test, path value might not be populated if just using mux.ServeHTTP directly without a real router.
-			// But here we just check if it's registered.
-		}
+		// Note: without proper router setup in test, path value might not be populated if just using mux.ServeHTTP directly without a real router.
+		// But here we just check if it's registered.
 	}
 }

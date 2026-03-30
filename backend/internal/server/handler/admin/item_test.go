@@ -111,7 +111,7 @@ func TestAdminItemHandler_Update(t *testing.T) {
 func TestAdminItemHandler_Delete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockDeleteUC := &mock.MockDeleteItemUseCase{
-			ExecuteFunc: func(_ context.Context, id int) error {
+			ExecuteFunc: func(_ context.Context, _ int) error {
 				return nil
 			},
 		}
@@ -148,7 +148,7 @@ func TestAdminItemHandler_Delete(t *testing.T) {
 func TestAdminItemHandler_UpdateSortOrder(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockUpdateSortUC := &mock.MockUpdateItemSortOrderUseCase{
-			ExecuteFunc: func(_ context.Context, id int, sortOrder int) error {
+			ExecuteFunc: func(_ context.Context, _ int, _ int) error {
 				return nil
 			},
 		}

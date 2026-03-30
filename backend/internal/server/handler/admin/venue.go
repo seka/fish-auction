@@ -51,7 +51,7 @@ func (h *VenueHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.WriteJSON(w, http.StatusCreated, h.toResponse(*created))
+	util.WriteJSON(w, http.StatusCreated, h.toResponse(created))
 }
 
 // List handles the request to list venues.
@@ -64,7 +64,7 @@ func (h *VenueHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	resp := make([]response.Venue, len(venues))
 	for i, v := range venues {
-		resp[i] = h.toResponse(v)
+		resp[i] = h.toResponse(&v)
 	}
 
 	util.WriteJSON(w, http.StatusOK, resp)
@@ -117,7 +117,7 @@ func (h *VenueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *VenueHandler) toResponse(v model.Venue) response.Venue {
+func (h *VenueHandler) toResponse(v *model.Venue) response.Venue {
 	return response.Venue{
 		ID:          v.ID,
 		Name:        v.Name,
