@@ -16,8 +16,9 @@ description: Use when changing fish-auction data structures, tracing relationshi
 - DB の実体: `backend/migrations/001_init.sql`
 - ドメイン表現: `backend/internal/domain/model`
 - 永続化の row 表現: `backend/internal/infrastructure/entity`
-- フロントの表示用型: `frontend/src/models`
-- フロントの入力検証: `frontend/src/models/schemas`
+- サーバー側データの型定義: `frontend/src/data/entities` (@entities)
+- フロントの機能固有モデル: `frontend/src/features/*/types`
+- フロントの入力検証: `frontend/src/schemas`
 
 迷ったら、テーブル構造は migration、業務上の意味は domain model、画面都合の shape は frontend model を優先して読む。
 
