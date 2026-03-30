@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -17,8 +17,9 @@ export const useVenueManagement = () => {
 
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
+  const schema = useMemo(() => getVenueSchema(tValidation), [tValidation]);
   const form = useForm<VenueFormData>({
-    resolver: zodResolver(getVenueSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   const { reset, handleSubmit, setValue } = form;

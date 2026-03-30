@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { getPasswordComplexitySchema } from '@/src/models/schemas/fields/password';
 
@@ -13,6 +13,8 @@ export const useSettingsManagement = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const schema = useMemo(() => getPasswordComplexitySchema(tValidation), [tValidation]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -22,7 +24,7 @@ export const useSettingsManagement = () => {
       return;
     }
 
-    const validation = getPasswordComplexitySchema(tValidation).safeParse(newPassword);
+    const validation = schema.safeParse(newPassword);
     if (!validation.success) {
       setMessage({ type: 'error', text: validation.error.issues[0].message });
       return;

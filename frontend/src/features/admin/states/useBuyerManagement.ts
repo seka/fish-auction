@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -13,8 +13,9 @@ export const useBuyerManagement = () => {
   const { buyers, isLoading } = useAdminBuyers();
   const { createBuyer, isCreating, deleteBuyer, isDeleting } = useAdminBuyerMutations();
 
+  const schema = useMemo(() => getBuyerSchema(tValidation), [tValidation]);
   const form = useForm<BuyerFormData>({
-    resolver: zodResolver(getBuyerSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   const { reset, handleSubmit } = form;

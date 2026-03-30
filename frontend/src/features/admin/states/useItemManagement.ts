@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,8 +38,9 @@ export const useItemManagement = () => {
     isSorting,
   } = useAdminItemMutations();
 
+  const schema = useMemo(() => getItemSchema(tValidation), [tValidation]);
   const form = useForm<ItemFormData>({
-    resolver: zodResolver(getItemSchema(tValidation)),
+    resolver: zodResolver(schema),
     defaultValues: {
       auctionId: initialAuctionId || '',
     },

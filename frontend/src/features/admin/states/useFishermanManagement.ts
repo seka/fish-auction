@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -13,8 +13,9 @@ export const useFishermanManagement = () => {
   const { fishermen, isLoading } = useAdminFishermen();
   const { createFisherman, isCreating, deleteFisherman, isDeleting } = useAdminFishermanMutations();
 
+  const schema = useMemo(() => getFishermanSchema(tValidation), [tValidation]);
   const form = useForm<FishermanFormData>({
-    resolver: zodResolver(getFishermanSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   const { reset, handleSubmit } = form;

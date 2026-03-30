@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -28,8 +28,9 @@ export const useAuctionManagement = () => {
     isDeleting,
   } = useAdminAuctionMutations();
 
+  const schema = useMemo(() => getAuctionSchema(tValidation), [tValidation]);
   const form = useForm<AuctionFormInput>({
-    resolver: zodResolver(getAuctionSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   const { reset, handleSubmit, setValue } = form;
