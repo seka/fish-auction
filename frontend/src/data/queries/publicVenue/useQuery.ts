@@ -1,11 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { getVenues } from '@/src/data/api/venue';
-import { venueKeys } from '@/src/data/queries/publicVenue/keys';
+import { Venue } from '@entities/venue';
+import { venueKeys } from './keys';
 
-export const useVenueQuery = () => {
-  const { data: venues } = useQuery({
+export const useVenueQuery = <T = Venue[]>(
+  options?: Omit<UseQueryOptions<Venue[], Error, T>, 'queryKey' | 'queryFn'>,
+) => {
+  return useQuery({
     queryKey: venueKeys.publicAll,
     queryFn: getVenues,
+    ...options,
   });
-  return { venues: venues || [] };
 };
