@@ -4,7 +4,7 @@ import { Table, Thead, Tbody, Tr, Th } from '@molecules';
 import { Box, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { InvoiceItem } from '@entities';
+import { InvoiceItem } from '../../types';
 import { InvoiceListCell } from './InvoiceListCell';
 
 interface InvoiceListProps {

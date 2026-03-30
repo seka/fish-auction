@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { getAuctionSchema, AuctionFormInput } from '@schemas/auction';
 import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
 import { useAdminVenues } from '../queries/useVenues';
-import { Auction } from '@entities/auction';
+import { Auction } from '../types';
 import { ApiError } from '@/src/core/api/client';
 
 export const useAuctionManagement = () => {

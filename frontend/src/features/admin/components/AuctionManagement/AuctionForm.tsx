@@ -5,7 +5,7 @@ import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
 import { AuctionFormInput } from '@schemas/auction';
-import { Venue, Auction } from '@entities';
+import { Venue, Auction } from '../../types';
 
 interface AuctionFormProps {
   form: UseFormReturn<AuctionFormInput>;

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { getVenueSchema, VenueFormData } from '@schemas/auction';
 import { useAdminVenues, useAdminVenueMutations } from '../queries/useVenues';
-import { Venue } from '@entities/venue';
+import { Venue } from '../types';
 
 export const useVenueManagement = () => {
   const t = useTranslations();

@@ -5,7 +5,7 @@ import { ModalBackdrop, ModalContent } from '@molecules';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 
-import { InvoiceItem } from '@entities';
+import { InvoiceItem } from '../../types';
 
 interface InvoiceDetailModalProps {
   invoice: InvoiceItem;

@@ -4,7 +4,7 @@ import { Box } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th } from '@molecules';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { Auction, Venue } from '@entities';
+import { Auction, Venue } from '../../types';
 import { AuctionListCell } from './AuctionListCell';
 
 interface AuctionListProps {

@@ -1,7 +1,7 @@
 import { Box, Stack, Text } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { Venue } from '@entities';
+import { Venue } from '../../types';
 import { VenueListCell } from './VenueListCell';
 
 interface VenueListProps {
