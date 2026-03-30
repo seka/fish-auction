@@ -12,7 +12,7 @@ import { getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { authKeys } from '@/src/data/queries/auth/keys';
-import { AuctionItem } from '@entities';
+import { AuctionItem } from '../types';
 
 export const useAuctionDetail = (auctionId: number) => {
   const t = useTranslations();

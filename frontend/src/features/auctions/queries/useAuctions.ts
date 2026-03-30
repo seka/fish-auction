@@ -2,6 +2,7 @@ import { useAuctionDetailQuery } from '@/src/data/queries/publicAuction/useQuery
 import { useItemsByAuction } from '@/src/data/queries/publicItem/useQuery';
 import { useBidMutation } from '@/src/data/queries/buyerAuction/useMutation';
 
+import { Auction, AuctionItem } from '../types';
 import { isAuctionActive } from '@/src/utils/auction';
 
 /**
@@ -19,8 +20,8 @@ export const useAuctionDetailData = (auctionId: number) => {
   const { items, isLoading: isItemsLoading, refetch: refetchItems } = useItemsByAuction(auctionId);
   
   return {
-    auction: auctionInfo,
-    items,
+    auction: auctionInfo as unknown as Auction,
+    items: items as unknown as AuctionItem[],
     isLoading: isAuctionLoading || isItemsLoading,
     refetchItems,
   };

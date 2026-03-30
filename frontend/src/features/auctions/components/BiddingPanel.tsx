@@ -2,8 +2,7 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { BidFormData } from '@schemas/auction';
-import { AuctionItem } from '@entities';
-import { Auction } from '@entities/auction';
+import { AuctionItem, Auction } from '../types';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
 import { ItemStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
