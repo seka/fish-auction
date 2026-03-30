@@ -1,31 +1,34 @@
 import { z } from 'zod';
-import { passwordComplexitySchema } from './fields/password';
+import { getPasswordComplexitySchema, ValidationT } from './fields/password';
 
-export const fishermanSchema = z.object({
-  name: z.string().min(1, '漁師名を入力してください'),
-});
+export const getFishermanSchema = (t: ValidationT) =>
+  z.object({
+    name: z.string().min(1, t('required', { field: t('field_name.fisherman_name') })),
+  });
 
-export const buyerSchema = z.object({
-  name: z.string().min(1, '中買人名を入力してください'),
-  email: z.string().email('正しいメールアドレスを入力してください'),
-  password: passwordComplexitySchema,
-  organization: z.string().min(1, '組織名を入力してください'),
-  contactInfo: z.string().min(1, '連絡先を入力してください'),
-});
+export const getBuyerSchema = (t: ValidationT) =>
+  z.object({
+    name: z.string().min(1, t('required', { field: t('field_name.buyer_name') })),
+    email: z.string().email(t('invalid_email')),
+    password: getPasswordComplexitySchema(t),
+    organization: z.string().min(1, t('required', { field: t('field_name.organization') })),
+    contactInfo: z.string().min(1, t('required', { field: t('field_name.contact_info') })),
+  });
 
-export const itemSchema = z.object({
-  auctionId: z.string().min(1, 'セリを選択してください'),
-  fishermanId: z.string().min(1, '漁師を選択してください'),
-  fishType: z.string().min(1, '魚種を入力してください'),
-  quantity: z
-    .string()
-    .min(1, '数量を入力してください')
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: '数量は正の数値で入力してください',
-    }),
-  unit: z.string().min(1, '単位を入力してください'),
-});
+export const getItemSchema = (t: ValidationT) =>
+  z.object({
+    auctionId: z.string().min(1, t('select_required', { field: t('Items.auction') })),
+    fishermanId: z.string().min(1, t('select_required', { field: t('Items.fisherman') })),
+    fishType: z.string().min(1, t('required', { field: t('Items.fish_type') })),
+    quantity: z
+      .string()
+      .min(1, t('required', { field: t('Items.quantity') }))
+      .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+        message: t('positive_number'),
+      }),
+    unit: z.string().min(1, t('required', { field: t('Items.unit') })),
+  });
 
-export type FishermanFormData = z.infer<typeof fishermanSchema>;
-export type BuyerFormData = z.infer<typeof buyerSchema>;
-export type ItemFormData = z.infer<typeof itemSchema>;
+export type FishermanFormData = z.infer<ReturnType<typeof getFishermanSchema>>;
+export type BuyerFormData = z.infer<ReturnType<typeof getBuyerSchema>>;
+export type ItemFormData = z.infer<ReturnType<typeof getItemSchema>>;

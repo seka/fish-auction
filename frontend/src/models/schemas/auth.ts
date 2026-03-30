@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import { ValidationT } from './fields/password';
 
-export const loginSchema = z.object({
-  email: z.string().email('メールアドレスの形式が正しくありません'),
-  password: z.string().min(1, 'パスワードを入力してください'),
-});
+export const getLoginSchema = (t: ValidationT) =>
+  z.object({
+    email: z.string().email(t('invalid_email')),
+    password: z.string().min(1, t('required', { field: t('field_name.password') })),
+  });
 
-export type LoginFormData = z.infer<typeof loginSchema>;
+export type LoginFormData = z.infer<ReturnType<typeof getLoginSchema>>;

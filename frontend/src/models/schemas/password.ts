@@ -1,12 +1,13 @@
 import { z } from 'zod';
-import { passwordComplexitySchema } from './fields/password';
+import { getPasswordComplexitySchema, ValidationT } from './fields/password';
 
-export const resetPasswordSchema = z
-  .object({
-    new_password: passwordComplexitySchema,
-    confirm_password: z.string().min(1, '確認用パスワードを入力してください'),
-  })
-  .refine((data) => data.new_password === data.confirm_password, {
-    message: 'パスワードが一致しません',
-    path: ['confirm_password'],
-  });
+export const getResetPasswordSchema = (t: ValidationT) =>
+  z
+    .object({
+      new_password: getPasswordComplexitySchema(t),
+      confirm_password: z.string().min(1, t('required', { field: t('Auth.ResetPassword.label_confirm_password') })),
+    })
+    .refine((data) => data.new_password === data.confirm_password, {
+      message: t('password_mismatch'),
+      path: ['confirm_password'],
+    });
