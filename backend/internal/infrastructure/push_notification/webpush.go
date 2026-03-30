@@ -58,12 +58,27 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 	log.Printf("Push notification sent to %s, status: %d", sub.Endpoint, resp.StatusCode)
 
 	if resp.StatusCode == 410 || resp.StatusCode == 404 {
-		return fmt.Errorf("subscription expired (status %d)", resp.StatusCode)
+		return &PushNotificationError{
+			StatusCode: resp.StatusCode,
+			Message:    fmt.Sprintf("subscription expired (status %d)", resp.StatusCode),
+		}
 	}
-
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return &PushNotificationError{
+			StatusCode: resp.StatusCode,
+			Message:    fmt.Sprintf("unexpected status code: %d", resp.StatusCode),
+		}
 	}
 
 	return nil
+}
+
+// PushNotificationError represents an error that occurred while sending a push notification.
+type PushNotificationError struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *PushNotificationError) Error() string {
+	return e.Message
 }

@@ -61,8 +61,9 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if err == nil || err.Error() != "subscription expired (status 410)" {
-			t.Errorf("expected 'subscription expired (status 410)' error, got %v", err)
+		var pushErr *PushNotificationError
+		if !errors.As(err, &pushErr) || pushErr.StatusCode != http.StatusGone {
+			t.Errorf("expected PushNotificationError with status 410, got %v", err)
 		}
 	})
 
@@ -80,8 +81,9 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if err == nil || err.Error() != "subscription expired (status 404)" {
-			t.Errorf("expected 'subscription expired (status 404)' error, got %v", err)
+		var pushErr *PushNotificationError
+		if !errors.As(err, &pushErr) || pushErr.StatusCode != http.StatusNotFound {
+			t.Errorf("expected PushNotificationError with status 404, got %v", err)
 		}
 	})
 
@@ -99,8 +101,9 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if err == nil || err.Error() != "unexpected status code: 500" {
-			t.Errorf("expected 'unexpected status code: 500' error, got %v", err)
+		var pushErr *PushNotificationError
+		if !errors.As(err, &pushErr) || pushErr.StatusCode != http.StatusInternalServerError {
+			t.Errorf("expected PushNotificationError with status 500, got %v", err)
 		}
 	})
 

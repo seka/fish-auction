@@ -105,10 +105,16 @@ func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if tt.name == "InvalidStatus" && err != nil {
-				expectedMsg := "invalid auction status: " + string(tt.status)
-				if err.Error() != expectedMsg {
-					t.Errorf("expected error message %q, got %q", expectedMsg, err.Error())
+			if tt.name == "InvalidStatus" {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				var invalidStatusErr *auction.InvalidStatusError
+				if !errors.As(err, &invalidStatusErr) {
+					t.Fatalf("expected InvalidStatusError, got %T: %v", err, err)
+				}
+				if invalidStatusErr.Status != string(tt.status) {
+					t.Errorf("expected status %q in error, got %q", string(tt.status), invalidStatusErr.Status)
 				}
 			}
 		})
