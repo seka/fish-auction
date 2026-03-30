@@ -14,7 +14,7 @@ import { PublicResetPasswordForm } from './PublicResetPassword/PublicResetPasswo
 import { PublicResetPasswordStatus } from './PublicResetPassword/PublicResetPasswordStatus';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getResetPasswordSchema } from '@schema/password';
+import { getResetPasswordSchema } from '@schemas/password';
 
 const PublicResetPasswordContent = () => {
   const t = useTranslations();

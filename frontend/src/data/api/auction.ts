@@ -1,6 +1,6 @@
 import { apiClient } from '@/src/core/api/client';
 import { Auction, AuctionItem } from '@entities/auction';
-import { AuctionFormData } from '@schema/auction';
+import { AuctionFormData } from '@schemas/auction';
 
 export const createAuction = async (data: AuctionFormData): Promise<Auction> => {
   return apiClient.post<Auction>('/api/admin/auctions', data);

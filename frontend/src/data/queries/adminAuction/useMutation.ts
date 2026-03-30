@@ -5,7 +5,7 @@ import {
   updateAuctionStatus,
   deleteAuction,
 } from '@/src/data/api/auction';
-import { AuctionFormData } from '@schema/auction';
+import { AuctionFormData } from '@schemas/auction';
 import { auctionKeys } from '../publicAuction/keys'; // For public invalidation
 import { adminAuctionKeys } from './keys';
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { getPasswordComplexitySchema } from '@schema/fields/password';
+import { getPasswordComplexitySchema } from '@schemas/fields/password';
 
 export const useSettingsManagement = () => {
   const t = useTranslations();

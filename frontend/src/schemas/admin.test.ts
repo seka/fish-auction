@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getFishermanSchema, getBuyerSchema, getItemSchema } from './admin';
-import { tMock } from '@testing/i18n';
+import { tMock } from '@testings/i18n';
 
 const t = tMock;
 const fishermanSchema = getFishermanSchema(t);

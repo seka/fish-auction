@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { getVenueSchema, VenueFormData } from '@schema/auction';
+import { getVenueSchema, VenueFormData } from '@schemas/auction';
 import { useAdminVenues, useAdminVenueMutations } from '../queries/useVenues';
 import { Venue } from '@entities/venue';
 

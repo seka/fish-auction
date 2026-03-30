@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { DragEndEvent } from '@dnd-kit/core';
-import { getItemSchema, ItemFormData } from '@schema/admin';
+import { getItemSchema, ItemFormData } from '@schemas/admin';
 import { useAdminItems, useAdminItemMutations } from '../queries/useItems';
 import { useAdminFishermen } from '../queries/useFishermen';
 import { useAdminAuctions } from '../queries/useAuctions';

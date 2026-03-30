@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getVenueSchema, getAuctionSchema, getBidSchema } from './auction';
-import { tMock } from '@testing/i18n';
+import { tMock } from '@testings/i18n';
 
 const t = tMock;
 const venueSchema = getVenueSchema(t);

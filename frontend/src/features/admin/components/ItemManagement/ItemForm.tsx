@@ -4,7 +4,7 @@ import { Box, Button, Stack, Text, Input, Card, HStack, Select } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
-import { ItemFormData } from '@schema/admin';
+import { ItemFormData } from '@schemas/admin';
 import { Auction, Fisherman, AuctionItem } from '@entities';
 
 interface ItemFormProps {

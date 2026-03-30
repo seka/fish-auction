@@ -1,4 +1,4 @@
-import { ValidationT } from '@schema/fields/password';
+import { ValidationT } from '@schemas/fields/password';
 
 /**
  * テスト用の翻訳関数モック。

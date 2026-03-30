@@ -7,7 +7,7 @@ import {
   UpdateItemParams,
   UpdateItemSortOrderParams,
 } from '@entities';
-import { BuyerFormData } from '@schema/admin';
+import { BuyerFormData } from '@schemas/admin';
 
 export const registerFisherman = async (name: string): Promise<boolean> => {
   try {

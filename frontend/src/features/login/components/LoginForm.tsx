@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getLoginSchema, LoginFormData } from '@schema/auth';
+import { getLoginSchema, LoginFormData } from '@schemas/auth';
 import { css } from 'styled-system/css';
 import { Box, Text, Button, Input, Card, Stack } from '@atoms';
 import { useTranslations } from 'next-intl';

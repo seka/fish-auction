@@ -1,5 +1,5 @@
 import { apiClient } from '@/src/core/api/client';
-import { BuyerLoginFormData } from '@schema/buyer_auth';
+import { BuyerLoginFormData } from '@schemas/buyer_auth';
 import { Buyer } from '@entities';
 
 export const loginBuyer = async (data: BuyerLoginFormData): Promise<Buyer | null> => {
