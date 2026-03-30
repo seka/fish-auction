@@ -3,7 +3,7 @@ import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
 import { useAuctionMutation } from '@/src/data/queries/adminAuction/useMutation';
 import { Auction } from '../types/auction';
 
-const toAuction = (entity: EntityAuction): Auction => ({
+export const toAuction = (entity: EntityAuction): Auction => ({
   id: entity.id,
   venueId: entity.venueId,
   auctionDate: entity.auctionDate,
