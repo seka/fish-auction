@@ -31,9 +31,9 @@
       "@libs/*": ["./src/libs/*"],
       "@entities/*": ["./src/data/entities/*"],
       "@entities": ["./src/data/entities"],
-      "@schema/*": ["./src/schema/*"],
-      "@schema": ["./src/schema"],
-      "@testing/*": ["./src/testing/*"],
+      "@schemas/*": ["./src/schemas/*"],
+      "@schemas": ["./src/schemas"],
+      "@testings/*": ["./src/testings/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }
   },
