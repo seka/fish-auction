@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getLoginSchema } from './auth';
-import { tMock } from './test-utils';
+import { tMock } from '@testing/i18n';
 
 const t = tMock;
 const loginSchema = getLoginSchema(t);

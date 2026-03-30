@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getPasswordComplexitySchema } from './fields/password';
 import { getResetPasswordSchema } from './password';
-import { tMock } from './test-utils';
+import { tMock } from '@testing/i18n';
 
 const t = tMock;
 const passwordComplexitySchema = getPasswordComplexitySchema(t);

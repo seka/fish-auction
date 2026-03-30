@@ -29,6 +29,7 @@
       "@organisms": ["./src/components/organisms"],
       "@templates": ["./src/components/templates"],
       "@libs/*": ["./src/libs/*"],
+      "@testing/*": ["./src/testing/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }
   },
