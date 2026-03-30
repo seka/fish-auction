@@ -69,7 +69,7 @@ func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid fisherman id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid fisherman ID")
 		return
 	}
 

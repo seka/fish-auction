@@ -75,13 +75,13 @@ func (h *VenueHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid venue id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid venue ID")
 		return
 	}
 
 	var req request.UpdateVenue
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid request body")
+		util.WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -105,7 +105,7 @@ func (h *VenueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid venue id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid venue ID")
 		return
 	}
 

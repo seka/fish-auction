@@ -69,7 +69,7 @@ func (h *BuyerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid buyer id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid buyer ID")
 		return
 	}
 

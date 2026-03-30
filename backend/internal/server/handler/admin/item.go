@@ -61,13 +61,13 @@ func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid item id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid item ID")
 		return
 	}
 
 	var req request.UpdateItem
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid request body")
+		util.WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -95,7 +95,7 @@ func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid item id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid item ID")
 		return
 	}
 
@@ -112,13 +112,13 @@ func (h *ItemHandler) UpdateSortOrder(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid item id")
+		util.WriteError(w, http.StatusBadRequest, "Invalid item ID")
 		return
 	}
 
 	var req request.UpdateItemSortOrder
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		util.WriteError(w, http.StatusBadRequest, "invalid request body")
+		util.WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 

@@ -229,7 +229,9 @@ func TestPublicAuctionHandler_GetItems(t *testing.T) {
 
 func TestPublicAuctionHandler_RegisterRoutes(t *testing.T) {
 	mockReg := &mock.MockRegistry{
-		ListAuctionsUC:    &mock.MockListAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) { return []model.Auction{}, nil }},
+		ListAuctionsUC: &mock.MockListAuctionsUseCase{ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
+			return []model.Auction{}, nil
+		}},
 		GetAuctionUC:      &mock.MockGetAuctionUseCase{ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) { return &model.Auction{ID: 1}, nil }},
 		GetAuctionItemsUC: &mock.MockGetAuctionItemsUseCase{ExecuteFunc: func(_ context.Context, _ int) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
 	}

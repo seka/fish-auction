@@ -3,12 +3,12 @@ package buyer_test
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestCreateBuyerUseCase_Execute(t *testing.T) {
@@ -23,6 +23,7 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 		createBuyerErr error
 		createAuthErr  error
 		wantErr        error
+		errContains    string
 	}{
 		{
 			name:     "Success",
@@ -46,10 +47,10 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 			wantErr:       authErr,
 		},
 		{
-			name:     "PasswordTooLong",
-			input:    "John Doe",
-			password: "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
-			wantErr:  bcrypt.ErrPasswordTooLong, // Or check functionality logic which probably propagates expected error
+			name:        "PasswordTooLong",
+			input:       "John Doe",
+			password:    "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			errContains: "between 8 and 72 characters",
 		},
 	}
 
@@ -91,6 +92,16 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 				}
 				if got != nil {
 					t.Fatalf("expected nil result, got %+v", got)
+				}
+				return
+			}
+
+			if tt.errContains != "" {
+				if err == nil {
+					t.Fatalf("expected error containing %q, got nil", tt.errContains)
+				}
+				if !errors.Is(err, tt.wantErr) && !strings.Contains(err.Error(), tt.errContains) {
+					t.Fatalf("expected error containing %q, got %v", tt.errContains, err)
 				}
 				return
 			}
