@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { getPasswordComplexitySchema, ValidationT } from './fields/password';
-import { getEmailSchema } from './fields/email';
 import { getQuantitySchema } from './fields/quantity';
 
 export const getFishermanSchema = (t: ValidationT) =>
@@ -11,7 +10,7 @@ export const getFishermanSchema = (t: ValidationT) =>
 export const getBuyerSchema = (t: ValidationT) =>
   z.object({
     name: z.string().min(1, t('required', { field: t('field_name.buyer_name') })),
-    email: getEmailSchema(t),
+    email: z.email(t('invalid_email')),
     password: getPasswordComplexitySchema(t),
     organization: z.string().min(1, t('required', { field: t('field_name.organization') })),
     contactInfo: z.string().min(1, t('required', { field: t('field_name.contact_info') })),
