@@ -11,6 +11,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/server/handler/public"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 func TestAuthResetHandler(t *testing.T) {
@@ -57,6 +58,39 @@ func TestAuthResetHandler(t *testing.T) {
 
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("VerifyToken_Unauthorized", func(t *testing.T) {
+		mockVerifyUC := &mock.MockVerifyResetTokenUseCase{
+			ExecuteFunc: func(_ context.Context, _ string) error {
+				return &errors.UnauthorizedError{Message: "Invalid or expired token"}
+			},
+		}
+		mockReg := &mock.MockRegistry{VerifyResetTokenUC: mockVerifyUC}
+		h := public.NewAuthResetHandler(mockReg)
+
+		reqBody := map[string]string{"token": "invalid-token"}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/auth/password-reset/verify", bytes.NewReader(body))
+		w := httptest.NewRecorder()
+
+		h.VerifyToken(w, req)
+
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("expected status 401, got %d", w.Code)
+		}
+
+		if cType := w.Header().Get("Content-Type"); cType != "application/json" {
+			t.Errorf("expected content type application/json, got %s", cType)
+		}
+
+		var errResp util.ErrorResponse
+		if err := json.NewDecoder(w.Body).Decode(&errResp); err != nil {
+			t.Fatalf("failed to decode error body: %v", err)
+		}
+		if errResp.Error != "error" || errResp.Message != "Invalid or expired token" || errResp.Code != http.StatusUnauthorized {
+			t.Errorf("unexpected error format: %+v", errResp)
 		}
 	})
 

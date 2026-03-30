@@ -11,6 +11,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	handler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 func TestAdminAuthResetHandler(t *testing.T) {
@@ -77,6 +78,18 @@ func TestAdminAuthResetHandler(t *testing.T) {
 
 		if w.Code != http.StatusUnauthorized {
 			t.Errorf("expected status 401, got %d", w.Code)
+		}
+
+		if cType := w.Header().Get("Content-Type"); cType != "application/json" {
+			t.Errorf("expected content type application/json, got %s", cType)
+		}
+
+		var errResp util.ErrorResponse
+		if err := json.NewDecoder(w.Body).Decode(&errResp); err != nil {
+			t.Fatalf("failed to decode error body: %v", err)
+		}
+		if errResp.Error != "error" || errResp.Message != "Invalid or expired token" || errResp.Code != http.StatusUnauthorized {
+			t.Errorf("unexpected error format: %+v", errResp)
 		}
 	})
 
