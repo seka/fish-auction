@@ -54,7 +54,7 @@ hook 名は feature により異なる。`useXXXManagement` に固定せず、`u
 
 - `rg "useQuery|useMutation|invalidateQueries" frontend/src`
 - `rg "apiClient\\.(get|post|put|delete)" frontend/src`
-- `rg "Schema|FormData" frontend/src/models frontend/src/features`
+- `rg "Schema|FormData" frontend/src/schemas frontend/src/features`
 
 ## Working rule
 

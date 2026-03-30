@@ -68,7 +68,7 @@ description: Use when changing fish-auction data structures, tracing relationshi
 2. `backend/internal/domain/model/<target>.go`
 3. `backend/internal/infrastructure/entity/<target>.go`
 4. `backend/internal/server/dto` と handler
-5. `frontend/src/models` と `frontend/src/models/schemas`
+5. `frontend/src/data/entities`, `frontend/src/features/*/types` と `frontend/src/schemas`
 
 ## Guardrails
 
@@ -82,7 +82,7 @@ description: Use when changing fish-auction data structures, tracing relationshi
 
 - `rg "type .* struct" backend/internal/domain/model backend/internal/infrastructure/entity`
 - `rg "CREATE TABLE|REFERENCES|UNIQUE|CHECK" backend/migrations/001_init.sql`
-- `rg "export interface|z\\.object|z\\.enum" frontend/src/models`
+- `rg "export interface|z\\.object|z\\.enum" frontend/src/features/*/types frontend/src/schemas`
 
 ## Working rule
 
