@@ -45,7 +45,7 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	auctionDate, err := time.Parse("2006-01-02", req.AuctionDate)
 	if err != nil {
-		http.Error(w, "Invalid date format (YYYY-MM-DD)", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid date format (YYYY-MM-DD)")
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	auctionDate, err := time.Parse("2006-01-02", req.AuctionDate)
 	if err != nil {
-		http.Error(w, "Invalid date format (YYYY-MM-DD)", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid date format (YYYY-MM-DD)")
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
@@ -133,7 +133,7 @@ func (h *AuctionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 

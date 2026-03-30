@@ -29,7 +29,7 @@ func NewBidHandler(r registry.UseCase) *BidHandler {
 func (h *BidHandler) Create(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 

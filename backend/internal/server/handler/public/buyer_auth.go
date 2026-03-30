@@ -41,7 +41,7 @@ func (h *BuyerAuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if buy == nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 

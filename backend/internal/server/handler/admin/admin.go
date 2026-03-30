@@ -28,7 +28,7 @@ func NewAdminHandler(r registry.UseCase) *AdminHandler {
 func (h *AdminHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	adminID, ok := middleware.AdminIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 

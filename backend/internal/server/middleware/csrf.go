@@ -3,6 +3,8 @@ package middleware
 import (
 	"net/http"
 	"slices"
+
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 // CSRFMiddleware protects against Cross-Site Request Forgery.
@@ -40,7 +42,7 @@ func (m *CSRFMiddleware) Handle(next http.Handler) http.Handler {
 		if fetchSite != "" {
 			if fetchSite != "same-origin" && fetchSite != "same-site" {
 				// none はURLの直接入力などのため、APIベースの副作用を許可しない
-				http.Error(w, "Forbidden (Sec-Fetch-Site mismatch)", http.StatusForbidden)
+				util.WriteError(w, http.StatusForbidden, "Forbidden (Sec-Fetch-Site mismatch)")
 				return
 			}
 		}
@@ -51,7 +53,7 @@ func (m *CSRFMiddleware) Handle(next http.Handler) http.Handler {
 		if origin != "" {
 			allowed := slices.Contains(m.allowedOrigins, origin)
 			if !allowed {
-				http.Error(w, "Forbidden (Origin mismatch)", http.StatusForbidden)
+				util.WriteError(w, http.StatusForbidden, "Forbidden (Origin mismatch)")
 				return
 			}
 		}

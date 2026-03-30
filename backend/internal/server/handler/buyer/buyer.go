@@ -35,7 +35,7 @@ func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 func (h *BuyerHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *BuyerHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandler) GetPurchases(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *BuyerHandler) GetPurchases(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandler) GetAuctions(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
@@ -120,7 +120,7 @@ func (h *BuyerHandler) GetAuctions(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 

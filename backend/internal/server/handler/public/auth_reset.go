@@ -9,6 +9,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server/handler/public/request"
 	"github.com/seka/fish-auction/backend/internal/server/handler/public/response"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 // AuthResetHandler handles HTTP requests related to password resets.
@@ -25,7 +26,7 @@ func NewAuthResetHandler(r registry.UseCase) *AuthResetHandler {
 func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) {
 	var req request.ResetPassword
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -41,7 +42,7 @@ func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		// System errors (DB, Email, etc.) are 500
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		util.WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
@@ -53,7 +54,7 @@ func (h *AuthResetHandler) RequestReset(w http.ResponseWriter, r *http.Request) 
 func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 	var req request.ResetPasswordVerify
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -61,10 +62,10 @@ func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 	if err := uc.Execute(r.Context(), req.Token); err != nil {
 		var unauthErr *domainErrors.UnauthorizedError
 		if errors.As(err, &unauthErr) {
-			http.Error(w, unauthErr.Message, http.StatusUnauthorized)
+			util.WriteError(w, http.StatusUnauthorized, unauthErr.Message)
 			return
 		}
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		util.WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
@@ -76,7 +77,7 @@ func (h *AuthResetHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) {
 	var req request.ResetPasswordConfirm
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -84,23 +85,23 @@ func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) 
 	if err := uc.Execute(r.Context(), req.Token, req.NewPassword); err != nil {
 		var notFoundErr *domainErrors.NotFoundError
 		if errors.As(err, &notFoundErr) {
-			http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+			util.WriteError(w, http.StatusBadRequest, "Invalid or expired token")
 			return
 		}
 
 		var unauthErr *domainErrors.UnauthorizedError
 		if errors.As(err, &unauthErr) {
-			http.Error(w, unauthErr.Message, http.StatusBadRequest)
+			util.WriteError(w, http.StatusBadRequest, unauthErr.Message)
 			return
 		}
 
 		var valErr *domainErrors.ValidationError
 		if errors.As(err, &valErr) {
-			http.Error(w, valErr.Message, http.StatusBadRequest)
+			util.WriteError(w, http.StatusBadRequest, valErr.Message)
 			return
 		}
 
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		util.WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 

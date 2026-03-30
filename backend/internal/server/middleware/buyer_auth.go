@@ -6,6 +6,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 // BuyerAuthMiddleware provides BuyerAuthMiddleware related functionality.
@@ -23,17 +24,17 @@ func (m *BuyerAuthMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("buyer_session")
 		if err != nil || cookie.Value == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 			return
 		}
 
 		session, err := m.sessionRepo.FindByID(r.Context(), cookie.Value)
 		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			util.WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
 		if session == nil || session.Role != model.SessionRoleBuyer {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 			return
 		}
 

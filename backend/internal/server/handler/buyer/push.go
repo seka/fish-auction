@@ -29,7 +29,7 @@ func NewPushHandler(r registry.UseCase) *PushHandler {
 func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 

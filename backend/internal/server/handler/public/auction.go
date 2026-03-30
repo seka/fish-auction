@@ -80,7 +80,7 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
@@ -110,7 +110,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		util.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
