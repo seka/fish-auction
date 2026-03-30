@@ -1,11 +1,3 @@
-export interface Venue {
-  id: number;
-  name: string;
-  location?: string;
-  description?: string;
-  createdAt: string;
-}
-
 export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface Auction {

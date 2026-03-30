@@ -2,3 +2,4 @@
 export * from './auction';
 export * from './admin';
 export * from './invoice';
+export * from './venue';
