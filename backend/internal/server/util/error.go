@@ -6,8 +6,14 @@ import (
 	"net/http"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
-	"github.com/seka/fish-auction/backend/internal/server/dto"
 )
+
+// ErrorResponse represents a JSON error response.
+type ErrorResponse struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+}
 
 // HandleError converts domain errors to JSON responses.
 func HandleError(w http.ResponseWriter, err error) {
@@ -40,7 +46,7 @@ func HandleError(w http.ResponseWriter, err error) {
 		message = "An internal error occurred"
 		log.Printf("Internal error: %v", err)
 	}
-	resp := dto.ErrorResponse{Error: errorType, Message: message, Code: status}
+	resp := ErrorResponse{Error: errorType, Message: message, Code: status}
 	WriteJSON(w, status, resp)
 }
 
@@ -53,7 +59,7 @@ func WriteJSON(w http.ResponseWriter, status int, data any) {
 
 // WriteError writes an error response with the given status code and message.
 func WriteError(w http.ResponseWriter, status int, message string) {
-	resp := dto.ErrorResponse{
+	resp := ErrorResponse{
 		Error:   "error",
 		Message: message,
 		Code:    status,

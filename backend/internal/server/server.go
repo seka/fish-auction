@@ -11,31 +11,34 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/server/handler"
+	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
+	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
+	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 )
 
 // Server serves the request.
 type Server struct {
 	router                *http.ServeMux
 	httpServer            *http.Server
-	healthHandler         *handler.HealthHandler
-	fishermanHandler      *handler.FishermanHandler
-	buyerHandler          *handler.BuyerHandler
-	adminBuyerHandler     *handler.AdminBuyerHandler
-	publicItemHandler     *handler.PublicItemHandler
-	adminItemHandler      *handler.AdminItemHandler
-	bidHandler            *handler.BidHandler
-	invoiceHandler        *handler.InvoiceHandler
-	authHandler           *handler.AuthHandler
-	publicVenueHandler    *handler.PublicVenueHandler
-	adminVenueHandler     *handler.AdminVenueHandler
-	publicAuctionHandler  *handler.PublicAuctionHandler
-	adminAuctionHandler   *handler.AdminAuctionHandler
-	adminHandler          *handler.AdminHandler
-	adminAuthResetHandler *handler.AdminAuthResetHandler
-	authResetHandler      *handler.AuthResetHandler
-	pushHandler           *handler.PushHandler
+	healthHandler         *publicHandler.HealthHandler
+	fishermanHandler      *adminHandler.FishermanHandler
+	buyerAuthHandler      *publicHandler.BuyerAuthHandler
+	buyerHandler          *buyerHandler.BuyerHandler
+	adminBuyerHandler     *adminHandler.BuyerHandler
+	publicItemHandler     *publicHandler.ItemHandler
+	adminItemHandler      *adminHandler.ItemHandler
+	bidHandler            *buyerHandler.BidHandler
+	invoiceHandler        *adminHandler.InvoiceHandler
+	authHandler           *publicHandler.AuthHandler
+	publicVenueHandler    *publicHandler.VenueHandler
+	adminVenueHandler     *adminHandler.VenueHandler
+	publicAuctionHandler  *publicHandler.AuctionHandler
+	adminAuctionHandler   *adminHandler.AuctionHandler
+	adminHandler          *adminHandler.AdminHandler
+	adminAuthResetHandler *adminHandler.AuthResetHandler
+	authResetHandler      *publicHandler.AuthResetHandler
+	pushHandler           *buyerHandler.PushHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
 	cors                  *middleware.CORSMiddleware
@@ -52,23 +55,24 @@ type Server struct {
 
 // NewServer creates a new Server instance.
 func NewServer(
-	healthHandler *handler.HealthHandler,
-	fishermanHandler *handler.FishermanHandler,
-	buyerHandler *handler.BuyerHandler,
-	adminBuyerHandler *handler.AdminBuyerHandler,
-	publicItemHandler *handler.PublicItemHandler,
-	adminItemHandler *handler.AdminItemHandler,
-	bidHandler *handler.BidHandler,
-	invoiceHandler *handler.InvoiceHandler,
-	authHandler *handler.AuthHandler,
-	publicVenueHandler *handler.PublicVenueHandler,
-	adminVenueHandler *handler.AdminVenueHandler,
-	publicAuctionHandler *handler.PublicAuctionHandler,
-	adminAuctionHandler *handler.AdminAuctionHandler,
-	adminHandler *handler.AdminHandler,
-	authResetHandler *handler.AuthResetHandler,
-	adminAuthResetHandler *handler.AdminAuthResetHandler,
-	pushHandler *handler.PushHandler,
+	healthHandler *publicHandler.HealthHandler,
+	fishermanHandler *adminHandler.FishermanHandler,
+	buyerAuthHandler *publicHandler.BuyerAuthHandler,
+	buyerHandler *buyerHandler.BuyerHandler,
+	adminBuyerHandler *adminHandler.BuyerHandler,
+	publicItemHandler *publicHandler.ItemHandler,
+	adminItemHandler *adminHandler.ItemHandler,
+	bidHandler *buyerHandler.BidHandler,
+	invoiceHandler *adminHandler.InvoiceHandler,
+	authHandler *publicHandler.AuthHandler,
+	publicVenueHandler *publicHandler.VenueHandler,
+	adminVenueHandler *adminHandler.VenueHandler,
+	publicAuctionHandler *publicHandler.AuctionHandler,
+	adminAuctionHandler *adminHandler.AuctionHandler,
+	adminHandler *adminHandler.AdminHandler,
+	authResetHandler *publicHandler.AuthResetHandler,
+	adminAuthResetHandler *adminHandler.AuthResetHandler,
+	pushHandler *buyerHandler.PushHandler,
 	sessionRepo repository.SessionRepository,
 	allowedOrigins []string,
 	readTimeout time.Duration,
@@ -79,6 +83,7 @@ func NewServer(
 		router:                http.NewServeMux(),
 		healthHandler:         healthHandler,
 		fishermanHandler:      fishermanHandler,
+		buyerAuthHandler:      buyerAuthHandler,
 		buyerHandler:          buyerHandler,
 		adminBuyerHandler:     adminBuyerHandler,
 		publicItemHandler:     publicItemHandler,
@@ -125,7 +130,7 @@ func (s *Server) registerPublicRoutes() {
 	s.publicItemHandler.RegisterRoutes(s.router)
 	s.publicAuctionHandler.RegisterRoutes(s.router)
 	s.publicVenueHandler.RegisterRoutes(s.router)
-	s.buyerHandler.RegisterPublicRoutes(s.router)
+	s.buyerAuthHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) registerAdminRoutes() {
@@ -146,7 +151,7 @@ func (s *Server) registerBuyerRoutes() {
 	buyerMux := http.NewServeMux()
 
 	s.bidHandler.RegisterRoutes(buyerMux)
-	s.buyerHandler.RegisterBuyerRoutes(buyerMux)
+	s.buyerHandler.RegisterRoutes(buyerMux)
 	s.pushHandler.RegisterRoutes(buyerMux)
 
 	s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))

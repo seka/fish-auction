@@ -11,27 +11,30 @@ import (
 	domainrepo "github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
-	"github.com/seka/fish-auction/backend/internal/server/handler"
+	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
+	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
+	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 )
 
 type handlers struct {
-	health         *handler.HealthHandler
-	fisherman      *handler.FishermanHandler
-	buyer          *handler.BuyerHandler
-	adminBuyer     *handler.AdminBuyerHandler
-	publicItem     *handler.PublicItemHandler
-	adminItem      *handler.AdminItemHandler
-	bid            *handler.BidHandler
-	invoice        *handler.InvoiceHandler
-	auth           *handler.AuthHandler
-	publicVenue    *handler.PublicVenueHandler
-	adminVenue     *handler.AdminVenueHandler
-	publicAuction  *handler.PublicAuctionHandler
-	adminAuction   *handler.AdminAuctionHandler
-	admin          *handler.AdminHandler
-	authReset      *handler.AuthResetHandler
-	adminAuthReset *handler.AdminAuthResetHandler
-	push           *handler.PushHandler
+	health         *publicHandler.HealthHandler
+	fisherman      *adminHandler.FishermanHandler
+	buyerAuth      *publicHandler.BuyerAuthHandler
+	buyer          *buyerHandler.BuyerHandler
+	adminBuyer     *adminHandler.BuyerHandler
+	publicItem     *publicHandler.ItemHandler
+	adminItem      *adminHandler.ItemHandler
+	bid            *buyerHandler.BidHandler
+	invoice        *adminHandler.InvoiceHandler
+	auth           *publicHandler.AuthHandler
+	publicVenue    *publicHandler.VenueHandler
+	adminVenue     *adminHandler.VenueHandler
+	publicAuction  *publicHandler.AuctionHandler
+	adminAuction   *adminHandler.AuctionHandler
+	admin          *adminHandler.AdminHandler
+	authReset      *publicHandler.AuthResetHandler
+	adminAuthReset *adminHandler.AuthResetHandler
+	push           *buyerHandler.PushHandler
 }
 
 func main() {
@@ -69,6 +72,7 @@ func run() error {
 	srv := server.NewServer(
 		h.health,
 		h.fisherman,
+		h.buyerAuth,
 		h.buyer,
 		h.adminBuyer,
 		h.publicItem,
@@ -100,22 +104,23 @@ func run() error {
 
 func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepository) *handlers {
 	return &handlers{
-		health:         handler.NewHealthHandler(),
-		fisherman:      handler.NewFishermanHandler(reg),
-		buyer:          handler.NewBuyerHandler(reg, sessionRepo),
-		adminBuyer:     handler.NewAdminBuyerHandler(reg),
-		publicItem:     handler.NewPublicItemHandler(reg),
-		adminItem:      handler.NewAdminItemHandler(reg),
-		bid:            handler.NewBidHandler(reg),
-		invoice:        handler.NewInvoiceHandler(reg),
-		auth:           handler.NewAuthHandler(reg, sessionRepo),
-		publicVenue:    handler.NewPublicVenueHandler(reg),
-		adminVenue:     handler.NewAdminVenueHandler(reg),
-		publicAuction:  handler.NewPublicAuctionHandler(reg),
-		adminAuction:   handler.NewAdminAuctionHandler(reg),
-		admin:          handler.NewAdminHandler(reg),
-		authReset:      handler.NewAuthResetHandler(reg),
-		adminAuthReset: handler.NewAdminAuthResetHandler(reg),
-		push:           handler.NewPushHandler(reg),
+		health:         publicHandler.NewHealthHandler(),
+		fisherman:      adminHandler.NewFishermanHandler(reg),
+		buyerAuth:      publicHandler.NewBuyerAuthHandler(reg, sessionRepo),
+		buyer:          buyerHandler.NewBuyerHandler(reg),
+		adminBuyer:     adminHandler.NewBuyerHandler(reg),
+		publicItem:     publicHandler.NewItemHandler(reg),
+		adminItem:      adminHandler.NewItemHandler(reg),
+		bid:            buyerHandler.NewBidHandler(reg),
+		invoice:        adminHandler.NewInvoiceHandler(reg),
+		auth:           publicHandler.NewAuthHandler(reg, sessionRepo),
+		publicVenue:    publicHandler.NewVenueHandler(reg),
+		adminVenue:     adminHandler.NewVenueHandler(reg),
+		publicAuction:  publicHandler.NewAuctionHandler(reg),
+		adminAuction:   adminHandler.NewAuctionHandler(reg),
+		admin:          adminHandler.NewAdminHandler(reg),
+		authReset:      publicHandler.NewAuthResetHandler(reg),
+		adminAuthReset: adminHandler.NewAuthResetHandler(reg),
+		push:           buyerHandler.NewPushHandler(reg),
 	}
 }
