@@ -1,23 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { getPasswordComplexitySchema } from './fields/password';
 import { getResetPasswordSchema } from './password';
+import { tMock } from './test-utils';
 
-const tMock = ((key: string, values?: any) => {
-  if (key === 'required') return `${values?.field}を入力してください`;
-  if (key === 'password_too_short') return `パスワードは${values?.min}文字以上である必要があります`;
-  if (key === 'password_too_long') return `パスワードは${values?.max}文字以内である必要があります`;
-  if (key === 'password_uppercase') return '大文字を1文字以上含めてください';
-  if (key === 'password_lowercase') return '小文字を1文字以上含めてください';
-  if (key === 'password_number') return '数字を1文字以上含めてください';
-  if (key === 'password_invalid_chars') return '使用できない文字が含まれています';
-  if (key === 'password_mismatch') return 'パスワードが一致しません';
-  if (key === 'field_name.password') return 'パスワード';
-  if (key === 'Auth.ResetPassword.label_confirm_password') return '確認用パスワード';
-  return key;
-}) as any;
-
-const passwordComplexitySchema = getPasswordComplexitySchema(tMock);
-const resetPasswordSchema = getResetPasswordSchema(tMock);
+const t = tMock;
+const passwordComplexitySchema = getPasswordComplexitySchema(t);
+const resetPasswordSchema = getResetPasswordSchema(t);
 
 describe('passwordComplexitySchema', () => {
   it('should accept valid passwords', () => {
