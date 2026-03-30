@@ -26,7 +26,7 @@ export const useItemManagement = () => {
 
   const { fishermen } = useAdminFishermen();
   const { auctions } = useAdminAuctions({});
-  const { data: items, isLoading: isItemsLoading } = useAdminItems(filterAuctionId);
+  const { items = [], isLoading: isItemsLoading } = useAdminItems(filterAuctionId);
   const {
     createItem,
     isCreating,

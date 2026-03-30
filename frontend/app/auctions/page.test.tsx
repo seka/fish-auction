@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionsListPage from './page';
-import { useAuctionQuery } from '@/src/data/queries/publicAuction/useQuery';
+import { usePublicAuctions } from '@/src/features/auctions/queries/usePublicAuctions';
 import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
-import { Auction, Venue } from '@entities';
+import { Auction } from '@/src/features/auctions';
+import { Venue } from '@entities/venue';
 
 // Mocks
 vi.mock('next-intl', () => ({
@@ -11,16 +12,12 @@ vi.mock('next-intl', () => ({
     namespace ? `${namespace}.${key}` : key,
 }));
 
-vi.mock('@/src/data/queries/publicAuction/useQuery', () => ({
-  useAuctionQuery: vi.fn(),
+vi.mock('@/src/features/auctions/queries/usePublicAuctions', () => ({
+  usePublicAuctions: vi.fn(),
 }));
 
 vi.mock('@/src/data/queries/publicVenue/useQuery', () => ({
   useVenueQuery: vi.fn(),
-}));
-
-vi.mock('@/src/api/auction', () => ({
-  getAuctions: vi.fn(),
 }));
 
 describe('AuctionsListPage', () => {
@@ -32,21 +29,21 @@ describe('AuctionsListPage', () => {
   });
 
   it('renders loading state', () => {
-    vi.mocked(useAuctionQuery).mockReturnValue({
-      auctions: [],
+    vi.mocked(usePublicAuctions).mockReturnValue({
+      data: [],
       isLoading: true,
       error: null,
-    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
+    } as any);
     render(<AuctionsListPage />);
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
 
   it('renders empty state when no auctions', () => {
-    vi.mocked(useAuctionQuery).mockReturnValue({
-      auctions: [],
+    vi.mocked(usePublicAuctions).mockReturnValue({
+      data: [],
       isLoading: false,
       error: null,
-    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
+    } as any);
     render(<AuctionsListPage />);
     expect(screen.getByText('Public.Auctions.no_auctions')).toBeInTheDocument();
   });
@@ -74,11 +71,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       },
     ];
-    vi.mocked(useAuctionQuery).mockReturnValue({
-      auctions: mockAuctions as Auction[],
+    vi.mocked(usePublicAuctions).mockReturnValue({
+      data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
+    } as any);
 
     render(<AuctionsListPage />);
 
@@ -119,11 +116,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       }, // Should be second (earlier than 2023-12-05)
     ];
-    vi.mocked(useAuctionQuery).mockReturnValue({
-      auctions: mockAuctions as Auction[],
+    vi.mocked(usePublicAuctions).mockReturnValue({
+      data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
+    } as any);
     render(<AuctionsListPage />);
 
     const cards = screen
@@ -151,11 +148,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       },
     ];
-    vi.mocked(useAuctionQuery).mockReturnValue({
-      auctions: mockAuctions as Auction[],
+    vi.mocked(usePublicAuctions).mockReturnValue({
+      data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
+    } as any);
     render(<AuctionsListPage />);
     expect(screen.getByText('Special Venue')).toBeInTheDocument();
   });
@@ -183,11 +180,11 @@ describe('AuctionsListPage', () => {
         updatedAt: new Date().toISOString(),
       },
     ];
-    vi.mocked(useAuctionQuery).mockReturnValue({
-      auctions: mockAuctions as Auction[],
+    vi.mocked(usePublicAuctions).mockReturnValue({
+      data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as unknown as { auctions: Auction[]; isLoading: boolean; error: Error | null });
+    } as any);
     render(<AuctionsListPage />);
     expect(screen.getByText(/AuctionStatus.cancelled/)).toBeInTheDocument();
     expect(screen.getByText(/AuctionStatus.completed/)).toBeInTheDocument();
