@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 func TestRecoveryMiddleware_NormalRequest(t *testing.T) {
@@ -58,13 +58,13 @@ func TestRecoveryMiddleware_PanicRecovery(t *testing.T) {
 			contentType, expectedContentType)
 	}
 
-	var response dto.ErrorResponse
+	var response util.ErrorResponse
 	err := json.Unmarshal(rr.Body.Bytes(), &response)
 	if err != nil {
 		t.Fatalf("failed to unmarshal response: %v", err)
 	}
 
-	if response.Error != "internal_error" || response.Message != "Internal Server Error" {
+	if response.Error != "error" || response.Message != "Internal Server Error" {
 		t.Errorf("handler returned unexpected error response: %+v", response)
 	}
 }
