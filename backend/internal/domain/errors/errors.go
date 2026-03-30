@@ -51,3 +51,17 @@ type ForbiddenError struct {
 func (e *ForbiddenError) Error() string {
 	return e.Message
 }
+
+// GoneError represents a resource that is permanently gone
+type GoneError struct {
+	Resource string
+	ID       any
+	Message  string
+}
+
+func (e *GoneError) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
+	return fmt.Sprintf("%s with ID %v is gone", e.Resource, e.ID)
+}
