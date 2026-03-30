@@ -10,8 +10,6 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
-	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 )
 
 //go:embed seed.sql
@@ -86,27 +84,7 @@ func run() error {
 		return fmt.Errorf("failed to execute seed SQL: %w", err)
 	}
 
-	// Create Default Admin
-	fmt.Println("Creating default admin...")
-	repo := postgres.NewAdminStore(postgres.NewClient(db))
-	uc := admin.NewCreateAdminUseCase(repo)
-
-	count, err := uc.Count(ctx)
-	switch {
-	case err != nil:
-		log.Printf("Failed to count admins: %v", err)
-	case count > 0:
-		fmt.Printf("Admin user(s) found (%d). Skipping default admin creation.\n", count)
-	default:
-		email := "admin@example.com"
-		password := "admin-password"
-		if _, err = uc.Execute(ctx, email, password); err != nil {
-			return fmt.Errorf("failed to create admin: %w", err)
-		}
-		fmt.Printf("Successfully created default admin user: %s\n", email)
-	}
-
 	fmt.Println("Database seeded successfully!")
-	fmt.Println("Default buyer password: 'password123'")
+	fmt.Println("Default buyer password: 'Password123'")
 	return nil
 }

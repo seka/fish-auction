@@ -81,7 +81,7 @@ func TestSignupAndSigninFlow(t *testing.T) {
 
 	ctx := context.Background()
 	email := "test@example.com"
-	password := "securepassword123"
+	password := "SecurePassword123"
 
 	// 1. Signup
 	createdBuyer, err := createUC.Execute(ctx, "Test User", email, password, "Test Org", "Contact")

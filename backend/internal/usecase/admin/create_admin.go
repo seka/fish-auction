@@ -47,15 +47,6 @@ func (u *createAdminUseCase) Execute(ctx context.Context, email, password string
 		return nil, &apperrors.ConflictError{Message: fmt.Sprintf("admin with email %s already exists", email)}
 	}
 
-	// 全体のカウントチェック
-	count, err := u.adminRepo.Count(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to count admins: %w", err)
-	}
-	if count > 0 {
-		return nil, &apperrors.ConflictError{Message: "admin already exists"}
-	}
-
 	hashedPassword, err := pwd.Hash()
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)

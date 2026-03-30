@@ -3,18 +3,33 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/seka/fish-auction/backend/config"
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 
 	_ "github.com/lib/pq"
 )
 
+var (
+	email    string
+	password string
+)
+
+func init() {
+	flag.StringVar(&email, "email", "", "admin email (required)")
+	flag.StringVar(&password, "password", "", "admin password (required)")
+}
+
 func main() {
+	flag.Parse()
+
 	if err := run(); err != nil {
 		log.Printf("Error: %v", err)
 		os.Exit(1)
@@ -22,10 +37,14 @@ func main() {
 }
 
 func run() error {
+	if email == "" || password == "" {
+		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Printf("Failed to load config: %v", err)
-		log.Println("Usage: DB_HOST=... go run cmd/init_admin/main.go")
+		log.Println("Usage: DB_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
 		return err
 	}
 
@@ -44,20 +63,12 @@ func run() error {
 	repo := postgres.NewAdminStore(postgres.NewClient(db))
 	uc := admin.NewCreateAdminUseCase(repo)
 
-	count, err := uc.Count(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to count admins: %w", err)
-	}
-
-	if count > 0 {
-		fmt.Printf("Admin user(s) found (%d). Skipping initialization.\n", count)
-		return nil
-	}
-
-	email := "admin@example.com"
-	password := "admin-password"
-
 	if _, err = uc.Execute(ctx, email, password); err != nil {
+		var conflictErr *apperrors.ConflictError
+		if errors.As(err, &conflictErr) {
+			fmt.Printf("Admin user with email %s already exists. Skipping.\n", email)
+			return nil
+		}
 		return fmt.Errorf("failed to create admin: %w", err)
 	}
 

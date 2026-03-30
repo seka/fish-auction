@@ -24,7 +24,7 @@ func TestAuthHandler_Login(t *testing.T) {
 		sessionRepo := &mock.MockSessionRepository{NextSessionID: "admin-session-1"}
 		h := handler.NewAuthHandler(mockReg, sessionRepo)
 
-		reqBody := map[string]string{"email": "buyer@example.com", "password": "password123"}
+		reqBody := map[string]string{"email": "buyer@example.com", "password": "Password123"}
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/login", bytes.NewReader(body))
 		w := httptest.NewRecorder()

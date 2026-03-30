@@ -61,7 +61,7 @@ func (m *mockSessionRepo) DeleteAllByUserID(_ context.Context, _ int, _ model.Se
 }
 
 func TestUpdatePasswordUseCase_Execute(t *testing.T) {
-	password := "current-password"
+	password := "CurrentPass1"
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	validAuth := &model.Authentication{BuyerID: 1, PasswordHash: string(hash)}
 
@@ -78,29 +78,29 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 		{
 			name:        "Success",
 			buyerID:     1,
-			currentPass: "current-password",
-			newPass:     "new-password",
+			currentPass: "CurrentPass1",
+			newPass:     "NewPass123",
 			mockAuth:    validAuth,
 		},
 		{
 			name:        "IncorrectCurrentPassword",
 			buyerID:     1,
-			currentPass: "wrong-password",
-			newPass:     "new-password",
+			currentPass: "WrongPass1",
+			newPass:     "NewPass123",
 			mockAuth:    validAuth,
 			wantErr:     true,
 		},
 		{
 			name:        "NotFound",
 			buyerID:     99,
-			currentPass: "current-password",
+			currentPass: "CurrentPass1",
 			mockAuth:    nil,
 			wantErr:     true,
 		},
 		{
 			name:        "FindRepoError",
 			buyerID:     1,
-			currentPass: "current-password",
+			currentPass: "CurrentPass1",
 			mockAuth:    validAuth,
 			findErr:     errors.New("find error"),
 			wantErr:     true,
@@ -108,8 +108,8 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 		{
 			name:        "UpdateRepoError",
 			buyerID:     1,
-			currentPass: "current-password",
-			newPass:     "new-password",
+			currentPass: "CurrentPass1",
+			newPass:     "NewPass123",
 			mockAuth:    validAuth,
 			updateErr:   errors.New("update error"),
 			wantErr:     true,
@@ -117,7 +117,7 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 		{
 			name:        "PasswordTooLong",
 			buyerID:     1,
-			currentPass: "current-password",
+			currentPass: "CurrentPass1",
 			newPass:     "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
 			mockAuth:    validAuth,
 			wantErr:     true,

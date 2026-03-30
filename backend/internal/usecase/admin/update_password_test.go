@@ -51,7 +51,7 @@ func (m *mockSessionRepo) DeleteAllByUserID(_ context.Context, _ int, _ model.Se
 
 func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 	// Prepare a hashed password
-	password := "correctPassword"
+	password := "CurrentPass1"
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	adminUser := &model.Admin{ID: 1, PasswordHash: string(hashed)}
 
@@ -84,7 +84,7 @@ func TestUpdatePasswordUseCase_Execute(t *testing.T) {
 		{
 			name:            "IncorrectCurrentPassword",
 			id:              1,
-			currentPassword: "wrongPassword",
+			currentPassword: "WrongPass1",
 			newPassword:     "newPass123",
 			mockAdmin:       adminUser,
 			wantErr:         true,

@@ -169,19 +169,19 @@ func TestServerIntegration(t *testing.T) {
 		}
 
 		// 1. Seed Admin (Direct DB)
-		seedAdmin(t, db, "admin@example.com", "admin123")
+		seedAdmin(t, db, "admin@example.com", "Admin-Password123")
 
 		// 2. Login Admin
-		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "admin123"}`)
+		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
 
 		// 3. Register Fisherman (using Admin URL)
 		fishermanID := registerUser(t, client, serverURL+"/api/admin/fishermen", `{"name": "Captain Ahab"}`)
 
 		// 4. Register Buyer (using Admin URL)
-		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "password123", "organization": "Pequod", "contact_info": "sea"}`)
+		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "Password123", "organization": "Pequod", "contact_info": "sea"}`)
 
 		// 5. Login Buyer
-		_ = login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
+		_ = login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "Password123"}`)
 
 		// 6. Create Venue (as Admin)
 		// POST /api/admin/venues
@@ -212,7 +212,7 @@ func TestServerIntegration(t *testing.T) {
 
 		// 10. Place Bid (as Buyer)
 		// POST /api/buyer/bids
-		buyerCookies := login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "password123"}`)
+		buyerCookies := login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "Password123"}`)
 		bidBody := fmt.Sprintf(`{"item_id": %d, "price": 5000}`, itemID)
 		postResource(t, client, serverURL+"/api/buyer/bids", bidBody, buyerCookies)
 

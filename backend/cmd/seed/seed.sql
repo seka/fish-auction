@@ -1,5 +1,5 @@
 -- Venues
-INSERT INTO venues (name, location, description) 
+INSERT INTO venues (name, location, description)
 SELECT '豊洲市場', '東京都江東区豊洲6-6-1', 'デフォルト会場'
 WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = '豊洲市場');
 
@@ -29,7 +29,7 @@ SELECT '佐藤 三郎'
 WHERE NOT EXISTS (SELECT 1 FROM fishermen WHERE name = '佐藤 三郎');
 
 -- Buyers
--- Default password for all seeded buyers is 'password123'
+-- Default password for all seeded buyers is 'Password123'
 -- Buyer 1
 DO $$
 DECLARE
@@ -41,7 +41,7 @@ BEGIN
         RETURNING id INTO lid;
 
         INSERT INTO authentications (buyer_id, email, password_hash)
-        VALUES (lid, 'uogashi@example.com', '$2a$10$DZ3o85icMyZvEUIq3jLJa.1YqUeZh1JVt.I5dNVIZH9Reu48JnCpm');
+        VALUES (lid, 'uogashi@example.com', '$2a$10$bBUXj3ggxD38hbMPPcXRYe/CiPPfiP8pBv0x593dA5YrlEEjL.AxG');
     END IF;
 END $$;
 
@@ -56,7 +56,7 @@ BEGIN
         RETURNING id INTO lid;
 
         INSERT INTO authentications (buyer_id, email, password_hash)
-        VALUES (lid, 'sushi@example.com', '$2a$10$DZ3o85icMyZvEUIq3jLJa.1YqUeZh1JVt.I5dNVIZH9Reu48JnCpm');
+        VALUES (lid, 'sushi@example.com', '$2a$10$bBUXj3ggxD38hbMPPcXRYe/CiPPfiP8pBv0x593dA5YrlEEjL.AxG');
     END IF;
 END $$;
 
@@ -71,7 +71,7 @@ BEGIN
         RETURNING id INTO lid;
 
         INSERT INTO authentications (buyer_id, email, password_hash)
-        VALUES (lid, 'tamade@example.com', '$2a$10$DZ3o85icMyZvEUIq3jLJa.1YqUeZh1JVt.I5dNVIZH9Reu48JnCpm');
+        VALUES (lid, 'tamade@example.com', '$2a$10$bBUXj3ggxD38hbMPPcXRYe/CiPPfiP8pBv0x593dA5YrlEEjL.AxG');
     END IF;
 END $$;
 
@@ -94,7 +94,7 @@ DECLARE
     default_venue_id INTEGER;
 BEGIN
     SELECT id INTO default_venue_id FROM venues WHERE name = '豊洲市場' LIMIT 1;
-    
+
     IF default_venue_id IS NOT NULL THEN
         INSERT INTO auctions (venue_id, auction_date, status)
         SELECT default_venue_id, CURRENT_DATE, 'in_progress'
@@ -123,7 +123,7 @@ BEGIN
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'スルメイカ'
         );
-        
+
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
         SELECT fid, aid, 'ホッケ', 50, 'kg', 'Pending', 2
         WHERE NOT EXISTS (
@@ -152,6 +152,44 @@ BEGIN
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'マグロ'
+        );
+    END IF;
+END $$;
+
+-- Auction Items (Toyosu)
+DO $$
+DECLARE
+    fid INTEGER;
+    aid INTEGER;
+BEGIN
+    SELECT id INTO fid FROM fishermen WHERE name = '佐藤 三郎';
+    -- Get today's auction at Toyosu
+    SELECT a.id INTO aid
+    FROM auctions a
+    JOIN venues v ON a.venue_id = v.id
+    WHERE v.name = '豊洲市場' AND a.auction_date = CURRENT_DATE
+    LIMIT 1;
+
+    IF fid IS NOT NULL AND aid IS NOT NULL THEN
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, '本マグロ', 1, '本', 'Pending', 1
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auction_items
+            WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '本マグロ'
+        );
+
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, '天然真鯛', 20, 'kg', 'Pending', 2
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auction_items
+            WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '天然真鯛'
+        );
+
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
+        SELECT fid, aid, '生ウニ', 5, '板', 'Pending', 3
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auction_items
+            WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '生ウニ'
         );
     END IF;
 END $$;

@@ -27,20 +27,20 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 		{
 			name:     "Success",
 			input:    "John Doe",
-			password: "password",
+			password: "Password123",
 			wantID:   10,
 		},
 		{
 			name:           "BuyerRepoError",
 			input:          "Jane Doe",
-			password:       "password",
+			password:       "Password123",
 			createBuyerErr: createErr,
 			wantErr:        createErr,
 		},
 		{
 			name:          "AuthRepoError",
 			input:         "John Doe",
-			password:      "password",
+			password:      "Password123",
 			wantID:        11,
 			createAuthErr: authErr,
 			wantErr:       authErr,
