@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ValidationT } from './fields/password';
+import { getPriceSchema } from './fields/price';
 
 export const getVenueSchema = (t: ValidationT) =>
   z.object({
@@ -27,12 +28,7 @@ export const getAuctionSchema = (t: ValidationT) =>
 
 export const getBidSchema = (t: ValidationT) =>
   z.object({
-    price: z
-      .string()
-      .min(1, t('required', { field: t('field_name.price') }))
-      .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-        message: t('positive_number'),
-      }),
+    price: getPriceSchema(t),
   });
 
 export type VenueFormData = z.infer<ReturnType<typeof getVenueSchema>>;

@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { ValidationT } from './fields/password';
+import { getEmailSchema } from './fields/email';
 
 export const getLoginSchema = (t: ValidationT) =>
   z.object({
-    email: z.email(t('invalid_email')),
+    email: getEmailSchema(t),
     password: z.string().min(1, t('required', { field: t('field_name.password') })),
   });
 
