@@ -97,9 +97,9 @@ seed: ## Run database seed
 	go run ./cmd/seed/main.go
 
 .PHONY: init-admin
-init-admin: ## Initialize admin user
+init-admin: ## Initialize admin user (Usage: make init-admin EMAIL=... PASSWORD=...)
 	@echo "Initializing admin user..."
-	go run ./cmd/init_admin/main.go
+	go run ./cmd/init_admin/main.go $(if $(EMAIL),--email $(EMAIL)) $(if $(PASSWORD),--password $(PASSWORD))
 
 # ============================================================================
 # Utility targets

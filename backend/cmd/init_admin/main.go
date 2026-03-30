@@ -23,8 +23,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&email, "email", "admin@example.com", "admin email")
-	flag.StringVar(&password, "password", "Admin-Password123", "admin password")
+	flag.StringVar(&email, "email", "", "admin email (required)")
+	flag.StringVar(&password, "password", "", "admin password (required)")
 }
 
 func main() {
@@ -37,10 +37,14 @@ func main() {
 }
 
 func run() error {
+	if email == "" || password == "" {
+		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Printf("Failed to load config: %v", err)
-		log.Println("Usage: DB_HOST=... go run cmd/init_admin/main.go")
+		log.Println("Usage: DB_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
 		return err
 	}
 
