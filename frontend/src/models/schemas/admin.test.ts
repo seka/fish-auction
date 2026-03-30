@@ -18,7 +18,7 @@ describe('Admin Schemas', () => {
       const result = fishermanSchema.safeParse({ name: '' });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('漁師名を入力してください');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:field_name.fisherman_name)');
       }
     });
   });
@@ -46,7 +46,7 @@ describe('Admin Schemas', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         const nameIssue = result.error.issues.find((i) => i.path[0] === 'name');
-        expect(nameIssue?.message).toContain('中買人名を入力してください');
+        expect(nameIssue?.message).toBe('key:required(field:key:field_name.buyer_name)');
       }
     });
   });
@@ -78,7 +78,7 @@ describe('Admin Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('セリを選択してください');
+        expect(result.error.issues[0].message).toBe('key:select_required(field:key:Items.auction)');
       }
     });
 
@@ -92,7 +92,7 @@ describe('Admin Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('魚種を入力してください');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:Items.fish_type)');
       }
     });
   });

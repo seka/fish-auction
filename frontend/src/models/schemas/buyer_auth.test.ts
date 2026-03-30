@@ -22,7 +22,7 @@ describe('Buyer Auth Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('有効なメールアドレスを入力してください');
+        expect(result.error.issues[0].message).toBe('key:invalid_email');
       }
     });
 
@@ -33,7 +33,7 @@ describe('Buyer Auth Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('パスワードを入力してください');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:field_name.password)');
       }
     });
   });

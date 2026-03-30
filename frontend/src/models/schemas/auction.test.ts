@@ -18,7 +18,7 @@ describe('Auction Schemas', () => {
       const result = venueSchema.safeParse({ name: '' });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('会場名を入力してください');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:Admin.Venues.name)');
       }
     });
   });
@@ -44,7 +44,7 @@ describe('Auction Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('会場を選択してください');
+        expect(result.error.issues[0].message).toBe('key:select_required(field:key:Admin.Auctions.venue)');
       }
     });
 
@@ -55,7 +55,7 @@ describe('Auction Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain('開催日を入力してください');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:Admin.Auctions.date)');
       }
     });
   });
@@ -70,8 +70,7 @@ describe('Auction Schemas', () => {
       const result = bidSchema.safeParse({ price: '' });
       expect(result.success).toBe(false);
       if (!result.success) {
-        // 先ほどのバグ修正が効いているか確認 (t('field_name.price') -> '価格')
-        expect(result.error.issues[0].message).toContain('価格を入力してください');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:field_name.price)');
       }
     });
 
@@ -79,7 +78,7 @@ describe('Auction Schemas', () => {
       const result = bidSchema.safeParse({ price: 'abc' });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('正の数値を入力してください');
+        expect(result.error.issues[0].message).toBe('key:positive_number');
       }
     });
 
@@ -87,7 +86,7 @@ describe('Auction Schemas', () => {
       const result = bidSchema.safeParse({ price: '0' });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('正の数値を入力してください');
+        expect(result.error.issues[0].message).toBe('key:positive_number');
       }
     });
   });

@@ -26,7 +26,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('パスワードを入力してください');
+      expect(result.error.issues[0].message).toBe('key:required(field:key:field_name.password)');
     }
   });
 
@@ -34,7 +34,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('Abc1');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('パスワードは8文字以上である必要があります');
+      expect(result.error.issues[0].message).toBe('key:password_too_short(min:8)');
     }
   });
 
@@ -42,7 +42,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('abcdefgh1');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('大文字を1文字以上含めてください');
+      expect(result.error.issues[0].message).toBe('key:password_uppercase');
     }
   });
 
@@ -50,7 +50,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('ABCDEFGH1');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('小文字を1文字以上含めてください');
+      expect(result.error.issues[0].message).toBe('key:password_lowercase');
     }
   });
 
@@ -58,7 +58,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('Abcdefgh');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('数字を1文字以上含めてください');
+      expect(result.error.issues[0].message).toBe('key:password_number');
     }
   });
 
@@ -66,7 +66,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('Abcdefgh1\n');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('使用できない文字が含まれています');
+      expect(result.error.issues[0].message).toBe('key:password_invalid_chars');
     }
   });
 
@@ -74,7 +74,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse('Abcdefgh1あ');
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('使用できない文字が含まれています');
+      expect(result.error.issues[0].message).toBe('key:password_invalid_chars');
     }
   });
 
@@ -89,7 +89,7 @@ describe('passwordComplexitySchema', () => {
     const result = passwordComplexitySchema.safeParse(tooLongPwd);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('パスワードは72文字以内である必要があります');
+      expect(result.error.issues[0].message).toBe('key:password_too_long(max:72)');
     }
   });
 });
@@ -112,7 +112,7 @@ describe('resetPasswordSchema', () => {
     const result = resetPasswordSchema.safeParse(data);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('パスワードが一致しません');
+      expect(result.error.issues[0].message).toBe('key:password_mismatch');
       expect(result.error.issues[0].path).toContain('confirm_password');
     }
   });
@@ -125,7 +125,7 @@ describe('resetPasswordSchema', () => {
     const result = resetPasswordSchema.safeParse(data);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('パスワードは8文字以上である必要があります');
+      expect(result.error.issues[0].message).toBe('key:password_too_short(min:8)');
     }
   });
 });
