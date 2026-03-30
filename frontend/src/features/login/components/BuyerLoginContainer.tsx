@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,12 +20,13 @@ export const BuyerLoginContainer = () => {
   const t = useTranslations();
   const tValidation = useTranslations('Validation');
   const queryClient = useQueryClient();
+  const schema = useMemo(() => getBuyerLoginSchema(tValidation), [tValidation]);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<BuyerLoginFormData>({
-    resolver: zodResolver(getBuyerLoginSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data: BuyerLoginFormData) => {

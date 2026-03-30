@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginBuyer } from '@/src/data/api/buyer_auth';
@@ -38,12 +38,14 @@ export const useAuctionDetail = (auctionId: number) => {
   const { isLoggedIn, isChecking } = useAuthQuery();
   const isLoading = isDataLoading;
 
+  const bidSchema = useMemo(() => getBidSchema(tValidation), [tValidation]);
   const bidForm = useForm<BidFormData>({
-    resolver: zodResolver(getBidSchema(tValidation)),
+    resolver: zodResolver(bidSchema),
   });
 
+  const loginSchema = useMemo(() => getBuyerLoginSchema(tValidation), [tValidation]);
   const loginForm = useForm<BuyerLoginFormData>({
-    resolver: zodResolver(getBuyerLoginSchema(tValidation)),
+    resolver: zodResolver(loginSchema),
   });
 
   const selectedItem = items?.find((i: AuctionItem) => i.id === selectedItemId) || null;

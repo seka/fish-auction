@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -27,12 +27,13 @@ const AdminResetPasswordContent = () => {
   const [isValidToken, setIsValidToken] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
+  const schema = useMemo(() => getResetPasswordSchema(tValidation), [tValidation]);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(getResetPasswordSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   useEffect(() => {

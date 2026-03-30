@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getLoginSchema, LoginFormData } from '@/src/models/schemas/auth';
@@ -17,12 +18,13 @@ interface LoginFormProps {
 export const LoginForm = ({ onSubmit, isLoading, error }: LoginFormProps) => {
   const t = useTranslations();
   const tValidation = useTranslations('Validation');
+  const schema = useMemo(() => getLoginSchema(tValidation), [tValidation]);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(getLoginSchema(tValidation)),
+    resolver: zodResolver(schema),
   });
 
   return (
