@@ -29,7 +29,7 @@ export const getBidSchema = (t: ValidationT) =>
   z.object({
     price: z
       .string()
-      .min(1, t('required', { field: t('Validation.field_name.price') }))
+      .min(1, t('required', { field: t('field_name.price') }))
       .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
         message: t('positive_number'),
       }),
