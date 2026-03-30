@@ -14,22 +14,22 @@ import (
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 )
 
-// AuthHandler handles public HTTP requests related to authentication.
-type AuthHandler struct {
+// AdminAuthHandler handles public HTTP requests related to authentication.
+type AdminAuthHandler struct {
 	loginUseCase auth.LoginUseCase
 	sessionRepo  repository.SessionRepository
 }
 
-// NewAuthHandler creates a new AuthHandler instance.
-func NewAuthHandler(r registry.UseCase, sessionRepo repository.SessionRepository) *AuthHandler {
-	return &AuthHandler{
+// NewAdminAuthHandler creates a new AdminAuthHandler instance.
+func NewAdminAuthHandler(r registry.UseCase, sessionRepo repository.SessionRepository) *AdminAuthHandler {
+	return &AdminAuthHandler{
 		loginUseCase: r.NewLoginUseCase(),
 		sessionRepo:  sessionRepo,
 	}
 }
 
 // Login handles the login request for admins.
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AdminAuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req request.Login
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		util.HandleError(w, err)
@@ -58,7 +58,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 // Logout handles the logout request for admins.
-func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *AdminAuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie("admin_session"); err == nil {
 		if err := h.sessionRepo.Delete(r.Context(), cookie.Value); err != nil {
 			util.HandleError(w, err)
@@ -73,7 +73,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 // RegisterRoutes registers the auth handler routes to the given mux.
-func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
+func (h *AdminAuthHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/login", h.Login)
 	mux.HandleFunc("POST /api/admin/logout", h.Logout)
 }

@@ -52,7 +52,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 	hAdminItem := adminHandler.NewItemHandler(mockReg)
 	hBid := buyerHandler.NewBidHandler(mockReg)
 	hInvoice := adminHandler.NewInvoiceHandler(mockReg)
-	hAuth := publicHandler.NewAuthHandler(mockReg, sessionRepo)
+	hAdminAuth := publicHandler.NewAdminAuthHandler(mockReg, sessionRepo)
 	hPublicVenue := publicHandler.NewVenueHandler(mockReg)
 	hAdminVenue := adminHandler.NewVenueHandler(mockReg)
 	hPublicAuction := publicHandler.NewAuctionHandler(mockReg)
@@ -73,7 +73,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hAdminItem,
 		hBid,
 		hInvoice,
-		hAuth,
+		hAdminAuth,
 		hPublicVenue,
 		hAdminVenue,
 		hPublicAuction,

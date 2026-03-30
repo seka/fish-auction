@@ -26,7 +26,7 @@ type handlers struct {
 	adminItem      *adminHandler.ItemHandler
 	bid            *buyerHandler.BidHandler
 	invoice        *adminHandler.InvoiceHandler
-	auth           *publicHandler.AuthHandler
+	adminAuth      *publicHandler.AdminAuthHandler
 	publicVenue    *publicHandler.VenueHandler
 	adminVenue     *adminHandler.VenueHandler
 	publicAuction  *publicHandler.AuctionHandler
@@ -79,7 +79,7 @@ func run() error {
 		h.adminItem,
 		h.bid,
 		h.invoice,
-		h.auth,
+		h.adminAuth,
 		h.publicVenue,
 		h.adminVenue,
 		h.publicAuction,
@@ -113,7 +113,7 @@ func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepositor
 		adminItem:      adminHandler.NewItemHandler(reg),
 		bid:            buyerHandler.NewBidHandler(reg),
 		invoice:        adminHandler.NewInvoiceHandler(reg),
-		auth:           publicHandler.NewAuthHandler(reg, sessionRepo),
+		adminAuth:      publicHandler.NewAdminAuthHandler(reg, sessionRepo),
 		publicVenue:    publicHandler.NewVenueHandler(reg),
 		adminVenue:     adminHandler.NewVenueHandler(reg),
 		publicAuction:  publicHandler.NewAuctionHandler(reg),

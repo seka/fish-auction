@@ -13,7 +13,7 @@ import (
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
-func TestAuthHandler_Login(t *testing.T) {
+func TestAdminAuthHandler_Login(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockLoginUC := &mock.MockLoginUseCase{
 			ExecuteFunc: func(_ context.Context, email, _ string) (*model.Admin, error) {
@@ -22,7 +22,7 @@ func TestAuthHandler_Login(t *testing.T) {
 		}
 		mockReg := &mock.MockRegistry{LoginUC: mockLoginUC}
 		sessionRepo := &mock.MockSessionRepository{NextSessionID: "admin-session-1"}
-		h := public.NewAuthHandler(mockReg, sessionRepo)
+		h := public.NewAdminAuthHandler(mockReg, sessionRepo)
 
 		reqBody := map[string]string{"email": "buyer@example.com", "password": "Password123"}
 		body, _ := json.Marshal(reqBody)
@@ -55,7 +55,7 @@ func TestAuthHandler_Login(t *testing.T) {
 			},
 		}
 		mockReg := &mock.MockRegistry{LoginUC: mockLoginUC}
-		h := public.NewAuthHandler(mockReg, &mock.MockSessionRepository{})
+		h := public.NewAdminAuthHandler(mockReg, &mock.MockSessionRepository{})
 
 		reqBody := map[string]string{"email": "buyer@example.com", "password": "wrong-password"}
 		body, _ := json.Marshal(reqBody)
@@ -70,10 +70,10 @@ func TestAuthHandler_Login(t *testing.T) {
 	})
 }
 
-func TestAuthHandler_RegisterRoutes(t *testing.T) {
+func TestAdminAuthHandler_RegisterRoutes(t *testing.T) {
 	t.Run("MethodNotAllowed", func(t *testing.T) {
 		mockReg := &mock.MockRegistry{}
-		h := public.NewAuthHandler(mockReg, &mock.MockSessionRepository{})
+		h := public.NewAdminAuthHandler(mockReg, &mock.MockSessionRepository{})
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 

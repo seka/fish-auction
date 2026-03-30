@@ -96,7 +96,7 @@ func TestServerIntegration(t *testing.T) {
 	adminItemHandler := adminHandler.NewItemHandler(useCaseReg)
 	bidHandler := buyerHandler.NewBidHandler(useCaseReg)
 	invoiceHandler := adminHandler.NewInvoiceHandler(useCaseReg)
-	authHandler := publicHandler.NewAuthHandler(useCaseReg, sessionRepo)
+	adminAuthHandler := publicHandler.NewAdminAuthHandler(useCaseReg, sessionRepo)
 	publicVenueHandler := publicHandler.NewVenueHandler(useCaseReg)
 	adminVenueHandler := adminHandler.NewVenueHandler(useCaseReg)
 	publicAuctionHandler := publicHandler.NewAuctionHandler(useCaseReg)
@@ -117,7 +117,7 @@ func TestServerIntegration(t *testing.T) {
 		adminItemHandler,
 		bidHandler,
 		invoiceHandler,
-		authHandler,
+		adminAuthHandler,
 		publicVenueHandler,
 		adminVenueHandler,
 		publicAuctionHandler,

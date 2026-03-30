@@ -13,8 +13,8 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
-	"github.com/seka/fish-auction/backend/internal/server/middleware"
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
+	"github.com/seka/fish-auction/backend/internal/server/middleware"
 )
 
 // Server serves the request.
@@ -30,7 +30,7 @@ type Server struct {
 	adminItemHandler      *adminHandler.ItemHandler
 	bidHandler            *buyerHandler.BidHandler
 	invoiceHandler        *adminHandler.InvoiceHandler
-	authHandler           *publicHandler.AuthHandler
+	adminAuthHandler      *publicHandler.AdminAuthHandler
 	publicVenueHandler    *publicHandler.VenueHandler
 	adminVenueHandler     *adminHandler.VenueHandler
 	publicAuctionHandler  *publicHandler.AuctionHandler
@@ -64,7 +64,7 @@ func NewServer(
 	adminItemHandler *adminHandler.ItemHandler,
 	bidHandler *buyerHandler.BidHandler,
 	invoiceHandler *adminHandler.InvoiceHandler,
-	authHandler *publicHandler.AuthHandler,
+	adminAuthHandler *publicHandler.AdminAuthHandler,
 	publicVenueHandler *publicHandler.VenueHandler,
 	adminVenueHandler *adminHandler.VenueHandler,
 	publicAuctionHandler *publicHandler.AuctionHandler,
@@ -90,7 +90,7 @@ func NewServer(
 		adminItemHandler:      adminItemHandler,
 		bidHandler:            bidHandler,
 		invoiceHandler:        invoiceHandler,
-		authHandler:           authHandler,
+		adminAuthHandler:      adminAuthHandler,
 		publicVenueHandler:    publicVenueHandler,
 		adminVenueHandler:     adminVenueHandler,
 		publicAuctionHandler:  publicAuctionHandler,
@@ -124,7 +124,7 @@ func (s *Server) routes() {
 
 func (s *Server) registerPublicRoutes() {
 	s.healthHandler.RegisterRoutes(s.router)
-	s.authHandler.RegisterRoutes(s.router)
+	s.adminAuthHandler.RegisterRoutes(s.router)
 	s.authResetHandler.RegisterRoutes(s.router)
 	s.adminAuthResetHandler.RegisterRoutes(s.router)
 	s.publicItemHandler.RegisterRoutes(s.router)
