@@ -32,6 +32,24 @@ description: Use when changing the fish-auction Go backend, especially handlers,
 4. `util.HandleError` でエラー処理
 5. DTO か JSON を返す
 
+## Error Handling Pattern to preserve
+
+堅牢でメンテナンス性の高い API を維持するため、次の設計パターンを遵守する。
+
+### 1. Layer-specific responsibilities
+- **Infrastructure 層**: 実装固有のエラー（DB, Push, Web 等）を `HandleError` 関数で早期にドメイン例外へ変換する。
+- **Usecase 層**: ドメインモデルとドメイン例外のみを扱い、インフラ層の具体的なエラー型に依存しない。
+- **Handler 層**: `util.HandleError` を一貫して使用し、ドメイン例外を適切な HTTP ステータスコード（400, 404, 409, 410 等）に変換する。
+
+### 2. Type-safe verification
+- **文字列判定の禁止**: `err.Error() == "..."` によるエラー判定は行わない。
+- **型変換の徹底**: ラップされたエラー (`%w`) を正確に検知するため、常に `errors.As` または `errors.Is` を使用する。
+- **型スイッチの回避**: `switch e := err.(type)` はラップされたエラーに弱いため、`if errors.As` を優先する。
+
+### 3. Domain Errors (`internal/domain/errors`)
+- ビジネスルールやシステム状態に起因する例外は、`internal/domain/errors` に定義された型を使用する。
+- 新しい例外が必要な場合は、既存の例外（`ValidationError`, `NotFoundError`, `GoneError`等）に倣って定義し、`server/util.HandleError` でのマッピングを適切に行う。
+
 ## Usecase pattern to preserve
 
 - package はドメイン単位
