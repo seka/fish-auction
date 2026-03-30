@@ -9,7 +9,7 @@ export const getFishermanSchema = (t: ValidationT) =>
 export const getBuyerSchema = (t: ValidationT) =>
   z.object({
     name: z.string().min(1, t('required', { field: t('field_name.buyer_name') })),
-    email: z.string().email(t('invalid_email')),
+    email: z.email(t('invalid_email')),
     password: getPasswordComplexitySchema(t),
     organization: z.string().min(1, t('required', { field: t('field_name.organization') })),
     contactInfo: z.string().min(1, t('required', { field: t('field_name.contact_info') })),
