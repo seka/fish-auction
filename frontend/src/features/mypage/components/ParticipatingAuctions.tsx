@@ -5,8 +5,8 @@ import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
-import { AuctionStatus } from '@entities/auction';
+import { useParticipatingAuctions } from '../queries/useAuctions';
+import { AuctionStatus } from '../types/auction';
 
 export const ParticipatingAuctions = () => {
   const t = useTranslations();

@@ -28,11 +28,13 @@ frontend/
 │   ├── features/         # ドメインごとの機能カプセル化
 │   │   └── [feature]/
 │   │       ├── components/  # 機能固有の UI
-│   │       ├── states/      # UI ロジック・状態管理 (useLogin などのカスタムフック)
-│   │       └── queries/     # 機能固有のデータフェッチ
+│   │       ├── states/      # UI ロジック・状態管理
+│   │       ├── queries/     # 機能固有のデータフェッチ
+│   │       └── types/       # 機能固有の型定義（ドメインモデル + UI型）
 │   ├── data/             # データフェッチレイヤー
 │   │   ├── api/          # プリミティブな API 呼び出し (apiClient)
-│   │   └── queries/      # ドメインごとの TanStack Query フック & キー
+│   │   ├── queries/      # ドメインごとの TanStack Query フック & キー
+│   │   └── entities/     # サーバー側データ構造の型定義（@entities/*）
 │   ├── components/       # 共有 UI コンポーネント (Atomic Design)
 │   │   ├── atoms/        # 汎用パーツ (Button, Input, Text)
 │   │   ├── molecules/    # 複数の Atom を組み合わせた塊
@@ -43,7 +45,7 @@ frontend/
 │   │   ├── api/          # API クライアント (fetch ラッパー)
 │   │   ├── i18n/         # 国際化メッセージとリクエスト設定
 │   │   └── styles/       # グローバルスタイル
-│   ├── models/           # 型定義、Zod スキーマ
+│   ├── schemas/          # Zod スキーマ・入力検証
 │   └── libs/             # 外部ライブラリ設定・生成物 (Panda CSS 等)
 ```
 

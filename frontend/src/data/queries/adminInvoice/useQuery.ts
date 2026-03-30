@@ -1,16 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { getInvoices } from '@/src/data/api/invoice';
+import { InvoiceItem } from '@entities/invoice';
 import { adminInvoiceKeys } from './keys';
 
-export const useInvoiceQuery = () => {
-  const {
-    data: invoices,
-    isLoading,
-    error,
-  } = useQuery({
+export const useInvoiceQuery = <T = InvoiceItem[]>(
+  options?: Omit<UseQueryOptions<InvoiceItem[], Error, T>, 'queryKey' | 'queryFn'>,
+) => {
+  return useQuery({
     queryKey: adminInvoiceKeys.all,
     queryFn: getInvoices,
+    ...options,
   });
-
-  return { invoices: invoices || [], isLoading, error };
 };

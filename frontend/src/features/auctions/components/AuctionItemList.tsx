@@ -3,7 +3,7 @@
 import { Box, Text, Stack, Card, HStack } from '@atoms';
 import { ItemStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
-import { AuctionItem } from '@entities';
+import { AuctionItem } from '../types';
 
 import { useTranslations } from 'next-intl';
 

@@ -8,7 +8,7 @@ import { getItemSchema, ItemFormData } from '@schemas/admin';
 import { useAdminItems, useAdminItemMutations } from '../queries/useItems';
 import { useAdminFishermen } from '../queries/useFishermen';
 import { useAdminAuctions } from '../queries/useAuctions';
-import { AuctionItem } from '@entities';
+import { AuctionItem } from '../types';
 
 export const useItemManagement = () => {
   const t = useTranslations();
@@ -26,7 +26,7 @@ export const useItemManagement = () => {
 
   const { fishermen } = useAdminFishermen();
   const { auctions } = useAdminAuctions({});
-  const { data: items, isLoading: isItemsLoading } = useAdminItems(filterAuctionId);
+  const { items = [], isLoading: isItemsLoading } = useAdminItems(filterAuctionId);
   const {
     createItem,
     isCreating,

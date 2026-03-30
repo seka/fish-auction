@@ -5,7 +5,7 @@ import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
 import { ItemFormData } from '@schemas/admin';
-import { Auction, Fisherman, AuctionItem } from '@entities';
+import { Auction, Fisherman, AuctionItem } from '../../types';
 
 interface ItemFormProps {
   form: UseFormReturn<ItemFormData>;

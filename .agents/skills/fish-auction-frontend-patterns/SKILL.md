@@ -17,9 +17,11 @@ description: Use when changing the fish-auction frontend built with Next.js, Rea
 - `frontend/src/features/*/components`: 機能固有の UI
 - `frontend/src/components`: 複数機能で共有する UI
 - `frontend/src/features/*/states`: UI ロジックや hook
-- `frontend/src/features/*/queries` または `frontend/src/data/queries`: query / mutation
-- `frontend/src/data/api`: バックエンド API との 1 対 1 通信
-- `frontend/src/models`, `frontend/src/models/schemas`: 型と Zod schema
+- `frontend/src/features/*/queries`: 機能固有の query / mutation (データの型変換・キャストを行う境界)
+- `frontend/src/features/*/types`: 機能固有の型定義（ドメインモデル + UI型）
+- `frontend/src/data/api`: バックエンド API との 1 対 1 通信 (apiClient)
+- `frontend/src/data/entities`: サーバー側データ構造の定義 (@entities)
+- `frontend/src/schemas`: Zod スキーマ
 - `frontend/src/core/api/client.ts`: 共通の fetch ラッパー
 
 ## Practical placement guide
@@ -52,7 +54,7 @@ hook 名は feature により異なる。`useXXXManagement` に固定せず、`u
 
 - `rg "useQuery|useMutation|invalidateQueries" frontend/src`
 - `rg "apiClient\\.(get|post|put|delete)" frontend/src`
-- `rg "Schema|FormData" frontend/src/models frontend/src/features`
+- `rg "Schema|FormData" frontend/src/schemas frontend/src/features`
 
 ## Working rule
 

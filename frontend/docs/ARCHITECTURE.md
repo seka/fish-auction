@@ -27,9 +27,14 @@
 
 ### 3. Data Access Layer (`src/data`, `src/features/*/queries`)
 - **Queries**: `TanStack Query` の `useQuery` / `useMutation` をラップしたフック。Query Keys の管理もここで行います。
-- **API**: バックエンド API との 1 対 1 の通信関数。`apiClient` を使用します。
+- **Entities**: サーバー側のデータ構造の真実の源泉（`backend/internal/infrastructure/entity` 等から生成）。`@entities/*` 経由で取得します。
 
-### 4. Infrastructure Layer (`src/core`)
+### 4. Logic Layer (`src/features/*/types`)
+- **Feature-specific Types**: 各 Feature が必要とする最小限のドメインモデルおよび UI 専用の型を定義します。
+- **原則**: 他の Feature や `@entities` から型をインポートせず、Feature 内で完結させます。これにより、サーバー側の変更や他機能の変更からロジックを保護（疎結合化）します。
+- **データ変換**: `features/*/queries` 層において、`@entities` から Feature ローカルの型への変換（またはキャスト）を行います。
+
+### 5. Infrastructure Layer (`src/core`)
 - **API Client**: `fetch` API のラッパー。インターセプターや共通のエラーハンドリング、ケース変換（Snake <-> Camel）を実装します。
 
 ## データフロー詳細

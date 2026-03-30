@@ -45,7 +45,7 @@ description: Use when working in fish-auction and you need to decide which files
 ## File selection rules
 
 - 画面表示だけの変更: `frontend/src/features/*/components` か `frontend/src/components`
-- フロントの送受信変更: `frontend/src/data/api`, `frontend/src/data/queries`, `frontend/src/models`
+- フロントの送受信変更: `frontend/src/data/api`, `frontend/src/data/queries`, `frontend/src/data/entities`, `frontend/src/features/*/types`
 - API の入出力変更: `backend/internal/server/dto`, `backend/internal/server/handler`
 - 業務ルール変更: `backend/internal/usecase`
 - 保存形式変更: `backend/internal/infrastructure/entity`, `datastore`, `migrations`

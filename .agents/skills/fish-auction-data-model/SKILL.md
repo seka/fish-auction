@@ -16,8 +16,9 @@ description: Use when changing fish-auction data structures, tracing relationshi
 - DB の実体: `backend/migrations/001_init.sql`
 - ドメイン表現: `backend/internal/domain/model`
 - 永続化の row 表現: `backend/internal/infrastructure/entity`
-- フロントの表示用型: `frontend/src/models`
-- フロントの入力検証: `frontend/src/models/schemas`
+- サーバー側データの型定義: `frontend/src/data/entities` (@entities)
+- フロントの機能固有モデル: `frontend/src/features/*/types`
+- フロントの入力検証: `frontend/src/schemas`
 
 迷ったら、テーブル構造は migration、業務上の意味は domain model、画面都合の shape は frontend model を優先して読む。
 
@@ -67,7 +68,7 @@ description: Use when changing fish-auction data structures, tracing relationshi
 2. `backend/internal/domain/model/<target>.go`
 3. `backend/internal/infrastructure/entity/<target>.go`
 4. `backend/internal/server/dto` と handler
-5. `frontend/src/models` と `frontend/src/models/schemas`
+5. `frontend/src/data/entities`, `frontend/src/features/*/types` と `frontend/src/schemas`
 
 ## Guardrails
 
@@ -81,7 +82,7 @@ description: Use when changing fish-auction data structures, tracing relationshi
 
 - `rg "type .* struct" backend/internal/domain/model backend/internal/infrastructure/entity`
 - `rg "CREATE TABLE|REFERENCES|UNIQUE|CHECK" backend/migrations/001_init.sql`
-- `rg "export interface|z\\.object|z\\.enum" frontend/src/models`
+- `rg "export interface|z\\.object|z\\.enum" frontend/src/features/*/types frontend/src/schemas`
 
 ## Working rule
 

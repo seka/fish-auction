@@ -5,14 +5,14 @@ import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { AuctionsList } from './AuctionsList';
-import { useAuctionQuery } from '@/src/data/queries/publicAuction/useQuery';
-import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
+import { usePublicAuctions } from '../queries/usePublicAuctions';
+import { useVenues } from '../queries/useVenues';
 import { Auction } from '../types';
 
 export const AuctionsContainer = () => {
   const t = useTranslations();
-  const { auctions: allAuctions, isLoading } = useAuctionQuery();
-  const { venues = [] } = useVenueQuery();
+  const { data: allAuctions, isLoading } = usePublicAuctions();
+  const { venues = [] } = useVenues();
 
   if (isLoading) {
     return (
@@ -27,20 +27,20 @@ export const AuctionsContainer = () => {
   // Filter and Sort logic
   const auctions = (allAuctions || [])
     .filter(
-      (a) =>
+      (a: Auction) =>
         a.status === 'scheduled' ||
         a.status === 'in_progress' ||
         a.status === 'completed' ||
         a.status === 'cancelled',
     )
-    .sort((a, b) => {
+    .sort((a: Auction, b: Auction) => {
       if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;
       if (a.status !== 'in_progress' && b.status === 'in_progress') return 1;
       return (
         new Date(`${a.auctionDate}T${a.startTime}`).getTime() -
         new Date(`${b.auctionDate}T${b.startTime}`).getTime()
       );
-    }) as Auction[];
+    });
 
   return (
     <Box maxW="7xl" mx="auto" px={{ base: '4', md: '8' }} py="8">
