@@ -1,7 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { Badge } from '@atoms';
 
-type ItemStatus = 'Pending' | 'Sold' | 'Unsold' | 'Bidding';
+import { ItemStatus } from '@/src/types/item';
+
 
 interface ItemStatusBadgeProps {
   status: ItemStatus;

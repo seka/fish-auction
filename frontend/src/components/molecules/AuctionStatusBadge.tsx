@@ -1,7 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { Badge } from '@atoms';
 
-type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+import { AuctionStatus } from '@/src/types/auction';
+
 
 interface AuctionStatusBadgeProps {
   status: AuctionStatus;
