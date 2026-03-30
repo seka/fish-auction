@@ -126,7 +126,6 @@ func (s *Server) registerPublicRoutes() {
 	s.publicAuctionHandler.RegisterRoutes(s.router)
 	s.publicVenueHandler.RegisterRoutes(s.router)
 	s.buyerHandler.RegisterPublicRoutes(s.router)
-	s.invoiceHandler.RegisterPublicRoutes(s.router)
 }
 
 func (s *Server) registerAdminRoutes() {

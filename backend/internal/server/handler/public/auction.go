@@ -1,4 +1,4 @@
-package handler
+package public
 
 import (
 	"encoding/json"
@@ -9,21 +9,21 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/registry"
-	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/handler/public/response"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
 )
 
-// PublicAuctionHandler handles public HTTP requests related to auctions.
-type PublicAuctionHandler struct {
+// AuctionHandler handles public HTTP requests related to auctions.
+type AuctionHandler struct {
 	listUseCase     auction.ListAuctionsUseCase
 	getUseCase      auction.GetAuctionUseCase
 	getItemsUseCase auction.GetAuctionItemsUseCase
 }
 
-// NewPublicAuctionHandler creates a new PublicAuctionHandler instance.
-func NewPublicAuctionHandler(r registry.UseCase) *PublicAuctionHandler {
-	return &PublicAuctionHandler{
+// NewAuctionHandler creates a new AuctionHandler instance.
+func NewAuctionHandler(r registry.UseCase) *AuctionHandler {
+	return &AuctionHandler{
 		listUseCase:     r.NewListAuctionsUseCase(),
 		getUseCase:      r.NewGetAuctionUseCase(),
 		getItemsUseCase: r.NewGetAuctionItemsUseCase(),
@@ -31,7 +31,7 @@ func NewPublicAuctionHandler(r registry.UseCase) *PublicAuctionHandler {
 }
 
 // List handles the request to list auctions.
-func (h *PublicAuctionHandler) List(w http.ResponseWriter, r *http.Request) {
+func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 	filters := &repository.AuctionFilters{}
 
 	if venueIDStr := r.URL.Query().Get("venue_id"); venueIDStr != "" {
@@ -57,9 +57,9 @@ func (h *PublicAuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := make([]dto.AuctionResponse, len(auctions))
+	resp := make([]response.Auction, len(auctions))
 	for i, a := range auctions {
-		resp[i] = dto.AuctionResponse{
+		resp[i] = response.Auction{
 			ID:          a.ID,
 			VenueID:     a.VenueID,
 			AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
@@ -76,7 +76,7 @@ func (h *PublicAuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get handles the request to get a specific auction.
-func (h *PublicAuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -90,7 +90,7 @@ func (h *PublicAuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := dto.AuctionResponse{
+	resp := response.Auction{
 		ID:          a.ID,
 		VenueID:     a.VenueID,
 		AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
@@ -106,7 +106,7 @@ func (h *PublicAuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetItems handles the request to get items for a specific auction.
-func (h *PublicAuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
+func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -120,7 +120,7 @@ func (h *PublicAuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	resp := make([]dto.ItemResponse, len(items))
+	resp := make([]response.Item, len(items))
 	for i := range items {
 		item := items[i]
 		var highestBid *int
@@ -128,19 +128,17 @@ func (h *PublicAuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) 
 			amt := item.HighestBid.Amount()
 			highestBid = &amt
 		}
-		resp[i] = dto.ItemResponse{
-			ID:                item.ID,
-			AuctionID:         item.AuctionID,
-			FishermanID:       item.FishermanID,
-			FishType:          item.FishType,
-			Quantity:          item.Quantity,
-			Unit:              item.Unit,
-			Status:            item.Status.String(),
-			HighestBid:        highestBid,
-			HighestBidderID:   nil, // Hide for public API
-			HighestBidderName: nil, // Hide for public API
-			SortOrder:         item.SortOrder,
-			CreatedAt:         item.CreatedAt,
+		resp[i] = response.Item{
+			ID:          item.ID,
+			AuctionID:   item.AuctionID,
+			FishermanID: item.FishermanID,
+			FishType:    item.FishType,
+			Quantity:    item.Quantity,
+			Unit:        item.Unit,
+			Status:      item.Status.String(),
+			HighestBid:  highestBid,
+			SortOrder:   item.SortOrder,
+			CreatedAt:   item.CreatedAt,
 		}
 	}
 
@@ -148,30 +146,16 @@ func (h *PublicAuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) 
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func parseTime(s *string) *time.Time {
-	if s == nil || *s == "" {
-		return nil
-	}
-	t, err := time.Parse("15:04:05", *s)
-	if err != nil {
-		t, err = time.Parse("15:04", *s)
-		if err != nil {
-			return nil
-		}
-	}
-	return new(t)
-}
-
 func formatTime(t *time.Time) *string {
 	if t == nil {
 		return nil
 	}
 	s := t.Format("15:04:05")
-	return new(s)
+	return &s
 }
 
 // RegisterRoutes registers the public auction handler routes to the given mux.
-func (h *PublicAuctionHandler) RegisterRoutes(mux *http.ServeMux) {
+func (h *AuctionHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/auctions", h.List)
 	mux.HandleFunc("GET /api/auctions/{id}", h.Get)
 	mux.HandleFunc("GET /api/auctions/{id}/items", h.GetItems)

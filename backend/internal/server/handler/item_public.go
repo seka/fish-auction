@@ -55,8 +55,8 @@ func (h *PublicItemHandler) toResponse(it *model.AuctionItem) dto.ItemResponse {
 		Unit:              it.Unit,
 		Status:            it.Status.String(),
 		HighestBid:        highestBid,
-		HighestBidderID:   it.HighestBidderID,
-		HighestBidderName: it.HighestBidderName,
+		HighestBidderID:   nil, // Hide for public API
+		HighestBidderName: nil, // Hide for public API
 		SortOrder:         it.SortOrder,
 		CreatedAt:         it.CreatedAt,
 	}
