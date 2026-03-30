@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
+import { getBuyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
 import { loginBuyer } from '@/src/data/api/buyer_auth';
 import Link from 'next/link';
 import { Box, Text, Button, Input, Stack, Card } from '@atoms';
@@ -18,13 +18,14 @@ export const BuyerLoginContainer = () => {
   const [loginError, setLoginError] = useState('');
   const router = useRouter();
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<BuyerLoginFormData>({
-    resolver: zodResolver(buyerLoginSchema),
+    resolver: zodResolver(getBuyerLoginSchema(tValidation)),
   });
 
   const onSubmit = async (data: BuyerLoginFormData) => {

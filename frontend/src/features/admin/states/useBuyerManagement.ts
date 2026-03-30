@@ -2,18 +2,19 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { buyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
+import { getBuyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
 import { useAdminBuyers, useAdminBuyerMutations } from '../queries/useBuyers';
 
 export const useBuyerManagement = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const [message, setMessage] = useState('');
 
   const { buyers, isLoading } = useAdminBuyers();
   const { createBuyer, isCreating, deleteBuyer, isDeleting } = useAdminBuyerMutations();
 
   const form = useForm<BuyerFormData>({
-    resolver: zodResolver(buyerSchema),
+    resolver: zodResolver(getBuyerSchema(tValidation)),
   });
 
   const { reset, handleSubmit } = form;

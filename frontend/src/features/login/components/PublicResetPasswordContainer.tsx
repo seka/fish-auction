@@ -14,10 +14,11 @@ import { PublicResetPasswordForm } from './PublicResetPassword/PublicResetPasswo
 import { PublicResetPasswordStatus } from './PublicResetPassword/PublicResetPasswordStatus';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { resetPasswordSchema } from '@/src/models/schemas/password';
+import { getResetPasswordSchema } from '@/src/models/schemas/password';
 
 const PublicResetPasswordContent = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -30,8 +31,8 @@ const PublicResetPasswordContent = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<{ new_password: string; confirm_password: string }>({
-    resolver: zodResolver(resetPasswordSchema),
+  } = useForm({
+    resolver: zodResolver(getResetPasswordSchema(tValidation)),
   });
 
   useEffect(() => {

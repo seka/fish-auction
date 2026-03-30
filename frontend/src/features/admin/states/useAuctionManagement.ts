@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { auctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
+import { getAuctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
 import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
 import { useAdminVenues } from '../queries/useVenues';
 import { Auction } from '@/src/models/auction';
@@ -10,6 +10,7 @@ import { ApiError } from '@/src/core/api/client';
 
 export const useAuctionManagement = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const [message, setMessage] = useState('');
   const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
   const [filterVenueId, setFilterVenueId] = useState<number | undefined>(undefined);
@@ -28,7 +29,7 @@ export const useAuctionManagement = () => {
   } = useAdminAuctionMutations();
 
   const form = useForm<AuctionFormInput>({
-    resolver: zodResolver(auctionSchema),
+    resolver: zodResolver(getAuctionSchema(tValidation)),
   });
 
   const { reset, handleSubmit, setValue } = form;

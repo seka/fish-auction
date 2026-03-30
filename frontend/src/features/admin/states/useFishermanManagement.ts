@@ -2,18 +2,19 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { fishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
+import { getFishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
 import { useAdminFishermen, useAdminFishermanMutations } from '../queries/useFishermen';
 
 export const useFishermanManagement = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const [message, setMessage] = useState('');
 
   const { fishermen, isLoading } = useAdminFishermen();
   const { createFisherman, isCreating, deleteFisherman, isDeleting } = useAdminFishermanMutations();
 
   const form = useForm<FishermanFormData>({
-    resolver: zodResolver(fishermanSchema),
+    resolver: zodResolver(getFishermanSchema(tValidation)),
   });
 
   const { reset, handleSubmit } = form;

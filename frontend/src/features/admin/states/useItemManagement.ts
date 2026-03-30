@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { DragEndEvent } from '@dnd-kit/core';
-import { itemSchema, ItemFormData } from '@/src/models/schemas/admin';
+import { getItemSchema, ItemFormData } from '@/src/models/schemas/admin';
 import { useAdminItems, useAdminItemMutations } from '../queries/useItems';
 import { useAdminFishermen } from '../queries/useFishermen';
 import { useAdminAuctions } from '../queries/useAuctions';
@@ -12,6 +12,7 @@ import { AuctionItem } from '@/src/models';
 
 export const useItemManagement = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const [message, setMessage] = useState('');
 
   const searchParams = useSearchParams();
@@ -38,7 +39,7 @@ export const useItemManagement = () => {
   } = useAdminItemMutations();
 
   const form = useForm<ItemFormData>({
-    resolver: zodResolver(itemSchema),
+    resolver: zodResolver(getItemSchema(tValidation)),
     defaultValues: {
       auctionId: initialAuctionId || '',
     },

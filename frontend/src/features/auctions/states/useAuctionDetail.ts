@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginBuyer } from '@/src/data/api/buyer_auth';
-import { bidSchema, BidFormData } from '@/src/models/schemas/auction';
-import { buyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
+import { getBidSchema, BidFormData } from '@/src/models/schemas/auction';
+import { getBuyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
 import { useAuctionDetailData, useBidSubmit } from '../queries/useAuctions';
 import { useAuthQuery } from '@/src/data/queries/auth/useQuery';
 import { getMinimumBidIncrement } from '@/src/utils/auction';
@@ -16,6 +16,7 @@ import { AuctionItem } from '@/src/models';
 
 export const useAuctionDetail = (auctionId: number) => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const queryClient = useQueryClient();
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
@@ -38,11 +39,11 @@ export const useAuctionDetail = (auctionId: number) => {
   const isLoading = isDataLoading;
 
   const bidForm = useForm<BidFormData>({
-    resolver: zodResolver(bidSchema),
+    resolver: zodResolver(getBidSchema(tValidation)),
   });
 
   const loginForm = useForm<BuyerLoginFormData>({
-    resolver: zodResolver(buyerLoginSchema),
+    resolver: zodResolver(getBuyerLoginSchema(tValidation)),
   });
 
   const selectedItem = items?.find((i: AuctionItem) => i.id === selectedItemId) || null;

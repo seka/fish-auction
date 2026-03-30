@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { venueSchema, VenueFormData } from '@/src/models/schemas/auction';
+import { getVenueSchema, VenueFormData } from '@/src/models/schemas/auction';
 import { useAdminVenues, useAdminVenueMutations } from '../queries/useVenues';
 import { Venue } from '@/src/models/venue';
 
 export const useVenueManagement = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const [message, setMessage] = useState('');
 
   const { venues, isLoading } = useAdminVenues();
@@ -17,7 +18,7 @@ export const useVenueManagement = () => {
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
   const form = useForm<VenueFormData>({
-    resolver: zodResolver(venueSchema),
+    resolver: zodResolver(getVenueSchema(tValidation)),
   });
 
   const { reset, handleSubmit, setValue } = form;

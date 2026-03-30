@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, LoginFormData } from '@/src/models/schemas/auth';
+import { getLoginSchema, LoginFormData } from '@/src/models/schemas/auth';
 import { css } from 'styled-system/css';
 import { Box, Text, Button, Input, Card, Stack } from '@atoms';
 import { useTranslations } from 'next-intl';
@@ -16,12 +16,13 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onSubmit, isLoading, error }: LoginFormProps) => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(getLoginSchema(tValidation)),
   });
 
   return (

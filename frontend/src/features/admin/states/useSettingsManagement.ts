@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { passwordComplexitySchema } from '@/src/models/schemas/fields/password';
+import { getPasswordComplexitySchema } from '@/src/models/schemas/fields/password';
 
 export const useSettingsManagement = () => {
   const t = useTranslations();
+  const tValidation = useTranslations('Validation');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,7 +22,7 @@ export const useSettingsManagement = () => {
       return;
     }
 
-    const validation = passwordComplexitySchema.safeParse(newPassword);
+    const validation = getPasswordComplexitySchema(tValidation).safeParse(newPassword);
     if (!validation.success) {
       setMessage({ type: 'error', text: validation.error.issues[0].message });
       return;
