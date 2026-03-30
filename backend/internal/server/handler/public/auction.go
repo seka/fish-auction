@@ -63,8 +63,8 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 			ID:          a.ID,
 			VenueID:     a.VenueID,
 			AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-			StartTime:   formatTime(a.Period.StartAt),
-			EndTime:     formatTime(a.Period.EndAt),
+			StartTime:   util.FormatTime(a.Period.StartAt),
+			EndTime:     util.FormatTime(a.Period.EndAt),
 			Status:      string(a.Status),
 			CreatedAt:   a.CreatedAt,
 			UpdatedAt:   a.UpdatedAt,
@@ -94,8 +94,8 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		ID:          a.ID,
 		VenueID:     a.VenueID,
 		AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-		StartTime:   formatTime(a.Period.StartAt),
-		EndTime:     formatTime(a.Period.EndAt),
+		StartTime:   util.FormatTime(a.Period.StartAt),
+		EndTime:     util.FormatTime(a.Period.EndAt),
 		Status:      string(a.Status),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
@@ -144,14 +144,6 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(resp)
-}
-
-func formatTime(t *time.Time) *string {
-	if t == nil {
-		return nil
-	}
-	s := t.Format("15:04:05")
-	return &s
 }
 
 // RegisterRoutes registers the public auction handler routes to the given mux.

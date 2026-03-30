@@ -170,8 +170,8 @@ func (h *AuctionHandler) toResponse(a *model.Auction) response.Auction {
 		ID:          a.ID,
 		VenueID:     a.VenueID,
 		AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-		StartTime:   formatTime(a.Period.StartAt),
-		EndTime:     formatTime(a.Period.EndAt),
+		StartTime:   util.FormatTime(a.Period.StartAt),
+		EndTime:     util.FormatTime(a.Period.EndAt),
 		Status:      string(a.Status),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
@@ -190,14 +190,6 @@ func parseTime(s *string) *time.Time {
 		}
 	}
 	return &t
-}
-
-func formatTime(t *time.Time) *string {
-	if t == nil {
-		return nil
-	}
-	s := t.Format("15:04:05")
-	return &s
 }
 
 // RegisterRoutes registers the admin auction handler routes to the given mux.
