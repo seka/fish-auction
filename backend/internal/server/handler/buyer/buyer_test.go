@@ -45,7 +45,7 @@ func TestBuyerHandler_GetMe(t *testing.T) {
 			name:        "NoContext_NotAuthenticated",
 			withContext: false,
 			mockSetup:   func(_ *mock.MockRegistry) {},
-			wantStatus:  http.StatusOK, // GetMe returns 200 with Authenticated: false
+			wantStatus:  http.StatusUnauthorized,
 		},
 	}
 	for _, tc := range tests {

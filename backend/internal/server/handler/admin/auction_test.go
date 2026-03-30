@@ -15,7 +15,6 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	"github.com/seka/fish-auction/backend/internal/server/handler/admin/request"
-	"github.com/seka/fish-auction/backend/internal/server/handler/public"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 )
@@ -105,129 +104,6 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 	}
 }
 
-func TestPublicAuctionHandler_List(t *testing.T) {
-	type testCase struct {
-		name        string
-		queryParams map[string]string
-		mockSetup   func(*mock.MockRegistry)
-		wantStatus  int
-	}
-
-	tests := []testCase{
-		{
-			name: "Success",
-			mockSetup: func(r *mock.MockRegistry) {
-				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
-						return []model.Auction{{ID: 1}}, nil
-					},
-				}
-			},
-			wantStatus: http.StatusOK, // Not for Create
-		},
-		{
-			name: "WithFilters",
-			queryParams: map[string]string{
-				"venue_id": "1",
-				"date":     "2023-01-01",
-				"status":   "Scheduled",
-			},
-			mockSetup: func(r *mock.MockRegistry) {
-				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(_ context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
-						if filters.VenueID == nil || *filters.VenueID != 1 {
-							return nil, errors.New("filter mismatch")
-						}
-						return []model.Auction{{ID: 1}}, nil
-					},
-				}
-			},
-			wantStatus: http.StatusOK, // Not for Create
-		},
-		{
-			name: "UseCaseError",
-			mockSetup: func(r *mock.MockRegistry) {
-				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
-					ExecuteFunc: func(_ context.Context, _ *repository.AuctionFilters) ([]model.Auction, error) {
-						return nil, errors.New("db error")
-					},
-				}
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			mockReg := &mock.MockRegistry{}
-			tc.mockSetup(mockReg)
-			h := public.NewAuctionHandler(mockReg)
-
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions", nil)
-			q := req.URL.Query()
-			for k, v := range tc.queryParams {
-				q.Add(k, v)
-			}
-			req.URL.RawQuery = q.Encode()
-			w := httptest.NewRecorder()
-
-			h.List(w, req)
-
-			if w.Code != tc.wantStatus {
-				t.Errorf("expected status %d, got %d", tc.wantStatus, w.Code)
-			}
-		})
-	}
-}
-
-func TestPublicAuctionHandler_Get(t *testing.T) {
-	type testCase struct {
-		name       string
-		idStr      string
-		mockSetup  func(*mock.MockRegistry)
-		wantStatus int
-	}
-
-	tests := []testCase{
-		{
-			name:  "Success",
-			idStr: "1",
-			mockSetup: func(r *mock.MockRegistry) {
-				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
-					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
-						return &model.Auction{ID: 1}, nil
-					},
-				}
-			},
-			wantStatus: http.StatusOK, // Not for Create
-		},
-		{
-			name:       "InvalidID",
-			idStr:      "invalid",
-			mockSetup:  func(_ *mock.MockRegistry) {},
-			wantStatus: http.StatusBadRequest,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			mockReg := &mock.MockRegistry{}
-			tc.mockSetup(mockReg)
-			h := public.NewAuctionHandler(mockReg)
-
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions/"+tc.idStr, nil)
-			req.SetPathValue("id", tc.idStr)
-			w := httptest.NewRecorder()
-
-			h.Get(w, req)
-
-			if w.Code != tc.wantStatus {
-				t.Errorf("expected status %d, got %d", tc.wantStatus, w.Code)
-			}
-		})
-	}
-}
-
 func TestAdminAuctionHandler_Update(t *testing.T) {
 	type testCase struct {
 		name       string
@@ -253,13 +129,36 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 					},
 				}
 			},
-			wantStatus: http.StatusOK, // Not for Create
+			wantStatus: http.StatusOK,
 		},
 		{
 			name:       "InvalidJSON",
 			idStr:      "1",
 			body:       "invalid-json",
 			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name:       "InvalidID",
+			idStr:      "invalid",
+			body:       request.UpdateAuction{},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:  "UseCaseError",
+			idStr: "1",
+			body: request.UpdateAuction{
+				VenueID:     1,
+				AuctionDate: "2023-01-01",
+			},
+			mockSetup: func(r *mock.MockRegistry) {
+				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
+					ExecuteFunc: func(_ context.Context, _ *model.Auction) error {
+						return errors.New("db error")
+					},
+				}
+			},
 			wantStatus: http.StatusInternalServerError,
 		},
 	}
@@ -311,7 +210,27 @@ func TestAdminAuctionHandler_UpdateStatus(t *testing.T) {
 					},
 				}
 			},
-			wantStatus: http.StatusOK, // Not for Create
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "InvalidID",
+			idStr:      "invalid",
+			body:       request.UpdateAuctionStatus{Status: "Closed"},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:  "UseCaseError",
+			idStr: "1",
+			body:  request.UpdateAuctionStatus{Status: "Closed"},
+			mockSetup: func(r *mock.MockRegistry) {
+				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
+					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
+						return errors.New("db error")
+					},
+				}
+			},
+			wantStatus: http.StatusInternalServerError,
 		},
 	}
 
@@ -362,6 +281,12 @@ func TestAdminAuctionHandler_Delete(t *testing.T) {
 			},
 			wantStatus: http.StatusNoContent,
 		},
+		{
+			name:       "InvalidID",
+			idStr:      "invalid",
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
 	}
 
 	for _, tc := range tests {
@@ -397,50 +322,35 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 		ReorderItemsUC:        &mock.MockReorderItemsUseCase{ExecuteFunc: func(_ context.Context, _ int, _ []int) error { return nil }},
 	}
 
-	t.Run("Public", func(t *testing.T) {
-		h := public.NewAuctionHandler(mockReg)
-		mux := http.NewServeMux()
-		h.RegisterRoutes(mux)
+	h := admin.NewAuctionHandler(mockReg)
+	mux := http.NewServeMux()
+	h.RegisterRoutes(mux)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/auctions", nil)
-		w := httptest.NewRecorder()
-		mux.ServeHTTP(w, req)
-		if w.Code != http.StatusOK {
-			t.Errorf("expected 200, got %d", w.Code)
-		}
-	})
+	// Create
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{"auction_date":"2023-01-01"}`))
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusCreated {
+		t.Errorf("Create: expected 201, got %d", w.Code)
+	}
 
-	t.Run("Admin", func(t *testing.T) {
-		h := admin.NewAuctionHandler(mockReg)
-		mux := http.NewServeMux()
-		h.RegisterRoutes(mux)
+	// Reorder - Success (204)
+	req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/1/reorder", strings.NewReader(`{"ids":[1,2,3]}`))
+	w = httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusNoContent {
+		t.Errorf("Reorder Success: expected 204, got %d", w.Code)
+	}
 
-		// Create
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{"auction_date":"2023-01-01"}`))
-		w := httptest.NewRecorder()
-		mux.ServeHTTP(w, req)
-		if w.Code != http.StatusCreated {
-			t.Errorf("Create: expected 201, got %d", w.Code)
-		}
-
-		// Reorder - Success (204)
-		req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/1/reorder", strings.NewReader(`{"ids":[1,2,3]}`))
-		w = httptest.NewRecorder()
-		mux.ServeHTTP(w, req)
-		if w.Code != http.StatusNoContent {
-			t.Errorf("Reorder Success: expected 204, got %d", w.Code)
-		}
-
-		// Reorder - Invalid JSON (400)
-		req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/1/reorder", strings.NewReader(`invalid json`))
-		w = httptest.NewRecorder()
-		mux.ServeHTTP(w, req)
-		if w.Code != http.StatusBadRequest {
-			t.Errorf("Reorder Invalid JSON: expected 400, got %d", w.Code)
-		}
-		var errResp util.ErrorResponse
-		if err := json.NewDecoder(w.Body).Decode(&errResp); err != nil {
-			t.Errorf("Reorder Invalid JSON: expected JSON error response, got error: %v", err)
-		}
-	})
+	// Reorder - Invalid JSON (400)
+	req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/auctions/1/reorder", strings.NewReader(`invalid json`))
+	w = httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Reorder Invalid JSON: expected 400, got %d", w.Code)
+	}
+	var errResp util.ErrorResponse
+	if err := json.NewDecoder(w.Body).Decode(&errResp); err != nil {
+		t.Errorf("Reorder Invalid JSON: expected JSON error response, got error: %v", err)
+	}
 }

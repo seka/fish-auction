@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,6 +27,14 @@ func TestFishermanHandler(t *testing.T) {
 				return []model.Fisherman{{ID: 1, Name: "F1"}}, nil
 			},
 		},
+		DeleteFishermanUC: &mock.MockDeleteFishermanUseCase{
+			ExecuteFunc: func(_ context.Context, id int) error {
+				if id == 999 {
+					return errors.New("not found")
+				}
+				return nil
+			},
+		},
 	}
 	h := admin.NewFishermanHandler(mockReg)
 
@@ -46,6 +55,26 @@ func TestFishermanHandler(t *testing.T) {
 		h.List(w, req)
 		if w.Code != http.StatusOK {
 			t.Errorf("expected 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("Delete_Success", func(t *testing.T) {
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/fishermen/1", nil)
+		req.SetPathValue("id", "1")
+		w := httptest.NewRecorder()
+		h.Delete(w, req)
+		if w.Code != http.StatusNoContent {
+			t.Errorf("expected 204, got %d", w.Code)
+		}
+	})
+
+	t.Run("Delete_InvalidID", func(t *testing.T) {
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/fishermen/invalid", nil)
+		req.SetPathValue("id", "invalid")
+		w := httptest.NewRecorder()
+		h.Delete(w, req)
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("expected 400, got %d", w.Code)
 		}
 	})
 

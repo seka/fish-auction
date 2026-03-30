@@ -35,7 +35,7 @@ func NewBuyerHandler(r registry.UseCase) *BuyerHandler {
 func (h *BuyerHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	buyerID, ok := middleware.BuyerIDFromContext(r.Context())
 	if !ok {
-		util.WriteJSON(w, http.StatusOK, response.Me{Authenticated: false})
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (h *BuyerHandler) GetPurchases(w http.ResponseWriter, r *http.Request) {
 			BuyerID:     p.BuyerID,
 			AuctionID:   p.AuctionID,
 			AuctionDate: p.AuctionDate,
-			CreatedAt:   p.CreatedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt:   p.CreatedAt.Format(time.RFC3339),
 		}
 	}
 
@@ -108,8 +108,8 @@ func (h *BuyerHandler) GetAuctions(w http.ResponseWriter, r *http.Request) {
 			StartTime:   formatTime(a.Period.StartAt),
 			EndTime:     formatTime(a.Period.EndAt),
 			Status:      string(a.Status),
-			CreatedAt:   a.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt:   a.UpdatedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt:   a.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:   a.UpdatedAt.Format(time.RFC3339),
 		}
 	}
 

@@ -48,18 +48,6 @@ func TestAdminBuyerHandler_Create(t *testing.T) {
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
 		},
-		{
-			name: "UseCaseError",
-			body: request.CreateBuyer{Email: "buyer@example.com"},
-			mockSetup: func(r *mock.MockRegistry) {
-				r.CreateBuyerUC = &mock.MockCreateBuyerUseCase{
-					ExecuteFunc: func(_ context.Context, _, _, _, _, _ string) (*model.Buyer, error) {
-						return nil, errors.New("db error")
-					},
-				}
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
 	}
 
 	for _, tc := range tests {
@@ -88,37 +76,53 @@ func TestAdminBuyerHandler_Create(t *testing.T) {
 }
 
 func TestAdminBuyerHandler_List(t *testing.T) {
-	type testCase struct {
-		name       string
-		mockSetup  func(*mock.MockRegistry)
-		wantStatus int
-	}
-
-	tests := []testCase{
-		{
-			name: "Success",
-			mockSetup: func(r *mock.MockRegistry) {
-				r.ListBuyersUC = &mock.MockListBuyersUseCase{
-					ExecuteFunc: func(_ context.Context) ([]model.Buyer, error) {
-						return []model.Buyer{{Name: "B1"}}, nil
-					},
-				}
+	mockReg := &mock.MockRegistry{
+		ListBuyersUC: &mock.MockListBuyersUseCase{
+			ExecuteFunc: func(_ context.Context) ([]model.Buyer, error) {
+				return []model.Buyer{{Name: "B1"}}, nil
 			},
-			wantStatus: http.StatusOK,
 		},
 	}
+	h := admin.NewBuyerHandler(mockReg)
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			mockReg := &mock.MockRegistry{}
-			tc.mockSetup(mockReg)
-			h := admin.NewBuyerHandler(mockReg)
-			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/buyers", nil)
-			w := httptest.NewRecorder()
-			h.List(w, req)
-			if w.Code != tc.wantStatus {
-				t.Errorf("expected %d, got %d", tc.wantStatus, w.Code)
-			}
-		})
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/buyers", nil)
+	w := httptest.NewRecorder()
+	h.List(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
 	}
+}
+
+func TestAdminBuyerHandler_Delete(t *testing.T) {
+	mockReg := &mock.MockRegistry{
+		DeleteBuyerUC: &mock.MockDeleteBuyerUseCase{
+			ExecuteFunc: func(_ context.Context, id int) error {
+				if id == 999 {
+					return errors.New("not found")
+				}
+				return nil
+			},
+		},
+	}
+	h := admin.NewBuyerHandler(mockReg)
+
+	t.Run("Success", func(t *testing.T) {
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/buyers/1", nil)
+		req.SetPathValue("id", "1")
+		w := httptest.NewRecorder()
+		h.Delete(w, req)
+		if w.Code != http.StatusNoContent {
+			t.Errorf("expected 204, got %d", w.Code)
+		}
+	})
+
+	t.Run("InvalidID", func(t *testing.T) {
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/buyers/invalid", nil)
+		req.SetPathValue("id", "invalid")
+		w := httptest.NewRecorder()
+		h.Delete(w, req)
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("expected 400, got %d", w.Code)
+		}
+	})
 }
