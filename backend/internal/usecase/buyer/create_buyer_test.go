@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	domainerrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
@@ -24,6 +25,7 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 		createAuthErr  error
 		wantErr        error
 		errContains    string
+		wantValErr     bool
 	}{
 		{
 			name:     "Success",
@@ -50,6 +52,7 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 			name:        "PasswordTooLong",
 			input:       "John Doe",
 			password:    "this_password_is_definitely_way_too_long_to_be_hashed_by_bcrypt_because_it_exceeds_seventy_two_bytes_limit",
+			wantValErr:  true,
 			errContains: "between 8 and 72 characters",
 		},
 	}
@@ -96,11 +99,20 @@ func TestCreateBuyerUseCase_Execute(t *testing.T) {
 				return
 			}
 
-			if tt.errContains != "" {
+			if tt.errContains != "" || tt.wantValErr {
 				if err == nil {
-					t.Fatalf("expected error containing %q, got nil", tt.errContains)
+					t.Fatalf("expected error, got nil")
 				}
-				if !errors.Is(err, tt.wantErr) && !strings.Contains(err.Error(), tt.errContains) {
+				if tt.wantValErr {
+					var valErr *domainerrors.ValidationError
+					if !errors.As(err, &valErr) {
+						t.Fatalf("expected ValidationError, got %T: %v", err, err)
+					}
+					if valErr.Field != "password" {
+						t.Errorf("expected validation error on field 'password', got %q", valErr.Field)
+					}
+				}
+				if tt.errContains != "" && !strings.Contains(err.Error(), tt.errContains) {
 					t.Fatalf("expected error containing %q, got %v", tt.errContains, err)
 				}
 				return
