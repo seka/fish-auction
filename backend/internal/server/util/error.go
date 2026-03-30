@@ -1,10 +1,11 @@
 package util
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
-	"github.com/seka/fish-auction/backend/internal/domain/errors"
+	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 )
 
 // ErrorResponse represents a JSON error response.
@@ -16,35 +17,51 @@ type ErrorResponse struct {
 
 // HandleError converts domain errors to JSON responses.
 func HandleError(w http.ResponseWriter, err error) {
+	if err == nil {
+		return
+	}
+
 	var status int
 	var errorType, message string
-	switch e := err.(type) {
-	case *errors.ValidationError:
+
+	var valErr *domainErrors.ValidationError
+	var notFoundErr *domainErrors.NotFoundError
+	var conflictErr *domainErrors.ConflictError
+	var unauthErr *domainErrors.UnauthorizedError
+	var forbiddenErr *domainErrors.ForbiddenError
+	var goneErr *domainErrors.GoneError
+
+	if errors.As(err, &valErr) {
 		status = http.StatusBadRequest
 		errorType = "validation_error"
-		message = e.Error()
-	case *errors.NotFoundError:
+		message = valErr.Error()
+	} else if errors.As(err, &notFoundErr) {
 		status = http.StatusNotFound
 		errorType = "not_found"
-		message = e.Error()
-	case *errors.ConflictError:
+		message = notFoundErr.Error()
+	} else if errors.As(err, &conflictErr) {
 		status = http.StatusConflict
 		errorType = "conflict"
-		message = e.Error()
-	case *errors.UnauthorizedError:
+		message = conflictErr.Error()
+	} else if errors.As(err, &unauthErr) {
 		status = http.StatusUnauthorized
 		errorType = "unauthorized"
-		message = e.Error()
-	case *errors.ForbiddenError:
+		message = unauthErr.Error()
+	} else if errors.As(err, &forbiddenErr) {
 		status = http.StatusForbidden
 		errorType = "forbidden"
-		message = e.Error()
-	default:
+		message = forbiddenErr.Error()
+	} else if errors.As(err, &goneErr) {
+		status = http.StatusGone
+		errorType = "gone"
+		message = goneErr.Error()
+	} else {
 		status = http.StatusInternalServerError
 		errorType = "internal_error"
 		message = "An internal error occurred"
 		log.Printf("Internal error: %v", err)
 	}
+
 	resp := ErrorResponse{Error: errorType, Message: message, Code: status}
 	WriteJSON(w, status, resp)
 }
