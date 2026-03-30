@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/server/handler"
+	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
+	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
+	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 	mock "github.com/seka/fish-auction/backend/internal/server/testing"
 )
 
@@ -41,35 +43,37 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			"buyer-session-1": {ID: "buyer-session-1", UserID: 1, Role: model.SessionRoleBuyer},
 		},
 	}
-	hHealth := handler.NewHealthHandler()
-	hFisherman := handler.NewFishermanHandler(mockReg)
-	hBuyer := handler.NewBuyerHandler(mockReg, sessionRepo)
-	hAdminBuyer := handler.NewAdminBuyerHandler(mockReg)
-	hPublicItem := handler.NewPublicItemHandler(mockReg)
-	hAdminItem := handler.NewAdminItemHandler(mockReg)
-	hBid := handler.NewBidHandler(mockReg)
-	hInvoice := handler.NewInvoiceHandler(mockReg)
-	hAuth := handler.NewAuthHandler(mockReg, sessionRepo)
-	hPublicVenue := handler.NewPublicVenueHandler(mockReg)
-	hAdminVenue := handler.NewAdminVenueHandler(mockReg)
-	hPublicAuction := handler.NewPublicAuctionHandler(mockReg)
-	hAdminAuction := handler.NewAdminAuctionHandler(mockReg)
-	hAdmin := handler.NewAdminHandler(mockReg)
-	hAuthReset := handler.NewAuthResetHandler(mockReg)
-	hAdminAuthReset := handler.NewAdminAuthResetHandler(mockReg)
-	hPush := handler.NewPushHandler(mockReg)
+	hHealth := publicHandler.NewHealthHandler()
+	hFisherman := adminHandler.NewFishermanHandler(mockReg)
+	hBuyerAuth := publicHandler.NewBuyerAuthHandler(mockReg, sessionRepo)
+	hBuyer := buyerHandler.NewBuyerHandler(mockReg)
+	hAdminBuyer := adminHandler.NewBuyerHandler(mockReg)
+	hPublicItem := publicHandler.NewItemHandler(mockReg)
+	hAdminItem := adminHandler.NewItemHandler(mockReg)
+	hBid := buyerHandler.NewBidHandler(mockReg)
+	hInvoice := adminHandler.NewInvoiceHandler(mockReg)
+	hAdminAuth := publicHandler.NewAdminAuthHandler(mockReg, sessionRepo)
+	hPublicVenue := publicHandler.NewVenueHandler(mockReg)
+	hAdminVenue := adminHandler.NewVenueHandler(mockReg)
+	hPublicAuction := publicHandler.NewAuctionHandler(mockReg)
+	hAdminAuction := adminHandler.NewAuctionHandler(mockReg)
+	hAdmin := adminHandler.NewAdminHandler(mockReg)
+	hAuthReset := publicHandler.NewAuthResetHandler(mockReg)
+	hAdminAuthReset := adminHandler.NewAuthResetHandler(mockReg)
+	hPush := buyerHandler.NewPushHandler(mockReg)
 
 	// Initialize Server
 	s := NewServer(
 		hHealth,
 		hFisherman,
+		hBuyerAuth,
 		hBuyer,
 		hAdminBuyer,
 		hPublicItem,
 		hAdminItem,
 		hBid,
 		hInvoice,
-		hAuth,
+		hAdminAuth,
 		hPublicVenue,
 		hAdminVenue,
 		hPublicAuction,
@@ -138,7 +142,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			path:           "/api/admin/fishermen",
 			cookieName:     "admin_session",
 			cookieValue:    "admin-session-1",
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusCreated,
 		},
 		// Auction Status (Admin)
 		{
@@ -183,7 +187,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			path:           "/api/admin/auctions",
 			cookieName:     "admin_session",
 			cookieValue:    "admin-session-1",
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusCreated,
 		},
 	}
 

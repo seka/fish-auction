@@ -10,7 +10,9 @@ import (
 
 	"github.com/SherClockHolmes/webpush-go"
 	"github.com/seka/fish-auction/backend/config"
+	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	pushErrors "github.com/seka/fish-auction/backend/internal/infrastructure/push_notification/errors"
 )
 
 func TestWebpushNotificationService_Send(t *testing.T) {
@@ -29,7 +31,7 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 	payload := map[string]string{"message": "hello"}
 
 	t.Run("Success", func(t *testing.T) {
-		orig := webpushSendNotification
+		orig := webpush.SendNotification
 		defer func() { webpushSendNotification = orig }()
 
 		webpushSendNotification = func(_ []byte, _ *webpush.Subscription, _ *webpush.Options) (*http.Response, error) {
@@ -61,8 +63,9 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if err == nil || err.Error() != "subscription expired (status 410)" {
-			t.Errorf("expected 'subscription expired (status 410)' error, got %v", err)
+		var goneErr *domainErrors.GoneError
+		if !errors.As(err, &goneErr) || goneErr.Resource != "Subscription" {
+			t.Errorf("expected GoneError for Subscription, got %v", err)
 		}
 	})
 
@@ -80,8 +83,9 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if err == nil || err.Error() != "subscription expired (status 404)" {
-			t.Errorf("expected 'subscription expired (status 404)' error, got %v", err)
+		var notFoundErr *domainErrors.NotFoundError
+		if !errors.As(err, &notFoundErr) || notFoundErr.Resource != "Subscription" {
+			t.Errorf("expected NotFoundError for Subscription, got %v", err)
 		}
 	})
 
@@ -99,8 +103,9 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if err == nil || err.Error() != "unexpected status code: 500" {
-			t.Errorf("expected 'unexpected status code: 500' error, got %v", err)
+		var pushErr *pushErrors.PushNotificationError
+		if !errors.As(err, &pushErr) || pushErr.StatusCode != http.StatusInternalServerError {
+			t.Errorf("expected PushNotificationError with status 500, got %v", err)
 		}
 	})
 
@@ -116,8 +121,8 @@ func TestWebpushNotificationService_Send(t *testing.T) {
 		svc := NewWebpushService(cfg)
 		err := svc.Send(context.Background(), subscription, payload)
 
-		if !errors.Is(err, expectedErr) && err.Error() != "failed to send push notification: network error" {
-			t.Errorf("expected original error or wrapped error, got %v", err)
+		if !errors.Is(err, expectedErr) {
+			t.Errorf("expected original error, got %v", err)
 		}
 	})
 }

@@ -1,0 +1,89 @@
+package admin
+
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"github.com/seka/fish-auction/backend/internal/registry"
+	"github.com/seka/fish-auction/backend/internal/server/handler/admin/request"
+	"github.com/seka/fish-auction/backend/internal/server/handler/admin/response"
+	"github.com/seka/fish-auction/backend/internal/server/util"
+	"github.com/seka/fish-auction/backend/internal/usecase/fisherman"
+)
+
+// FishermanHandler handles admin HTTP requests related to fishermen.
+type FishermanHandler struct {
+	createUseCase fisherman.CreateFishermanUseCase
+	listUseCase   fisherman.ListFishermenUseCase
+	deleteUseCase fisherman.DeleteFishermanUseCase
+}
+
+// NewFishermanHandler creates a new FishermanHandler instance.
+func NewFishermanHandler(r registry.UseCase) *FishermanHandler {
+	return &FishermanHandler{
+		createUseCase: r.NewCreateFishermanUseCase(),
+		listUseCase:   r.NewListFishermenUseCase(),
+		deleteUseCase: r.NewDeleteFishermanUseCase(),
+	}
+}
+
+// Create handles the fisherman creation request.
+func (h *FishermanHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var req request.CreateFisherman
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	fm, err := h.createUseCase.Execute(r.Context(), req.Name)
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	util.WriteJSON(w, http.StatusCreated, response.Fisherman{ID: fm.ID, Name: fm.Name})
+}
+
+// List handles the request to list fishermen.
+func (h *FishermanHandler) List(w http.ResponseWriter, r *http.Request) {
+	fishermen, err := h.listUseCase.Execute(r.Context())
+	if err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	resp := make([]response.Fisherman, len(fishermen))
+	for i, f := range fishermen {
+		resp[i] = response.Fisherman{
+			ID:   f.ID,
+			Name: f.Name,
+		}
+	}
+
+	util.WriteJSON(w, http.StatusOK, resp)
+}
+
+// Delete handles the fisherman deletion request.
+func (h *FishermanHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "Invalid fisherman ID")
+		return
+	}
+
+	if err := h.deleteUseCase.Execute(r.Context(), id); err != nil {
+		util.HandleError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RegisterRoutes registers the admin fisherman handler routes to the given mux.
+func (h *FishermanHandler) RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /fishermen", h.List)
+	mux.HandleFunc("POST /fishermen", h.Create)
+	mux.HandleFunc("DELETE /fishermen/{id}", h.Delete)
+}

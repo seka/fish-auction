@@ -31,3 +31,16 @@ func (m *MockListFishermenUseCase) Execute(ctx context.Context) ([]model.Fisherm
 	}
 	return nil, nil
 }
+
+// MockDeleteFishermanUseCase is a mock implementation of DeleteFishermanUseCase for testing.
+type MockDeleteFishermanUseCase struct {
+	ExecuteFunc func(ctx context.Context, id int) error
+}
+
+// Execute executes the use case logic.
+func (m *MockDeleteFishermanUseCase) Execute(ctx context.Context, id int) error {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, id)
+	}
+	return nil
+}

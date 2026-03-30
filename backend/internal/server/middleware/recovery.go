@@ -1,12 +1,11 @@
 package middleware
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"runtime/debug"
 
-	"github.com/seka/fish-auction/backend/internal/server/dto"
+	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
 // RecoveryMiddleware gracefully handles panics, logging the error
@@ -27,13 +26,7 @@ func (m *RecoveryMiddleware) Handle(next http.Handler) http.Handler {
 				log.Printf("[PANIC RECOVERED] %v\n%s", err, debug.Stack())
 
 				// クライアントには 500 Internal Server Error のJSONを返す
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusInternalServerError)
-				_ = json.NewEncoder(w).Encode(dto.ErrorResponse{
-					Error:   "internal_error",
-					Message: "Internal Server Error",
-					Code:    http.StatusInternalServerError,
-				})
+				util.WriteError(w, http.StatusInternalServerError, "Internal Server Error")
 			}
 		}()
 		next.ServeHTTP(w, r)

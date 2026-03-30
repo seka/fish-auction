@@ -2,8 +2,9 @@ package notification
 
 import (
 	"context"
-	"strings"
+	"errors"
 
+	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
@@ -55,7 +56,10 @@ func (uc *pushNotificationUseCase) SendNotification(ctx context.Context, buyerID
 	for _, sub := range subs {
 		if err := uc.pushNotificationService.Send(ctx, &sub, payload); err != nil {
 			// If subscription is expired or not found, delete it
-			if strings.Contains(err.Error(), "expired") || strings.Contains(err.Error(), "status 410") || strings.Contains(err.Error(), "status 404") {
+			var goneErr *domainErrors.GoneError
+			var notFoundErr *domainErrors.NotFoundError
+			if (errors.As(err, &goneErr) && goneErr.Resource == "Subscription") ||
+				(errors.As(err, &notFoundErr) && notFoundErr.Resource == "Subscription") {
 				_ = uc.repo.DeleteSubscription(ctx, sub.Endpoint)
 			}
 			continue

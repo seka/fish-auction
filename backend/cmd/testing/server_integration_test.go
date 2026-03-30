@@ -18,7 +18,9 @@ import (
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
-	"github.com/seka/fish-auction/backend/internal/server/handler"
+	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
+	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
+	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -84,41 +86,43 @@ func TestServerIntegration(t *testing.T) {
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, appCfg)
 
 	// 6. Handlers を初期化
-	healthHandler := handler.NewHealthHandler()
-	fishermanHandler := handler.NewFishermanHandler(useCaseReg)
+	healthHandler := publicHandler.NewHealthHandler()
+	fishermanHandler := adminHandler.NewFishermanHandler(useCaseReg)
 	sessionRepo := repoReg.NewSessionRepository()
-	buyerHandler := handler.NewBuyerHandler(useCaseReg, sessionRepo)
-	adminBuyerHandler := handler.NewAdminBuyerHandler(useCaseReg)
-	publicItemHandler := handler.NewPublicItemHandler(useCaseReg)
-	adminItemHandler := handler.NewAdminItemHandler(useCaseReg)
-	bidHandler := handler.NewBidHandler(useCaseReg)
-	invoiceHandler := handler.NewInvoiceHandler(useCaseReg)
-	authHandler := handler.NewAuthHandler(useCaseReg, sessionRepo)
-	publicVenueHandler := handler.NewPublicVenueHandler(useCaseReg)
-	adminVenueHandler := handler.NewAdminVenueHandler(useCaseReg)
-	publicAuctionHandler := handler.NewPublicAuctionHandler(useCaseReg)
-	adminAuctionHandler := handler.NewAdminAuctionHandler(useCaseReg)
-	adminHandler := handler.NewAdminHandler(useCaseReg)
-	authResetHandler := handler.NewAuthResetHandler(useCaseReg)
-	adminAuthResetHandler := handler.NewAdminAuthResetHandler(useCaseReg)
-	pushHandler := handler.NewPushHandler(useCaseReg)
+	buyerAuthHandler := publicHandler.NewBuyerAuthHandler(useCaseReg, sessionRepo)
+	buyerAccountHandler := buyerHandler.NewBuyerHandler(useCaseReg)
+	adminBuyerHandler := adminHandler.NewBuyerHandler(useCaseReg)
+	publicItemHandler := publicHandler.NewItemHandler(useCaseReg)
+	adminItemHandler := adminHandler.NewItemHandler(useCaseReg)
+	bidHandler := buyerHandler.NewBidHandler(useCaseReg)
+	invoiceHandler := adminHandler.NewInvoiceHandler(useCaseReg)
+	adminAuthHandler := publicHandler.NewAdminAuthHandler(useCaseReg, sessionRepo)
+	publicVenueHandler := publicHandler.NewVenueHandler(useCaseReg)
+	adminVenueHandler := adminHandler.NewVenueHandler(useCaseReg)
+	publicAuctionHandler := publicHandler.NewAuctionHandler(useCaseReg)
+	adminAuctionHandler := adminHandler.NewAuctionHandler(useCaseReg)
+	adminAccountHandler := adminHandler.NewAdminHandler(useCaseReg)
+	authResetHandler := publicHandler.NewAuthResetHandler(useCaseReg)
+	adminAuthResetHandler := adminHandler.NewAuthResetHandler(useCaseReg)
+	pushHandler := buyerHandler.NewPushHandler(useCaseReg)
 
 	// 7. Server を起動
 	srv := server.NewServer(
 		healthHandler,
 		fishermanHandler,
-		buyerHandler,
+		buyerAuthHandler,
+		buyerAccountHandler,
 		adminBuyerHandler,
 		publicItemHandler,
 		adminItemHandler,
 		bidHandler,
 		invoiceHandler,
-		authHandler,
+		adminAuthHandler,
 		publicVenueHandler,
 		adminVenueHandler,
 		publicAuctionHandler,
 		adminAuctionHandler,
-		adminHandler,
+		adminAccountHandler,
 		authResetHandler,
 		adminAuthResetHandler,
 		pushHandler,
