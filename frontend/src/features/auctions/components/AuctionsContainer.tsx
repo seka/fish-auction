@@ -6,13 +6,13 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { AuctionsList } from './AuctionsList';
 import { usePublicAuctions } from '../queries/usePublicAuctions';
-import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
+import { useVenues } from '../queries/useVenues';
 import { Auction } from '../types';
 
 export const AuctionsContainer = () => {
   const t = useTranslations();
   const { data: allAuctions, isLoading } = usePublicAuctions();
-  const { venues = [] } = useVenueQuery();
+  const { venues = [] } = useVenues();
 
   if (isLoading) {
     return (

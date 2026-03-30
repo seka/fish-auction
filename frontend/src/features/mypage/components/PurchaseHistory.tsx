@@ -3,11 +3,12 @@
 import { Box, Card, HStack, Text, Stack, EmptyState } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
+import { usePurchases } from '../queries/usePurchases';
+import { Purchase } from '../types/purchase';
 
 export const PurchaseHistory = () => {
   const t = useTranslations();
-  const { purchases, isLoading } = useMyPurchases();
+  const { purchases, isLoading } = usePurchases();
 
   if (isLoading) {
     return <Text>{t('Common.loading')}</Text>;
@@ -28,7 +29,7 @@ export const PurchaseHistory = () => {
           }
         />
       ) : (
-        purchases.map((purchase) => (
+        purchases.map((purchase: Purchase) => (
           <Card
             key={purchase.id}
             padding="lg"
