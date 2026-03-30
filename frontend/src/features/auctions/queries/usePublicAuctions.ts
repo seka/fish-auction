@@ -2,7 +2,7 @@ import { useAuctionQuery as useDataAuctionQuery } from '@/src/data/queries/publi
 import { Auction as EntityAuction } from '@entities/auction';
 import { Auction } from '../types';
 
-const toAuction = (entity: EntityAuction): Auction => ({
+export const toAuction = (entity: EntityAuction): Auction => ({
   id: entity.id,
   venueId: entity.venueId,
   auctionDate: entity.auctionDate,

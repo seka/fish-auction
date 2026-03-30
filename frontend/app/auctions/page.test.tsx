@@ -24,8 +24,10 @@ describe('AuctionsListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useVenueQuery).mockReturnValue({
-      venues: [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }],
-    } as unknown as { venues: Venue[]; isLoading: boolean; error: Error | null });
+      data: [{ id: 1, name: 'Venue A', createdAt: new Date().toISOString() }],
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useVenueQuery>);
   });
 
   it('renders loading state', () => {
@@ -33,7 +35,7 @@ describe('AuctionsListPage', () => {
       data: [],
       isLoading: true,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof usePublicAuctions>);
     render(<AuctionsListPage />);
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
@@ -43,7 +45,7 @@ describe('AuctionsListPage', () => {
       data: [],
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof usePublicAuctions>);
     render(<AuctionsListPage />);
     expect(screen.getByText('Public.Auctions.no_auctions')).toBeInTheDocument();
   });
@@ -75,7 +77,7 @@ describe('AuctionsListPage', () => {
       data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof usePublicAuctions>);
 
     render(<AuctionsListPage />);
 
@@ -120,7 +122,7 @@ describe('AuctionsListPage', () => {
       data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof usePublicAuctions>);
     render(<AuctionsListPage />);
 
     const cards = screen
@@ -134,8 +136,10 @@ describe('AuctionsListPage', () => {
 
   it('resolves and displays venue name', () => {
     vi.mocked(useVenueQuery).mockReturnValue({
-      venues: [{ id: 99, name: 'Special Venue', createdAt: new Date().toISOString() }],
-    } as unknown as { venues: Venue[]; isLoading: boolean; error: Error | null });
+      data: [{ id: 99, name: 'Special Venue', createdAt: new Date().toISOString() }],
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useVenueQuery>);
     const mockAuctions = [
       {
         id: 1,
@@ -152,7 +156,7 @@ describe('AuctionsListPage', () => {
       data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof usePublicAuctions>);
     render(<AuctionsListPage />);
     expect(screen.getByText('Special Venue')).toBeInTheDocument();
   });
@@ -184,7 +188,7 @@ describe('AuctionsListPage', () => {
       data: mockAuctions as Auction[],
       isLoading: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof usePublicAuctions>);
     render(<AuctionsListPage />);
     expect(screen.getByText(/AuctionStatus.cancelled/)).toBeInTheDocument();
     expect(screen.getByText(/AuctionStatus.completed/)).toBeInTheDocument();

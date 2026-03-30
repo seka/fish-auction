@@ -2,7 +2,7 @@ import { useParticipatingAuctions as useDataParticipatingAuctions } from '@/src/
 import { AuctionSummary } from '@/src/data/api/buyer_mypage';
 import { Auction } from '../types/auction';
 
-const toAuction = (entity: AuctionSummary): Auction => ({
+export const toAuction = (entity: AuctionSummary): Auction => ({
   id: entity.id,
   status: entity.status,
   auctionDate: entity.auctionDate,
