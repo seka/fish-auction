@@ -29,6 +29,10 @@
       "@organisms": ["./src/components/organisms"],
       "@templates": ["./src/components/templates"],
       "@libs/*": ["./src/libs/*"],
+      "@entities/*": ["./src/data/entities/*"],
+      "@entities": ["./src/data/entities"],
+      "@schema/*": ["./src/schema/*"],
+      "@schema": ["./src/schema"],
       "@testing/*": ["./src/testing/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }

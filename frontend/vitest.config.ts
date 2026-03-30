@@ -13,6 +13,8 @@ export default defineConfig({
       '@organisms': path.resolve(__dirname, './src/components/organisms'),
       '@templates': path.resolve(__dirname, './src/components/templates'),
       '@libs': path.resolve(__dirname, './src/libs'),
+      '@entities': path.resolve(__dirname, './src/data/entities'),
+      '@schema': path.resolve(__dirname, './src/schema'),
       '@testing': path.resolve(__dirname, './src/testing'),
       'styled-system': path.resolve(__dirname, './src/libs/styled-system'),
     },
