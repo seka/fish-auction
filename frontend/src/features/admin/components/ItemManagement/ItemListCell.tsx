@@ -5,7 +5,7 @@ import { Tr, Td } from '@molecules';
 import { css } from 'styled-system/css';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { AuctionItem, Fisherman } from '@/src/models';
+import { AuctionItem, Fisherman } from '@entities';
 
 interface ItemListCellProps {
   item: AuctionItem;

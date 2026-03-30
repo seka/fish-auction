@@ -1,7 +1,7 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { getAuctions, getAuction } from '@/src/data/api/auction';
 import { auctionKeys } from './keys';
-import { Auction } from '@/src/models/auction';
+import { Auction } from '@entities/auction';
 
 export const useAuctionQuery = (filters?: { venueId?: number; date?: string; status?: string }) => {
   const {

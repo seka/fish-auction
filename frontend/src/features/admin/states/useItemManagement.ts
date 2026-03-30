@@ -4,11 +4,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { DragEndEvent } from '@dnd-kit/core';
-import { getItemSchema, ItemFormData } from '@/src/models/schemas/admin';
+import { getItemSchema, ItemFormData } from '@schema/admin';
 import { useAdminItems, useAdminItemMutations } from '../queries/useItems';
 import { useAdminFishermen } from '../queries/useFishermen';
 import { useAdminAuctions } from '../queries/useAuctions';
-import { AuctionItem } from '@/src/models';
+import { AuctionItem } from '@entities';
 
 export const useItemManagement = () => {
   const t = useTranslations();

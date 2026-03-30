@@ -1,9 +1,9 @@
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
-import { BidFormData } from '@/src/models/schemas/auction';
-import { AuctionItem } from '@/src/models';
-import { Auction } from '@/src/models/auction';
+import { BidFormData } from '@schema/auction';
+import { AuctionItem } from '@entities';
+import { Auction } from '@entities/auction';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
 import { ItemStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';

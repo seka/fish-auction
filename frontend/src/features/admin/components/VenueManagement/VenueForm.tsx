@@ -5,8 +5,8 @@ import { css } from 'styled-system/css';
 import { styled } from 'styled-system/jsx';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
-import { VenueFormData } from '@/src/models/schemas/auction';
-import { Venue } from '@/src/models';
+import { VenueFormData } from '@schema/auction';
+import { Venue } from '@entities';
 
 // Textarea component with similar styling to Input
 const Textarea = styled('textarea', {

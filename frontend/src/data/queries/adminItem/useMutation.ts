@@ -6,7 +6,7 @@ import {
   updateItemSortOrder,
   reorderItems,
 } from '@/src/data/api/admin';
-import { ReorderItemsParams, AuctionItem } from '@/src/models';
+import { ReorderItemsParams, AuctionItem } from '@entities';
 import { itemKeys } from '../publicItem/keys'; // For public invalidation
 import { adminItemKeys } from './keys';
 

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionsListPage from './page';
 import { useAuctionQuery } from '@/src/data/queries/publicAuction/useQuery';
 import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
-import { Auction, Venue } from '@/src/models';
+import { Auction, Venue } from '@entities';
 
 // Mocks
 vi.mock('next-intl', () => ({

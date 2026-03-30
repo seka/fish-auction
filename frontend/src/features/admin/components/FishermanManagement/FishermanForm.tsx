@@ -5,7 +5,7 @@ import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
 
-import { FishermanFormData } from '@/src/models/schemas/admin';
+import { FishermanFormData } from '@schema/admin';
 
 interface FishermanFormProps {
   form: UseFormReturn<FishermanFormData>;

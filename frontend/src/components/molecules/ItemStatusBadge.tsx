@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { Badge } from '@atoms';
-import { ItemStatus } from '@/src/models/auction';
+import { ItemStatus } from '@entities/auction';
 
 interface ItemStatusBadgeProps {
   status: ItemStatus;

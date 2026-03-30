@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { getBuyerSchema, BuyerFormData } from '@/src/models/schemas/admin';
+import { getBuyerSchema, BuyerFormData } from '@schema/admin';
 import { useAdminBuyers, useAdminBuyerMutations } from '../queries/useBuyers';
 
 export const useBuyerManagement = () => {

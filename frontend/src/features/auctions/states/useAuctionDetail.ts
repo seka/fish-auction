@@ -4,15 +4,15 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginBuyer } from '@/src/data/api/buyer_auth';
-import { getBidSchema, BidFormData } from '@/src/models/schemas/auction';
-import { getBuyerLoginSchema, BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
+import { getBidSchema, BidFormData } from '@schema/auction';
+import { getBuyerLoginSchema, BuyerLoginFormData } from '@schema/buyer_auth';
 import { useAuctionDetailData, useBidSubmit } from '../queries/useAuctions';
 import { useAuthQuery } from '@/src/data/queries/auth/useQuery';
 import { getMinimumBidIncrement } from '@/src/utils/auction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { authKeys } from '@/src/data/queries/auth/keys';
-import { AuctionItem } from '@/src/models';
+import { AuctionItem } from '@entities';
 
 export const useAuctionDetail = (auctionId: number) => {
   const t = useTranslations();

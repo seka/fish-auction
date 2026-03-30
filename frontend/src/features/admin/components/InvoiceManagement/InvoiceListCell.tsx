@@ -2,7 +2,7 @@
 
 import { Tr, Td } from '@molecules';
 import { css } from 'styled-system/css';
-import { InvoiceItem } from '@/src/models';
+import { InvoiceItem } from '@entities';
 
 interface InvoiceListCellProps {
   invoice: InvoiceItem;

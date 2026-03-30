@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { getFishermanSchema, FishermanFormData } from '@/src/models/schemas/admin';
+import { getFishermanSchema, FishermanFormData } from '@schema/admin';
 import { useAdminFishermen, useAdminFishermanMutations } from '../queries/useFishermen';
 
 export const useFishermanManagement = () => {

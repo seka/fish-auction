@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { isAuctionActive, formatTime } from './auction';
-import { Auction } from '@/src/models/auction';
+import { Auction } from '@entities/auction';
 
 describe('Auction Utils', () => {
   describe('isAuctionActive', () => {

@@ -2,7 +2,7 @@
 
 import { Box, Button, HStack, Text } from '@atoms';
 import { css } from 'styled-system/css';
-import { Venue } from '@/src/models';
+import { Venue } from '@entities';
 
 interface VenueListCellProps {
   venue: Venue;

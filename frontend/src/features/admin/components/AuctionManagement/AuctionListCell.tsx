@@ -4,7 +4,7 @@ import { Button, HStack, Text } from '@atoms';
 import { Tr, Td, AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
-import { Auction, Venue } from '@/src/models';
+import { Auction, Venue } from '@entities';
 
 interface AuctionListCellProps {
   auction: Auction;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getItemsByAuction } from '@/src/data/api/admin';
-import { AuctionItem } from '@/src/models/auction';
+import { AuctionItem } from '@entities/auction';
 import { itemKeys } from './keys';
 
 export const useItemsByAuction = (auctionId: number) => {

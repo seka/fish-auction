@@ -1,5 +1,5 @@
 import { apiClient } from '@/src/core/api/client';
-import { Bid } from '@/src/models';
+import { Bid } from '@entities';
 
 export const submitBid = async (bid: Bid): Promise<boolean> => {
   try {

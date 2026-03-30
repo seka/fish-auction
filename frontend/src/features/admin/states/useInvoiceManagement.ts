@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useInvoices } from '../queries/useInvoices';
-import { InvoiceItem } from '@/src/models';
+import { InvoiceItem } from '@entities';
 
 export const useInvoiceManagement = () => {
   const t = useTranslations();

@@ -1,7 +1,7 @@
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
-import { BuyerLoginFormData } from '@/src/models/schemas/buyer_auth';
+import { BuyerLoginFormData } from '@schema/buyer_auth';
 import { Box, Text, Stack, Input, Button } from '@atoms';
 import { css } from 'styled-system/css';
 

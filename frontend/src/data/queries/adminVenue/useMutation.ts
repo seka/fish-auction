@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createVenue, updateVenue, deleteVenue } from '@/src/data/api/venue';
-import { VenueFormData } from '@/src/models/schemas/auction';
+import { VenueFormData } from '@schema/auction';
 import { venueKeys } from '../publicVenue/keys'; // For public invalidation
 import { adminVenueKeys } from './keys';
 

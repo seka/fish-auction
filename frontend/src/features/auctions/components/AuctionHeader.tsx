@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Box, Text, HStack } from '@atoms';
 import { AuctionStatusBadge } from '@molecules';
 import { css } from 'styled-system/css';
-import { Auction } from '@/src/models/auction';
+import { Auction } from '@entities/auction';
 
 import { useTranslations } from 'next-intl';
 

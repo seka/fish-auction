@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLogin } from '../states/useLogin';
 import { LoginForm } from './LoginForm';
-import { LoginFormData } from '@/src/models/schemas/auth';
+import { LoginFormData } from '@schema/auth';
 import { Box } from '@atoms';
 import { useTranslations } from 'next-intl';
 

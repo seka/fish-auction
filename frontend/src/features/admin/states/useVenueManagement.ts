@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { getVenueSchema, VenueFormData } from '@/src/models/schemas/auction';
+import { getVenueSchema, VenueFormData } from '@schema/auction';
 import { useAdminVenues, useAdminVenueMutations } from '../queries/useVenues';
-import { Venue } from '@/src/models/venue';
+import { Venue } from '@entities/venue';
 
 export const useVenueManagement = () => {
   const t = useTranslations();

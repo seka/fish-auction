@@ -14,7 +14,7 @@ import { AdminResetPasswordForm } from './AdminResetPassword/AdminResetPasswordF
 import { AdminResetPasswordStatus } from './AdminResetPassword/AdminResetPasswordStatus';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getResetPasswordSchema } from '@/src/models/schemas/password';
+import { getResetPasswordSchema } from '@schema/password';
 
 const AdminResetPasswordContent = () => {
   const t = useTranslations();

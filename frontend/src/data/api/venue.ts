@@ -1,6 +1,6 @@
 import { apiClient } from '@/src/core/api/client';
-import { Venue } from '@/src/models/venue';
-import { VenueFormData } from '@/src/models/schemas/auction';
+import { Venue } from '@entities/venue';
+import { VenueFormData } from '@schema/auction';
 
 export const createVenue = async (data: VenueFormData): Promise<Venue> => {
   return apiClient.post<Venue>('/api/admin/venues', data);

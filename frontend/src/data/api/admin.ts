@@ -6,8 +6,8 @@ import {
   AuctionItem,
   UpdateItemParams,
   UpdateItemSortOrderParams,
-} from '@/src/models';
-import { BuyerFormData } from '@/src/models/schemas/admin';
+} from '@entities';
+import { BuyerFormData } from '@schema/admin';
 
 export const registerFisherman = async (name: string): Promise<boolean> => {
   try {

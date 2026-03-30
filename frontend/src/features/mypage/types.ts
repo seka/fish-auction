@@ -1,4 +1,4 @@
-import { AuctionStatus } from '@/src/models/auction';
+import { AuctionStatus } from '@entities/auction';
 
 export interface Purchase {
   id: number;

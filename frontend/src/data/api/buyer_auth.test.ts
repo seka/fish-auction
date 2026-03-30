@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getCurrentBuyer, loginBuyer, logoutBuyer } from './buyer_auth';
 import { apiClient } from '@/src/core/api/client';
-import { Buyer } from '@/src/models';
+import { Buyer } from '@entities';
 
 // Mock the apiClient
 vi.mock('@/src/core/api/client', () => ({

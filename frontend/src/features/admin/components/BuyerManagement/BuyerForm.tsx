@@ -4,7 +4,7 @@ import { Box, Button, Stack, Text, Input, Card, HStack } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
-import { BuyerFormData } from '@/src/models/schemas/admin';
+import { BuyerFormData } from '@schema/admin';
 
 interface BuyerFormProps {
   form: UseFormReturn<BuyerFormData>;

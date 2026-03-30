@@ -1,4 +1,4 @@
-import { Auction } from '@/src/models/auction';
+import { Auction } from '@entities/auction';
 
 /**
  * オークションが現在開催中（入札可能時間内）かどうかをチェックする

@@ -4,8 +4,8 @@ import { Box, Button, Stack, Text, Input, Card, HStack, Select } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
-import { AuctionFormInput } from '@/src/models/schemas/auction';
-import { Venue, Auction } from '@/src/models';
+import { AuctionFormInput } from '@schema/auction';
+import { Venue, Auction } from '@entities';
 
 interface AuctionFormProps {
   form: UseFormReturn<AuctionFormInput>;

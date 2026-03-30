@@ -18,7 +18,7 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { Box, EmptyState, Text } from '@atoms';
 import { Table, Thead, Tbody, Tr, Th } from '@molecules';
 import { css } from 'styled-system/css';
-import { AuctionItem, Fisherman } from '@/src/models';
+import { AuctionItem, Fisherman } from '@entities';
 import { ItemListCell } from './ItemListCell';
 
 interface ItemListProps {

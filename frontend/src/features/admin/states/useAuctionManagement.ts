@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { getAuctionSchema, AuctionFormInput } from '@/src/models/schemas/auction';
+import { getAuctionSchema, AuctionFormInput } from '@schema/auction';
 import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
 import { useAdminVenues } from '../queries/useVenues';
-import { Auction } from '@/src/models/auction';
+import { Auction } from '@entities/auction';
 import { ApiError } from '@/src/core/api/client';
 
 export const useAuctionManagement = () => {
