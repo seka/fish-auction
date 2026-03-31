@@ -2,6 +2,7 @@ package auction
 
 import (
 	"context"
+	"log"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -63,7 +64,10 @@ func (uc *updateAuctionStatusUseCase) Execute(ctx context.Context, id int, statu
 			}
 
 			for _, b := range buyers {
-				_ = uc.publishNotificationUseCase.Execute(ctx, b.ID, payload)
+				if err := uc.publishNotificationUseCase.Execute(ctx, b.ID, payload); err != nil {
+					// 通知失敗はログ出力のみ行い、全体の処理に影響を与えない
+					log.Printf("failed to send notification for auction status update: %v", err)
+				}
 			}
 		}
 	}

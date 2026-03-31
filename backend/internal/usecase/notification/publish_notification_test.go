@@ -81,7 +81,7 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 			},
 		}
 
-		uc := NewPublishNotificationUseCase(repo, nil)
+		uc := NewPublishNotificationUseCase(repo, &mockPushNotificationService{})
 		err := uc.Execute(ctx, buyerID, payload)
 		if !errors.Is(err, repoErr) {
 			t.Errorf("Expected error %v, got %v", repoErr, err)

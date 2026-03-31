@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 
+	"time"
+
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
-	"time"
 )
 
 const (
@@ -241,6 +242,9 @@ func (uc *createBidUseCase) notifyOutbid(ctx context.Context, bid *model.Bid, it
 			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price.Amount()),
 			"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
 		}
-		_ = uc.publishNotificationUseCase.Execute(ctx, *item.HighestBidderID, payload)
+		if err := uc.publishNotificationUseCase.Execute(ctx, *item.HighestBidderID, payload); err != nil {
+			// 通知失敗はログ出力のみ行い、全体の処理に影響を与えない
+			log.Printf("failed to send notification for outbid: %v", err)
+		}
 	}
 }
