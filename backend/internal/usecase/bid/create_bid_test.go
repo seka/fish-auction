@@ -53,6 +53,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 		buyerFound       bool
 		buyerRepoErr     error
 		itemStatus       model.ItemStatus
+		notificationErr  error // Error from PublishNotificationUseCase
 	}{
 		{
 			name: "Success",
@@ -455,6 +456,36 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				Status: model.AuctionStatusInProgress,
 			},
 		},
+		{
+			name: "Success_EvenIfNotificationFails",
+			input: &model.Bid{
+				ItemID:  1,
+				BuyerID: 2,
+				Price:   bp(2000),
+			},
+			buyerFound: true,
+			itemFound:  true,
+			itemStatus: model.ItemStatusAvailable,
+			mockItem: &model.AuctionItem{
+				ID:              1,
+				AuctionID:       1,
+				Status:          model.ItemStatusAvailable,
+				FishType:        "Maguro",
+				HighestBid:      bpp(1500),
+				HighestBidderID: intPtr(1),
+			},
+			wantID:           1,
+			wantCreateCalled: true,
+			wantTxCalled:     true,
+			wantNotification: true,
+			notificationErr:  errors.New("notification failed"),
+			mockAuction: &model.Auction{
+				ID:      1,
+				VenueID: 1,
+				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Status:  model.AuctionStatusInProgress,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -534,10 +565,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			notificationCalled := false
-			mockPushUseCase := &mock.MockPushNotificationUseCase{
-				SendNotificationFunc: func(_ context.Context, _ int, _ any) error {
+			mockPushUseCase := &mock.MockPublishNotificationUseCase{
+				ExecuteFunc: func(_ context.Context, _ int, _ any) error {
 					notificationCalled = true
-					return nil
+					return tt.notificationErr
 				},
 			}
 

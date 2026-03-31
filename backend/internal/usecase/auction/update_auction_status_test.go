@@ -58,10 +58,7 @@ func (m *mockBuyerRepoForStatusUpdate) Delete(_ context.Context, _ int) error { 
 
 type mockPushUseCaseForStatusUpdate struct{}
 
-func (m *mockPushUseCaseForStatusUpdate) Subscribe(_ context.Context, _ int, _ *model.PushSubscription) error {
-	return nil
-}
-func (m *mockPushUseCaseForStatusUpdate) SendNotification(_ context.Context, _ int, _ any) error {
+func (m *mockPushUseCaseForStatusUpdate) Execute(_ context.Context, _ int, _ any) error {
 	return nil
 }
 

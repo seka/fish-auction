@@ -55,7 +55,8 @@ type UseCase interface {
 	NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase
 	NewVerifyAdminResetTokenUseCase() admin.VerifyResetTokenUseCase
 	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
-	NewPushNotificationUseCase() notification.PushNotificationUseCase
+	NewSubscribeNotificationUseCase() notification.SubscribeNotificationUseCase
+	NewPublishNotificationUseCase() notification.PublishNotificationUseCase
 }
 
 type useCaseRegistry struct {
@@ -105,7 +106,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 		u.repo.NewBuyerRepository(),
 		u.repo.NewBidRepository(),
 		u.repo.NewAuctionRepository(),
-		u.NewPushNotificationUseCase(),
+		u.NewPublishNotificationUseCase(),
 		u.repo.NewTransactionManager(),
 		u.repo.NewItemCacheInvalidator(),
 	)
@@ -203,7 +204,7 @@ func (u *useCaseRegistry) NewUpdateAuctionStatusUseCase() auction.UpdateAuctionS
 	return auction.NewUpdateAuctionStatusUseCase(
 		u.repo.NewAuctionRepository(),
 		u.repo.NewBuyerRepository(),
-		u.NewPushNotificationUseCase(),
+		u.NewPublishNotificationUseCase(),
 	)
 }
 
@@ -263,8 +264,12 @@ func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseC
 	)
 }
 
-func (u *useCaseRegistry) NewPushNotificationUseCase() notification.PushNotificationUseCase {
-	return notification.NewPushNotificationUseCase(
+func (u *useCaseRegistry) NewSubscribeNotificationUseCase() notification.SubscribeNotificationUseCase {
+	return notification.NewSubscribeNotificationUseCase(u.repo.NewPushRepository())
+}
+
+func (u *useCaseRegistry) NewPublishNotificationUseCase() notification.PublishNotificationUseCase {
+	return notification.NewPublishNotificationUseCase(
 		u.repo.NewPushRepository(),
 		u.service.NewPushNotificationService(),
 	)

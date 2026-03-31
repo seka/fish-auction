@@ -14,8 +14,6 @@ import (
 type CreateAdminUseCase interface {
 	// Execute creates a new admin with the given email and password.
 	Execute(ctx context.Context, email, password string) (*model.Admin, error)
-	// Count returns the total number of admins.
-	Count(ctx context.Context) (int, error)
 }
 
 type createAdminUseCase struct {
@@ -62,12 +60,4 @@ func (u *createAdminUseCase) Execute(ctx context.Context, email, password string
 	}
 
 	return admin, nil
-}
-
-func (u *createAdminUseCase) Count(ctx context.Context) (int, error) {
-	count, err := u.adminRepo.Count(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("failed to count admins: %w", err)
-	}
-	return count, nil
 }

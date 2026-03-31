@@ -5,11 +5,22 @@ import (
 	"fmt"
 	"log"
 
+	"time"
+
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/usecase"
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
+)
+
+const (
+	// AuctionExtensionThreshold is the time remaining before the auction ends
+	// during which a new bid will trigger an extension.
+	AuctionExtensionThreshold = 5 * time.Minute
+
+	// AuctionExtensionDuration is the duration by which the auction will be
+	// extended when ShouldExtend is true.
+	AuctionExtensionDuration = 5 * time.Minute
 )
 
 // CreateBidUseCase defines the interface for creating a bid.
@@ -19,13 +30,13 @@ type CreateBidUseCase interface {
 }
 
 type createBidUseCase struct {
-	itemRepo     repository.ItemRepository
-	buyerRepo    repository.BuyerRepository
-	bidRepo      repository.BidRepository
-	auctionRepo  repository.AuctionRepository
-	pushUseCase  notification.PushNotificationUseCase
-	txMgr        repository.TransactionManager
-	itemCacheInv repository.CacheInvalidator
+	itemRepo                   repository.ItemRepository
+	buyerRepo                  repository.BuyerRepository
+	bidRepo                    repository.BidRepository
+	auctionRepo                repository.AuctionRepository
+	publishNotificationUseCase notification.PublishNotificationUseCase
+	txMgr                      repository.TransactionManager
+	itemCacheInv               repository.CacheInvalidator
 }
 
 var _ CreateBidUseCase = (*createBidUseCase)(nil)
@@ -36,18 +47,18 @@ func NewCreateBidUseCase(
 	buyerRepo repository.BuyerRepository,
 	bidRepo repository.BidRepository,
 	auctionRepo repository.AuctionRepository,
-	pushUseCase notification.PushNotificationUseCase,
+	publishNotificationUseCase notification.PublishNotificationUseCase,
 	txMgr repository.TransactionManager,
 	itemCacheInv repository.CacheInvalidator,
 ) CreateBidUseCase {
 	return &createBidUseCase{
-		itemRepo:     itemRepo,
-		buyerRepo:    buyerRepo,
-		bidRepo:      bidRepo,
-		auctionRepo:  auctionRepo,
-		pushUseCase:  pushUseCase,
-		txMgr:        txMgr,
-		itemCacheInv: itemCacheInv,
+		itemRepo:                   itemRepo,
+		buyerRepo:                  buyerRepo,
+		bidRepo:                    bidRepo,
+		auctionRepo:                auctionRepo,
+		publishNotificationUseCase: publishNotificationUseCase,
+		txMgr:                      txMgr,
+		itemCacheInv:               itemCacheInv,
 	}
 }
 
@@ -208,8 +219,8 @@ func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *
 	tz := model.NewTimeZone(model.LocationJST)
 	now := tz.Now()
 
-	if auction.Period.ShouldExtend(now, usecase.AuctionExtensionThreshold) {
-		auction.Period = auction.Period.Extend(usecase.AuctionExtensionDuration)
+	if auction.Period.ShouldExtend(now, AuctionExtensionThreshold) {
+		auction.Period = auction.Period.Extend(AuctionExtensionDuration)
 
 		if err := uc.auctionRepo.Update(ctx, auction); err != nil {
 			return fmt.Errorf("failed to extend auction: %w", err)
@@ -231,6 +242,9 @@ func (uc *createBidUseCase) notifyOutbid(ctx context.Context, bid *model.Bid, it
 			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price.Amount()),
 			"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
 		}
-		_ = uc.pushUseCase.SendNotification(ctx, *item.HighestBidderID, payload)
+		if err := uc.publishNotificationUseCase.Execute(ctx, *item.HighestBidderID, payload); err != nil {
+			// 通知失敗はログ出力のみ行い、全体の処理に影響を与えない
+			log.Printf("failed to send notification for outbid: %v", err)
+		}
 	}
 }

@@ -5,43 +5,35 @@ import (
 	"errors"
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
-	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
-// PushNotificationUseCase defines the interface for push notifications.
-type PushNotificationUseCase interface {
-	// Subscribe saves a push subscription for a buyer.
-	Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error
-	// SendNotification sends a notification to a buyer.
-	SendNotification(ctx context.Context, buyerID int, payload any) error
+// PublishNotificationUseCase defines the interface for publish notifications.
+type PublishNotificationUseCase interface {
+	// Execute sends a notification to a buyer.
+	Execute(ctx context.Context, buyerID int, payload any) error
 }
 
-type pushNotificationUseCase struct {
+type publishNotificationUseCase struct {
 	repo                    repository.PushRepository
 	pushNotificationService service.PushNotificationService
 }
 
-var _ PushNotificationUseCase = (*pushNotificationUseCase)(nil)
+var _ PublishNotificationUseCase = (*publishNotificationUseCase)(nil)
 
-// NewPushNotificationUseCase creates a new instance of PushNotificationUseCase.
-func NewPushNotificationUseCase(
+// NewPublishNotificationUseCase creates a new instance of PublishNotificationUseCase.
+func NewPublishNotificationUseCase(
 	repo repository.PushRepository,
 	pushNotificationService service.PushNotificationService,
-) PushNotificationUseCase {
-	return &pushNotificationUseCase{
+) PublishNotificationUseCase {
+	return &publishNotificationUseCase{
 		repo:                    repo,
 		pushNotificationService: pushNotificationService,
 	}
 }
 
-func (uc *pushNotificationUseCase) Subscribe(ctx context.Context, buyerID int, sub *model.PushSubscription) error {
-	sub.BuyerID = buyerID
-	return uc.repo.SaveSubscription(ctx, sub)
-}
-
-func (uc *pushNotificationUseCase) SendNotification(ctx context.Context, buyerID int, payload any) error {
+func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, payload any) error {
 	subs, err := uc.repo.GetSubscriptionsByBuyerID(ctx, buyerID)
 	if err != nil {
 		return err
