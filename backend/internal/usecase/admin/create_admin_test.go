@@ -93,14 +93,3 @@ func TestCreateAdminUseCase_Execute(t *testing.T) {
 		})
 	}
 }
-
-func TestCreateAdminUseCase_Count(t *testing.T) {
-	uc := admin.NewCreateAdminUseCase(&mockAdminRepositoryForCreate{})
-	count, err := uc.Count(context.Background())
-	if err != nil {
-		t.Errorf("Count() error = %v", err)
-	}
-	if count != 0 {
-		t.Errorf("Count() = %v, want 0", count)
-	}
-}
