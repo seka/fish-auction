@@ -534,8 +534,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			notificationCalled := false
-			mockPushUseCase := &mock.MockPushNotificationUseCase{
-				SendNotificationFunc: func(_ context.Context, _ int, _ any) error {
+			mockPushUseCase := &mock.MockPublishNotificationUseCase{
+				ExecuteFunc: func(_ context.Context, _ int, _ any) error {
 					notificationCalled = true
 					return nil
 				},

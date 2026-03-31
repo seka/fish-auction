@@ -17,8 +17,8 @@ import (
 
 func TestPushHandler_Subscribe(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		mockPushUC := &mock.MockPushNotificationUseCase{
-			SubscribeFunc: func(_ context.Context, buyerID int, sub *model.PushSubscription) error {
+		mockSubscribeUC := &mock.MockSubscribeNotificationUseCase{
+			ExecuteFunc: func(_ context.Context, buyerID int, sub *model.PushSubscription) error {
 				if buyerID != 1 {
 					t.Errorf("expected buyerID 1, got %d", buyerID)
 				}
@@ -28,7 +28,7 @@ func TestPushHandler_Subscribe(t *testing.T) {
 				return nil
 			},
 		}
-		mockReg := &mock.MockRegistry{PushNotificationUC: mockPushUC}
+		mockReg := &mock.MockRegistry{SubscribeNotificationUC: mockSubscribeUC}
 		h := buyer.NewPushHandler(mockReg)
 
 		reqBody := request.SubscribePush{
