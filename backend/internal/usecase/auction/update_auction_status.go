@@ -14,25 +14,23 @@ type UpdateAuctionStatusUseCase interface {
 	Execute(ctx context.Context, id int, status model.AuctionStatus) error
 }
 
-// UpdateAuctionStatusUseCase handles updating auction status
 type updateAuctionStatusUseCase struct {
-	auctionRepo repository.AuctionRepository
-	buyerRepo   repository.BuyerRepository
-	pushUseCase notification.PushNotificationUseCase
+	auctionRepo                repository.AuctionRepository
+	buyerRepo                  repository.BuyerRepository
+	publishNotificationUseCase notification.PublishNotificationUseCase
 }
 
 var _ UpdateAuctionStatusUseCase = (*updateAuctionStatusUseCase)(nil)
 
-// NewUpdateAuctionStatusUseCase creates a new instance of UpdateAuctionStatusUseCase
 func NewUpdateAuctionStatusUseCase(
 	auctionRepo repository.AuctionRepository,
 	buyerRepo repository.BuyerRepository,
-	pushNotification notification.PushNotificationUseCase,
+	publishNotification notification.PublishNotificationUseCase,
 ) UpdateAuctionStatusUseCase {
 	return &updateAuctionStatusUseCase{
-		auctionRepo: auctionRepo,
-		buyerRepo:   buyerRepo,
-		pushUseCase: pushNotification,
+		auctionRepo:                auctionRepo,
+		buyerRepo:                  buyerRepo,
+		publishNotificationUseCase: publishNotification,
 	}
 }
 
@@ -65,7 +63,7 @@ func (uc *updateAuctionStatusUseCase) Execute(ctx context.Context, id int, statu
 			}
 
 			for _, b := range buyers {
-				_ = uc.pushUseCase.SendNotification(ctx, b.ID, payload)
+				_ = uc.publishNotificationUseCase.Execute(ctx, b.ID, payload)
 			}
 		}
 	}

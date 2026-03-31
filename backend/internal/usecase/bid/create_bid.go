@@ -19,13 +19,13 @@ type CreateBidUseCase interface {
 }
 
 type createBidUseCase struct {
-	itemRepo     repository.ItemRepository
-	buyerRepo    repository.BuyerRepository
-	bidRepo      repository.BidRepository
-	auctionRepo  repository.AuctionRepository
-	pushUseCase  notification.PushNotificationUseCase
-	txMgr        repository.TransactionManager
-	itemCacheInv repository.CacheInvalidator
+	itemRepo                   repository.ItemRepository
+	buyerRepo                  repository.BuyerRepository
+	bidRepo                    repository.BidRepository
+	auctionRepo                repository.AuctionRepository
+	publishNotificationUseCase notification.PublishNotificationUseCase
+	txMgr                      repository.TransactionManager
+	itemCacheInv               repository.CacheInvalidator
 }
 
 var _ CreateBidUseCase = (*createBidUseCase)(nil)
@@ -36,18 +36,18 @@ func NewCreateBidUseCase(
 	buyerRepo repository.BuyerRepository,
 	bidRepo repository.BidRepository,
 	auctionRepo repository.AuctionRepository,
-	pushUseCase notification.PushNotificationUseCase,
+	publishNotificationUseCase notification.PublishNotificationUseCase,
 	txMgr repository.TransactionManager,
 	itemCacheInv repository.CacheInvalidator,
 ) CreateBidUseCase {
 	return &createBidUseCase{
-		itemRepo:     itemRepo,
-		buyerRepo:    buyerRepo,
-		bidRepo:      bidRepo,
-		auctionRepo:  auctionRepo,
-		pushUseCase:  pushUseCase,
-		txMgr:        txMgr,
-		itemCacheInv: itemCacheInv,
+		itemRepo:                   itemRepo,
+		buyerRepo:                  buyerRepo,
+		bidRepo:                    bidRepo,
+		auctionRepo:                auctionRepo,
+		publishNotificationUseCase: publishNotificationUseCase,
+		txMgr:                      txMgr,
+		itemCacheInv:               itemCacheInv,
 	}
 }
 
@@ -231,6 +231,6 @@ func (uc *createBidUseCase) notifyOutbid(ctx context.Context, bid *model.Bid, it
 			"body":  fmt.Sprintf("%s の価格が %d 円に更新されました。", item.FishType, bid.Price.Amount()),
 			"url":   fmt.Sprintf("/auctions/%d", item.AuctionID),
 		}
-		_ = uc.pushUseCase.SendNotification(ctx, *item.HighestBidderID, payload)
+		_ = uc.publishNotificationUseCase.Execute(ctx, *item.HighestBidderID, payload)
 	}
 }

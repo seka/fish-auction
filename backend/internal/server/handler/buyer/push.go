@@ -15,13 +15,13 @@ import (
 
 // PushHandler handles buyer HTTP requests related to push notifications.
 type PushHandler struct {
-	pushUseCase notification.PushNotificationUseCase
+	subscribeUseCase notification.SubscribeNotificationUseCase
 }
 
 // NewPushHandler creates a new PushHandler instance.
 func NewPushHandler(r registry.UseCase) *PushHandler {
 	return &PushHandler{
-		pushUseCase: r.NewPushNotificationUseCase(),
+		subscribeUseCase: r.NewSubscribeNotificationUseCase(),
 	}
 }
 
@@ -46,7 +46,7 @@ func (h *PushHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 		Auth:     req.Keys.Auth,
 	}
 
-	if err := h.pushUseCase.Subscribe(r.Context(), buyerID, sub); err != nil {
+	if err := h.subscribeUseCase.Execute(r.Context(), buyerID, sub); err != nil {
 		util.HandleError(w, err)
 		return
 	}
