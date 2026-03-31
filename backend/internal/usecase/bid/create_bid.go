@@ -8,8 +8,18 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/usecase"
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
+	"time"
+)
+
+const (
+	// AuctionExtensionThreshold is the time remaining before the auction ends
+	// during which a new bid will trigger an extension.
+	AuctionExtensionThreshold = 5 * time.Minute
+
+	// AuctionExtensionDuration is the duration by which the auction will be
+	// extended when ShouldExtend is true.
+	AuctionExtensionDuration = 5 * time.Minute
 )
 
 // CreateBidUseCase defines the interface for creating a bid.
@@ -208,8 +218,8 @@ func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *
 	tz := model.NewTimeZone(model.LocationJST)
 	now := tz.Now()
 
-	if auction.Period.ShouldExtend(now, usecase.AuctionExtensionThreshold) {
-		auction.Period = auction.Period.Extend(usecase.AuctionExtensionDuration)
+	if auction.Period.ShouldExtend(now, AuctionExtensionThreshold) {
+		auction.Period = auction.Period.Extend(AuctionExtensionDuration)
 
 		if err := uc.auctionRepo.Update(ctx, auction); err != nil {
 			return fmt.Errorf("failed to extend auction: %w", err)
