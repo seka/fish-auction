@@ -1,12 +1,5 @@
-import { InvoiceItem as EntityInvoiceItem } from '@entities/invoice';
 import { useInvoiceQuery } from '@/src/data/queries/adminInvoice/useQuery';
-import { InvoiceItem } from '../types/invoice';
-
-export const toInvoice = (entity: EntityInvoiceItem): InvoiceItem => ({
-  buyerId: entity.buyerId,
-  buyerName: entity.buyerName,
-  totalAmount: entity.totalAmount,
-});
+import { toInvoice } from '../types/invoice';
 
 /**
  * 管理画面用の請求書一覧クエリフック

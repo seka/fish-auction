@@ -1,12 +1,6 @@
-import { Buyer as EntityBuyer } from '@entities/admin';
 import { useBuyerQuery } from '@/src/data/queries/adminBuyer/useQuery';
 import { useBuyerMutation } from '@/src/data/queries/adminBuyer/useMutation';
-import { Buyer } from '../types/buyer';
-
-export const toBuyer = (entity: EntityBuyer): Buyer => ({
-  id: entity.id,
-  name: entity.name,
-});
+import { toBuyer } from '../types/buyer';
 
 /**
  * 管理画面用買受人クエリフック

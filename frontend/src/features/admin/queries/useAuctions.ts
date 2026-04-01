@@ -1,18 +1,6 @@
-import { Auction as EntityAuction } from '@entities/auction';
 import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
 import { useAuctionMutation } from '@/src/data/queries/adminAuction/useMutation';
-import { Auction } from '../types/auction';
-
-export const toAuction = (entity: EntityAuction): Auction => ({
-  id: entity.id,
-  venueId: entity.venueId,
-  auctionDate: entity.auctionDate,
-  startTime: entity.startTime ?? null,
-  endTime: entity.endTime ?? null,
-  status: entity.status,
-  createdAt: entity.createdAt,
-  updatedAt: entity.updatedAt,
-});
+import { toAuction } from '../types';
 
 /**
  * 管理画面用オークションクエリフック

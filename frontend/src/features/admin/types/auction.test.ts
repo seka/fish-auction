@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { toAuction } from './useAuctions';
 import { Auction as EntityAuction } from '@entities/auction';
+import { toAuction } from './auction';
 
-describe('admin/queries/useAuctions mapping', () => {
+describe('admin/types/auction toAuction', () => {
   it('should map EntityAuction to Admin Auction model correctly', () => {
     const entity: EntityAuction = {
       id: 1,

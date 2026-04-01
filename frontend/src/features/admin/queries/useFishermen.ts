@@ -1,12 +1,6 @@
-import { Fisherman as EntityFisherman } from '@entities/admin';
 import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
 import { useFishermanMutation } from '@/src/data/queries/adminFisherman/useMutation';
-import { Fisherman } from '../types/fisherman';
-
-export const toFisherman = (entity: EntityFisherman): Fisherman => ({
-  id: entity.id,
-  name: entity.name,
-});
+import { toFisherman } from '../types/fisherman';
 
 /**
  * 管理画面用漁師クエリフック
