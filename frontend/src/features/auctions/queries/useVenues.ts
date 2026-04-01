@@ -1,14 +1,5 @@
 import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
-import { Venue as EntityVenue } from '@entities/venue';
-import { Venue } from '../types';
-
-export const toVenue = (entity: EntityVenue): Venue => ({
-  id: entity.id,
-  name: entity.name,
-  location: entity.location,
-  description: entity.description,
-  createdAt: entity.createdAt,
-});
+import { toVenue } from '../types/venue';
 
 /**
  * オークション一覧用 会場クエリフック

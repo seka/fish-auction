@@ -1,8 +1,8 @@
 import { useAuctionDetailQuery } from '@/src/data/queries/publicAuction/useQuery';
 import { useItemsByAuction } from '@/src/data/queries/publicItem/useQuery';
 import { useBidMutation } from '@/src/data/queries/buyerAuction/useMutation';
-import { isAuctionActive } from '@domain/auction';
-import { toAuction, toAuctionItem } from './transformers';
+import { toAuction } from '../types/auction';
+import { toAuctionItem } from '../types/item';
 
 /**
  * オークション詳細クエリフック
@@ -10,10 +10,7 @@ import { toAuction, toAuctionItem } from './transformers';
  */
 export const useAuctionDetailData = (auctionId: number) => {
   const { data: auction, isLoading: isAuctionLoading } = useAuctionDetailQuery(auctionId, {
-    select: (data) => ({
-      ...toAuction(data),
-      isActive: isAuctionActive(data),
-    }),
+    select: toAuction,
   });
   
   const { data: items, isLoading: isItemsLoading, refetch: refetchItems } = useItemsByAuction(auctionId, {
