@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLogin } from '../states/useLogin';
-import { LoginForm } from './LoginForm';
+import { useLogin } from '@/src/features/login/states/useLogin';
+import { LoginForm } from '@/src/features/login/components/LoginForm';
 import { LoginFormData } from '@schemas/auth';
 import { Box } from '@atoms';
 import { useTranslations } from 'next-intl';

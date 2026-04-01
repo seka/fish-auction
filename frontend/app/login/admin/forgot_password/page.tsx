@@ -1,6 +1,6 @@
 'use client';
 
-import { AdminForgotPasswordContainer } from '@/src/features/login';
+import { AdminForgotPasswordContainer } from './components/AdminForgotPasswordContainer';
 
 export default function AdminForgotPasswordPage() {
   return <AdminForgotPasswordContainer />;

@@ -1,7 +1,7 @@
 'use client';
 
-import { PublicResetPasswordContainer } from '@/src/features/login';
+import { PublicResetPasswordContainer } from './components/PublicResetPasswordContainer';
 
-export default function PublicResetPasswordPage() {
+export default function ResetPasswordPage() {
   return <PublicResetPasswordContainer />;
 }

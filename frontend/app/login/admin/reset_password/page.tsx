@@ -1,6 +1,6 @@
 'use client';
 
-import { AdminResetPasswordContainer } from '@/src/features/login';
+import { AdminResetPasswordContainer } from './components/AdminResetPasswordContainer';
 
 export default function AdminResetPasswordPage() {
   return <AdminResetPasswordContainer />;

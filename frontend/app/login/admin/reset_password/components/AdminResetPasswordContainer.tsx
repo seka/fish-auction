@@ -4,19 +4,18 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  confirmPasswordReset,
-  verifyResetToken,
+  verifyAdminResetToken,
+  confirmAdminPasswordReset,
   ResetPasswordConfirmRequest,
-} from '@/src/data/api/auth_reset';
+} from '@/src/data/api/admin_auth_reset';
 import { Box, Text } from '@atoms';
 import { useTranslations } from 'next-intl';
-import { PublicResetPasswordForm } from './PublicResetPassword/PublicResetPasswordForm';
-import { PublicResetPasswordStatus } from './PublicResetPassword/PublicResetPasswordStatus';
+import { AdminResetPasswordForm, AdminResetPasswordStatus } from '@/src/features/login/components';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getResetPasswordSchema } from '@schemas/password';
 
-const PublicResetPasswordContent = () => {
+const AdminResetPasswordContent = () => {
   const t = useTranslations();
   const tValidation = useTranslations('Validation');
   const router = useRouter();
@@ -44,7 +43,7 @@ const PublicResetPasswordContent = () => {
 
     const verify = async () => {
       try {
-        await verifyResetToken({ token });
+        await verifyAdminResetToken({ token });
         setIsValidToken(true);
       } catch (error) {
         console.error('Invalid token', error);
@@ -61,7 +60,7 @@ const PublicResetPasswordContent = () => {
   ) => {
     if (!token) return;
     try {
-      await confirmPasswordReset({ token, new_password: data.new_password });
+      await confirmAdminPasswordReset({ token, new_password: data.new_password });
       setIsComplete(true);
     } catch (error) {
       console.error('Failed to reset password', error);
@@ -69,11 +68,11 @@ const PublicResetPasswordContent = () => {
     }
   };
 
-  const handleBackToRequest = () => router.push('/login/forgot_password');
-  const handleBackToLogin = () => router.push('/login/buyer');
+  const handleBackToRequest = () => router.push('/login/admin/forgot_password');
+  const handleBackToLogin = () => router.push('/login');
 
   if (isVerifying) {
-    return <PublicResetPasswordStatus type="verifying" t={t} />;
+    return <AdminResetPasswordStatus type="verifying" t={t} />;
   }
 
   return (
@@ -82,15 +81,15 @@ const PublicResetPasswordContent = () => {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      bg="gray.50"
+      bg="gray.100"
       p="4"
     >
       {!token || !isValidToken ? (
-        <PublicResetPasswordStatus type="invalid" onButtonClick={handleBackToRequest} t={t} />
+        <AdminResetPasswordStatus type="invalid" onButtonClick={handleBackToRequest} t={t} />
       ) : isComplete ? (
-        <PublicResetPasswordStatus type="complete" onButtonClick={handleBackToLogin} t={t} />
+        <AdminResetPasswordStatus type="complete" onButtonClick={handleBackToLogin} t={t} />
       ) : (
-        <PublicResetPasswordForm
+        <AdminResetPasswordForm
           register={register}
           handleSubmit={handleSubmit}
           onSubmit={onSubmit}
@@ -103,7 +102,7 @@ const PublicResetPasswordContent = () => {
   );
 };
 
-export const PublicResetPasswordContainer = () => {
+export const AdminResetPasswordContainer = () => {
   const t = useTranslations();
   return (
     <Suspense
@@ -113,7 +112,7 @@ export const PublicResetPasswordContainer = () => {
         </Box>
       }
     >
-      <PublicResetPasswordContent />
+      <AdminResetPasswordContent />
     </Suspense>
   );
 };

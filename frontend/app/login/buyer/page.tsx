@@ -1,6 +1,6 @@
 'use client';
 
-import { BuyerLoginContainer } from '@/src/features/login';
+import { BuyerLoginContainer } from './components/BuyerLoginContainer';
 
 export default function BuyerLoginPage() {
   return <BuyerLoginContainer />;

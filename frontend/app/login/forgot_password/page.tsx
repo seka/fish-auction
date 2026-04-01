@@ -1,7 +1,7 @@
 'use client';
 
-import { PublicForgotPasswordContainer } from '@/src/features/login';
+import { PublicForgotPasswordContainer } from './components/PublicForgotPasswordContainer';
 
-export default function PublicForgotPasswordPage() {
+export default function ForgotPasswordPage() {
   return <PublicForgotPasswordContainer />;
 }
