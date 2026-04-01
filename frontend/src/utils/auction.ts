@@ -1,4 +1,4 @@
-import { AuctionStatus } from '@/src/types/auction';
+export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 
 interface AuctionLike {
   status: AuctionStatus;
