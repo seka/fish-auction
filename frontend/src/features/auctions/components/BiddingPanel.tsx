@@ -4,7 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { BidFormData } from '@schemas/auction';
 import { AuctionItem, Auction } from '../types';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
-import { ItemStatusBadge } from '@molecules';
+import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
 import { formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
 

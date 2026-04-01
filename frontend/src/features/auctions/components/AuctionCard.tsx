@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Box, HStack, Text, Card, Stack } from '@atoms';
-import { AuctionStatusBadge } from '@molecules';
+import { AuctionStatusBadge } from './AuctionStatusBadge';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { Auction } from '../types';

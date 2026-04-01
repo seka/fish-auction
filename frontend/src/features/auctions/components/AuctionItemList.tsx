@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Text, Stack, Card, HStack } from '@atoms';
-import { ItemStatusBadge } from '@molecules';
+import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
 import { AuctionItem } from '../types';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Card, HStack, Text, Button, Stack, EmptyState } from '@atoms';
-import { AuctionStatusBadge } from '@molecules';
+import { AuctionStatusBadge } from './AuctionStatusBadge';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';

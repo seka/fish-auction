@@ -1,7 +1,8 @@
 'use client';
 
 import { Button, HStack, Text } from '@atoms';
-import { Tr, Td, AuctionStatusBadge } from '@molecules';
+import { Tr, Td } from '@molecules';
+import { AuctionStatusBadge } from '../AuctionStatusBadge';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
 import { Auction, Venue } from '../../types';
