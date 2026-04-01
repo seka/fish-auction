@@ -14,8 +14,8 @@ description: Use when working in fish-auction and you need to decide which files
 ## Project map
 
 - 構成は Next.js フロントエンドと Go バックエンドの 2 層
-- `frontend/app`: App Router のルーティングと画面入口
-- `frontend/src/features`: 機能単位の UI / state / query
+- `frontend/app`: App Router のルーティングとページ構成（Container）
+- `frontend/src/features`: 再利用可能なドメイン固有の UI / state / query
 - `frontend/src/data`: API 呼び出しと TanStack Query の共有層
 - `frontend/src/core`: API クライアント、i18n、スタイルなどの他に依存関係のない開発の基盤
 - `backend/internal/server`: handler / dto / middleware
@@ -44,7 +44,8 @@ description: Use when working in fish-auction and you need to decide which files
 
 ## File selection rules
 
-- 画面表示だけの変更: `frontend/src/features/*/components` か `frontend/src/components`
+- 画面全体の構成（ページ固有）：`frontend/app/**/components` (Container)
+- 画面表示の詳細（ドメイン部品）：`frontend/src/features/*/components` か `frontend/src/components`
 - フロントの送受信変更: `frontend/src/data/api`, `frontend/src/data/queries`, `frontend/src/data/entities`, `frontend/src/features/*/types`
 - API の入出力変更: `backend/internal/server/dto`, `backend/internal/server/handler`
 - 業務ルール変更: `backend/internal/usecase`

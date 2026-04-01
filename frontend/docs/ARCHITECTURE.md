@@ -13,9 +13,10 @@
 
 ## レイヤー構造
 
-### 1. Presentation Layer (`src/components`, `src/features/*/components`)
+### 1. Presentation Layer (`app/**`, `src/features/*/components`)
 - **Atomic Design** をベースにしたコンポーネント構成。
-- 共有パーツは `src/components`、機能特有のパーツは `src/features/*/components` に配置します。
+- **Page Layer (`app/**`)**: route と page の入口。ページ全体の構成（Orchestration）を担う `Container` コンポーネントを `app/**/components/` に配置します。
+- **Feature Layer (`src/features/*/components`)**: 再利用可能なドメイン固有の UI 部品（Widgets）。List, Form, Card など。
 - `Atoms` / `Molecules` はドメイン知識を持たない純粋な UI 担い、`Organisms` 以上でドメイン知識を注入します。
 
 ### 2. Logic Layer (`src/features/*/states`)

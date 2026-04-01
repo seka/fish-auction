@@ -13,10 +13,10 @@ description: Use when changing the fish-auction frontend built with Next.js, Rea
 
 ## Layer rules
 
-- `frontend/app`: route と page の入口
-- `frontend/src/features/*/components`: 機能固有の UI
-- `frontend/src/components`: 複数機能で共有する UI
-- `frontend/src/features/*/states`: UI ロジックや hook
+- `frontend/app/*/components`: Container (Page orchestration) components
+- `frontend/src/features/*/components`: Domain-specific UI widgets (List, Form, etc.)
+- `frontend/src/components`: UI components shared across multiple features
+- `frontend/src/features/*/states`: UI logic or domain-specific hooks
 - `frontend/src/features/*/queries`: 機能固有の query / mutation (データの型変換・キャストを行う境界)
 - `frontend/src/features/*/types`: 機能固有の型定義（ドメインモデル + UI型）
 - `frontend/src/data/api`: バックエンド API との 1 対 1 通信 (apiClient)
@@ -58,4 +58,4 @@ hook 名は feature により異なる。`useXXXManagement` に固定せず、`u
 
 ## Working rule
 
-フロント変更では、まず同じ feature の隣接実装を 2〜3 ファイル読む。新しい抽象化を作る前に、既存の query key、schema、container 構成に寄せる。
+フロント変更では、まず同じ feature の隣接実装を 2〜3 ファイル読む。新しいページ要素を追加する場合は `app/**/components/` に Container を作成し、`src/features/**/components` から提供される再利用可能なコンポーネントや `queries`, `states` と組み合わせてオーケストレーションを行う。
