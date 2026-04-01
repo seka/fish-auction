@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toAuction } from './usePublicAuctions';
+import { toAuction } from './transformers';
 import { Auction as EntityAuction } from '@entities/auction';
 
 describe('auctions/queries/usePublicAuctions mapping', () => {
