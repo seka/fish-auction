@@ -1,7 +1,7 @@
 import { useAuctionDetailQuery } from '@/src/data/queries/publicAuction/useQuery';
 import { useItemsByAuction } from '@/src/data/queries/publicItem/useQuery';
 import { useBidMutation } from '@/src/data/queries/buyerAuction/useMutation';
-import { isAuctionActive } from '@/src/utils/auction';
+import { isAuctionActive } from '@domain/auction';
 import { toAuction, toAuctionItem } from './transformers';
 
 /**

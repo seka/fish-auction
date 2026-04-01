@@ -34,6 +34,7 @@
       "@schemas/*": ["./src/schemas/*"],
       "@schemas": ["./src/schemas"],
       "@testings/*": ["./src/testings/*"],
+      "@domain/*": ["./src/core/domain/*"],
       "styled-system/*": ["./src/libs/styled-system/*"]
     }
   },

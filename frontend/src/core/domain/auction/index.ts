@@ -1,6 +1,6 @@
 export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 
-interface AuctionLike {
+export interface AuctionLike {
   status: AuctionStatus;
   auctionDate: string;
   startTime?: string | null;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { isAuctionActive } from './auction';
+import { isAuctionActive } from './index';
 
 describe('isAuctionActive', () => {
   beforeEach(() => {

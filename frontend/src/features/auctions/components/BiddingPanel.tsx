@@ -6,7 +6,7 @@ import { AuctionItem, Auction } from '../types';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
 import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
-import { formatTime, getMinimumBidIncrement } from '@/src/utils/auction';
+import { formatTime, getMinimumBidIncrement } from '@domain/auction';
 
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
