@@ -1,3 +1,5 @@
+import { AuctionSummary } from '@/src/data/api/buyer_mypage';
+
 export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface Auction {
@@ -7,3 +9,13 @@ export interface Auction {
   startTime: string | null;
   endTime: string | null;
 }
+
+export const toAuction = (entity: AuctionSummary): Auction => {
+  return {
+    id: entity.id,
+    status: entity.status,
+    auctionDate: entity.auctionDate,
+    startTime: entity.startTime ?? null,
+    endTime: entity.endTime ?? null,
+  };
+};
