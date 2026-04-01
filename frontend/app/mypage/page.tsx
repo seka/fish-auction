@@ -1,6 +1,6 @@
 'use client';
 
-import { MyPageContainer } from '@/src/features/mypage';
+import { MyPageContainer } from './components/MyPageContainer';
 
 export default function MyPage() {
   return <MyPageContainer />;

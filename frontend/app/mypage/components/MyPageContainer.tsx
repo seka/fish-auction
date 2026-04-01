@@ -3,12 +3,9 @@
 import { Box, HStack, Text, Button } from '@atoms';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
-import { PurchaseHistory } from './PurchaseHistory';
-import { ParticipatingAuctions } from './ParticipatingAuctions';
-import { SettingsForm } from './SettingsForm';
-
-import { useMyPage } from '../states/useMyPage';
-import { MyPageTab } from '../types';
+import { PurchaseHistory, ParticipatingAuctions, SettingsForm } from '@/src/features/mypage/components';
+import { useMyPage } from '@/src/features/mypage/states/useMyPage';
+import { MyPageTab } from '@/src/features/mypage/types';
 
 export const MyPageContainer = () => {
   const {

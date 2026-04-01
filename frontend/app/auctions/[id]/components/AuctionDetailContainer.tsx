@@ -1,11 +1,8 @@
 'use client';
 
-import { useAuctionDetail } from '../states/useAuctionDetail';
-import { AuctionHeader } from './AuctionHeader';
-import { BuyerLoginForm } from '../../login';
-import { AuctionUsageGuide } from './AuctionUsageGuide';
-import { AuctionItemList } from './AuctionItemList';
-import { BiddingPanel } from './BiddingPanel';
+import { useAuctionDetail } from '@/src/features/auctions/states/useAuctionDetail';
+import { AuctionHeader, AuctionUsageGuide, AuctionItemList, BiddingPanel } from '@/src/features/auctions/components';
+import { BuyerLoginForm } from '@/src/features/login';
 import { Box, Text, Card } from '@atoms';
 import { css } from 'styled-system/css';
 

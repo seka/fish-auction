@@ -1,7 +1,7 @@
 'use client';
 
-import { AuctionsContainer } from '@/src/features/auctions';
+import { AuctionsContainer } from './components/AuctionsContainer';
 
-export default function AuctionsListPage() {
+export default function AuctionsPage() {
   return <AuctionsContainer />;
 }

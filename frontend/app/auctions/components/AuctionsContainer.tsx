@@ -4,10 +4,9 @@ import { Box, Stack, HStack, Text } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { AuctionsList } from './AuctionsList';
-import { usePublicAuctions } from '../queries/usePublicAuctions';
-import { useVenues } from '../queries/useVenues';
-import { Auction } from '../types';
+import { AuctionsList } from '@/src/features/auctions/components';
+import { usePublicAuctions, useVenues } from '@/src/features/auctions/queries';
+import { Auction } from '@/src/features/auctions/types';
 
 export const AuctionsContainer = () => {
   const t = useTranslations();

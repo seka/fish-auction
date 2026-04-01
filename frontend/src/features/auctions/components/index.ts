@@ -1,7 +1,5 @@
-export * from './AuctionsContainer';
 export * from './AuctionsList';
 export * from './AuctionCard';
-export * from './AuctionDetailContainer';
 export * from './AuctionHeader';
 export * from './AuctionItemList';
 export * from './BiddingPanel';

@@ -1,10 +1,11 @@
 'use client';
 
-import { use } from 'react';
-import { AuctionDetailContainer } from '@/src/features/auctions';
+import { useParams } from 'next/navigation';
+import { AuctionDetailContainer } from './components/AuctionDetailContainer';
 
-export default function AuctionDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function AuctionDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
 
   return <AuctionDetailContainer id={id} />;
 }

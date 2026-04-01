@@ -16,16 +16,17 @@ vi.mock('next-intl', () => ({
   },
 }));
 
-vi.mock('react', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react')>();
-  return {
-    ...actual,
-    use: (_: unknown) => {
-      // Unwrapping promise for params
-      return { id: '1' };
-    },
-  };
-});
+vi.mock('next/navigation', () => ({
+  useParams: vi.fn(() => ({ id: '1' })),
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+  })),
+  useSearchParams: vi.fn(() => ({
+    get: vi.fn(),
+  })),
+}));
 
 vi.mock('@/src/features/auctions/states/useAuctionDetail', () => ({
   useAuctionDetail: vi.fn(),
@@ -108,7 +109,6 @@ describe('AuctionDetailPage', () => {
     );
   });
 
-  const params = Promise.resolve({ id: '1' });
 
   it('renders loading state', () => {
     vi.mocked(useAuctionDetail).mockReturnValue({
@@ -118,7 +118,7 @@ describe('AuctionDetailPage', () => {
     } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
@@ -131,7 +131,7 @@ describe('AuctionDetailPage', () => {
     } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
     expect(screen.getByText('Public.AuctionDetail.login_title')).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe('AuctionDetailPage', () => {
   it('renders auction details when logged in', () => {
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
     expect(screen.getByText('Public.AuctionDetail.auction_venue_title')).toBeInTheDocument();
@@ -157,7 +157,7 @@ describe('AuctionDetailPage', () => {
 
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
 
@@ -178,7 +178,7 @@ describe('AuctionDetailPage', () => {
     } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
     expect(screen.getByText('Success Message')).toBeInTheDocument();
@@ -192,7 +192,7 @@ describe('AuctionDetailPage', () => {
     } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
@@ -206,7 +206,7 @@ describe('AuctionDetailPage', () => {
     } as unknown as ReturnType<typeof useAuctionDetail>);
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
     expect(screen.getByText('Common.no_data')).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe('AuctionDetailPage', () => {
 
     render(
       <ToastProvider>
-        <AuctionDetailPage params={params} />
+        <AuctionDetailPage />
       </ToastProvider>,
     );
 
