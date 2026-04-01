@@ -1,6 +1,6 @@
 'use client';
 
-import { SettingsManagementContainer } from '@/src/features/admin';
+import { SettingsManagementContainer } from './components/SettingsManagementContainer';
 
 export default function AdminSettingsPage() {
   return <SettingsManagementContainer />;

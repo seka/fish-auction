@@ -1,7 +1,7 @@
 'use client';
 
-import { useSettingsManagement } from '../../states/useSettingsManagement';
-import { PasswordResetForm } from './PasswordResetForm';
+import { useSettingsManagement } from '@/src/features/admin/states/useSettingsManagement';
+import { PasswordResetForm } from '@/src/features/admin/components/SettingsManagement';
 import { Box, Text } from '@atoms';
 import { css } from 'styled-system/css';
 

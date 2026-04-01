@@ -1,13 +1,12 @@
 'use client';
 
-import { useVenueManagement } from '../../states/useVenueManagement';
-import { VenueList } from './VenueList';
-import { VenueForm } from './VenueForm';
+import { useFishermanManagement } from '@/src/features/admin/states/useFishermanManagement';
+import { FishermanList, FishermanForm } from '@/src/features/admin/components/FishermanManagement';
 import { Box, Card, Text } from '@atoms';
 import { css } from 'styled-system/css';
 
-export const VenueManagementContainer = () => {
-  const { state, form, actions, t } = useVenueManagement();
+export const FishermanManagementContainer = () => {
+  const { state, form, actions, t } = useFishermanManagement();
 
   return (
     <Box maxW="5xl" mx="auto" p="6">
@@ -20,7 +19,7 @@ export const VenueManagementContainer = () => {
         borderBottom="1px solid"
         borderColor="gray.200"
       >
-        {t('Admin.Venues.title')}
+        {t('Admin.Fishermen.title')}
       </Text>
 
       {state.message && (
@@ -28,7 +27,7 @@ export const VenueManagementContainer = () => {
           bg="blue.50"
           borderLeft="4px solid"
           borderColor="blue.500"
-          color="blue.700"
+          className={css({ color: 'blue.700' })}
           p="4"
           mb="8"
           borderRadius="sm"
@@ -48,14 +47,7 @@ export const VenueManagementContainer = () => {
       >
         {/* Form Section */}
         <Box className={css({ md: { gridColumn: '1 / 2' } })}>
-          <VenueForm
-            form={form}
-            onSubmit={actions.onSubmit}
-            onCancelEdit={actions.onCancelEdit}
-            isCreating={state.isCreating}
-            isUpdating={state.isUpdating}
-            editingVenue={state.editingVenue}
-          />
+          <FishermanForm form={form} onSubmit={actions.onSubmit} isCreating={state.isCreating} />
         </Box>
 
         {/* List Section */}
@@ -63,13 +55,13 @@ export const VenueManagementContainer = () => {
           <Card padding="none" overflow="hidden">
             <Box p="6" borderBottom="1px solid" borderColor="gray.200">
               <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">
-                {t('Admin.Venues.list_title')}
+                {t('Admin.Fishermen.list_title')}
               </Text>
             </Box>
-            <VenueList
-              venues={state.venues}
+            <FishermanList
+              fishermen={state.fishermen}
               isLoading={state.isLoading}
-              onEdit={actions.onEdit}
+              isDeleting={state.isDeleting}
               onDelete={actions.onDelete}
             />
           </Card>

@@ -1,13 +1,12 @@
 'use client';
 
-import { useFishermanManagement } from '../../states/useFishermanManagement';
-import { FishermanList } from './FishermanList';
-import { FishermanForm } from './FishermanForm';
+import { useBuyerManagement } from '@/src/features/admin/states/useBuyerManagement';
+import { BuyerList, BuyerForm } from '@/src/features/admin/components/BuyerManagement';
 import { Box, Card, Text } from '@atoms';
 import { css } from 'styled-system/css';
 
-export const FishermanManagementContainer = () => {
-  const { state, form, actions, t } = useFishermanManagement();
+export const BuyerManagementContainer = () => {
+  const { state, form, actions, t } = useBuyerManagement();
 
   return (
     <Box maxW="5xl" mx="auto" p="6">
@@ -20,7 +19,7 @@ export const FishermanManagementContainer = () => {
         borderBottom="1px solid"
         borderColor="gray.200"
       >
-        {t('Admin.Fishermen.title')}
+        {t('Admin.Buyers.title')}
       </Text>
 
       {state.message && (
@@ -28,7 +27,7 @@ export const FishermanManagementContainer = () => {
           bg="blue.50"
           borderLeft="4px solid"
           borderColor="blue.500"
-          color="blue.700"
+          className={css({ color: 'blue.700' })}
           p="4"
           mb="8"
           borderRadius="sm"
@@ -48,7 +47,7 @@ export const FishermanManagementContainer = () => {
       >
         {/* Form Section */}
         <Box className={css({ md: { gridColumn: '1 / 2' } })}>
-          <FishermanForm form={form} onSubmit={actions.onSubmit} isCreating={state.isCreating} />
+          <BuyerForm form={form} onSubmit={actions.onSubmit} isCreating={state.isCreating} />
         </Box>
 
         {/* List Section */}
@@ -56,11 +55,11 @@ export const FishermanManagementContainer = () => {
           <Card padding="none" overflow="hidden">
             <Box p="6" borderBottom="1px solid" borderColor="gray.200">
               <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">
-                {t('Admin.Fishermen.list_title')}
+                {t('Admin.Buyers.list_title')}
               </Text>
             </Box>
-            <FishermanList
-              fishermen={state.fishermen}
+            <BuyerList
+              buyers={state.buyers}
               isLoading={state.isLoading}
               isDeleting={state.isDeleting}
               onDelete={actions.onDelete}

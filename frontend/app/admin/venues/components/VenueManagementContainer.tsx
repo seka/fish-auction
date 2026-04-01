@@ -1,13 +1,12 @@
 'use client';
 
-import { useBuyerManagement } from '../../states/useBuyerManagement';
-import { BuyerList } from './BuyerList';
-import { BuyerForm } from './BuyerForm';
+import { useVenueManagement } from '@/src/features/admin/states/useVenueManagement';
+import { VenueList, VenueForm } from '@/src/features/admin/components/VenueManagement';
 import { Box, Card, Text } from '@atoms';
 import { css } from 'styled-system/css';
 
-export const BuyerManagementContainer = () => {
-  const { state, form, actions, t } = useBuyerManagement();
+export const VenueManagementContainer = () => {
+  const { state, form, actions, t } = useVenueManagement();
 
   return (
     <Box maxW="5xl" mx="auto" p="6">
@@ -20,7 +19,7 @@ export const BuyerManagementContainer = () => {
         borderBottom="1px solid"
         borderColor="gray.200"
       >
-        {t('Admin.Buyers.title')}
+        {t('Admin.Venues.title')}
       </Text>
 
       {state.message && (
@@ -48,7 +47,14 @@ export const BuyerManagementContainer = () => {
       >
         {/* Form Section */}
         <Box className={css({ md: { gridColumn: '1 / 2' } })}>
-          <BuyerForm form={form} onSubmit={actions.onSubmit} isCreating={state.isCreating} />
+          <VenueForm
+            form={form}
+            onSubmit={actions.onSubmit}
+            onCancelEdit={actions.onCancelEdit}
+            isCreating={state.isCreating}
+            isUpdating={state.isUpdating}
+            editingVenue={state.editingVenue}
+          />
         </Box>
 
         {/* List Section */}
@@ -56,13 +62,13 @@ export const BuyerManagementContainer = () => {
           <Card padding="none" overflow="hidden">
             <Box p="6" borderBottom="1px solid" borderColor="gray.200">
               <Text as="h2" variant="h4" className={css({ color: 'gray.800' })} fontWeight="bold">
-                {t('Admin.Buyers.list_title')}
+                {t('Admin.Venues.list_title')}
               </Text>
             </Box>
-            <BuyerList
-              buyers={state.buyers}
+            <VenueList
+              venues={state.venues}
               isLoading={state.isLoading}
-              isDeleting={state.isDeleting}
+              onEdit={actions.onEdit}
               onDelete={actions.onDelete}
             />
           </Card>

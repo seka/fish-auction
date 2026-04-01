@@ -2,9 +2,8 @@
 
 import { Box, Card, Text, HStack, Select } from '@atoms';
 import { css } from 'styled-system/css';
-import { useItemManagement } from '../../states/useItemManagement';
-import { ItemForm } from './ItemForm';
-import { ItemList } from './ItemList';
+import { useItemManagement } from '@/src/features/admin/states/useItemManagement';
+import { ItemForm, ItemList } from '@/src/features/admin/components/ItemManagement';
 
 export const ItemManagementContainer = () => {
   const { state, form, actions, t } = useItemManagement();

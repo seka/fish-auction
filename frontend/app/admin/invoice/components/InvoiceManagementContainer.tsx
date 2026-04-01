@@ -1,8 +1,7 @@
 'use client';
 
-import { useInvoiceManagement } from '../../states/useInvoiceManagement';
-import { InvoiceList } from './InvoiceList';
-import { InvoiceDetailModal } from './InvoiceDetailModal';
+import { useInvoiceManagement } from '@/src/features/admin/states/useInvoiceManagement';
+import { InvoiceList, InvoiceDetailModal } from '@/src/features/admin/components/InvoiceManagement';
 import { Box, Card, Text } from '@atoms';
 import { css } from 'styled-system/css';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { BuyerManagementContainer } from '@/src/features/admin';
+import { BuyerManagementContainer } from './components/BuyerManagementContainer';
 
 export default function AdminBuyersPage() {
   return <BuyerManagementContainer />;

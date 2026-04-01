@@ -1,6 +1,6 @@
 'use client';
 
-import { FishermanManagementContainer } from '@/src/features/admin';
+import { FishermanManagementContainer } from './components/FishermanManagementContainer';
 
 export default function AdminFishermenPage() {
   return <FishermanManagementContainer />;

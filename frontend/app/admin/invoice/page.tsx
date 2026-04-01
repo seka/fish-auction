@@ -1,6 +1,6 @@
 'use client';
 
-import { InvoiceManagementContainer } from '@/src/features/admin';
+import { InvoiceManagementContainer } from './components/InvoiceManagementContainer';
 
 export default function AdminInvoicePage() {
   return <InvoiceManagementContainer />;
