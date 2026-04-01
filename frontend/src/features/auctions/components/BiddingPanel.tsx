@@ -6,7 +6,7 @@ import { AuctionItem, Auction } from '../types';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
 import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
-import { formatTime, getMinimumBidIncrement } from '@domain/auction';
+import { selectTime, selectMinimumBidIncrement } from '../selectors/selectAuction';
 
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
@@ -118,8 +118,8 @@ export const BiddingPanel = ({
                     {auction.startTime && auction.endTime && (
                       <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
                         {t('Public.AuctionDetail.out_of_hours_msg', {
-                          start: formatTime(auction.startTime),
-                          end: formatTime(auction.endTime),
+                          start: selectTime(auction.startTime),
+                          end: selectTime(auction.endTime),
                         })}
                       </Text>
                     )}
@@ -141,7 +141,7 @@ export const BiddingPanel = ({
                         {t('Public.AuctionDetail.next_min_bid', {
                           price: (
                             (selectedItem.highestBid || 0) +
-                            getMinimumBidIncrement(selectedItem.highestBid || 0)
+                            selectMinimumBidIncrement(selectedItem.highestBid || 0)
                           ).toLocaleString(),
                         })}
                       </Text>
@@ -162,7 +162,7 @@ export const BiddingPanel = ({
                           {...register('price')}
                           placeholder={(
                             (selectedItem.highestBid || 0) +
-                            getMinimumBidIncrement(selectedItem.highestBid || 0)
+                            selectMinimumBidIncrement(selectedItem.highestBid || 0)
                           ).toString()}
                           className={css({ pl: '7' })}
                         />
