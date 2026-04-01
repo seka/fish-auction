@@ -2,44 +2,25 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Box, Button, HStack, Text } from '@atoms';
-// Button, Text等は src/components からインポート
 import { useTranslations } from 'next-intl';
-import { getCurrentBuyer, logoutBuyer } from '@/src/data/api/buyer_auth';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { css } from 'styled-system/css';
-import { authKeys } from '@/src/data/queries/auth/keys';
+import { ReactNode } from 'react';
 
-export const PublicNavbar = () => {
+export interface PublicNavbarProps {
+  isLoggedIn: boolean;
+  buyerName?: string | null;
+  onLogout: () => Promise<void>;
+}
+
+export const PublicNavbar = ({ isLoggedIn, buyerName, onLogout }: PublicNavbarProps) => {
   const pathname = usePathname();
-  const router = useRouter();
   const t = useTranslations();
 
-  // Auth check
-  const { data: buyer } = useQuery({
-    queryKey: authKeys.me(),
-    queryFn: getCurrentBuyer,
-    retry: false,
-  });
-  const isLoggedIn = !!buyer;
-
-  const queryClient = useQueryClient();
-
-  const handleLogout = async () => {
-    await logoutBuyer();
-    queryClient.setQueryData(authKeys.me(), null);
-    router.push('/login/buyer');
-  };
-
-  // 管理画面では表示しない
   if (pathname?.startsWith('/admin')) {
     return null;
   }
-
-  // ログイン画面でもシンプルにするため非表示などの検討余地はあるが、
-  // いったんナビゲーションはあっても便利なので表示する方針とする。
-  // 必要であれば if (pathname?.startsWith('/login')) return null; 等を追加。
 
   return (
     <Box
@@ -48,7 +29,7 @@ export const PublicNavbar = () => {
       top="0"
       zIndex="sticky"
       w="full"
-      bg="white/90" // 透過設定
+      bg="white/90"
       backdropFilter="blur(8px)"
       shadow="sm"
       borderBottom="1px solid"
@@ -65,7 +46,6 @@ export const PublicNavbar = () => {
       >
         <Link href="/" className={css({ textDecoration: 'none', _hover: { opacity: 0.8 } })}>
           <HStack spacing="0">
-            {/* Logo Image */}
             <Image src="/logo_icon.png" alt="FISHING AUCTION Logo" width={50} height={50} />
             <Text
               fontSize="lg"
@@ -79,7 +59,6 @@ export const PublicNavbar = () => {
         </Link>
 
         <HStack spacing="6">
-          {/* デスクトップナビゲーション */}
           <Box display={{ base: 'none', md: 'block' }}>
             <HStack spacing="6">
               <NavLink href="/auctions">{t('Navbar.active_auctions')}</NavLink>
@@ -87,16 +66,13 @@ export const PublicNavbar = () => {
             </HStack>
           </Box>
 
-          {/* 認証ボタン */}
-          {/* ログイン状態に応じた出し分けが必要だが、ここはいったんリンクベースで配置 */}
-          {/* 必要に応じて useAuth フックなどで状態監視して出し分ける */}
           <HStack spacing="3">
             {isLoggedIn ? (
               <HStack spacing="3">
                 <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.600' })}>
-                  {buyer.name} {t('Navbar.honorific')}
+                  {buyerName} {t('Navbar.honorific')}
                 </Text>
-                <Button size="sm" variant="outline" onClick={handleLogout}>
+                <Button size="sm" variant="outline" onClick={onLogout}>
                   {t('Navbar.logout')}
                 </Button>
               </HStack>
@@ -115,7 +91,7 @@ export const PublicNavbar = () => {
 };
 
 // 内部用 NavLink コンポーネント
-const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+const NavLink = ({ href, children }: { href: string; children: ReactNode }) => {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== '/' && pathname?.startsWith(href));
 
