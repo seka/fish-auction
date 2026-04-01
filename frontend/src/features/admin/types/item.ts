@@ -1,6 +1,4 @@
-import type { ItemStatus } from '@/src/types/item';
-
-export type { ItemStatus };
+export type ItemStatus = 'Pending' | 'Sold' | 'Unsold' | 'Bidding';
 
 export interface AuctionItem {
   id: number;
