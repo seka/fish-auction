@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 import '@/src/core/styles/globals.css';
 
-import { PublicNavbar } from '@organisms';
+import { AuthorizablePublicNavbar } from '@/src/features/login';
 import { MainLayoutTemplate } from '@templates';
 import { PushInitializer } from '@functionals';
 
@@ -37,7 +37,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <QueryClientProvider>
             <ToastProvider>
-              <MainLayoutTemplate navbar={<PublicNavbar />}>
+              <MainLayoutTemplate navbar={<AuthorizablePublicNavbar />}>
                 <PushInitializer />
                 {children}
               </MainLayoutTemplate>
