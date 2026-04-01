@@ -14,8 +14,11 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+vi.mock('./components/LoginContainer', () => ({
+  LoginContainer: () => <div data-testid="login-container" />,
+}));
+
 vi.mock('@/src/features/login', () => ({
-  LoginContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useLogin: vi.fn(),
 }));
 

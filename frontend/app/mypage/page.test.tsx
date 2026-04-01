@@ -2,8 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MyPage from './page';
 import { useMyPage } from '@/src/features/mypage/states/useMyPage';
-import { useMyPurchases } from '@/src/data/queries/buyerPurchase/useQuery';
-import { useParticipatingAuctions } from '@/src/data/queries/buyerAuction/useQuery';
+import { usePurchases } from '@/src/features/mypage/queries/usePurchases';
+import { useParticipatingAuctions } from '@/src/features/mypage/queries/useAuctions';
 
 // Mocks
 vi.mock('next-intl', () => ({
@@ -15,11 +15,11 @@ vi.mock('@/src/features/mypage/states/useMyPage', () => ({
   useMyPage: vi.fn(),
 }));
 
-vi.mock('@/src/data/queries/buyerPurchase/useQuery', () => ({
-  useMyPurchases: vi.fn(),
+vi.mock('@/src/features/mypage/queries/usePurchases', () => ({
+  usePurchases: vi.fn(),
 }));
 
-vi.mock('@/src/data/queries/buyerAuction/useQuery', () => ({
+vi.mock('@/src/features/mypage/queries/useAuctions', () => ({
   useParticipatingAuctions: vi.fn(),
 }));
 
@@ -62,10 +62,10 @@ describe('MyPage', () => {
     vi.mocked(useMyPage).mockReturnValue(
       defaultMockValues as unknown as ReturnType<typeof useMyPage>,
     );
-    vi.mocked(useMyPurchases).mockReturnValue({
+    vi.mocked(usePurchases).mockReturnValue({
       purchases: [],
       isLoading: false,
-    } as unknown as ReturnType<typeof useMyPurchases>);
+    } as unknown as ReturnType<typeof usePurchases>);
     vi.mocked(useParticipatingAuctions).mockReturnValue({
       auctions: [],
       isLoading: false,
@@ -73,10 +73,10 @@ describe('MyPage', () => {
   });
 
   it('renders loading state', () => {
-    vi.mocked(useMyPurchases).mockReturnValue({
+    vi.mocked(usePurchases).mockReturnValue({
       purchases: [],
       isLoading: true,
-    } as unknown as ReturnType<typeof useMyPurchases>);
+    } as unknown as ReturnType<typeof usePurchases>);
     render(<MyPage />);
     expect(screen.getByText('Common.loading')).toBeInTheDocument();
   });
@@ -103,10 +103,10 @@ describe('MyPage', () => {
         createdAt: '2023-12-01T10:00:00Z',
       },
     ];
-    vi.mocked(useMyPurchases).mockReturnValue({
+    vi.mocked(usePurchases).mockReturnValue({
       purchases: mockPurchases,
       isLoading: false,
-    } as unknown as ReturnType<typeof useMyPurchases>);
+    } as unknown as ReturnType<typeof usePurchases>);
 
     vi.mocked(useMyPage).mockReturnValue({
       ...defaultMockValues,

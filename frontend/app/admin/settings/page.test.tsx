@@ -27,10 +27,10 @@ describe('AdminSettingsPage', () => {
     render(<AdminSettingsPage />);
 
     fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_new_password'), {
-      target: { value: 'password123' },
+      target: { value: 'New-Password123' },
     });
     fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_confirm_password'), {
-      target: { value: 'password456' },
+      target: { value: 'Different-Pass123' },
     });
 
     const form = screen
@@ -54,10 +54,10 @@ describe('AdminSettingsPage', () => {
       target: { value: 'oldpass' },
     });
     fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_new_password'), {
-      target: { value: 'newpassword123' },
+      target: { value: 'New-Password123' },
     });
     fireEvent.change(screen.getByLabelText('Auth.ResetPassword.label_confirm_password'), {
-      target: { value: 'newpassword123' },
+      target: { value: 'New-Password123' },
     });
 
     const form = screen

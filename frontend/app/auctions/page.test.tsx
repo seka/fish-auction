@@ -4,7 +4,6 @@ import AuctionsListPage from './page';
 import { usePublicAuctions } from '@/src/features/auctions/queries/usePublicAuctions';
 import { useVenueQuery } from '@/src/data/queries/publicVenue/useQuery';
 import { Auction } from '@/src/features/auctions';
-import { Venue } from '@entities/venue';
 
 // Mocks
 vi.mock('next-intl', () => ({
@@ -61,6 +60,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: true,
       },
       {
         id: 2,
@@ -71,6 +71,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: false,
       },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
@@ -96,6 +97,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: false,
       },
       {
         id: 2,
@@ -106,6 +108,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: true,
       }, // Should be first
       {
         id: 3,
@@ -116,6 +119,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: false,
       }, // Should be second (earlier than 2023-12-05)
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
@@ -150,6 +154,7 @@ describe('AuctionsListPage', () => {
         venueId: 99,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: false,
       },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
@@ -172,6 +177,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: false,
       },
       {
         id: 2,
@@ -182,6 +188,7 @@ describe('AuctionsListPage', () => {
         venueId: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        isActive: false,
       },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
