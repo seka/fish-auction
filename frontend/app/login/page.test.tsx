@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, it, vi, beforeEach } from 'vitest';
 import LoginPage from './page';
-import { useLogin } from '@/src/features/auth';
+import { useAdminLogin } from '@/src/features/auth';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
@@ -19,7 +19,7 @@ vi.mock('./components/LoginContainer', () => ({
 }));
 
 vi.mock('@/src/features/auth', () => ({
-  useLogin: vi.fn(),
+  useAdminLogin: vi.fn(),
 }));
 
 describe('LoginPage', () => {
@@ -27,11 +27,11 @@ describe('LoginPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useLogin).mockReturnValue({
+    vi.mocked(useAdminLogin).mockReturnValue({
       login: mockLogin,
       isLoading: false,
       error: null,
-    } as unknown as ReturnType<typeof useLogin>);
+    } as unknown as ReturnType<typeof useAdminLogin>);
   });
 
   it('renders login container', () => {

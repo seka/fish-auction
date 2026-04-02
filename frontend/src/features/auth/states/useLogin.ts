@@ -1,7 +1,7 @@
-import { useLoginMutation } from '../queries/useAuth';
+import { useAdminLoginMutation } from '../queries/useAuth';
 
-export const useLogin = () => {
-  const mutation = useLoginMutation();
+export const useAdminLogin = () => {
+  const mutation = useAdminLoginMutation();
 
   return {
     login: (email: string, password: string) => mutation.mutateAsync({ email, password }),

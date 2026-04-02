@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLogin } from '@/src/features/auth/states/useLogin';
+import { useAdminLogin } from '@/src/features/auth/states/useLogin';
 import { LoginForm } from '@/src/features/auth/components/LoginForm';
 import { LoginFormData } from '@schemas/auth';
 import { Box } from '@atoms';
@@ -12,7 +12,7 @@ export const LoginContainer = () => {
   const [error, setError] = useState('');
   const router = useRouter();
   const t = useTranslations();
-  const { login, isLoading } = useLogin();
+  const { login, isLoading } = useAdminLogin();
 
   const onSubmit = async (data: LoginFormData) => {
     setError('');

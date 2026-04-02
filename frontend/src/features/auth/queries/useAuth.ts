@@ -1,16 +1,50 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { login } from '@/src/data/api/auth';
-import { getCurrentBuyer, logoutBuyer } from '@/src/data/api/buyer_auth';
+import { login, logout as logoutAdmin } from '@/src/data/api/auth';
+import { getCurrentBuyer, loginBuyer, logoutBuyer } from '@/src/data/api/buyer_auth';
 import { authKeys } from '@/src/data/queries/auth/keys';
 import { useRouter } from 'next/navigation';
 
 /**
  * ログインミューテーションフック（管理者用）
  */
-export const useLoginMutation = () => {
+export const useAdminLoginMutation = () => {
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      login(email, password),
+    mutationFn: ({ email, password }: { email: string; password: string }) => login(email, password),
+  });
+};
+
+/**
+ * ログアウトミューテーションフック（管理者用）
+ */
+export const useAdminLogoutMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: logoutAdmin,
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
+};
+
+/**
+ * ログインミューテーションフック（バイヤー用）
+ */
+export const useBuyerLoginMutation = () => {
+  return useMutation({
+    mutationFn: loginBuyer,
+  });
+};
+
+/**
+ * ログアウトミューテーションフック（バイヤー用）
+ */
+export const useBuyerLogoutMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: logoutBuyer,
+    onSuccess: () => {
+      queryClient.setQueryData(authKeys.me(), null);
+    },
   });
 };
 
@@ -19,7 +53,7 @@ export const useLoginMutation = () => {
  */
 export const useBuyerAuth = () => {
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const logoutMutation = useBuyerLogoutMutation();
 
   const { data: buyer, isLoading } = useQuery({
     queryKey: authKeys.me(),
@@ -30,8 +64,7 @@ export const useBuyerAuth = () => {
   const isLoggedIn = !!buyer;
 
   const logout = async () => {
-    await logoutBuyer();
-    queryClient.setQueryData(authKeys.me(), null);
+    await logoutMutation.mutateAsync();
     router.push('/login/buyer');
   };
 
