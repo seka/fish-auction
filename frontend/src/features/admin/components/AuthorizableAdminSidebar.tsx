@@ -1,6 +1,6 @@
 'use client';
 
-import { useAdminLogoutMutation } from '../queries/useAuth';
+import { useAdminLogoutMutation } from '@/src/features/auth';
 import { AdminSidebar } from '@/src/core/components/organisms/admin/AdminSidebar';
 
 /**
