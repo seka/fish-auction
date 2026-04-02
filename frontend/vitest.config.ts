@@ -7,11 +7,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-      '@atoms': path.resolve(__dirname, './src/components/atoms'),
-      '@molecules': path.resolve(__dirname, './src/components/molecules'),
-      '@functionals': path.resolve(__dirname, './src/components/functionals'),
-      '@organisms': path.resolve(__dirname, './src/components/organisms'),
-      '@templates': path.resolve(__dirname, './src/components/templates'),
+      '@atoms': path.resolve(__dirname, './src/core/components/atoms'),
+      '@molecules': path.resolve(__dirname, './src/core/components/molecules'),
+      '@organisms': path.resolve(__dirname, './src/core/components/organisms'),
+      '@templates': path.resolve(__dirname, './src/core/components/templates'),
+      '@bootstraps': path.resolve(__dirname, './src/bootstraps'),
       '@libs': path.resolve(__dirname, './src/libs'),
       '@entities': path.resolve(__dirname, './src/data/entities'),
       '@entities/*': path.resolve(__dirname, './src/data/entities/*'),
