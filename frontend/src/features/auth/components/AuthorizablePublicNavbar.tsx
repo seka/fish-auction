@@ -7,13 +7,14 @@ import { useBuyerAuth } from '../queries/useAuth';
  * 認証ロジックを注入したナビゲーションバー
  */
 export const AuthorizablePublicNavbar = () => {
-  const { buyer, isLoggedIn, logout } = useBuyerAuth();
+  const { buyer, isLoggedIn, isLoading, logout } = useBuyerAuth();
 
   return (
-    <PublicNavbar 
-      isLoggedIn={isLoggedIn} 
-      buyerName={buyer?.name} 
-      onLogout={logout} 
+    <PublicNavbar
+      isLoggedIn={isLoggedIn}
+      isLoading={isLoading}
+      buyerName={buyer?.name}
+      onLogout={logout}
     />
   );
 };

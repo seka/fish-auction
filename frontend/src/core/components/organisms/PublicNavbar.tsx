@@ -10,11 +10,12 @@ import { ReactNode } from 'react';
 
 export interface PublicNavbarProps {
   isLoggedIn: boolean;
+  isLoading?: boolean;
   buyerName?: string | null;
   onLogout: () => Promise<void>;
 }
 
-export const PublicNavbar = ({ isLoggedIn, buyerName, onLogout }: PublicNavbarProps) => {
+export const PublicNavbar = ({ isLoggedIn, isLoading, buyerName, onLogout }: PublicNavbarProps) => {
   const pathname = usePathname();
   const t = useTranslations();
 
@@ -59,29 +60,33 @@ export const PublicNavbar = ({ isLoggedIn, buyerName, onLogout }: PublicNavbarPr
         </Link>
 
         <HStack spacing="6">
-          <Box display={{ base: 'none', md: 'block' }}>
-            <HStack spacing="6">
-              <NavLink href="/auctions">{t('Navbar.active_auctions')}</NavLink>
-              {isLoggedIn && <NavLink href="/mypage">{t('Navbar.mypage')}</NavLink>}
-            </HStack>
-          </Box>
+          {!isLoading && (
+            <Box display={{ base: 'none', md: 'block' }}>
+              <HStack spacing="6">
+                <NavLink href="/auctions">{t('Navbar.active_auctions')}</NavLink>
+                {isLoggedIn && <NavLink href="/mypage">{t('Navbar.mypage')}</NavLink>}
+              </HStack>
+            </Box>
+          )}
 
           <HStack spacing="3">
-            {isLoggedIn ? (
-              <HStack spacing="3">
-                <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.600' })}>
-                  {buyerName} {t('Navbar.honorific')}
-                </Text>
-                <Button size="sm" variant="outline" onClick={onLogout}>
-                  {t('Navbar.logout')}
-                </Button>
-              </HStack>
-            ) : (
-              <Link href="/login/buyer">
-                <Button size="sm" variant="primary">
-                  {t('Navbar.login')}
-                </Button>
-              </Link>
+            {!isLoading && (
+              isLoggedIn ? (
+                <HStack spacing="3">
+                  <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.600' })}>
+                    {buyerName} {t('Navbar.honorific')}
+                  </Text>
+                  <Button size="sm" variant="outline" onClick={onLogout}>
+                    {t('Navbar.logout')}
+                  </Button>
+                </HStack>
+              ) : (
+                <Link href="/login/buyer">
+                  <Button size="sm" variant="primary">
+                    {t('Navbar.login')}
+                  </Button>
+                </Link>
+              )
             )}
           </HStack>
         </HStack>
