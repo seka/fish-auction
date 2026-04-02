@@ -16,12 +16,7 @@ export interface PublicNavbarProps {
 }
 
 export const PublicNavbar = ({ isLoggedIn, isLoading, buyerName, onLogout }: PublicNavbarProps) => {
-  const pathname = usePathname();
   const t = useTranslations();
-
-  if (pathname?.startsWith('/admin')) {
-    return null;
-  }
 
   return (
     <Box
