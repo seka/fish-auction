@@ -14,11 +14,12 @@ description: Use when changing the fish-auction frontend built with Next.js, Rea
 ## Layer rules
 
 - `frontend/app/*/components`: Container (Page orchestration) components
-- `frontend/src/features/*/components`: Domain-specific UI widgets (List, Form, etc.)
-- `frontend/src/components`: UI components shared across multiple features
+- `frontend/src/core/components`: 純粋な UI コンポーネント（認証・副作用なし）。`@atoms`, `@molecules`, `@organisms`, `@templates` エイリアスで参照
+- `frontend/src/features/*/components`: Domain-specific UI widgets (List, Form, Card など)
+- `frontend/src/features/*/selectors`: ドメイン固有の純粋関数（時刻変換、アクティブ判定など）
 - `frontend/src/features/*/states`: UI logic or domain-specific hooks
-- `frontend/src/features/*/queries`: 機能固有の query / mutation (データの型変換・キャストを行う境界)
-- `frontend/src/features/*/types`: 機能固有の型定義（ドメインモデル + UI型）
+- `frontend/src/features/*/queries`: 機能固有の query / mutation
+- `frontend/src/features/*/types`: 機能固有の型定義（ドメインモデル + `toXxx` 変換関数）
 - `frontend/src/data/api`: バックエンド API との 1 対 1 通信 (apiClient)
 - `frontend/src/data/entities`: サーバー側データ構造の定義 (@entities)
 - `frontend/src/schemas`: Zod スキーマ
@@ -29,7 +30,10 @@ description: Use when changing the fish-auction frontend built with Next.js, Rea
 - API エンドポイントを叩くだけの関数は `src/data/api`
 - React Query の状態管理は `src/data/queries` か feature 配下の `queries`
 - UI と query の組み合わせやイベント調停は `states`
-- 共有不能な見た目は feature 配下、共有可能な見た目は `src/components`
+- ドメインデータの計算・派生値（副作用なし）: `src/features/*/selectors`
+- @entities から feature モデルへの変換 (`toXxx`): `src/features/*/types`
+- 認証なしの共有 UI: `src/core/components`（`@organisms` 等のエイリアス経由）
+- `src/core/components` の pure component に認証ロジックを注入する場合: `features/auth/components/Authorizable*.tsx` でラップする
 
 ## Existing conventions to preserve
 
