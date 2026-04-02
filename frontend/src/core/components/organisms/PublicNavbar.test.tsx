@@ -49,9 +49,10 @@ describe('PublicNavbar', () => {
     expect(mockOnLogout).toHaveBeenCalled();
   });
 
-  it('does not render on admin pages', () => {
-    vi.mocked(usePathname).mockReturnValue('/admin/dashboard');
-    const { container } = render(<PublicNavbar isLoggedIn={false} onLogout={mockOnLogout} />);
-    expect(container).toBeEmptyDOMElement();
+  it('hides authentication elements when isLoading is true', () => {
+    render(<PublicNavbar isLoggedIn={false} isLoading={true} onLogout={mockOnLogout} />);
+
+    expect(screen.queryByText('Navbar.active_auctions')).not.toBeInTheDocument();
+    expect(screen.queryByText('Navbar.login')).not.toBeInTheDocument();
   });
 });

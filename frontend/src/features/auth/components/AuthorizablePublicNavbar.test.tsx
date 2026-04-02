@@ -2,9 +2,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthorizablePublicNavbar } from './AuthorizablePublicNavbar';
 import { useBuyerAuth } from '../queries/useAuth';
+import { usePathname } from 'next/navigation';
 
 // Mock dependecies
 vi.mock('../queries/useAuth');
+vi.mock('next/navigation', () => ({
+  usePathname: vi.fn(),
+}));
 vi.mock('@organisms', () => ({
   PublicNavbar: vi.fn(({ isLoggedIn, isLoading, buyerName, onLogout }) => (
     <div data-testid="public-navbar">
@@ -20,6 +24,20 @@ describe('AuthorizablePublicNavbar', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(usePathname).mockReturnValue('/');
+  });
+
+  it('does not render on admin pages', () => {
+    vi.mocked(usePathname).mockReturnValue('/admin/dashboard');
+    vi.mocked(useBuyerAuth).mockReturnValue({
+      buyer: null,
+      isLoggedIn: false,
+      isLoading: false,
+      logout: mockLogout,
+    });
+
+    const { container } = render(<AuthorizablePublicNavbar />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('passes isLoading: true when auth is loading', () => {
