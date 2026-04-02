@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 import '@/src/core/styles/globals.css';
 
-import { AuthorizablePublicNavbar } from '@/src/features/login';
+import { AuthorizablePublicNavbar } from '@/src/features/auth';
 import { MainLayoutTemplate } from '@templates';
 import { PushInitializer } from '@bootstraps';
 

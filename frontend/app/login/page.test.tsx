@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, it, vi, beforeEach } from 'vitest';
 import LoginPage from './page';
-import { useLogin } from '@/src/features/login';
+import { useLogin } from '@/src/features/auth';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
@@ -18,7 +18,7 @@ vi.mock('./components/LoginContainer', () => ({
   LoginContainer: () => <div data-testid="login-container" />,
 }));
 
-vi.mock('@/src/features/login', () => ({
+vi.mock('@/src/features/auth', () => ({
   useLogin: vi.fn(),
 }));
 

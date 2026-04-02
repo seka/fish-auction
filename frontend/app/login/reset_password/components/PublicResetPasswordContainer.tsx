@@ -10,7 +10,7 @@ import {
 } from '@/src/data/api/auth_reset';
 import { Box, Text } from '@atoms';
 import { useTranslations } from 'next-intl';
-import { PublicResetPasswordForm, PublicResetPasswordStatus } from '@/src/features/login/components';
+import { PublicResetPasswordForm, PublicResetPasswordStatus } from '@/src/features/auth/components';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getResetPasswordSchema } from '@schemas/password';
