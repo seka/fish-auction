@@ -1,6 +1,6 @@
-import { Sidebar } from '@organisms';
 import { AdminLayoutTemplate } from '@templates';
+import { AuthorizableAdminSidebar } from '@/src/features/auth/components/AuthorizableAdminSidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminLayoutTemplate sidebar={<Sidebar />}>{children}</AdminLayoutTemplate>;
+  return <AdminLayoutTemplate sidebar={<AuthorizableAdminSidebar />}>{children}</AdminLayoutTemplate>;
 }

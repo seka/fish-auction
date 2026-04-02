@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { Box, Stack, Text, HStack } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
-import { useAdminLogoutMutation } from '@/src/features/auth';
 
 // 共通のスタイル定義 (Recipe的アプローチ)
 const sidebarItemStyles = {
@@ -91,9 +90,12 @@ const SidebarItem = ({
   );
 };
 
-export const Sidebar = () => {
+export interface SidebarProps {
+  onLogout: () => Promise<void>;
+}
+
+export const Sidebar = ({ onLogout }: SidebarProps) => {
   const t = useTranslations('Admin.Sidebar');
-  const logoutMutation = useAdminLogoutMutation();
 
   return (
     <Box
@@ -168,13 +170,7 @@ export const Sidebar = () => {
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <SidebarItem
-          onClick={async () => {
-            await logoutMutation.mutateAsync();
-            window.location.href = '/login/admin';
-          }}
-          icon="🚪"
-        >
+        <SidebarItem onClick={onLogout} icon="🚪">
           {t('logout') || 'ログアウト'}
         </SidebarItem>
       </Stack>

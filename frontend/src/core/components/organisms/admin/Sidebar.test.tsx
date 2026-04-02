@@ -12,16 +12,11 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-// Mock auth features
-vi.mock('@/src/features/auth', () => ({
-  useAdminLogoutMutation: () => ({
-    mutateAsync: vi.fn(),
-  }),
-}));
-
 describe('Sidebar', () => {
+  const mockLogout = vi.fn();
+
   it('renders all menu items', () => {
-    render(<Sidebar />);
+    render(<Sidebar onLogout={mockLogout} />);
 
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByText('back_to_top')).toBeInTheDocument();
@@ -30,7 +25,7 @@ describe('Sidebar', () => {
   });
 
   it('highlights active link based on pathname', () => {
-    render(<Sidebar />);
+    render(<Sidebar onLogout={mockLogout} />);
 
     const dashboardLink = screen.getByRole('link', { name: /dashboard/ });
     expect(dashboardLink).toBeInTheDocument();
