@@ -12,6 +12,13 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+// Mock auth features
+vi.mock('@/src/features/auth', () => ({
+  useAdminLogoutMutation: () => ({
+    mutateAsync: vi.fn(),
+  }),
+}));
+
 describe('Sidebar', () => {
   it('renders all menu items', () => {
     render(<Sidebar />);
