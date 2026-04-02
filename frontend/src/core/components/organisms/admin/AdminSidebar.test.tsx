@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { Sidebar } from './Sidebar';
+import { AdminSidebar } from './AdminSidebar';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -12,11 +12,11 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-describe('Sidebar', () => {
+describe('AdminSidebar', () => {
   const mockLogout = vi.fn();
 
   it('renders all menu items', () => {
-    render(<Sidebar onLogout={mockLogout} />);
+    render(<AdminSidebar onLogout={mockLogout} />);
 
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByText('back_to_top')).toBeInTheDocument();
@@ -25,7 +25,7 @@ describe('Sidebar', () => {
   });
 
   it('highlights active link based on pathname', () => {
-    render(<Sidebar onLogout={mockLogout} />);
+    render(<AdminSidebar onLogout={mockLogout} />);
 
     const dashboardLink = screen.getByRole('link', { name: /dashboard/ });
     expect(dashboardLink).toBeInTheDocument();

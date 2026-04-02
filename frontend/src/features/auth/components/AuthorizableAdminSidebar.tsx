@@ -1,7 +1,7 @@
 'use client';
 
 import { useAdminLogoutMutation } from '../queries/useAuth';
-import { Sidebar } from '@/src/core/components/organisms/admin/Sidebar';
+import { AdminSidebar } from '@/src/core/components/organisms/admin/AdminSidebar';
 
 /**
  * 認証ロジックを注入した管理者用サイドバー
@@ -14,5 +14,5 @@ export const AuthorizableAdminSidebar = () => {
     window.location.href = '/login/admin';
   };
 
-  return <Sidebar onLogout={handleLogout} />;
+  return <AdminSidebar onLogout={handleLogout} />;
 };

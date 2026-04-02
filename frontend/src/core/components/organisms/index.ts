@@ -1,2 +1,2 @@
 export * from './PublicNavbar';
-export * from './admin/Sidebar';
+export * from './admin/AdminSidebar';

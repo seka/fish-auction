@@ -44,7 +44,7 @@ const sidebarItemStyles = {
   }),
 };
 
-type SidebarItemProps = {
+type AdminSidebarItemProps = {
   children: React.ReactNode;
   href?: string; // Linkとして使う場合
   onClick?: () => void; // Buttonとして使う場合
@@ -52,13 +52,13 @@ type SidebarItemProps = {
   isActive?: boolean; // 明示的にActiveにする場合 (基本はhrefで自動判定)
 };
 
-const SidebarItem = ({
+const AdminSidebarItem = ({
   children,
   href,
   onClick,
   icon,
   isActive: explicitActive,
-}: SidebarItemProps) => {
+}: AdminSidebarItemProps) => {
   const pathname = usePathname();
 
   // hrefがある場合は、現在のパスがhrefで始まっているかを判定 (サブパスも含めるため startsWith を使用)
@@ -90,11 +90,11 @@ const SidebarItem = ({
   );
 };
 
-export interface SidebarProps {
+export interface AdminSidebarProps {
   onLogout: () => Promise<void>;
 }
 
-export const Sidebar = ({ onLogout }: SidebarProps) => {
+export const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
   const t = useTranslations('Admin.Sidebar');
 
   return (
@@ -124,55 +124,55 @@ export const Sidebar = ({ onLogout }: SidebarProps) => {
       </Box>
 
       <Stack as="nav" mt="6" px="2" spacing="1" flex="1">
-        <SidebarItem href="/" icon="↩️">
+        <AdminSidebarItem href="/" icon="↩️">
           {t('back_to_top')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <SidebarItem href="/admin" icon="📊">
+        <AdminSidebarItem href="/admin" icon="📊">
           {t('dashboard')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <SidebarItem href="/admin/fishermen" icon="👨‍🌾">
+        <AdminSidebarItem href="/admin/fishermen" icon="👨‍🌾">
           {t('fishermen')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
-        <SidebarItem href="/admin/buyers" icon="👔">
+        <AdminSidebarItem href="/admin/buyers" icon="👔">
           {t('buyers')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
-        <SidebarItem href="/admin/venues" icon="🏢">
+        <AdminSidebarItem href="/admin/venues" icon="🏢">
           {t('venues')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
-        <SidebarItem href="/admin/auctions" icon="📅">
+        <AdminSidebarItem href="/admin/auctions" icon="📅">
           {t('auctions')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
-        <SidebarItem href="/admin/items" icon="🐟">
+        <AdminSidebarItem href="/admin/items" icon="🐟">
           {t('items')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <SidebarItem href="/admin/invoice" icon="💰">
+        <AdminSidebarItem href="/admin/invoice" icon="💰">
           {t('invoice')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <SidebarItem href="/admin/settings" icon="⚙️">
+        <AdminSidebarItem href="/admin/settings" icon="⚙️">
           {t('settings')}
-        </SidebarItem>
+        </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <SidebarItem onClick={onLogout} icon="🚪">
+        <AdminSidebarItem onClick={onLogout} icon="🚪">
           {t('logout') || 'ログアウト'}
-        </SidebarItem>
+        </AdminSidebarItem>
       </Stack>
 
       {/* Footer / User info could go here */}
