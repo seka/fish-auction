@@ -30,11 +30,10 @@ export const AuctionListCell = ({
     <Tr>
       <Td>
         <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>
-          {auction.auctionDate}
+          {auction.duration.dateLabel}
         </Text>
         <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-          {auction.startTime ? auction.startTime.substring(0, 5) : '--:--'} -{' '}
-          {auction.endTime ? auction.endTime.substring(0, 5) : '--:--'}
+          {auction.duration.label}
         </Text>
       </Td>
       <Td>
@@ -47,7 +46,7 @@ export const AuctionListCell = ({
       </Td>
       <Td className={css({ textAlign: 'right' })}>
         <HStack justify="end" spacing="2">
-          {auction.status === 'scheduled' && (
+          {auction.actions.canStart && (
             <Button
               size="sm"
               onClick={() => onStatusChange(auction.id, 'in_progress')}
@@ -62,7 +61,7 @@ export const AuctionListCell = ({
               {t('Admin.Auctions.start')}
             </Button>
           )}
-          {auction.status === 'in_progress' && (
+          {auction.actions.canFinish && (
             <Button
               size="sm"
               onClick={() => onStatusChange(auction.id, 'completed')}

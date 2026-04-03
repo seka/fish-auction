@@ -11,6 +11,7 @@ vi.mock('@/src/features/auth', () => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
+  usePathname: vi.fn(() => '/admin'),
 }));
 
 vi.mock('@/src/core/components/organisms/AdminSidebar', () => ({
@@ -21,6 +22,12 @@ vi.mock('@/src/core/components/organisms/AdminSidebar', () => ({
   )),
 }));
 
+vi.mock('../states/useAdminNavigation', () => ({
+  useAdminNavigation: vi.fn(() => ({
+    getIsActive: vi.fn(),
+  })),
+}));
+
 describe('AuthorizableAdminSidebar', () => {
   const mockMutateAsync = vi.fn();
   const mockPush = vi.fn();
@@ -29,15 +36,15 @@ describe('AuthorizableAdminSidebar', () => {
     vi.clearAllMocks();
     vi.mocked(useAdminLogoutMutation).mockReturnValue({
       mutateAsync: mockMutateAsync,
-    } as any);
+    } as unknown as ReturnType<typeof useAdminLogoutMutation>);
     vi.mocked(useRouter).mockReturnValue({
       push: mockPush,
-    } as any);
+    } as unknown as ReturnType<typeof useRouter>);
   });
 
   it('calls logout mutation and redirects on handleLogout', async () => {
     render(<AuthorizableAdminSidebar />);
-    
+
     // Trigger logout
     fireEvent.click(screen.getByText('Logout'));
 

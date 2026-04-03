@@ -66,7 +66,7 @@ export const useItemManagement = () => {
           fishType: data.fishType,
           quantity: parseInt(data.quantity),
           unit: data.unit,
-          status: editingItem.status,
+          status: editingItem.status.value,
         });
         setMessage(t('Admin.Items.success_update'));
         setEditingItem(null);
@@ -91,7 +91,7 @@ export const useItemManagement = () => {
     setValue('auctionId', String(item.auctionId));
     setValue('fishermanId', String(item.fishermanId));
     setValue('fishType', item.fishType);
-    setValue('quantity', String(item.quantity));
+    setValue('quantity', String(item.quantity.value));
     setValue('unit', item.unit);
   };
 

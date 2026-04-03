@@ -1,8 +1,9 @@
 'use client';
 
 import { useAdminLogoutMutation } from '@/src/features/auth';
-import { AdminSidebar } from '@/src/core/components/organisms/AdminSidebar';
+import { AdminSidebar } from '@organisms';
 import { useRouter } from 'next/navigation';
+import { useAdminNavigation } from '../states/useAdminNavigation';
 
 /**
  * 認証ロジックを注入した管理者用サイドバー
@@ -10,6 +11,7 @@ import { useRouter } from 'next/navigation';
 export const AuthorizableAdminSidebar = () => {
   const router = useRouter();
   const logoutMutation = useAdminLogoutMutation();
+  const { getIsActive } = useAdminNavigation();
 
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();
@@ -18,5 +20,5 @@ export const AuthorizableAdminSidebar = () => {
     router.push('/login/admin');
   };
 
-  return <AdminSidebar onLogout={handleLogout} />;
+  return <AdminSidebar onLogout={handleLogout} getIsActive={getIsActive} />;
 };

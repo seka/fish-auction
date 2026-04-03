@@ -67,7 +67,7 @@ export const ItemListCell = ({
       </Td>
       <Td>
         <Text fontSize="sm" className={css({ color: 'gray.900' })}>
-          {item.quantity} {item.unit}
+          {item.quantity.label}
         </Text>
       </Td>
       <Td className={css({ textAlign: 'right' })}>

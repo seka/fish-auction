@@ -59,8 +59,7 @@ export const ItemForm = ({
               <option value="">{t('Admin.Items.placeholder_select_auction')}</option>
               {auctions.map((auction) => (
                 <option key={auction.id} value={auction.id}>
-                  {auction.auctionDate} {auction.startTime?.substring(0, 5)} -{' '}
-                  {auction.endTime?.substring(0, 5)} (ID: {auction.id})
+                  {auction.duration.dateLabel} {auction.duration.label} (ID: {auction.id})
                 </option>
               ))}
             </Select>

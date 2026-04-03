@@ -70,9 +70,9 @@ export const useAuctionManagement = () => {
   const onEdit = (auction: Auction) => {
     setEditingAuction(auction);
     setValue('venueId', auction.venueId);
-    setValue('auctionDate', auction.auctionDate);
-    setValue('startTime', auction.startTime || '');
-    setValue('endTime', auction.endTime || '');
+    setValue('auctionDate', auction.duration.dateLabel);
+    setValue('startTime', auction.duration.startTime ?? undefined);
+    setValue('endTime', auction.duration.endTime ?? undefined);
   };
 
   const onCancelEdit = () => {
