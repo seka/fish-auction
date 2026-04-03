@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { Auction as EntityAuction } from '@entities/auction';
-import { selectIsAuctionActive, selectTime, selectMinimumBidIncrement } from './selectAuction';
+import {
+  selectIsAuctionActive,
+  selectTimeLabel,
+  selectTime,
+  selectMinimumBidIncrement,
+  selectNextMinimumBid,
+  selectVisiblePublicAuctions,
+} from './selectAuction';
 
 describe('auctions/selectors/selectAuction', () => {
   describe('selectTime', () => {
@@ -12,6 +19,18 @@ describe('auctions/selectors/selectAuction', () => {
     it('should return empty string for null/undefined', () => {
       expect(selectTime(null)).toBe('');
       expect(selectTime(undefined)).toBe('');
+    });
+  });
+
+  describe('selectTimeLabel', () => {
+    it('should format time range with ~ separator', () => {
+      expect(selectTimeLabel('10:00:00', '12:00:00')).toBe('10:00 ~ 12:00');
+    });
+
+    it('should handle null/missing times with placeholders', () => {
+      expect(selectTimeLabel('10:00:00', null)).toBe('10:00 ~ --:--');
+      expect(selectTimeLabel(null, '12:00:00')).toBe('--:-- ~ 12:00');
+      expect(selectTimeLabel(null, null)).toBe('');
     });
   });
 
@@ -30,52 +49,99 @@ describe('auctions/selectors/selectAuction', () => {
     });
   });
 
+  describe('selectNextMinimumBid', () => {
+    it('should calculate next minimum bid correctly', () => {
+      expect(selectNextMinimumBid(500)).toBe(600); // 500 + 100
+      expect(selectNextMinimumBid(5000)).toBe(5500); // 5000 + 500
+      expect(selectNextMinimumBid(50000)).toBe(51000); // 50000 + 1000
+    });
+  });
+
   describe('selectIsAuctionActive', () => {
+    it('should return true if status is in_progress', () => {
+      const auction = { status: 'in_progress', auctionDate: '2024-03-30' } as EntityAuction;
+      expect(selectIsAuctionActive(auction)).toBe(true);
+    });
+
+    it('should return false if status is completed or cancelled', () => {
+      expect(selectIsAuctionActive({ status: 'completed' } as EntityAuction)).toBe(false);
+      expect(selectIsAuctionActive({ status: 'cancelled' } as EntityAuction)).toBe(false);
+    });
+
     it('should return true if current time is within auction hours', () => {
       const auctionDate = '2024-03-30';
       const auction: EntityAuction = {
         auctionDate,
         startTime: '10:00:00',
         endTime: '12:00:00',
+        status: 'scheduled',
       } as EntityAuction;
-      
-      const [year, month, day] = auctionDate.split('-').map(Number);
-      const now = new Date(year, month - 1, day, 11, 0, 0);
-      
+
+      const now = new Date('2024-03-30T11:00:00+09:00');
+
       expect(selectIsAuctionActive(auction, now)).toBe(true);
     });
 
-    it('should return false if current time is before auction starts', () => {
+    it('should return false if current time is before auction start', () => {
       const auctionDate = '2024-03-30';
-      const auction: EntityAuction = {
+      const auction = {
         auctionDate,
         startTime: '10:00:00',
         endTime: '12:00:00',
+        status: 'scheduled',
       } as EntityAuction;
-      
-      const [year, month, day] = auctionDate.split('-').map(Number);
-      const now = new Date(year, month - 1, day, 9, 0, 0);
-      
+
+      const now = new Date('2024-03-30T09:59:59+09:00');
+
       expect(selectIsAuctionActive(auction, now)).toBe(false);
     });
 
-    it('should return false if current time is after auction ends', () => {
+    it('should return false if current time is after auction end', () => {
       const auctionDate = '2024-03-30';
-      const auction: EntityAuction = {
+      const auction = {
         auctionDate,
         startTime: '10:00:00',
         endTime: '12:00:00',
+        status: 'scheduled',
       } as EntityAuction;
-      
-      const [year, month, day] = auctionDate.split('-').map(Number);
-      const now = new Date(year, month - 1, day, 13, 0, 0);
-      
+
+      const now = new Date('2024-03-30T12:00:01+09:00');
+
       expect(selectIsAuctionActive(auction, now)).toBe(false);
     });
+  });
 
-    it('should return false if startTime or endTime is missing', () => {
-      const auction = {} as EntityAuction;
-      expect(selectIsAuctionActive(auction)).toBe(false);
+  describe('selectVisiblePublicAuctions', () => {
+    it('should filter out cancelled auctions and sort by in_progress then date', () => {
+      const auctions = [
+        {
+          id: 1,
+          status: { isInProgress: false, isCancelled: false },
+          duration: { startAt: new Date('2024-03-31T10:00:00+09:00') },
+        },
+        {
+          id: 2,
+          status: { isInProgress: true, isCancelled: false },
+          duration: { startAt: new Date('2024-03-30T12:00:00+09:00') },
+        },
+        {
+          id: 3,
+          status: { isInProgress: false, isCancelled: true },
+          duration: { startAt: new Date('2024-03-30T09:00:00+09:00') },
+        },
+        {
+          id: 4,
+          status: { isInProgress: false, isCancelled: false },
+          duration: { startAt: new Date('2024-03-30T09:00:00+09:00') },
+        },
+      ];
+
+      const visible = selectVisiblePublicAuctions(auctions);
+
+      expect(visible.length).toBe(3);
+      expect(visible[0].id).toBe(2); // in_progress first
+      expect(visible[1].id).toBe(4); // 2024-03-30 09:00
+      expect(visible[2].id).toBe(1); // 2024-03-31 10:00
     });
   });
 });
