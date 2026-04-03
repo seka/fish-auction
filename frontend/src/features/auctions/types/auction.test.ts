@@ -50,7 +50,7 @@ describe('auctions/types/auction', () => {
       const result = toAuction(entity);
 
       expect(result.duration.label).toBe('');
-      expect(result.duration.startAt).toBeInstanceOf(Date);
+      expect(result.duration.startTime).toBeNull();
     });
   });
 });
