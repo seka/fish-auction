@@ -16,7 +16,7 @@ description: Use when changing the fish-auction frontend built with Next.js, Rea
 - `frontend/app/*/components`: Container (Page orchestration) components
 - `frontend/src/core/components`: 純粋な UI コンポーネント（認証・副作用なし）。`@atoms`, `@molecules`, `@organisms`, `@templates` エイリアスで参照
 - `frontend/src/features/*/components`: Domain-specific UI widgets (List, Form, Card など)
-- `frontend/src/features/*/selectors`: ドメイン固有の純粋関数（時刻変換、アクティブ判定など）
+- `frontend/src/features/*/selectors`: TanStack Query の `select` オプション専用の変換ロジック（Entity → ViewModel 変換の一部）
 - `frontend/src/features/*/states`: UI logic or domain-specific hooks
 - `frontend/src/features/*/queries`: 機能固有の query / mutation
 - `frontend/src/features/*/types`: 機能固有の型定義（ドメインモデル + `toXxx` 変換関数）
@@ -30,7 +30,9 @@ description: Use when changing the fish-auction frontend built with Next.js, Rea
 - API エンドポイントを叩くだけの関数は `src/data/api`
 - React Query の状態管理は `src/data/queries` か feature 配下の `queries`
 - UI と query の組み合わせやイベント調停は `states`
-- ドメインデータの計算・派生値（副作用なし）: `src/features/*/selectors`
+- TanStack Query の `select` 用のデータ変換・派生値計算: `src/features/*/selectors`
+    - ※コンポーネントからの直接呼び出しや ViewModel を引数に取る実装は禁止。
+    - ※時刻経過による再計算が必要な場合は、`cacheTime` や `staleTime` を短く設定してクエリを再評価することで対応する。
 - @entities から feature モデルへの変換 (`toXxx`): `src/features/*/types`
 - 認証なしの共有 UI: `src/core/components`（`@organisms` 等のエイリアス経由）
 - `src/core/components` の pure component に認証ロジックを注入する場合: `features/auth/components/Authorizable*.tsx` でラップする
