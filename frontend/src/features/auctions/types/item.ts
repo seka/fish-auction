@@ -16,7 +16,6 @@ export interface AuctionItem {
     value: number;
     label: string;
   };
-  startPrice: number;
   status: {
     value: 'Pending' | 'Bidding' | 'Sold' | 'Unsold';
     labelKey: string;
@@ -62,7 +61,6 @@ export const toAuctionItem = (entity: EntityAuctionItem): AuctionItem => {
       value: highestBid,
       label: formatJPY(highestBid),
     },
-    startPrice: 0, // 以前の実装に合わせ 0 でハードコード
     status: selectItemStatus(itemStatus),
     bidding: {
       highestBid: entity.highestBid ?? null,

@@ -33,7 +33,6 @@ describe('auctions/types/item', () => {
       expect(result.quantity.value).toBe(100);
       expect(result.quantity.label).toBe('100 kg');
       expect(result.price.label).toBe('¥5,000');
-      expect(result.startPrice).toBe(0);
     });
 
     it('should handle missing highestBid', () => {
