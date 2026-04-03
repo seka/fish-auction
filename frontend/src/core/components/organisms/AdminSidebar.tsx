@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Box, Stack, Text, HStack } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
@@ -49,23 +48,10 @@ type AdminSidebarItemProps = {
   href?: string; // Linkとして使う場合
   onClick?: () => void; // Buttonとして使う場合
   icon?: string; // アイコン (絵文字など)
-  isActive?: boolean; // 明示的にActiveにする場合 (基本はhrefで自動判定)
+  isActive?: boolean; // アクティブ状態ならtrue
 };
 
-const AdminSidebarItem = ({
-  children,
-  href,
-  onClick,
-  icon,
-  isActive: explicitActive,
-}: AdminSidebarItemProps) => {
-  const pathname = usePathname();
-
-  // hrefがある場合は、現在のパスがhrefで始まっているかを判定 (サブパスも含めるため startsWith を使用)
-  const isActive =
-    explicitActive ??
-    (href ? (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)) : false);
-
+const AdminSidebarItem = ({ children, href, onClick, icon, isActive }: AdminSidebarItemProps) => {
   const className = css(sidebarItemStyles.base, isActive ? sidebarItemStyles.active : {});
 
   const content = (
@@ -92,9 +78,10 @@ const AdminSidebarItem = ({
 
 export interface AdminSidebarProps {
   onLogout: () => Promise<void>;
+  getIsActive: (href?: string, explicitActive?: boolean) => boolean;
 }
 
-export const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
+export const AdminSidebar = ({ onLogout, getIsActive }: AdminSidebarProps) => {
   const t = useTranslations('Admin.Sidebar');
 
   return (
@@ -124,53 +111,65 @@ export const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
       </Box>
 
       <Stack as="nav" mt="6" px="2" spacing="1" flex="1">
-        <AdminSidebarItem href="/" icon="↩️">
+        <AdminSidebarItem href="/" icon="↩️" isActive={getIsActive('/')}>
           {t('back_to_top')}
         </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <AdminSidebarItem href="/admin" icon="📊">
+        <AdminSidebarItem href="/admin" icon="📊" isActive={getIsActive('/admin')}>
           {t('dashboard')}
         </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <AdminSidebarItem href="/admin/fishermen" icon="👨‍🌾">
+        <AdminSidebarItem
+          href="/admin/fishermen"
+          icon="👨‍🌾"
+          isActive={getIsActive('/admin/fishermen')}
+        >
           {t('fishermen')}
         </AdminSidebarItem>
 
-        <AdminSidebarItem href="/admin/buyers" icon="👔">
+        <AdminSidebarItem href="/admin/buyers" icon="👔" isActive={getIsActive('/admin/buyers')}>
           {t('buyers')}
         </AdminSidebarItem>
 
-        <AdminSidebarItem href="/admin/venues" icon="🏢">
+        <AdminSidebarItem href="/admin/venues" icon="🏢" isActive={getIsActive('/admin/venues')}>
           {t('venues')}
         </AdminSidebarItem>
 
-        <AdminSidebarItem href="/admin/auctions" icon="📅">
+        <AdminSidebarItem
+          href="/admin/auctions"
+          icon="📅"
+          isActive={getIsActive('/admin/auctions')}
+        >
           {t('auctions')}
         </AdminSidebarItem>
 
-        <AdminSidebarItem href="/admin/items" icon="🐟">
+        <AdminSidebarItem href="/admin/items" icon="🐟" isActive={getIsActive('/admin/items')}>
           {t('items')}
         </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <AdminSidebarItem href="/admin/invoice" icon="💰">
+        <AdminSidebarItem href="/admin/invoice" icon="💰" isActive={getIsActive('/admin/invoice')}>
           {t('invoice')}
         </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <AdminSidebarItem href="/admin/settings" icon="⚙️">
+        <AdminSidebarItem
+          href="/admin/settings"
+          icon="⚙️"
+          isActive={getIsActive('/admin/settings')}
+        >
           {t('settings')}
         </AdminSidebarItem>
 
         <Box borderTop="1px solid" borderColor="indigo.800" my="4" mx="2"></Box>
 
-        <AdminSidebarItem onClick={onLogout} icon="🚪">
+        <AdminSidebarItem onClick={onLogout} icon="🚪" isActive={false}>
           {t('logout') || 'ログアウト'}
         </AdminSidebarItem>
       </Stack>

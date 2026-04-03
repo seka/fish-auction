@@ -1,29 +1,5 @@
 import { apiClient } from '@/src/core/api/client';
-import { AuctionStatus } from '@entities/auction';
-
-export interface Purchase {
-  id: number;
-  itemId: number;
-  fishType: string;
-  quantity: number;
-  unit: string;
-  price: number;
-  buyerId: number;
-  auctionId: number;
-  auctionDate: string;
-  createdAt: string;
-}
-
-export interface AuctionSummary {
-  id: number;
-  venueId: number;
-  auctionDate: string;
-  startTime: string | null;
-  endTime: string | null;
-  status: AuctionStatus;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Purchase, AuctionSummary } from '@entities';
 
 export const getMyPurchases = async (): Promise<Purchase[]> => {
   try {

@@ -248,7 +248,7 @@
       "bid_amount_label": "入札価格 (円)",
       "bid_button": "落札する！",
       "next_min_bid": "最低入札額: {price}",
-      "fail_bid_low_price": "入札額が低すぎます (最低: {min}円)",
+      "fail_bid_low_price": "入札額が低すぎます (最低: {min})",
       "bidding_process": "処理中...",
       "item_ended": "この商品は既に入札が終了しています",
       "select_instruction": "左のリストから\n商品を選択してください",

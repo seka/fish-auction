@@ -5,7 +5,7 @@ import { Auction } from '@entities/auction';
 
 export const useAuctionQuery = <T = Auction[]>(
   filters?: { venueId?: number; date?: string; status?: string },
-  options?: Omit<UseQueryOptions<Auction[], Error, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Auction[], Error, T>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: auctionKeys.publicList(filters),
@@ -16,7 +16,7 @@ export const useAuctionQuery = <T = Auction[]>(
 
 export const useAuctionDetailQuery = <T = Auction>(
   auctionId: number,
-  options?: Omit<UseQueryOptions<Auction, Error, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Auction, Error, T>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: auctionKeys.publicDetail(auctionId),

@@ -12,11 +12,15 @@ export const useAuctionDetailData = (auctionId: number) => {
   const { data: auction, isLoading: isAuctionLoading } = useAuctionDetailQuery(auctionId, {
     select: toAuction,
   });
-  
-  const { data: items, isLoading: isItemsLoading, refetch: refetchItems } = useItemsByAuction(auctionId, {
+
+  const {
+    data: items,
+    isLoading: isItemsLoading,
+    refetch: refetchItems,
+  } = useItemsByAuction(auctionId, {
     select: (data) => data.map(toAuctionItem),
   });
-  
+
   return {
     auction,
     items: items || [],

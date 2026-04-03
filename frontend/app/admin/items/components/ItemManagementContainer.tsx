@@ -85,7 +85,7 @@ export const ItemManagementContainer = () => {
                   <option value="">{t('Admin.Items.filter_all')}</option>
                   {state.auctions.map((auction) => (
                     <option key={auction.id} value={auction.id}>
-                      {auction.auctionDate} (ID: {auction.id})
+                      {auction.duration.dateLabel} (ID: {auction.id})
                     </option>
                   ))}
                 </Select>

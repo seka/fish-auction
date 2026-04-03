@@ -17,7 +17,7 @@ describe('Buyer Auth API', () => {
   });
 
   it('getCurrentBuyer calls singular /api/buyer/me', async () => {
-    const mockBuyer: Buyer = { id: 1, name: "Test Buyer" };
+    const mockBuyer: Buyer = { id: 1, name: 'Test Buyer' };
     vi.mocked(apiClient.get).mockResolvedValue(mockBuyer);
 
     await getCurrentBuyer();
@@ -26,8 +26,8 @@ describe('Buyer Auth API', () => {
   });
 
   it('loginBuyer calls singular /api/buyer/login', async () => {
-    const credentials = { email: "test@example.com", password: "password" };
-    const mockBuyer: Buyer = { id: 1, name: "Test Buyer" };
+    const credentials = { email: 'test@example.com', password: 'password' };
+    const mockBuyer: Buyer = { id: 1, name: 'Test Buyer' };
     vi.mocked(apiClient.post).mockResolvedValue(mockBuyer);
 
     await loginBuyer(credentials);

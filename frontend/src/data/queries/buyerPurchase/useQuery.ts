@@ -1,5 +1,6 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { getMyPurchases, Purchase } from '@/src/data/api/buyer_mypage';
+import { getMyPurchases } from '@/src/data/api/buyer_mypage';
+import { Purchase } from '@entities';
 import { buyerPurchaseKeys } from './keys';
 
 export const useMyPurchases = <T = Purchase[]>(

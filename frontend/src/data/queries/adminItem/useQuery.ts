@@ -9,7 +9,7 @@ import { AuctionItem } from '@entities/auction';
  */
 export const useItemQuery = <T = AuctionItem[]>(
   auctionId?: number,
-  options?: Omit<UseQueryOptions<AuctionItem[], Error, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<AuctionItem[], Error, T>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: auctionId ? ['admin', 'auctions', auctionId, 'items'] : adminItemKeys.all,

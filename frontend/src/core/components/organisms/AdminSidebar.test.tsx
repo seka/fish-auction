@@ -14,9 +14,10 @@ vi.mock('next-intl', () => ({
 
 describe('AdminSidebar', () => {
   const mockLogout = vi.fn();
+  const mockGetIsActive = vi.fn((href) => href === '/admin');
 
   it('renders all menu items', () => {
-    render(<AdminSidebar onLogout={mockLogout} />);
+    render(<AdminSidebar onLogout={mockLogout} getIsActive={mockGetIsActive} />);
 
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByText('back_to_top')).toBeInTheDocument();
@@ -25,7 +26,7 @@ describe('AdminSidebar', () => {
   });
 
   it('highlights active link based on pathname', () => {
-    render(<AdminSidebar onLogout={mockLogout} />);
+    render(<AdminSidebar onLogout={mockLogout} getIsActive={mockGetIsActive} />);
 
     const dashboardLink = screen.getByRole('link', { name: /dashboard/ });
     expect(dashboardLink).toBeInTheDocument();

@@ -14,12 +14,14 @@
 ## レイヤー構造
 
 ### 1. Presentation Layer (`app/**`, `src/core/components`, `src/features/*/components`)
+
 - **Atomic Design** をベースにしたコンポーネント構成。
-- **Page Layer (`app/**`)**: route と page の入口。ページ全体の構成（Orchestration）を担う `Container` コンポーネントを `app/**/components/` に配置します。
+- **Page Layer (`app/**`)**: route と page の入口。ページ全体の構成（Orchestration）を担う `Container`コンポーネントを`app/\*\*/components/` に配置します。
 - **Core Layer (`src/core/components`)**: 認証・副作用を持たない純粋な UI コンポーネント。`@atoms`, `@molecules`, `@organisms`, `@templates` エイリアスで参照します。`Organisms` 以上のコンポーネントに認証ロジックが必要な場合は、`features/auth/components/Authorizable*.tsx` でラップする **Authorizable パターン** を用います。
 - **Feature Layer (`src/features/*/components`)**: 再利用可能なドメイン固有の UI 部品（Widgets）。List, Form, Card など。
 
 ### 2. Logic Layer (`src/features/*/states`)
+
 - feature に応じたカスタムフックを配置します。実コードでは `useLogin` のような軽量な命名も使われています。
 - 以下の役割を持ちます：
   - `react-hook-form` によるフォーム状態の管理。
@@ -27,21 +29,25 @@
   - 複数のデータソースの組み合わせや、エラー/成功時の UI フィードバック（Toast 等）の制御。
 
 ### 3. Data Access Layer (`src/data`, `src/features/*/queries`)
+
 - **Queries**: `TanStack Query` の `useQuery` / `useMutation` をラップしたフック。Query Keys の管理もここで行います。
 - **Entities**: サーバー側のデータ構造の真実の源泉（`backend/internal/infrastructure/entity` 等から生成）。`@entities/*` 経由で取得します。
 
 ### 4. Type Layer (`src/features/*/types`)
+
 - **Feature-specific Types**: 各 Feature が必要とする最小限のドメインモデルおよび UI 専用の型を定義します。
 - **原則**: 他の Feature や `@entities` から型をインポートせず、Feature 内で完結させます。これにより、サーバー側の変更や他機能の変更からロジックを保護（疎結合化）します。
 - **データ変換**: `toXxx` 関数を `types/` 内に定義し、`@entities` から Feature ローカルの型へ変換します。導出値の算出には `selectors` を組み合わせます。
 
 ### 5. Selector Layer (`src/features/*/selectors`)
+
 - ドメインデータから表示用の値を導出する **純粋関数** を配置します。
 - 副作用・外部依存を持たないため、単体テストが容易です。
 - 例: `selectIsAuctionActive(auction, now)`, `selectTime(timeStr)`, `selectMinimumBidIncrement(price)`
 - **規律**: selector はコンポーネントや query に直接書かず、このレイヤーに切り出します。
 
 ### 6. Infrastructure Layer (`src/core`)
+
 - **API Client**: `fetch` API のラッパー。インターセプターや共通のエラーハンドリング、ケース変換（Snake <-> Camel）を実装します。
 
 ## データフロー詳細

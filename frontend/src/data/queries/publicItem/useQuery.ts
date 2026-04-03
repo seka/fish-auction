@@ -5,7 +5,7 @@ import { itemKeys } from './keys';
 
 export const useItemsByAuction = <T = AuctionItem[]>(
   auctionId: number,
-  options?: Omit<UseQueryOptions<AuctionItem[], Error, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<AuctionItem[], Error, T>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: itemKeys.publicByAuction(auctionId),

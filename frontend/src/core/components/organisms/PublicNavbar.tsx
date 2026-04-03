@@ -65,8 +65,8 @@ export const PublicNavbar = ({ isLoggedIn, isLoading, buyerName, onLogout }: Pub
           )}
 
           <HStack spacing="3">
-            {!isLoading && (
-              isLoggedIn ? (
+            {!isLoading &&
+              (isLoggedIn ? (
                 <HStack spacing="3">
                   <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.600' })}>
                     {buyerName} {t('Navbar.honorific')}
@@ -81,8 +81,7 @@ export const PublicNavbar = ({ isLoggedIn, isLoading, buyerName, onLogout }: Pub
                     {t('Navbar.login')}
                   </Button>
                 </Link>
-              )
-            )}
+              ))}
           </HStack>
         </HStack>
       </Box>

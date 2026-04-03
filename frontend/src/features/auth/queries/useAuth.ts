@@ -9,7 +9,8 @@ import { useRouter } from 'next/navigation';
  */
 export const useAdminLoginMutation = () => {
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) => login(email, password),
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      login(email, password),
   });
 };
 

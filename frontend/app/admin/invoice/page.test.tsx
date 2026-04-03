@@ -19,7 +19,6 @@ describe('InvoicePage', () => {
     has: vi.fn(),
   });
 
-
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useInvoiceManagement).mockReturnValue({
