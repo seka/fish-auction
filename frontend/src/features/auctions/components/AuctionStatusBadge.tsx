@@ -1,13 +1,13 @@
 import { useTranslations } from 'next-intl';
 import { Badge } from '@atoms';
-import { AuctionStatus } from '../types/auction';
+import { Auction } from '../types/auction';
 
 interface AuctionStatusBadgeProps {
-  status: AuctionStatus;
+  status: Auction['status'];
 }
 
 export const AuctionStatusBadge = ({ status }: AuctionStatusBadgeProps) => {
   const t = useTranslations('AuctionStatus');
 
-  return <Badge variant={status.variant}>{t(status.value)}</Badge>;
+  return <Badge variant={status.variant}>{t(status.labelKey)}</Badge>;
 };
