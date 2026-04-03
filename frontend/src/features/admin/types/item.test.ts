@@ -23,8 +23,33 @@ describe('admin/types/item', () => {
       const result = toAuctionItem(entity);
 
       expect(result.id).toBe(101);
+      expect(result.status).toEqual({
+        value: 'Bidding',
+        labelKey: 'Bidding',
+        variant: 'success',
+        isPending: false,
+        isBidding: true,
+        isSold: false,
+        isUnsold: false,
+      });
+      expect(result.bidding).toEqual({
+        highestBid: 2000,
+        highestBidderId: 2,
+        highestBidderName: 'Buyer A',
+        nextMinBid: {
+          value: 2500,
+          label: '¥2,500',
+        },
+      });
+      expect(result.quantity).toEqual({
+        value: 100,
+        label: '100 kg',
+      });
+      expect(result.price).toEqual({
+        value: 2000,
+        label: '¥2,000',
+      });
       expect(result.fishType).toBe('Saba');
-      expect(result.createdAt).toBe('2024-03-30T10:00:00Z');
     });
 
     it('should handle missing highestBid in admin item mapping', () => {
@@ -40,8 +65,10 @@ describe('admin/types/item', () => {
 
       const result = toAuctionItem(entity);
 
-      expect(result.highestBid).toBeUndefined();
-      expect(result.id).toBe(102);
+      expect(result.bidding.highestBid).toBeNull();
+      expect(result.bidding.nextMinBid.value).toBe(100);
+      expect(result.price.label).toBe('¥0');
+      expect(result.quantity.label).toBe('50 kg');
     });
   });
 });

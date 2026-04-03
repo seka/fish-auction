@@ -18,8 +18,23 @@ describe('admin/types/auction toAuction', () => {
     const result = toAuction(entity);
 
     expect(result.id).toBe(1);
+    expect(result.status).toEqual({
+      value: 'in_progress',
+      labelKey: 'in_progress',
+      variant: 'success',
+      isScheduled: false,
+      isInProgress: true,
+      isCompleted: false,
+      isCancelled: false,
+    });
+    expect(result.duration.startAt).toBeInstanceOf(Date);
+    expect(result.duration.startAt.toISOString()).toBe('2024-03-30T01:00:00.000Z');
+    expect(result.duration.label).toBe('10:00 ~ 12:00');
+    expect(result.actions).toEqual({
+      canStart: false,
+      canFinish: true,
+    });
     expect(result.createdAt).toBe('2024-03-01T00:00:00Z');
-    expect(result.startTime).toBe('10:00:00');
   });
 
   it('should handle null startTime in admin mapping', () => {
@@ -34,7 +49,7 @@ describe('admin/types/auction toAuction', () => {
 
     const result = toAuction(entity);
 
-    expect(result.startTime).toBeNull();
-    expect(result.endTime).toBeNull();
+    expect(result.duration.label).toBe('');
+    expect(result.actions.canStart).toBe(true);
   });
 });
