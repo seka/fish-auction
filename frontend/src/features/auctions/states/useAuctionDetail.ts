@@ -32,7 +32,12 @@ export const useAuctionDetail = (auctionId: number) => {
     };
   }, [messageTimeoutRef]);
 
-  const { auction, items, isLoading: isDataLoading, refetchItems } = useAuctionDetailData(auctionId);
+  const {
+    auction,
+    items,
+    isLoading: isDataLoading,
+    refetchItems,
+  } = useAuctionDetailData(auctionId);
   const { submitBid, isLoading: isBidLoading } = useBidSubmit();
   const { isLoggedIn, isChecking } = useAuthQuery();
   const isLoading = isDataLoading;
