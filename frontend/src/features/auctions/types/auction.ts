@@ -29,6 +29,8 @@ export interface Auction {
   isActive: boolean;
 }
 
+export type AuctionStatus = Auction['status'];
+
 export const toAuction = (entity: EntityAuction): Auction => {
   const auctionDate = entity.auctionDate;
   const startTime = entity.startTime || '00:00:00';

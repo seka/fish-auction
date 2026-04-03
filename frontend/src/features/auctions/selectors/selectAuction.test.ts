@@ -113,34 +113,43 @@ describe('auctions/selectors/selectAuction', () => {
 
   describe('selectVisiblePublicAuctions', () => {
     it('should filter out cancelled auctions and sort by in_progress then date', () => {
+      const now = new Date('2024-03-30T12:00:00+09:00');
       const auctions = [
         {
           id: 1,
-          status: { isInProgress: false, isCancelled: false },
-          duration: { startAt: new Date('2024-03-31T10:00:00+09:00') },
+          status: 'scheduled',
+          auctionDate: '2024-03-31',
+          startTime: '10:00:00',
+          endTime: '12:00:00',
         },
         {
           id: 2,
-          status: { isInProgress: true, isCancelled: false },
-          duration: { startAt: new Date('2024-03-30T12:00:00+09:00') },
+          status: 'in_progress',
+          auctionDate: '2024-03-30',
+          startTime: '11:00:00',
+          endTime: '13:00:00',
         },
         {
           id: 3,
-          status: { isInProgress: false, isCancelled: true },
-          duration: { startAt: new Date('2024-03-30T09:00:00+09:00') },
+          status: 'cancelled',
+          auctionDate: '2024-03-30',
+          startTime: '09:00:00',
+          endTime: '11:00:00',
         },
         {
           id: 4,
-          status: { isInProgress: false, isCancelled: false },
-          duration: { startAt: new Date('2024-03-30T09:00:00+09:00') },
+          status: 'scheduled',
+          auctionDate: '2024-03-30',
+          startTime: '09:00:00',
+          endTime: '11:00:00',
         },
-      ];
+      ] as EntityAuction[];
 
-      const visible = selectVisiblePublicAuctions(auctions);
+      const visible = selectVisiblePublicAuctions(auctions, now);
 
       expect(visible.length).toBe(3);
       expect(visible[0].id).toBe(2); // in_progress first
-      expect(visible[1].id).toBe(4); // 2024-03-30 09:00
+      expect(visible[1].id).toBe(4); // 2024-03-30 09:00 (earlier than 2024-03-31)
       expect(visible[2].id).toBe(1); // 2024-03-31 10:00
     });
   });

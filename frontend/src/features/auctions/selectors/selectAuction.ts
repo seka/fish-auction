@@ -102,22 +102,10 @@ export const toJSTDate = (date: string, time: string | null): Date => {
  * オークションが現在開催中（入札可能時間内）かどうかをチェックする
  */
 export const selectIsAuctionActive = (
-  auction:
-    | Pick<EntityAuction, 'status' | 'auctionDate' | 'startTime' | 'endTime'>
-    | {
-        status: { value: string };
-        duration: {
-          startAt: Date;
-          endAt: Date;
-          dateLabel: string;
-          startTime?: string;
-          endTime?: string;
-        };
-      },
+  auction: Pick<EntityAuction, 'status' | 'auctionDate' | 'startTime' | 'endTime'>,
   now = new Date(),
 ): boolean => {
-  // ステータスの取得
-  const status = typeof auction.status === 'string' ? auction.status : auction.status.value;
+  const { status, auctionDate, startTime, endTime } = auction;
 
   // ステータスが明確に終了または中止なら非アクティブ
   if (status === 'completed' || status === 'cancelled') {
@@ -129,22 +117,14 @@ export const selectIsAuctionActive = (
     return true;
   }
 
-  // ViewModel (durationプロパティを持つ) の場合
-  if ('duration' in auction) {
-    return now >= auction.duration.startAt && now <= auction.duration.endAt;
-  }
-
-  const date = auction.auctionDate;
-  const startTime = auction.startTime;
-  const endTime = auction.endTime;
-
+  // 予定ステータスの場合は時間の整合性をチェック
   if (!startTime || !endTime) {
     return status === 'scheduled';
   }
 
   try {
-    const startDateTime = toJSTDate(date, startTime);
-    const endDateTime = toJSTDate(date, endTime);
+    const startDateTime = toJSTDate(auctionDate, startTime);
+    const endDateTime = toJSTDate(auctionDate, endTime);
 
     return now >= startDateTime && now <= endDateTime;
   } catch (e) {
@@ -157,24 +137,23 @@ export const selectIsAuctionActive = (
  * 公開一覧用の表示ポリシーを適用し、ソートした結果を返す
  * 中止されていないオークションを表示対象とし、開催中を優先して開始日時順でソートする
  */
-export const selectVisiblePublicAuctions = <
-  T extends {
-    status: {
-      isInProgress: boolean;
-      isCancelled: boolean;
-    };
-    duration: { startAt: Date };
-  },
->(
-  auctions: T[],
-): T[] => {
+export const selectVisiblePublicAuctions = (
+  auctions: EntityAuction[],
+  now = new Date(),
+): EntityAuction[] => {
   return [...auctions]
-    .filter((a) => !a.status.isCancelled)
+    .filter((a) => a.status !== 'cancelled')
     .sort((a, b) => {
+      const aActive = selectIsAuctionActive(a, now);
+      const bActive = selectIsAuctionActive(b, now);
+
       // 開催中を優先する
-      if (a.status.isInProgress && !b.status.isInProgress) return -1;
-      if (!a.status.isInProgress && b.status.isInProgress) return 1;
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
+
       // 日付順でソート
-      return a.duration.startAt.getTime() - b.duration.startAt.getTime();
+      const aStart = toJSTDate(a.auctionDate, a.startTime || '00:00:00').getTime();
+      const bStart = toJSTDate(b.auctionDate, b.startTime || '00:00:00').getTime();
+      return aStart - bStart;
     });
 };
