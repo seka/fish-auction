@@ -19,11 +19,25 @@ describe('auctions/types/auction', () => {
       const result = toAuction(entity);
 
       expect(result.id).toBe(1);
-      expect(result.startTime).toBe('10:00:00');
-      expect(result.status).toBe('in_progress');
+      expect(result.status).toEqual({
+        value: 'in_progress',
+        labelKey: 'in_progress',
+        variant: 'success',
+        isScheduled: false,
+        isInProgress: true,
+        isCompleted: false,
+        isCancelled: false,
+      });
+      expect(result.duration.startAt).toBeInstanceOf(Date);
+      expect(result.duration.endAt).toBeInstanceOf(Date);
+      // JST (UTC+9) 10:00 -> UTC 01:00
+      expect(result.duration.startAt.toISOString()).toBe('2024-03-30T01:00:00.000Z');
+      // JST (UTC+9) 12:00 -> UTC 03:00
+      expect(result.duration.endAt.toISOString()).toBe('2024-03-30T03:00:00.000Z');
+      expect(result.duration.label).toBe('10:00 ~ 12:00');
     });
 
-    it('should convert undefined/null startTime to null', () => {
+    it('should handle undefined/null startTime/endTime', () => {
       const entity = {
         id: 2,
         venueId: 10,
@@ -35,8 +49,8 @@ describe('auctions/types/auction', () => {
 
       const result = toAuction(entity);
 
-      expect(result.startTime).toBeNull();
-      expect(result.endTime).toBeNull();
+      expect(result.duration.label).toBe('');
+      expect(result.duration.startAt).toBeInstanceOf(Date);
     });
   });
 });

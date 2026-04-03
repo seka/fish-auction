@@ -23,8 +23,32 @@ describe('auctions/types/item', () => {
       const result = toAuctionItem(entity);
 
       expect(result.fishType).toBe('Maguro');
-      expect(result.currentPrice).toBe(5000); // highestBid -> currentPrice
-      expect(result.status).toBe('Bidding');
+      expect(result.status).toEqual({
+        value: 'Bidding',
+        labelKey: 'Bidding',
+        variant: 'success',
+        isPending: false,
+        isBidding: true,
+        isSold: false,
+        isUnsold: false,
+      });
+      expect(result.bidding).toEqual({
+        highestBid: 5000,
+        highestBidderId: 2,
+        highestBidderName: 'Buyer A',
+        nextMinBid: {
+          value: 5500,
+          label: '¥5,500',
+        },
+      });
+      expect(result.quantity).toEqual({
+        value: 100,
+        label: '100 kg',
+      });
+      expect(result.price).toEqual({
+        value: 5000,
+        label: '¥5,000',
+      });
     });
 
     it('should handle missing highestBid', () => {
@@ -36,11 +60,13 @@ describe('auctions/types/item', () => {
         quantity: 50,
         unit: 'kg',
         status: 'Pending',
-        sortOrder: 2,
       } as EntityAuctionItem;
 
       const result = toAuctionItem(entity);
-      expect(result.currentPrice).toBe(0);
+      expect(result.bidding.highestBid).toBeNull();
+      expect(result.bidding.nextMinBid.value).toBe(100);
+      expect(result.price.label).toBe('¥0');
+      expect(result.quantity.label).toBe('50 kg');
     });
   });
 });
