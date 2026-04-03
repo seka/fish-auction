@@ -6,7 +6,6 @@ import { AuctionItem, Auction } from '../types';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
 import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
-import { selectTime, selectMinimumBidIncrement } from '../selectors/selectAuction';
 
 import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
@@ -70,7 +69,7 @@ export const BiddingPanel = ({
                   {selectedItem.fishType}
                 </Text>
                 <Text fontSize="lg" className={css({ color: 'gray.700' })}>
-                  {selectedItem.quantity} {selectedItem.unit}
+                  {selectedItem.quantity.label}
                 </Text>
                 <Box fontSize="sm" className={css({ color: 'gray.600' })} mt="2">
                   {t.rich('Public.AuctionDetail.status', {
@@ -81,7 +80,7 @@ export const BiddingPanel = ({
                     ),
                   })}
                 </Box>
-                {selectedItem.highestBid && (
+                {selectedItem.bidding.highestBid && (
                   <Text
                     fontSize="sm"
                     mt="2"
@@ -89,12 +88,12 @@ export const BiddingPanel = ({
                     fontWeight="bold"
                   >
                     {t('Public.AuctionDetail.current_max_bid', {
-                      price: selectedItem.highestBid.toLocaleString(),
+                      price: selectedItem.bidding.highestBid.toLocaleString(),
                     })}
-                    {selectedItem.highestBidderName && (
+                    {selectedItem.bidding.highestBidderName && (
                       <Text as="span" ml="2" className={css({ color: 'gray.700' })}>
                         {t('Public.AuctionDetail.bidder_name', {
-                          name: selectedItem.highestBidderName,
+                          name: selectedItem.bidding.highestBidderName,
                         })}
                       </Text>
                     )}
@@ -102,7 +101,7 @@ export const BiddingPanel = ({
                 )}
               </Box>
 
-              {selectedItem.status === 'Pending' ? (
+              {selectedItem.status.isPending ? (
                 !auctionActive ? (
                   <Box
                     textAlign="center"
@@ -115,11 +114,11 @@ export const BiddingPanel = ({
                     <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">
                       {t('Public.AuctionDetail.out_of_hours_title')}
                     </Text>
-                    {auction.startTime && auction.endTime && (
+                    {auction.duration.startTime && auction.duration.endTime && (
                       <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
                         {t('Public.AuctionDetail.out_of_hours_msg', {
-                          start: selectTime(auction.startTime),
-                          end: selectTime(auction.endTime),
+                          start: auction.duration.startTime,
+                          end: auction.duration.endTime,
                         })}
                       </Text>
                     )}
@@ -139,10 +138,7 @@ export const BiddingPanel = ({
                       </Text>
                       <Text fontSize="xs" className={css({ color: 'gray.500', mb: '2' })}>
                         {t('Public.AuctionDetail.next_min_bid', {
-                          price: (
-                            (selectedItem.highestBid || 0) +
-                            selectMinimumBidIncrement(selectedItem.highestBid || 0)
-                          ).toLocaleString(),
+                          price: selectedItem.bidding.nextMinBid.value.toLocaleString(),
                         })}
                       </Text>
                       <Box position="relative">
@@ -160,10 +156,7 @@ export const BiddingPanel = ({
                         <Input
                           type="number"
                           {...register('price')}
-                          placeholder={(
-                            (selectedItem.highestBid || 0) +
-                            selectMinimumBidIncrement(selectedItem.highestBid || 0)
-                          ).toString()}
+                          placeholder={selectedItem.bidding.nextMinBid.value.toString()}
                           className={css({ pl: '7' })}
                         />
                       </Box>

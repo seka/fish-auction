@@ -27,18 +27,23 @@ export const AuctionsContainer = () => {
   const auctions = (allAuctions || [])
     .filter(
       (a: Auction) =>
-        a.status === 'scheduled' ||
-        a.status === 'in_progress' ||
-        a.status === 'completed' ||
-        a.status === 'cancelled',
+        a.status.value === 'scheduled' ||
+        a.status.value === 'in_progress' ||
+        a.status.value === 'completed' ||
+        a.status.value === 'cancelled',
     )
     .sort((a: Auction, b: Auction) => {
-      if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;
-      if (a.status !== 'in_progress' && b.status === 'in_progress') return 1;
-      return (
-        new Date(`${a.auctionDate}T${a.startTime}`).getTime() -
-        new Date(`${b.auctionDate}T${b.startTime}`).getTime()
-      );
+      if (a.status.value === 'in_progress' && b.status.value !== 'in_progress') return -1;
+      if (a.status.value !== 'in_progress' && b.status.value === 'in_progress') return 1;
+
+      const aTime = a.duration.startTime
+        ? `${a.duration.dateLabel}T${a.duration.startTime}`
+        : `${a.duration.dateLabel}T00:00:00`;
+      const bTime = b.duration.startTime
+        ? `${b.duration.dateLabel}T${b.duration.startTime}`
+        : `${b.duration.dateLabel}T00:00:00`;
+
+      return new Date(aTime).getTime() - new Date(bTime).getTime();
     });
 
   return (

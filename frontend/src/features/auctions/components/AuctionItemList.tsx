@@ -80,14 +80,13 @@ export const AuctionItemList = ({
                     </Text>
                     <Text className={css({ color: 'gray.700' })} mt="1">
                       <Text as="span" fontWeight="bold" fontSize="lg">
-                        {item.quantity}
-                      </Text>{' '}
-                      {item.unit}
+                        {item.quantity.label}
+                      </Text>
                       <Text as="span" fontSize="sm" ml="2" className={css({ color: 'gray.500' })}>
                         ({t('Public.AuctionDetail.fisherman_id', { id: item.fishermanId })})
                       </Text>
                     </Text>
-                    {item.highestBid && (
+                    {item.bidding.highestBid && (
                       <Text
                         fontSize="sm"
                         mt="1"
@@ -95,12 +94,12 @@ export const AuctionItemList = ({
                         fontWeight="semibold"
                       >
                         {t('Public.AuctionDetail.current_max_bid', {
-                          price: item.highestBid.toLocaleString(),
+                          price: item.bidding.highestBid.toLocaleString(),
                         })}
-                        {item.highestBidderName && (
+                        {item.bidding.highestBidderName && (
                           <Text as="span" ml="2" className={css({ color: 'gray.700' })}>
                             {t('Public.AuctionDetail.bidder_name', {
-                              name: item.highestBidderName,
+                              name: item.bidding.highestBidderName,
                             })}
                           </Text>
                         )}

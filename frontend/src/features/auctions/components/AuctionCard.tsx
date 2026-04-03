@@ -41,7 +41,7 @@ export const AuctionCard = ({ auction, venueName }: AuctionCardProps) => {
           <HStack justify="between" mb="4">
             <AuctionStatusBadge status={auction.status} />
             <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-              {auction.auctionDate}
+              {auction.duration.dateLabel}
             </Text>
           </HStack>
 
@@ -57,10 +57,7 @@ export const AuctionCard = ({ auction, venueName }: AuctionCardProps) => {
           <Stack spacing="2" mt="4">
             <HStack className={css({ fontSize: 'sm', color: 'gray.600' })}>
               <span className={css({ w: '5', textAlign: 'center' })}>⏰</span>
-              <Text>
-                {auction.startTime ? auction.startTime.substring(0, 5) : '--:--'} -{' '}
-                {auction.endTime ? auction.endTime.substring(0, 5) : '--:--'}
-              </Text>
+              <Text>{auction.duration.label}</Text>
             </HStack>
           </Stack>
         </Box>

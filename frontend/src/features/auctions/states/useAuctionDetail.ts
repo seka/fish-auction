@@ -8,7 +8,6 @@ import { getBidSchema, BidFormData } from '@schemas/auction';
 import { getBuyerLoginSchema, BuyerLoginFormData } from '@schemas/buyer_auth';
 import { useAuctionDetailData, useBidSubmit } from '../queries/useAuctions';
 import { useAuthQuery } from '@/src/data/queries/auth/useQuery';
-import { selectMinimumBidIncrement } from '../selectors/selectAuction';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { authKeys } from '@/src/data/queries/auth/keys';
@@ -74,14 +73,12 @@ export const useAuctionDetail = (auctionId: number) => {
   const onSubmitBid = async (data: BidFormData) => {
     if (!selectedItem) return;
 
-    const currentPrice = selectedItem.highestBid || 0;
-    const minIncrement = selectMinimumBidIncrement(currentPrice);
     const inputPrice = parseInt(data.price);
 
-    if (inputPrice < currentPrice + minIncrement) {
+    if (inputPrice < selectedItem.bidding.nextMinBid.value) {
       setMessage(
         t('Public.AuctionDetail.fail_bid_low_price', {
-          min: (currentPrice + minIncrement).toLocaleString(),
+          min: selectedItem.bidding.nextMinBid.value.toLocaleString(),
         }),
       );
       return;
