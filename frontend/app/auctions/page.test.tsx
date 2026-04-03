@@ -50,22 +50,18 @@ describe('AuctionsListPage', () => {
   });
 
   it('renders auctions list', () => {
-    const mockAuctions = [
+    const mockAuctions: Auction[] = [
       {
         id: 1,
         status: {
           value: 'in_progress',
-          variant: 'success',
           labelKey: 'in_progress',
+          variant: 'success',
           isScheduled: false,
           isInProgress: true,
           isCompleted: false,
           isCancelled: false,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true,
         duration: {
           startAt: new Date('2023-12-01T10:00:00+09:00'),
           endAt: new Date('2023-12-01T12:00:00+09:00'),
@@ -74,22 +70,20 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
+        venueId: 1,
+        isActive: true,
       },
       {
         id: 2,
         status: {
           value: 'scheduled',
-          variant: 'info',
           labelKey: 'scheduled',
+          variant: 'info',
           isScheduled: true,
           isInProgress: false,
           isCompleted: false,
           isCancelled: false,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: false,
         duration: {
           startAt: new Date('2023-12-02T10:00:00+09:00'),
           endAt: new Date('2023-12-02T12:00:00+09:00'),
@@ -98,10 +92,12 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
+        venueId: 1,
+        isActive: false,
       },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
-      data: mockAuctions as Auction[],
+      data: mockAuctions,
       isLoading: false,
       error: null,
     } as unknown as ReturnType<typeof usePublicAuctions>);
@@ -109,26 +105,22 @@ describe('AuctionsListPage', () => {
     render(<AuctionsListPage />);
 
     expect(screen.getAllByText(/Venue A/).length).toBeGreaterThan(0);
-    expect(screen.getByText('AuctionStatus.in_progress')).toBeInTheDocument(); // Mock translation key
+    expect(screen.getByText('AuctionStatus.in_progress')).toBeInTheDocument();
   });
 
   it('sorts auctions correctly (in_progress first, then date)', () => {
-    const mockAuctions = [
+    const mockAuctions: Auction[] = [
       {
         id: 1,
         status: {
           value: 'scheduled',
-          variant: 'info',
           labelKey: 'scheduled',
+          variant: 'info',
           isScheduled: true,
           isInProgress: false,
           isCompleted: false,
           isCancelled: false,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: false,
         duration: {
           startAt: new Date('2023-12-05T10:00:00+09:00'),
           endAt: new Date('2023-12-05T12:00:00+09:00'),
@@ -137,22 +129,20 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
+        venueId: 1,
+        isActive: false,
       },
       {
         id: 2,
         status: {
           value: 'in_progress',
-          variant: 'success',
           labelKey: 'in_progress',
+          variant: 'success',
           isScheduled: false,
           isInProgress: true,
           isCompleted: false,
           isCancelled: false,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true,
         duration: {
           startAt: new Date('2023-12-05T10:00:00+09:00'),
           endAt: new Date('2023-12-05T12:00:00+09:00'),
@@ -161,22 +151,20 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
-      }, // Should be first
+        venueId: 1,
+        isActive: true,
+      },
       {
         id: 3,
         status: {
           value: 'scheduled',
-          variant: 'info',
           labelKey: 'scheduled',
+          variant: 'info',
           isScheduled: true,
           isInProgress: false,
           isCompleted: false,
           isCancelled: false,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: false,
         duration: {
           startAt: new Date('2023-12-01T10:00:00+09:00'),
           endAt: new Date('2023-12-01T12:00:00+09:00'),
@@ -185,10 +173,12 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
-      }, // Should be second (earlier than 2023-12-05)
+        venueId: 1,
+        isActive: false,
+      },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
-      data: mockAuctions as Auction[],
+      data: mockAuctions,
       isLoading: false,
       error: null,
     } as unknown as ReturnType<typeof usePublicAuctions>);
@@ -209,22 +199,18 @@ describe('AuctionsListPage', () => {
       isLoading: false,
       error: null,
     } as unknown as ReturnType<typeof useVenueQuery>);
-    const mockAuctions = [
+    const mockAuctions: Auction[] = [
       {
         id: 1,
         status: {
           value: 'scheduled',
-          variant: 'info',
           labelKey: 'scheduled',
+          variant: 'info',
           isScheduled: true,
           isInProgress: false,
           isCompleted: false,
           isCancelled: false,
         },
-        venueId: 99,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: false,
         duration: {
           startAt: new Date('2023-12-01T10:00:00+09:00'),
           endAt: new Date('2023-12-01T12:00:00+09:00'),
@@ -233,10 +219,12 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
+        venueId: 99,
+        isActive: false,
       },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
-      data: mockAuctions as Auction[],
+      data: mockAuctions,
       isLoading: false,
       error: null,
     } as unknown as ReturnType<typeof usePublicAuctions>);
@@ -245,22 +233,18 @@ describe('AuctionsListPage', () => {
   });
 
   it('renders auctions with various statuses', () => {
-    const mockAuctions = [
+    const mockAuctions: Auction[] = [
       {
         id: 1,
         status: {
           value: 'cancelled',
-          variant: 'error',
           labelKey: 'cancelled',
+          variant: 'error',
           isScheduled: false,
           isInProgress: false,
           isCompleted: false,
           isCancelled: true,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: false,
         duration: {
           startAt: new Date('2023-12-05T10:00:00+09:00'),
           endAt: new Date('2023-12-05T12:00:00+09:00'),
@@ -269,22 +253,20 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
+        venueId: 1,
+        isActive: false,
       },
       {
         id: 2,
         status: {
           value: 'completed',
-          variant: 'neutral',
           labelKey: 'completed',
+          variant: 'neutral',
           isScheduled: false,
           isInProgress: false,
           isCompleted: true,
           isCancelled: false,
         },
-        venueId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: false,
         duration: {
           startAt: new Date('2023-12-04T10:00:00+09:00'),
           endAt: new Date('2023-12-04T12:00:00+09:00'),
@@ -293,10 +275,12 @@ describe('AuctionsListPage', () => {
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
         },
+        venueId: 1,
+        isActive: false,
       },
     ];
     vi.mocked(usePublicAuctions).mockReturnValue({
-      data: mockAuctions as Auction[],
+      data: mockAuctions,
       isLoading: false,
       error: null,
     } as unknown as ReturnType<typeof usePublicAuctions>);

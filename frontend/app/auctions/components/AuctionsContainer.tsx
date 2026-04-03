@@ -6,11 +6,10 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { AuctionsList } from '@/src/features/auctions/components';
 import { usePublicAuctions, useVenues } from '@/src/features/auctions/queries';
-import { Auction } from '@/src/features/auctions/types';
 
 export const AuctionsContainer = () => {
   const t = useTranslations();
-  const { data: allAuctions, isLoading } = usePublicAuctions();
+  const { data: auctions = [], isLoading } = usePublicAuctions();
   const { venues = [] } = useVenues();
 
   if (isLoading) {
@@ -22,22 +21,6 @@ export const AuctionsContainer = () => {
       </Box>
     );
   }
-
-  // Filter and Sort logic
-  const auctions = (allAuctions || [])
-    .filter(
-      (a: Auction) =>
-        a.status.value === 'scheduled' ||
-        a.status.value === 'in_progress' ||
-        a.status.value === 'completed' ||
-        a.status.value === 'cancelled',
-    )
-    .sort((a: Auction, b: Auction) => {
-      if (a.status.value === 'in_progress' && b.status.value !== 'in_progress') return -1;
-      if (a.status.value !== 'in_progress' && b.status.value === 'in_progress') return 1;
-
-      return a.duration.startAt.getTime() - b.duration.startAt.getTime();
-    });
 
   return (
     <Box maxW="7xl" mx="auto" px={{ base: '4', md: '8' }} py="8">
