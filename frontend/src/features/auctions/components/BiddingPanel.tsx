@@ -88,7 +88,7 @@ export const BiddingPanel = ({
                     fontWeight="bold"
                   >
                     {t('Public.AuctionDetail.current_max_bid', {
-                      price: selectedItem.bidding.highestBid.toLocaleString(),
+                      price: selectedItem.price.label,
                     })}
                     {selectedItem.bidding.highestBidderName && (
                       <Text as="span" ml="2" className={css({ color: 'gray.700' })}>
@@ -114,11 +114,10 @@ export const BiddingPanel = ({
                     <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">
                       {t('Public.AuctionDetail.out_of_hours_title')}
                     </Text>
-                    {auction.duration.startTime && auction.duration.endTime && (
+                    {auction.duration.label && (
                       <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
                         {t('Public.AuctionDetail.out_of_hours_msg', {
-                          start: auction.duration.startTime,
-                          end: auction.duration.endTime,
+                          duration: auction.duration.label,
                         })}
                       </Text>
                     )}
@@ -138,7 +137,7 @@ export const BiddingPanel = ({
                       </Text>
                       <Text fontSize="xs" className={css({ color: 'gray.500', mb: '2' })}>
                         {t('Public.AuctionDetail.next_min_bid', {
-                          price: selectedItem.bidding.nextMinBid.value.toLocaleString(),
+                          price: selectedItem.bidding.nextMinBid.label,
                         })}
                       </Text>
                       <Box position="relative">
