@@ -36,7 +36,9 @@ export const AuctionHeader = ({ auction, t }: AuctionHeaderProps) => {
         <Text as="h1" fontSize="3xl" fontWeight="bold" className={css({ color: 'gray.900' })}>
           {t('Public.AuctionDetail.auction_venue_title', { id: auction.id })}
         </Text>
-        <Text className={css({ color: 'gray.600' })}>{auction.duration.label}</Text>
+        <Text className={css({ color: 'gray.600' })}>
+          {auction.duration.dateLabel} {auction.duration.label}
+        </Text>
       </Box>
       <Box textAlign="right" display={{ base: 'none', md: 'block' }}>
         <Text fontSize="sm" className={css({ color: 'gray.600' })}>

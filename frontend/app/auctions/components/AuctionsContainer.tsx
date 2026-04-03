@@ -36,14 +36,7 @@ export const AuctionsContainer = () => {
       if (a.status.value === 'in_progress' && b.status.value !== 'in_progress') return -1;
       if (a.status.value !== 'in_progress' && b.status.value === 'in_progress') return 1;
 
-      const aTime = a.duration.startTime
-        ? `${a.duration.dateLabel}T${a.duration.startTime}`
-        : `${a.duration.dateLabel}T00:00:00`;
-      const bTime = b.duration.startTime
-        ? `${b.duration.dateLabel}T${b.duration.startTime}`
-        : `${b.duration.dateLabel}T00:00:00`;
-
-      return new Date(aTime).getTime() - new Date(bTime).getTime();
+      return a.duration.startAt.getTime() - b.duration.startAt.getTime();
     });
 
   return (
