@@ -94,7 +94,7 @@ export const AuctionItemList = ({
                         fontWeight="semibold"
                       >
                         {t('Public.AuctionDetail.current_max_bid', {
-                          price: item.bidding.highestBid.toLocaleString(),
+                          price: item.price.label,
                         })}
                         {item.bidding.highestBidderName && (
                           <Text as="span" ml="2" className={css({ color: 'gray.700' })}>
