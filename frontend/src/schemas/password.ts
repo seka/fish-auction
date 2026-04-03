@@ -5,7 +5,9 @@ export const getResetPasswordSchema = (t: ValidationT) =>
   z
     .object({
       new_password: getPasswordComplexitySchema(t),
-      confirm_password: z.string().min(1, t('required', { field: t('Auth.ResetPassword.label_confirm_password') })),
+      confirm_password: z
+        .string()
+        .min(1, t('required', { field: t('Auth.ResetPassword.label_confirm_password') })),
     })
     .refine((data) => data.new_password === data.confirm_password, {
       message: t('password_mismatch'),

@@ -18,7 +18,9 @@ describe('Admin Schemas', () => {
       const result = fishermanSchema.safeParse({ name: '' });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('key:required(field:key:field_name.fisherman_name)');
+        expect(result.error.issues[0].message).toBe(
+          'key:required(field:key:field_name.fisherman_name)',
+        );
       }
     });
   });
