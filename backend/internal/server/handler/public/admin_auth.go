@@ -74,8 +74,8 @@ func (h *AdminAuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the auth handler routes to the given mux.
 func (h *AdminAuthHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/login", h.Login)
-	mux.HandleFunc("POST /api/admin/logout", h.Logout)
+	mux.HandleFunc("POST /login", h.Login)
+	mux.HandleFunc("POST /logout", h.Logout)
 }
 
 func setSessionCookie(w http.ResponseWriter, name, sessionID string) {

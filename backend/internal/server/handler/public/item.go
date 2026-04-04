@@ -62,5 +62,5 @@ func (h *ItemHandler) toResponse(it *model.AuctionItem) response.Item {
 
 // RegisterRoutes registers the public item handler routes to the given mux.
 func (h *ItemHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/items", h.List)
+	mux.HandleFunc("GET /items", h.List)
 }
