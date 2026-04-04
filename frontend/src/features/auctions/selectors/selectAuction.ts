@@ -135,14 +135,17 @@ export const selectIsAuctionActive = (
 
 /**
  * 公開一覧用の表示ポリシーを適用し、ソートした結果を返す
- * 中止されていないオークションを表示対象とし、開催中を優先して開始日時順でソートする
+ * 表示対象ステータス (scheduled / in_progress / completed) に限定し、開催中を優先して開始日時順でソートする
  */
 export const selectVisiblePublicAuctions = (
   auctions: EntityAuction[],
   now = new Date(),
 ): EntityAuction[] => {
   return [...auctions]
-    .filter((a) => a.status !== 'cancelled')
+    .filter(
+      (a) =>
+        a.status === 'scheduled' || a.status === 'in_progress' || a.status === 'completed',
+    )
     .sort((a, b) => {
       const aActive = selectIsAuctionActive(a, now);
       const bActive = selectIsAuctionActive(b, now);
