@@ -1,3 +1,5 @@
+'use client';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { login, logout as logoutAdmin } from '@/src/data/api/auth';
 import { getCurrentBuyer, loginBuyer, logoutBuyer } from '@/src/data/api/buyer_auth';

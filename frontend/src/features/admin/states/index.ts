@@ -1,3 +1,4 @@
+'use client';
 export * from './useAuctionManagement';
 export * from './useFishermanManagement';
 export * from './useBuyerManagement';

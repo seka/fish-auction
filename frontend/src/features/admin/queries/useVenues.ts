@@ -1,3 +1,4 @@
+'use client';
 import { useVenueQuery } from '@/src/data/queries/adminVenue/useQuery';
 import { useVenueMutation } from '@/src/data/queries/adminVenue/useMutation';
 import { toVenue } from '../types/venue';

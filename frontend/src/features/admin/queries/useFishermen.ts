@@ -1,3 +1,4 @@
+'use client';
 import { useFishermanQuery } from '@/src/data/queries/adminFisherman/useQuery';
 import { useFishermanMutation } from '@/src/data/queries/adminFisherman/useMutation';
 import { toFisherman } from '../types/fisherman';

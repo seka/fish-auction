@@ -1,3 +1,4 @@
+'use client';
 import { useInvoiceQuery } from '@/src/data/queries/adminInvoice/useQuery';
 import { toInvoice } from '../types/invoice';
 

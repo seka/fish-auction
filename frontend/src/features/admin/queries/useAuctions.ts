@@ -1,3 +1,4 @@
+'use client';
 import { useAuctionQuery } from '@/src/data/queries/adminAuction/useQuery';
 import { useAuctionMutation } from '@/src/data/queries/adminAuction/useMutation';
 import { toAuction } from '../types';

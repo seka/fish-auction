@@ -1,3 +1,4 @@
+'use client';
 import { useItemQuery } from '@/src/data/queries/adminItem/useQuery';
 import { useItemMutation } from '@/src/data/queries/adminItem/useMutation';
 import { toAuctionItem } from '../types/item';

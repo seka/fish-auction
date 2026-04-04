@@ -1,3 +1,4 @@
+'use client';
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';

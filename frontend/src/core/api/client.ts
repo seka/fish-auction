@@ -20,7 +20,23 @@ export class ApiError extends Error {
   }
 }
 
+const getBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    // Server-side
+    return process.env.API_BASE_URL || 'http://backend:8080';
+  }
+  // Client-side
+  return process.env.NEXT_PUBLIC_API_URL || '';
+};
+
 export class ApiClient {
+  private baseUrl = getBaseUrl();
+
+  private getFullUrl(path: string): string {
+    if (path.startsWith('http')) return path;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${this.baseUrl}${cleanPath}`;
+  }
   private async handleResponse<T>(res: Response): Promise<T> {
     if (!res.ok) {
       let data;
@@ -40,14 +56,14 @@ export class ApiClient {
   }
 
   async get<T>(url: string): Promise<T> {
-    const res = await fetch(url, {
+    const res = await fetch(this.getFullUrl(url), {
       credentials: 'include',
     });
     return this.handleResponse<T>(res);
   }
 
   async post<T>(url: string, body: unknown): Promise<T> {
-    const res = await fetch(url, {
+    const res = await fetch(this.getFullUrl(url), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toSnakeCase(body)),
@@ -57,7 +73,7 @@ export class ApiClient {
   }
 
   async put<T>(url: string, body: unknown): Promise<T> {
-    const res = await fetch(url, {
+    const res = await fetch(this.getFullUrl(url), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toSnakeCase(body)),
@@ -67,7 +83,7 @@ export class ApiClient {
   }
 
   async delete(url: string): Promise<void> {
-    const res = await fetch(url, {
+    const res = await fetch(this.getFullUrl(url), {
       method: 'DELETE',
       credentials: 'include',
     });
@@ -83,7 +99,7 @@ export class ApiClient {
   }
 
   async patch<T>(url: string, body: unknown): Promise<T> {
-    const res = await fetch(url, {
+    const res = await fetch(this.getFullUrl(url), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toSnakeCase(body)),

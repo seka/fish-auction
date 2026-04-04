@@ -1,3 +1,4 @@
+'use client';
 import { useBuyerQuery } from '@/src/data/queries/adminBuyer/useQuery';
 import { useBuyerMutation } from '@/src/data/queries/adminBuyer/useMutation';
 import { toBuyer } from '../types/buyer';
