@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AuctionSummary } from '@/src/data/api/buyer_mypage';
+import { AuctionSummary } from '@entities';
 import { toAuction } from './auction';
 
 describe('mypage/types/auction', () => {

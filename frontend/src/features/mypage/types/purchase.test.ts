@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Purchase as EntityPurchase } from '@/src/data/api/buyer_mypage';
+import { Purchase as EntityPurchase } from '@entities';
 import { toPurchase } from './purchase';
 
 describe('mypage/types/purchase', () => {

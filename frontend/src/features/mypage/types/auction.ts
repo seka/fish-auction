@@ -1,4 +1,4 @@
-import { AuctionSummary } from '@/src/data/api/buyer_mypage';
+import { AuctionSummary } from '@entities';
 
 export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 

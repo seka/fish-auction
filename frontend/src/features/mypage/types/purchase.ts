@@ -1,4 +1,4 @@
-import { Purchase as EntityPurchase } from '@/src/data/api/buyer_mypage';
+import { Purchase as EntityPurchase } from '@entities';
 
 export interface Purchase {
   id: number;

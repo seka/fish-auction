@@ -67,7 +67,7 @@ describe('admin/types/item', () => {
 
       expect(result.bidding.highestBid).toBeNull();
       expect(result.bidding.nextMinBid.value).toBe(100);
-      expect(result.price.label).toBe('¥0');
+      expect(result.price.label).toBe('-');
       expect(result.quantity.label).toBe('50 kg');
     });
   });
