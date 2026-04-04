@@ -77,6 +77,6 @@ func (h *VenueHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the public venue handler routes to the given mux.
 func (h *VenueHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /venues", h.List)
-	mux.HandleFunc("GET /venues/{id}", h.Get)
+	mux.HandleFunc("GET /api/venues", h.List)
+	mux.HandleFunc("GET /api/venues/{id}", h.Get)
 }

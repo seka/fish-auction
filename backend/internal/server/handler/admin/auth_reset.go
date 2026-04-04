@@ -112,7 +112,7 @@ func (h *AuthResetHandler) ConfirmReset(w http.ResponseWriter, r *http.Request) 
 
 // RegisterRoutes registers the admin password reset handler routes to the given mux.
 func (h *AuthResetHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /password-reset/request", h.RequestReset)
-	mux.HandleFunc("POST /password-reset/verify", h.VerifyToken)
-	mux.HandleFunc("POST /password-reset/confirm", h.ConfirmReset)
+	mux.HandleFunc("POST /api/admin/password-reset/request", h.RequestReset)
+	mux.HandleFunc("POST /api/admin/password-reset/verify", h.VerifyToken)
+	mux.HandleFunc("POST /api/admin/password-reset/confirm", h.ConfirmReset)
 }

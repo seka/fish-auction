@@ -148,7 +148,7 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the public auction handler routes to the given mux.
 func (h *AuctionHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /auctions", h.List)
-	mux.HandleFunc("GET /auctions/{id}", h.Get)
-	mux.HandleFunc("GET /auctions/{id}/items", h.GetItems)
+	mux.HandleFunc("GET /api/auctions", h.List)
+	mux.HandleFunc("GET /api/auctions/{id}", h.Get)
+	mux.HandleFunc("GET /api/auctions/{id}/items", h.GetItems)
 }

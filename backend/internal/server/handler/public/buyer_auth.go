@@ -75,6 +75,6 @@ func (h *BuyerAuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers the public buyer handler routes to the given mux.
 func (h *BuyerAuthHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /login", h.Login)
-	mux.HandleFunc("POST /logout", h.Logout)
+	mux.HandleFunc("POST /api/buyer/login", h.Login)
+	mux.HandleFunc("POST /api/buyer/logout", h.Logout)
 }
