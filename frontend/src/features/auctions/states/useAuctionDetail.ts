@@ -83,7 +83,7 @@ export const useAuctionDetail = (auctionId: number) => {
     if (inputPrice < selectedItem.bidding.nextMinBid.value) {
       setMessage(
         t('Public.AuctionDetail.fail_bid_low_price', {
-          min: selectedItem.bidding.nextMinBid.value.toLocaleString(),
+          min: selectedItem.bidding.nextMinBid.label,
         }),
       );
       return;
