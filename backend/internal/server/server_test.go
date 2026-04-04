@@ -98,6 +98,11 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		expectedStatus int
 	}{
 		// --------------------------------------------------------------------
+		// 0. Public Routes Verification
+		// --------------------------------------------------------------------
+		{name: "Public_Health", method: http.MethodGet, path: "/api/health", expectedStatus: http.StatusOK},
+
+		// --------------------------------------------------------------------
 		// 1. Admin Routes Security Verification (Must be 401 without cookie)
 		// --------------------------------------------------------------------
 		// Fishermen

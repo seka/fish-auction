@@ -123,14 +123,18 @@ func (s *Server) routes() {
 }
 
 func (s *Server) registerPublicRoutes() {
-	s.healthHandler.RegisterRoutes(s.router)
-	s.adminAuthHandler.RegisterRoutes(s.router)
-	s.authResetHandler.RegisterRoutes(s.router)
-	s.adminAuthResetHandler.RegisterRoutes(s.router)
-	s.publicItemHandler.RegisterRoutes(s.router)
-	s.publicAuctionHandler.RegisterRoutes(s.router)
-	s.publicVenueHandler.RegisterRoutes(s.router)
-	s.buyerAuthHandler.RegisterRoutes(s.router)
+	publicMux := http.NewServeMux()
+
+	s.healthHandler.RegisterRoutes(publicMux)
+	s.adminAuthHandler.RegisterRoutes(publicMux)
+	s.authResetHandler.RegisterRoutes(publicMux)
+	s.adminAuthResetHandler.RegisterRoutes(publicMux)
+	s.publicItemHandler.RegisterRoutes(publicMux)
+	s.publicAuctionHandler.RegisterRoutes(publicMux)
+	s.publicVenueHandler.RegisterRoutes(publicMux)
+	s.buyerAuthHandler.RegisterRoutes(publicMux)
+
+	s.router.Handle("/api/", http.StripPrefix("/api", publicMux))
 }
 
 func (s *Server) registerAdminRoutes() {
