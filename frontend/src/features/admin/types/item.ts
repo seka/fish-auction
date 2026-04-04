@@ -43,8 +43,8 @@ const formatJPY = (value: number): string => {
 
 export const toAuctionItem = (entity: EntityAuctionItem): AuctionItem => {
   const itemStatus = entity.status;
-  const highestBid = entity.highestBid || 0;
-  const nextMinBidValue = selectNextMinimumBid(highestBid);
+  const highestBid = entity.highestBid ?? null;
+  const nextMinBidValue = selectNextMinimumBid(highestBid ?? 0);
 
   return {
     id: entity.id,
@@ -57,8 +57,8 @@ export const toAuctionItem = (entity: EntityAuctionItem): AuctionItem => {
     },
     unit: entity.unit,
     price: {
-      value: highestBid,
-      label: formatJPY(highestBid),
+      value: highestBid ?? 0,
+      label: highestBid !== null ? formatJPY(highestBid) : '-',
     },
     status: selectItemStatus(itemStatus),
     bidding: {
