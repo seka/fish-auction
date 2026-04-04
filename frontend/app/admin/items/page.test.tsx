@@ -23,6 +23,10 @@ describe('AdminItemsPage', () => {
             auctionDate: '2023-01-01',
             venueId: 1,
             status: 'scheduled',
+            duration: {
+              dateLabel: '2023-01-01',
+              label: '10:00 ~ 12:00',
+            },
             createdAt: '2023-01-01',
             updatedAt: '2023-01-01',
           } as unknown,

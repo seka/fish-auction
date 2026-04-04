@@ -6,7 +6,7 @@ describe('features/auctions/selectors/selectItem', () => {
   describe('selectItemStatus', () => {
     it('should return correct status object for each status', () => {
       expect(selectItemStatus('Pending')).toEqual({
-        value: 'pending',
+        value: 'Pending',
         labelKey: 'Pending',
         variant: 'info',
         isPending: true,
@@ -15,7 +15,7 @@ describe('features/auctions/selectors/selectItem', () => {
         isUnsold: false,
       });
       expect(selectItemStatus('Bidding')).toEqual({
-        value: 'bidding',
+        value: 'Bidding',
         labelKey: 'Bidding',
         variant: 'success',
         isPending: false,
@@ -24,7 +24,7 @@ describe('features/auctions/selectors/selectItem', () => {
         isUnsold: false,
       });
       expect(selectItemStatus('Sold')).toEqual({
-        value: 'sold',
+        value: 'Sold',
         labelKey: 'Sold',
         variant: 'neutral',
         isPending: false,
@@ -33,7 +33,7 @@ describe('features/auctions/selectors/selectItem', () => {
         isUnsold: false,
       });
       expect(selectItemStatus('Unsold')).toEqual({
-        value: 'unsold',
+        value: 'Unsold',
         labelKey: 'Unsold',
         variant: 'error',
         isPending: false,
@@ -45,7 +45,7 @@ describe('features/auctions/selectors/selectItem', () => {
 
     it('should fallback to pending for unknown status', () => {
       expect(selectItemStatus('Unknown' as unknown as EntityItemStatus)).toEqual({
-        value: 'pending',
+        value: 'Pending',
         labelKey: 'Pending',
         variant: 'info',
         isPending: true,

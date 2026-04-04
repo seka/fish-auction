@@ -111,28 +111,6 @@ describe('AuctionsListPage', () => {
   it('sorts auctions correctly (in_progress first, then date)', () => {
     const mockAuctions: Auction[] = [
       {
-        id: 1,
-        status: {
-          value: 'scheduled',
-          labelKey: 'scheduled',
-          variant: 'info',
-          isScheduled: true,
-          isInProgress: false,
-          isCompleted: false,
-          isCancelled: false,
-        },
-        duration: {
-          startAt: new Date('2023-12-05T10:00:00+09:00'),
-          endAt: new Date('2023-12-05T12:00:00+09:00'),
-          dateLabel: '2023-12-05',
-          startTime: '10:00:00',
-          endTime: '12:00:00',
-          label: '10:00 ~ 12:00',
-        },
-        venueId: 1,
-        isActive: false,
-      },
-      {
         id: 2,
         status: {
           value: 'in_progress',
@@ -169,6 +147,28 @@ describe('AuctionsListPage', () => {
           startAt: new Date('2023-12-01T10:00:00+09:00'),
           endAt: new Date('2023-12-01T12:00:00+09:00'),
           dateLabel: '2023-12-01',
+          startTime: '10:00:00',
+          endTime: '12:00:00',
+          label: '10:00 ~ 12:00',
+        },
+        venueId: 1,
+        isActive: false,
+      },
+      {
+        id: 1,
+        status: {
+          value: 'scheduled',
+          labelKey: 'scheduled',
+          variant: 'info',
+          isScheduled: true,
+          isInProgress: false,
+          isCompleted: false,
+          isCancelled: false,
+        },
+        duration: {
+          startAt: new Date('2023-12-05T10:00:00+09:00'),
+          endAt: new Date('2023-12-05T12:00:00+09:00'),
+          dateLabel: '2023-12-05',
           startTime: '10:00:00',
           endTime: '12:00:00',
           label: '10:00 ~ 12:00',
