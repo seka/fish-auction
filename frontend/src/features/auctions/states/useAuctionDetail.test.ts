@@ -36,9 +36,11 @@ describe('useAuctionDetail', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useQueryClient).mockReturnValue(mockQueryClient as unknown as ReturnType<typeof useQueryClient>);
+    vi.mocked(useQueryClient).mockReturnValue(
+      mockQueryClient as unknown as ReturnType<typeof useQueryClient>,
+    );
     vi.mocked(useAuctionDetailData).mockReturnValue({
-      auction: { id: 1, isActive: true } as unknown as any,
+      auction: { id: 1, isActive: true } as unknown as ReturnType<typeof useAuctionDetailData>['auction'],
       items: [],
       isLoading: false,
       refetchItems: vi.fn(),
@@ -54,7 +56,10 @@ describe('useAuctionDetail', () => {
   });
 
   it('calls loginBuyer and invalidates authKeys.me() on successful login', async () => {
-    vi.mocked(loginBuyer).mockResolvedValue({ id: 1, email: 'test@example.com' } as unknown as Awaited<ReturnType<typeof loginBuyer>>);
+    vi.mocked(loginBuyer).mockResolvedValue({
+      id: 1,
+      email: 'test@example.com',
+    } as unknown as Awaited<ReturnType<typeof loginBuyer>>);
 
     const { result } = renderHook(() => useAuctionDetail(1));
 
@@ -69,14 +74,16 @@ describe('useAuctionDetail', () => {
       email: 'test@example.com',
       password: 'password',
     });
-    
+
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: authKeys.me(),
     });
   });
 
   it('sets login error on failed login', async () => {
-    vi.mocked(loginBuyer).mockResolvedValue(null as unknown as Awaited<ReturnType<typeof loginBuyer>>);
+    vi.mocked(loginBuyer).mockResolvedValue(
+      null as unknown as Awaited<ReturnType<typeof loginBuyer>>,
+    );
 
     const { result } = renderHook(() => useAuctionDetail(1));
 
