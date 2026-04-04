@@ -34,7 +34,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={notoSansJP.className}>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryClientProvider>
             <ToastProvider>
               <MainLayoutTemplate navbar={<AuthorizablePublicNavbar />}>
