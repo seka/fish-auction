@@ -237,13 +237,13 @@ describe('AuctionsListPage', () => {
       {
         id: 1,
         status: {
-          value: 'cancelled',
-          labelKey: 'cancelled',
-          variant: 'error',
-          isScheduled: false,
+          value: 'scheduled',
+          labelKey: 'scheduled',
+          variant: 'info',
+          isScheduled: true,
           isInProgress: false,
           isCompleted: false,
-          isCancelled: true,
+          isCancelled: false,
         },
         duration: {
           startAt: new Date('2023-12-05T10:00:00+09:00'),
@@ -285,7 +285,7 @@ describe('AuctionsListPage', () => {
       error: null,
     } as unknown as ReturnType<typeof usePublicAuctions>);
     render(<AuctionsListPage />);
-    expect(screen.getByText(/AuctionStatus.cancelled/)).toBeInTheDocument();
+    expect(screen.getByText(/AuctionStatus.scheduled/)).toBeInTheDocument();
     expect(screen.getByText(/AuctionStatus.completed/)).toBeInTheDocument();
   });
 });
