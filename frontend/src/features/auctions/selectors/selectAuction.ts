@@ -143,8 +143,7 @@ export const selectVisiblePublicAuctions = (
 ): EntityAuction[] => {
   return [...auctions]
     .filter(
-      (a) =>
-        a.status === 'scheduled' || a.status === 'in_progress' || a.status === 'completed',
+      (a) => a.status === 'scheduled' || a.status === 'in_progress' || a.status === 'completed',
     )
     .sort((a, b) => {
       const aActive = selectIsAuctionActive(a, now);

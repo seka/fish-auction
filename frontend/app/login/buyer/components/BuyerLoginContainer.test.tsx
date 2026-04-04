@@ -38,7 +38,9 @@ describe('BuyerLoginContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useRouter).mockReturnValue(mockRouter as unknown as ReturnType<typeof useRouter>);
-    vi.mocked(useQueryClient).mockReturnValue(mockQueryClient as unknown as ReturnType<typeof useQueryClient>);
+    vi.mocked(useQueryClient).mockReturnValue(
+      mockQueryClient as unknown as ReturnType<typeof useQueryClient>,
+    );
   });
 
   it('renders login form', () => {
@@ -49,7 +51,10 @@ describe('BuyerLoginContainer', () => {
   });
 
   it('calls loginBuyer and invalidates authKeys.me() on success', async () => {
-    vi.mocked(loginBuyer).mockResolvedValue({ id: 1, email: 'test@example.com' } as unknown as Awaited<ReturnType<typeof loginBuyer>>);
+    vi.mocked(loginBuyer).mockResolvedValue({
+      id: 1,
+      email: 'test@example.com',
+    } as unknown as Awaited<ReturnType<typeof loginBuyer>>);
 
     render(<BuyerLoginContainer />);
 
@@ -80,7 +85,9 @@ describe('BuyerLoginContainer', () => {
   });
 
   it('displays error message on login failure', async () => {
-    vi.mocked(loginBuyer).mockResolvedValue(null as unknown as Awaited<ReturnType<typeof loginBuyer>>);
+    vi.mocked(loginBuyer).mockResolvedValue(
+      null as unknown as Awaited<ReturnType<typeof loginBuyer>>,
+    );
 
     render(<BuyerLoginContainer />);
 

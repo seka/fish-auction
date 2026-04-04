@@ -2,7 +2,11 @@ import { useParticipatingAuctions as useDataParticipatingAuctions } from '@/src/
 import { toAuction } from '../types/auction';
 
 export const useParticipatingAuctions = () => {
-  const { data: auctions, isLoading, ...rest } = useDataParticipatingAuctions({
+  const {
+    data: auctions,
+    isLoading,
+    ...rest
+  } = useDataParticipatingAuctions({
     select: (data) => data.map(toAuction),
   });
 

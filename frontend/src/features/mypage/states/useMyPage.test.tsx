@@ -15,7 +15,6 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: vi.fn(),
 }));

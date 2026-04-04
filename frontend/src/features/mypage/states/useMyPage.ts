@@ -18,7 +18,6 @@ export const useMyPage = () => {
     type: 'info' as 'info' | 'error' | 'success',
   });
 
-
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {

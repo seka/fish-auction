@@ -38,7 +38,6 @@ vi.mock('@/src/api/buyer_auth', () => ({
 
 import { useAuctionDetail } from '@/src/features/auctions/states/useAuctionDetail';
 
-
 describe('AuctionDetailPage', () => {
   const mockOnSelectItem = vi.fn();
   const mockOnSubmitLogin = vi.fn();
@@ -146,7 +145,6 @@ describe('AuctionDetailPage', () => {
       defaultMockValue as unknown as ReturnType<typeof useAuctionDetail>,
     );
   });
-
 
   it('renders loading state', () => {
     vi.mocked(useAuctionDetail).mockReturnValue({
