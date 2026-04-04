@@ -23,5 +23,5 @@ func (h *HealthHandler) Health(w http.ResponseWriter, _ *http.Request) {
 
 // RegisterRoutes registers the health handler routes to the given mux.
 func (h *HealthHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /health", h.Health)
+	mux.HandleFunc("GET /api/health", h.Health)
 }
