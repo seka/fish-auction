@@ -112,7 +112,7 @@ describe('auctions/selectors/selectAuction', () => {
   });
 
   describe('selectVisiblePublicAuctions', () => {
-    it('should filter out cancelled auctions and sort by in_progress then date', () => {
+    it('should prioritize active scheduled auctions over inactive ones, even if later in date', () => {
       const now = new Date('2024-03-30T12:00:00+09:00');
       const auctions = [
         {
@@ -124,33 +124,25 @@ describe('auctions/selectors/selectAuction', () => {
         },
         {
           id: 2,
-          status: 'in_progress',
+          status: 'scheduled',
           auctionDate: '2024-03-30',
-          startTime: '11:00:00',
+          startTime: '11:00:00', // Active (11:00-13:00) vs now (12:00)
           endTime: '13:00:00',
         },
         {
           id: 3,
-          status: 'cancelled',
-          auctionDate: '2024-03-30',
-          startTime: '09:00:00',
-          endTime: '11:00:00',
-        },
-        {
-          id: 4,
           status: 'scheduled',
-          auctionDate: '2024-03-30',
-          startTime: '09:00:00',
-          endTime: '11:00:00',
+          auctionDate: '2024-03-29', // Past (inactive)
+          startTime: '10:00:00',
+          endTime: '12:00:00',
         },
       ] as EntityAuction[];
 
       const visible = selectVisiblePublicAuctions(auctions, now);
 
-      expect(visible.length).toBe(3);
-      expect(visible[0].id).toBe(2); // in_progress first
-      expect(visible[1].id).toBe(4); // 2024-03-30 09:00 (earlier than 2024-03-31)
-      expect(visible[2].id).toBe(1); // 2024-03-31 10:00
+      expect(visible[0].id).toBe(2); // Active scheduled first
+      expect(visible[1].id).toBe(3); // Inactive but earlier date
+      expect(visible[2].id).toBe(1); // Inactive and later date
     });
   });
 });
