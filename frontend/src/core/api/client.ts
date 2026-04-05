@@ -33,10 +33,10 @@ export class ApiClient {
   private baseUrl = getBaseUrl();
 
   private getFullUrl(path: string): string {
-    if (path.startsWith('http')) return path;
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     return `${this.baseUrl}${cleanPath}`;
   }
+
   private async handleResponse<T>(res: Response): Promise<T> {
     if (!res.ok) {
       let data;

@@ -36,8 +36,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - API_BASE_URL=http://backend:8080/api
-      - NEXT_PUBLIC_API_URL=/api
+      - API_BASE_URL=http://backend:8080
+      - NEXT_PUBLIC_API_URL=https://localhost
       - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
     volumes:
       - ./frontend:/app

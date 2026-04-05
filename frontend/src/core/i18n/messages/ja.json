@@ -190,7 +190,8 @@
       "auctions": "セリ管理",
       "items": "出品管理",
       "invoice": "請求書発行",
-      "settings": "設定"
+      "settings": "設定",
+      "logout": "ログアウト"
     }
   },
   "Public": {
