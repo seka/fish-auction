@@ -11,7 +11,7 @@ import (
 
 func TestHealthHandler_Check(t *testing.T) {
 	h := public.NewHealthHandler()
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/health", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/health", nil)
 	w := httptest.NewRecorder()
 
 	h.Health(w, req)
@@ -27,7 +27,7 @@ func TestHealthHandler_RegisterRoutes(t *testing.T) {
 		mux := http.NewServeMux()
 		h.RegisterRoutes(mux)
 
-		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/health", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/health", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
