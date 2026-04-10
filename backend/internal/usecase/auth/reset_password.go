@@ -5,11 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 // ResetPasswordUseCase defines the interface for resetting a password.
@@ -22,20 +22,23 @@ type resetPasswordUseCase struct {
 	pwdResetRepo repository.PasswordResetRepository
 	authRepo     repository.AuthenticationRepository
 	txMgr        repository.TransactionManager
+	clock        service.Clock
 }
 
 var _ ResetPasswordUseCase = (*resetPasswordUseCase)(nil)
 
-// NewResetPasswordUseCase creates a new instance of ResetPasswordUseCase
+// NewResetPasswordUseCase creates a new ResetPasswordUseCase instance.
 func NewResetPasswordUseCase(
 	pwdResetRepo repository.PasswordResetRepository,
 	authRepo repository.AuthenticationRepository,
 	txMgr repository.TransactionManager,
+	clock service.Clock,
 ) ResetPasswordUseCase {
 	return &resetPasswordUseCase{
 		pwdResetRepo: pwdResetRepo,
 		authRepo:     authRepo,
 		txMgr:        txMgr,
+		clock:        clock,
 	}
 }
 
@@ -60,7 +63,7 @@ func (u *resetPasswordUseCase) Execute(ctx context.Context, token, newPassword s
 	}
 
 	// 3. Check expiry
-	if time.Now().After(resetToken.ExpiresAt) {
+	if u.clock.Now().After(resetToken.ExpiresAt) {
 		// Clean up expired token
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
 		return &apperrors.UnauthorizedError{Message: "Invalid or expired token"}

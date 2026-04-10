@@ -85,6 +85,11 @@ func (m *mockEmailService) SendAdminPasswordReset(_ context.Context, _, resetURL
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	mockClock := usetesting.NewMockClock(fixedNow)
+	expectedExpiresAt := fixedNow.Add(30 * time.Minute)
+
 	validBuyer := &model.Buyer{ID: 1, Name: "Test Buyer"}
 
 	tests := []struct {
@@ -161,15 +166,15 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			switch tt.name {
 			case "Success":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
-				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			case "DeleteTokenError":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(errors.New("delete failed"))
 			case "CreateTokenError":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
-				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(errors.New("create failed"))
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(errors.New("create failed"))
 			case "EmailError":
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
-				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			}
 			// Other cases like UserNotFound don't call repo methods.
 
@@ -187,7 +192,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, frontendURL, txMgr)
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {
