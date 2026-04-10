@@ -68,6 +68,7 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	startTime := today.Add(9 * time.Hour)
 	endTime := today.Add(21 * time.Hour)
 
+	var auctionID int
 	err = tx.QueryRowContext(ctx, `
 		INSERT INTO public.auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
