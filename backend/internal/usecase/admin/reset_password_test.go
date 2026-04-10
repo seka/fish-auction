@@ -60,8 +60,12 @@ func (m *mockAdminPasswordResetRepositoryForReset) DeleteAllByUserID(ctx context
 }
 
 func TestResetPasswordUseCase_Execute(t *testing.T) {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	mockClock := usetesting.NewMockClock(fixedNow)
+
 	validAdminID := 1
-	validExpires := time.Now().Add(1 * time.Hour)
+	validExpires := fixedNow.Add(1 * time.Hour)
 	validToken := "valid-token"
 	hash := sha256.Sum256([]byte(validToken))
 	validTokenHash := hex.EncodeToString(hash[:])
@@ -105,7 +109,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			newPassword:   "NewPassword123!",
 			mockTokenHash: validTokenHash,
 			mockAdminID:   validAdminID,
-			mockExpiresAt: time.Now().Add(-1 * time.Hour),
+			mockExpiresAt: fixedNow.Add(-1 * time.Hour),
 			wantErr:       true,
 		},
 		{
@@ -156,7 +160,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 				pwdResetRepo.On("FindByTokenHash", mock.Anything, expectedHash).Return(resetToken, nil)
 
 				if tt.mockAdminID != 0 {
-					if tt.mockExpiresAt.After(time.Now()) {
+					if tt.mockExpiresAt.After(fixedNow) {
 						// Valid
 						pwdResetRepo.On("DeleteAllByUserID", mock.Anything, tt.mockAdminID, "admin").Return(nil)
 					} else {
@@ -169,7 +173,7 @@ func TestResetPasswordUseCase_Execute(t *testing.T) {
 			adminRepo := &mockAdminRepositoryForReset{err: tt.mockUpdateErr}
 			txMgr := &usetesting.MockTransactionManager{}
 
-			uc := admin.NewResetPasswordUseCase(pwdResetRepo, adminRepo, txMgr)
+			uc := admin.NewResetPasswordUseCase(pwdResetRepo, adminRepo, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.token, tt.newPassword)
 
 			if (err != nil) != tt.wantErr {
