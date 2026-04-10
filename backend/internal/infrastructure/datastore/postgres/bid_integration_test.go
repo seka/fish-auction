@@ -62,12 +62,16 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 	err = tx.QueryRowContext(ctx, "INSERT INTO public.venues (name) VALUES ('Bid Test Venue') RETURNING id").Scan(&venueID)
 	require.NoError(t, err)
 
-	// Auction
-	var auctionID int
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+	startTime := today.Add(9 * time.Hour)
+	endTime := today.Add(21 * time.Hour)
+
 	err = tx.QueryRowContext(ctx, `
 		INSERT INTO public.auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
-	`, venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
+	`, venueID, startTime, endTime, today).Scan(&auctionID)
 	require.NoError(t, err)
 
 	// Fisherman
@@ -155,8 +159,14 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 	var venueID int
 	_ = db.QueryRowContext(ctx, "INSERT INTO venues (name) VALUES ('NoBid Venue') RETURNING id").Scan(&venueID)
 
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+	startTime := today.Add(9 * time.Hour)
+	endTime := today.Add(21 * time.Hour)
+
 	var auctionID int
-	_ = db.QueryRowContext(ctx, "INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id", venueID, time.Now(), time.Now().Add(1*time.Hour), time.Now()).Scan(&auctionID)
+	_ = db.QueryRowContext(ctx, "INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id", venueID, startTime, endTime, today).Scan(&auctionID)
 
 	// Fisherman
 	var fishermanID int

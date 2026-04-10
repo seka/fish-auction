@@ -183,19 +183,16 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				// If it's late (23:xx), we use 10 mins before midnight as end.
 				// For most times, -1h and +2m works EXCEPT when it crosses midnight.
 
-				var startTime, endTime time.Time
-				if now.Hour() == 0 {
-					// Morning: start at 00:00, end later
+				startTime := now.Add(-1 * time.Hour)
+				endTime := now.Add(2 * time.Minute)
+
+				// Ensure startTime/endTime stay within the same day relative to now in JST
+				// because GetEndDateTime/GetStartDateTime use p.AuctionDate's calendar date.
+				if startTime.Day() != now.Day() {
 					startTime = today
-					endTime = now.Add(2 * time.Minute)
-				} else if now.Hour() == 23 {
-					// Night: start earlier, end at 23:59
-					startTime = now.Add(-1 * time.Hour)
-					endTime = today.Add(23*time.Hour + 59*time.Minute)
-				} else {
-					// Normal
-					startTime = now.Add(-1 * time.Hour)
-					endTime = now.Add(2 * time.Minute)
+				}
+				if endTime.Day() != now.Day() {
+					endTime = today.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 				}
 
 				return &model.Auction{
@@ -247,8 +244,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
 
 				endTime := now.Add(2 * time.Minute)
-				if now.Hour() == 23 && endTime.Day() != now.Day() {
-					endTime = today.Add(23*time.Hour + 59*time.Minute)
+				if endTime.Day() != now.Day() {
+					endTime = today.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 				}
 
 				return &model.Auction{

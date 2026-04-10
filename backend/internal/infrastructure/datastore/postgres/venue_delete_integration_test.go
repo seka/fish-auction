@@ -46,10 +46,14 @@ func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
 	var auctionID int
 	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 	now := time.Now().In(jst)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+	startTime := today.Add(9 * time.Hour)
+	endTime := today.Add(21 * time.Hour)
+
 	err = db.QueryRowContext(ctx, `
 		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
 		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
-	`, createdVenue.ID, now, now.Add(1*time.Hour), now).Scan(&auctionID)
+	`, createdVenue.ID, startTime, endTime, today).Scan(&auctionID)
 	assert.NoError(t, err)
 
 	// 2c. Create Fisherman
