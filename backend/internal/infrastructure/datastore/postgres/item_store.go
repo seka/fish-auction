@@ -25,21 +25,26 @@ func NewItemStore(db datastore.Database) *ItemStore {
 
 // Create stores a new auction item.
 func (r *ItemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
+	status := item.Status
+	if status == "" {
+		status = model.ItemStatusPending
+	}
+
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
 		FishType:    item.FishType,
 		Quantity:    item.Quantity,
 		Unit:        item.Unit,
-		Status:      model.ItemStatusPending,
+		Status:      status,
 	}
 	if err := e.Validate(); err != nil {
 		return nil, err
 	}
 
 	err := r.db.QueryRow(ctx,
-		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
-		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
+		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
+		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit, status,
 	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Item", nil, "failed to create item")
