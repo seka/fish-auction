@@ -203,6 +203,8 @@ func TestServerIntegration(t *testing.T) {
 		// POST /api/admin/items
 		// Note: Item creation needs FishermanID and AuctionID
 		itemID := createResource(t, client, serverURL+"/api/admin/items", fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Whale", "quantity": 1, "unit": "whole"}`, auctionID, fishermanID), adminCookies)
+		// Update Item status to Available (Approval step)
+		putResource(t, client, serverURL+fmt.Sprintf("/api/admin/items/%d", itemID), fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Whale", "quantity": 1, "unit": "whole", "status": "Available"}`, auctionID, fishermanID), adminCookies)
 
 		// Create another item for bidding test not needed if we use the first one, but let's keep logic simple
 		// reusing itemID for bidding if possible, or create duplicate?
@@ -374,6 +376,24 @@ func postResource(t *testing.T, client *http.Client, urlStr, jsonBody string, co
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
 		t.Fatalf("Expected status 200/201 at %s, got %d: %s", urlStr, resp.StatusCode, string(body))
+	}
+}
+
+func putResource(t *testing.T, client *http.Client, urlStr, jsonBody string, cookies []*http.Cookie) {
+	req, _ := http.NewRequestWithContext(context.Background(), "PUT", urlStr, strings.NewReader(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("Failed to PUT to %s: %v", urlStr, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("Expected status 200/204 at %s, got %d: %s", urlStr, resp.StatusCode, string(body))
 	}
 }
 

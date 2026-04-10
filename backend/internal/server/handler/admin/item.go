@@ -45,6 +45,7 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		FishType:    req.FishType,
 		Quantity:    req.Quantity,
 		Unit:        req.Unit,
+		Status:      model.ItemStatusPending,
 	}
 
 	created, err := h.createUseCase.Execute(r.Context(), it)

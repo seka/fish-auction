@@ -72,7 +72,7 @@ app.test: ## Run tests
 .PHONY: app.integration-test
 app.integration-test: ## Run integration tests
 	@echo "Running integration tests..."
-	go test ./cmd/testing/... -run TestServerIntegration -v
+	RUN_INTEGRATION_TESTS=true go test ./cmd/testing/... -run TestServerIntegration -v
 
 # Stress test parameters
 LOAD_TEST_CONCURRENCY ?= 100
