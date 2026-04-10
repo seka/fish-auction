@@ -109,6 +109,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 		u.NewPublishNotificationUseCase(),
 		u.repo.NewTransactionManager(),
 		u.repo.NewItemCacheInvalidator(),
+		u.service.NewClock(),
 	)
 }
 
@@ -185,11 +186,11 @@ func (u *useCaseRegistry) NewCreateAuctionUseCase() auction.CreateAuctionUseCase
 }
 
 func (u *useCaseRegistry) NewListAuctionsUseCase() auction.ListAuctionsUseCase {
-	return auction.NewListAuctionsUseCase(u.repo.NewAuctionRepository())
+	return auction.NewListAuctionsUseCase(u.repo.NewAuctionRepository(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewGetAuctionUseCase() auction.GetAuctionUseCase {
-	return auction.NewGetAuctionUseCase(u.repo.NewAuctionRepository())
+	return auction.NewGetAuctionUseCase(u.repo.NewAuctionRepository(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewGetAuctionItemsUseCase() auction.GetAuctionItemsUseCase {

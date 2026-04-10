@@ -15,12 +15,14 @@ type Service interface {
 	NewPushNotificationService() service.PushNotificationService
 	NewAdminEmailService() service.AdminEmailService
 	NewBuyerEmailService() service.BuyerEmailService
+	NewClock() service.Clock
 }
 
 type serviceRegistry struct {
 	pushNotificationService service.PushNotificationService
 	adminEmailService       service.AdminEmailService
 	buyerEmailService       service.BuyerEmailService
+	clock                   service.Clock
 }
 
 // NewServiceRegistry creates a new Service registry
@@ -35,10 +37,10 @@ func NewServiceRegistry(cfg *config.Config) Service {
 	pushNotificationService := pushNotification.NewWebpushService(cfg)
 
 	return &serviceRegistry{
-
 		pushNotificationService: pushNotificationService,
 		adminEmailService:       adminEmailService,
 		buyerEmailService:       buyerEmailService,
+		clock:                   service.NewRealClock(),
 	}
 }
 
@@ -52,4 +54,8 @@ func (s *serviceRegistry) NewAdminEmailService() service.AdminEmailService {
 
 func (s *serviceRegistry) NewBuyerEmailService() service.BuyerEmailService {
 	return s.buyerEmailService
+}
+
+func (s *serviceRegistry) NewClock() service.Clock {
+	return s.clock
 }
