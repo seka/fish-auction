@@ -9,6 +9,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
+	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
 )
 
 type mockAuctionRepoForGet struct {
@@ -45,6 +46,11 @@ func (m *mockAuctionRepoForGet) UpdateStatus(_ context.Context, _ int, _ model.A
 func (m *mockAuctionRepoForGet) Delete(_ context.Context, _ int) error { return nil }
 
 func TestGetAuctionUseCase_Execute(t *testing.T) {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	today := time.Date(2024, 1, 1, 0, 0, 0, 0, jst)
+	mockClock := mock.NewMockClock(fixedNow)
+
 	validAuction := &model.Auction{ID: 1}
 
 	tests := []struct {
@@ -89,32 +95,14 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 			name: "UpdateStatusError",
 			id:   1,
 			mockAuc: func() *model.Auction {
-				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-				now := time.Now().In(jst)
-				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
-				startTime := today.Add(10 * time.Hour) // 10:00 Today
-				endTime := today.Add(11 * time.Hour)   // 11:00 Today
-
-				// If now is already past 11:00 today, this will work.
-				// But we want to ensure ShouldBeCompleted returns true.
-				// ShouldBeCompleted is true if now > endTime.
-				// So let's make endTime definitely in the past.
-				if now.After(today.Add(2 * time.Hour)) {
-					// now is after 02:00, so 00:00-01:00 is in the past.
-					startTime = today
-					endTime = today.Add(1 * time.Hour)
-				} else {
-					// now is early (e.g. 00:30), so we use yesterday.
-					yesterday := today.Add(-24 * time.Hour)
-					startTime = yesterday.Add(10 * time.Hour)
-					endTime = yesterday.Add(11 * time.Hour)
-					today = yesterday
-				}
+				yesterday := today.Add(-24 * time.Hour)
+				startTime := yesterday.Add(10 * time.Hour)
+				endTime := yesterday.Add(11 * time.Hour)
 
 				return &model.Auction{
 					ID:     1,
 					Status: model.AuctionStatusInProgress,
-					Period: model.NewAuctionPeriod(today, &startTime, &endTime),
+					Period: model.NewAuctionPeriod(yesterday, &startTime, &endTime),
 				}
 			}(),
 			mockUpdateStatusErr: errors.New("update failed"),
@@ -129,7 +117,7 @@ func TestGetAuctionUseCase_Execute(t *testing.T) {
 				err:             tt.mockErr,
 				updateStatusErr: tt.mockUpdateStatusErr,
 			}
-			uc := auction.NewGetAuctionUseCase(repo)
+			uc := auction.NewGetAuctionUseCase(repo, mockClock)
 
 			got, err := uc.Execute(context.Background(), tt.id)
 

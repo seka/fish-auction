@@ -13,6 +13,10 @@ import (
 )
 
 func TestLoginBuyerUseCase_Execute(t *testing.T) {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	mockClock := mock.NewMockClock(fixedNow)
+
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	validAuth := &model.Authentication{
 		ID:           1,
@@ -22,7 +26,7 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 	}
 	validBuyer := &model.Buyer{ID: 1}
 
-	lockedUntil := time.Now().Add(1 * time.Hour)
+	lockedUntil := fixedNow.Add(1 * time.Hour)
 	lockedAuth := &model.Authentication{
 		ID:           2,
 		BuyerID:      2,
@@ -135,7 +139,7 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := buyer.NewLoginBuyerUseCase(mockBuyerRepo, mockAuthRepo)
+			uc := buyer.NewLoginBuyerUseCase(mockBuyerRepo, mockAuthRepo, mockClock)
 			_, err := uc.Execute(context.Background(), tt.email, tt.password)
 
 			if (err != nil) != tt.wantErr {

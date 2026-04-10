@@ -38,14 +38,13 @@ type Auction struct {
 	UpdatedAt time.Time
 }
 
-// ShouldBeCompleted checks if the auction should be completed based on time
-func (a *Auction) ShouldBeCompleted() bool {
+// ShouldBeCompleted checks if the auction should be completed based on the provided time
+func (a *Auction) ShouldBeCompleted(now time.Time) bool {
 	if a.Status == AuctionStatusCompleted || a.Status == AuctionStatusCancelled {
 		return false
 	}
 
 	tz := NewTimeZone(LocationJST)
-	now := tz.Now()
 	location := tz.Location()
 
 	// If auction date is in the past

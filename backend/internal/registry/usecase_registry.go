@@ -109,6 +109,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 		u.NewPublishNotificationUseCase(),
 		u.repo.NewTransactionManager(),
 		u.repo.NewItemCacheInvalidator(),
+		u.service.NewClock(),
 	)
 }
 
@@ -121,7 +122,7 @@ func (u *useCaseRegistry) NewListBuyersUseCase() buyer.ListBuyersUseCase {
 }
 
 func (u *useCaseRegistry) NewLoginBuyerUseCase() buyer.LoginBuyerUseCase {
-	return buyer.NewLoginBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository())
+	return buyer.NewLoginBuyerUseCase(u.repo.NewBuyerRepository(), u.repo.NewAuthenticationRepository(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewGetBuyerPurchasesUseCase() buyer.GetBuyerPurchasesUseCase {
@@ -185,11 +186,11 @@ func (u *useCaseRegistry) NewCreateAuctionUseCase() auction.CreateAuctionUseCase
 }
 
 func (u *useCaseRegistry) NewListAuctionsUseCase() auction.ListAuctionsUseCase {
-	return auction.NewListAuctionsUseCase(u.repo.NewAuctionRepository())
+	return auction.NewListAuctionsUseCase(u.repo.NewAuctionRepository(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewGetAuctionUseCase() auction.GetAuctionUseCase {
-	return auction.NewGetAuctionUseCase(u.repo.NewAuctionRepository())
+	return auction.NewGetAuctionUseCase(u.repo.NewAuctionRepository(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewGetAuctionItemsUseCase() auction.GetAuctionItemsUseCase {
@@ -227,6 +228,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 		u.service.NewBuyerEmailService(),
 		u.cfg.FrontendURL,
 		u.repo.NewTransactionManager(),
+		u.service.NewClock(),
 	)
 }
 
@@ -235,11 +237,12 @@ func (u *useCaseRegistry) NewResetPasswordUseCase() auth.ResetPasswordUseCase {
 		u.repo.PasswordReset(),
 		u.repo.NewAuthenticationRepository(),
 		u.repo.NewTransactionManager(),
+		u.service.NewClock(),
 	)
 }
 
 func (u *useCaseRegistry) NewVerifyResetTokenUseCase() auth.VerifyResetTokenUseCase {
-	return auth.NewVerifyResetTokenUseCase(u.repo.PasswordReset())
+	return auth.NewVerifyResetTokenUseCase(u.repo.PasswordReset(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPasswordResetUseCase {
@@ -249,11 +252,12 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 		u.service.NewAdminEmailService(),
 		u.cfg.FrontendURL,
 		u.repo.NewTransactionManager(),
+		u.service.NewClock(),
 	)
 }
 
 func (u *useCaseRegistry) NewVerifyAdminResetTokenUseCase() admin.VerifyResetTokenUseCase {
-	return admin.NewVerifyResetTokenUseCase(u.repo.PasswordReset())
+	return admin.NewVerifyResetTokenUseCase(u.repo.NewAdminRepository(), u.repo.PasswordReset(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase {
@@ -261,6 +265,7 @@ func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseC
 		u.repo.PasswordReset(),
 		u.repo.NewAdminRepository(),
 		u.repo.NewTransactionManager(),
+		u.service.NewClock(),
 	)
 }
 

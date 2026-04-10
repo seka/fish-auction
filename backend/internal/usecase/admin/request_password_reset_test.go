@@ -72,6 +72,11 @@ func (m *mockEmailServiceForReqPwd) SendBuyerPasswordReset(_ context.Context, _,
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	mockClock := usetesting.NewMockClock(fixedNow)
+	expectedExpiresAt := fixedNow.Add(30 * time.Minute)
+
 	validAdmin := &model.Admin{ID: 1, Email: "test@example.com"}
 
 	tests := []struct {
@@ -145,7 +150,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				// Happy path for finding admin.
 				pwdResetRepo.On("DeleteAllByUserID", mock.Anything, tt.mockAdmin.ID, "admin").Return(tt.mockDelErr)
 				if tt.mockDelErr == nil {
-					pwdResetRepo.On("Create", mock.Anything, tt.mockAdmin.ID, "admin", mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(tt.mockCreErr)
+					pwdResetRepo.On("Create", mock.Anything, tt.mockAdmin.ID, "admin", mock.AnythingOfType("string"), expectedExpiresAt).Return(tt.mockCreErr)
 				}
 			}
 
@@ -153,7 +158,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			txMgr := &usetesting.MockTransactionManager{}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, frontendURL, txMgr)
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantErr {

@@ -10,6 +10,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
@@ -37,6 +38,7 @@ type createBidUseCase struct {
 	publishNotificationUseCase notification.PublishNotificationUseCase
 	txMgr                      repository.TransactionManager
 	itemCacheInv               repository.CacheInvalidator
+	clock                      service.Clock
 }
 
 var _ CreateBidUseCase = (*createBidUseCase)(nil)
@@ -50,6 +52,7 @@ func NewCreateBidUseCase(
 	publishNotificationUseCase notification.PublishNotificationUseCase,
 	txMgr repository.TransactionManager,
 	itemCacheInv repository.CacheInvalidator,
+	clock service.Clock,
 ) CreateBidUseCase {
 	return &createBidUseCase{
 		itemRepo:                   itemRepo,
@@ -59,6 +62,7 @@ func NewCreateBidUseCase(
 		publishNotificationUseCase: publishNotificationUseCase,
 		txMgr:                      txMgr,
 		itemCacheInv:               itemCacheInv,
+		clock:                      clock,
 	}
 }
 
@@ -196,8 +200,7 @@ func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error 
 		return nil
 	}
 
-	tz := model.NewTimeZone(model.LocationJST)
-	now := tz.Now()
+	now := uc.clock.NowIn(model.LocationJST)
 	if !auction.Period.IsBiddingOpen(now) {
 		start := auction.Period.GetStartDateTime()
 		end := auction.Period.GetEndDateTime()
@@ -216,8 +219,7 @@ func (uc *createBidUseCase) extendAuctionIfNeeded(ctx context.Context, auction *
 		return nil
 	}
 
-	tz := model.NewTimeZone(model.LocationJST)
-	now := tz.Now()
+	now := uc.clock.NowIn(model.LocationJST)
 
 	if auction.Period.ShouldExtend(now, AuctionExtensionThreshold) {
 		auction.Period = auction.Period.Extend(AuctionExtensionDuration)

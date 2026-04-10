@@ -33,6 +33,11 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	txErr := errors.New("tx error")
 	dbErr := errors.New("db error")
 
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	today := time.Date(2024, 1, 1, 0, 0, 0, 0, jst)
+	mockClock := mock.NewMockClock(fixedNow)
+
 	tests := []struct {
 		name             string
 		input            *model.Bid
@@ -71,7 +76,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -92,7 +97,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -171,32 +176,8 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			wantTxCalled:     true,
 			wantUpdateCalled: true,
 			mockAuction: func() *model.Auction {
-				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-				now := time.Now().In(jst)
-
-				// Use a fixed date part from 'now' to ensure consistency
-				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
-
-				// To avoid crossing midnight boundaries during the test,
-				// we set a safe time window within 'today'.
-				// If it's very early (00:xx), we use 10 mins after midnight as start.
-				// If it's late (23:xx), we use 10 mins before midnight as end.
-				// For most times, -1h and +2m works EXCEPT when it crosses midnight.
-
-				var startTime, endTime time.Time
-				if now.Hour() == 0 {
-					// Morning: start at 00:00, end later
-					startTime = today
-					endTime = now.Add(2 * time.Minute)
-				} else if now.Hour() == 23 {
-					// Night: start earlier, end at 23:59
-					startTime = now.Add(-1 * time.Hour)
-					endTime = today.Add(23*time.Hour + 59*time.Minute)
-				} else {
-					// Normal
-					startTime = now.Add(-1 * time.Hour)
-					endTime = now.Add(2 * time.Minute)
-				}
+				startTime := fixedNow.Add(-1 * time.Hour)
+				endTime := fixedNow.Add(2 * time.Minute) // within 5 mins threshold
 
 				return &model.Auction{
 					ID:      1,
@@ -223,7 +204,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -242,14 +223,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			wantTxCalled:     true,
 			wantUpdateCalled: false,
 			mockAuction: func() *model.Auction {
-				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-				now := time.Now().In(jst)
-				today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
-
-				endTime := now.Add(2 * time.Minute)
-				if now.Hour() == 23 && endTime.Day() != now.Day() {
-					endTime = today.Add(23*time.Hour + 59*time.Minute)
-				}
+				endTime := fixedNow.Add(2 * time.Minute)
 
 				return &model.Auction{
 					ID:      1,
@@ -277,7 +251,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -298,7 +272,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -318,7 +292,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -334,17 +308,11 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			itemStatus: model.ItemStatusAvailable,
 			wantErr:    &domainErrors.ValidationError{Field: "auction_time"},
 			mockAuction: func() *model.Auction {
-				jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-				now := time.Now().In(jst)
-				startTime := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
-				endTime := time.Date(now.Year(), now.Month(), now.Day(), 0, 1, 0, 0, jst)
-				if now.Hour() == 0 && now.Minute() < 2 {
-					startTime = time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, jst)
-					endTime = time.Date(now.Year(), now.Month(), now.Day(), 12, 1, 0, 0, jst)
-				}
+				startTime := today.Add(12 * time.Hour) // in the future (fixedNow is 10:00)
+				endTime := today.Add(13 * time.Hour)
 				return &model.Auction{
 					ID:     1,
-					Period: model.NewAuctionPeriod(now, &startTime, &endTime),
+					Period: model.NewAuctionPeriod(today, &startTime, &endTime),
 					Status: model.AuctionStatusInProgress,
 				}
 			}(),
@@ -412,7 +380,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -482,7 +450,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+				Period:  model.NewAuctionPeriod(today, nil, nil),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -578,7 +546,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBuyerRepo, mockBidRepo, mockAuctionRepo, mockPushUseCase, mockTxMgr, mockCacheInv)
+			uc := bid.NewCreateBidUseCase(mockItemRepo, mockBuyerRepo, mockBidRepo, mockAuctionRepo, mockPushUseCase, mockTxMgr, mockCacheInv, mockClock)
 			created, err := uc.Execute(context.Background(), tt.input)
 
 			if tt.wantErr != nil {

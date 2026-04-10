@@ -28,6 +28,7 @@ type requestPasswordResetUseCase struct {
 	emailService service.AdminEmailService
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
+	clock        service.Clock
 }
 
 var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
@@ -39,6 +40,7 @@ func NewRequestPasswordResetUseCase(
 	emailService service.AdminEmailService,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
+	clock service.Clock,
 ) RequestPasswordResetUseCase {
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
@@ -46,6 +48,7 @@ func NewRequestPasswordResetUseCase(
 		emailService: emailService,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
+		clock:        clock,
 	}
 }
 
@@ -72,7 +75,7 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	tokenHash := hex.EncodeToString(hash[:])
 
 	// 3. Atomic Save to DB (expires in 30 mins)
-	expiresAt := time.Now().Add(30 * time.Minute)
+	expiresAt := u.clock.Now().Add(30 * time.Minute)
 	err = u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
 		// Invalidate old tokens for this user first
 		if err := u.pwdResetRepo.DeleteAllByUserID(txCtx, admin.ID, "admin"); err != nil {

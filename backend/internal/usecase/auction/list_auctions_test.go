@@ -9,6 +9,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
+	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
 )
 
 type mockAuctionRepository struct {
@@ -45,12 +46,14 @@ func (m *mockAuctionRepository) Delete(_ context.Context, _ int) error {
 }
 
 func TestListAuctionsUseCase_Execute(t *testing.T) {
-	// Past date setup for comprehensive testing
 	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	pastDate := time.Now().In(jst).AddDate(0, 0, -1)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	today := time.Date(2024, 1, 1, 0, 0, 0, 0, jst)
+	pastDate := today.AddDate(0, 0, -1)
+	mockClock := mock.NewMockClock(fixedNow)
 
 	auctions := []model.Auction{
-		{ID: 1, Status: model.AuctionStatusScheduled, Period: model.NewAuctionPeriod(time.Now(), nil, nil)},
+		{ID: 1, Status: model.AuctionStatusScheduled, Period: model.NewAuctionPeriod(today, nil, nil)},
 		{ID: 2, Status: model.AuctionStatusInProgress, Period: model.NewAuctionPeriod(pastDate, nil, nil)},
 	}
 
@@ -76,7 +79,7 @@ func TestListAuctionsUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mockAuctionRepository{auctions: tt.mockAuctions, err: tt.mockErr}
-			uc := auction.NewListAuctionsUseCase(repo)
+			uc := auction.NewListAuctionsUseCase(repo, mockClock)
 
 			got, err := uc.Execute(context.Background(), nil)
 

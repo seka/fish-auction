@@ -9,6 +9,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
+	mockusecase "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -40,6 +41,10 @@ func (m *mockPasswordResetRepositoryForVerify) DeleteAllByUserID(ctx context.Con
 }
 
 func TestVerifyResetTokenUseCase_Execute(t *testing.T) {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
+	mockClock := mockusecase.NewMockClock(fixedNow)
+
 	validToken := "valid-token"
 	hash := sha256.Sum256([]byte(validToken))
 	validTokenHash := hex.EncodeToString(hash[:])
@@ -57,7 +62,7 @@ func TestVerifyResetTokenUseCase_Execute(t *testing.T) {
 			token:         validToken,
 			mockTokenHash: validTokenHash,
 			mockRole:      "admin",
-			mockExpiresAt: time.Now().Add(1 * time.Hour),
+			mockExpiresAt: fixedNow.Add(1 * time.Hour),
 			wantErr:       false,
 		},
 		{
@@ -70,7 +75,7 @@ func TestVerifyResetTokenUseCase_Execute(t *testing.T) {
 			token:         validToken,
 			mockTokenHash: validTokenHash,
 			mockRole:      "buyer",
-			mockExpiresAt: time.Now().Add(1 * time.Hour),
+			mockExpiresAt: fixedNow.Add(1 * time.Hour),
 			wantErr:       true,
 		},
 		{
@@ -78,7 +83,7 @@ func TestVerifyResetTokenUseCase_Execute(t *testing.T) {
 			token:         validToken,
 			mockTokenHash: validTokenHash,
 			mockRole:      "admin",
-			mockExpiresAt: time.Now().Add(-1 * time.Hour),
+			mockExpiresAt: fixedNow.Add(-1 * time.Hour),
 			wantErr:       true,
 		},
 	}
@@ -97,14 +102,14 @@ func TestVerifyResetTokenUseCase_Execute(t *testing.T) {
 					ExpiresAt: tt.mockExpiresAt,
 					TokenHash: expectedHash,
 				}, nil)
-				if tt.mockExpiresAt.Before(time.Now()) {
+				if tt.mockExpiresAt.Before(fixedNow) {
 					repo.On("DeleteByTokenHash", mock.Anything, expectedHash).Return(nil)
 				}
 			} else {
 				repo.On("FindByTokenHash", mock.Anything, expectedHash).Return(nil, nil)
 			}
 
-			uc := admin.NewVerifyResetTokenUseCase(repo)
+			uc := admin.NewVerifyResetTokenUseCase(nil, repo, mockClock)
 			err := uc.Execute(context.Background(), tt.token)
 
 			if (err != nil) != tt.wantErr {

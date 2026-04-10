@@ -4,10 +4,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 // VerifyResetTokenUseCase defines the interface for verifying an admin reset token.
@@ -16,14 +16,20 @@ type VerifyResetTokenUseCase interface {
 }
 
 type verifyResetTokenUseCase struct {
+	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.PasswordResetRepository
+	clock        service.Clock
 }
 
 var _ VerifyResetTokenUseCase = (*verifyResetTokenUseCase)(nil)
 
-// NewVerifyResetTokenUseCase creates a new VerifyResetTokenUseCase instance.
-func NewVerifyResetTokenUseCase(pwdResetRepo repository.PasswordResetRepository) VerifyResetTokenUseCase {
-	return &verifyResetTokenUseCase{pwdResetRepo: pwdResetRepo}
+// NewVerifyResetTokenUseCase creates a new instance of VerifyResetTokenUseCase
+func NewVerifyResetTokenUseCase(adminRepo repository.AdminRepository, pwdResetRepo repository.PasswordResetRepository, clock service.Clock) VerifyResetTokenUseCase {
+	return &verifyResetTokenUseCase{
+		adminRepo:    adminRepo,
+		pwdResetRepo: pwdResetRepo,
+		clock:        clock,
+	}
 }
 
 func (u *verifyResetTokenUseCase) Execute(ctx context.Context, token string) error {
@@ -41,7 +47,7 @@ func (u *verifyResetTokenUseCase) Execute(ctx context.Context, token string) err
 	}
 
 	// 3. Check expiry
-	if time.Now().After(resetToken.ExpiresAt) {
+	if u.clock.Now().After(resetToken.ExpiresAt) {
 		_ = u.pwdResetRepo.DeleteByTokenHash(ctx, tokenHash)
 		return &errors.UnauthorizedError{Message: "Invalid or expired token"}
 	}
