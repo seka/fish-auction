@@ -10,10 +10,10 @@ import (
 func TestAuction_ShouldBeCompleted(t *testing.T) {
 	tz := NewTimeZone(LocationJST)
 	location := tz.Location()
-	now := tz.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
-	past := now.Add(-1 * time.Second)
-	future := now.Add(1 * time.Second)
+
+	// Fixed reference time: 2024-01-01 12:00:00 JST
+	now := time.Date(2024, 1, 1, 12, 0, 0, 0, location)
+	today := time.Date(2024, 1, 1, 0, 0, 0, 0, location)
 
 	newAuction := func(status AuctionStatus, auctionDate time.Time, end *time.Time) *Auction {
 		return &Auction{
@@ -28,8 +28,6 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 		auctionDate time.Time
 		end         *time.Time
 		want        bool
-		skip        bool
-		skipReason  string
 	}{
 		{
 			name:        "returns false when status is already completed",
@@ -59,19 +57,15 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 			name:        "returns true when today's auction end time has passed",
 			status:      AuctionStatusInProgress,
 			auctionDate: today,
-			end:         new(time.Date(0, 1, 1, past.Hour(), past.Minute(), past.Second(), 0, location)),
+			end:         func() *time.Time { t := today.Add(11 * time.Hour); return &t }(),
 			want:        true,
-			skip:        past.Day() != now.Day() || past.Month() != now.Month() || past.Year() != now.Year(),
-			skipReason:  "cannot create an earlier same-day time near midnight",
 		},
 		{
 			name:        "returns false when today's auction end time is still ahead",
 			status:      AuctionStatusInProgress,
 			auctionDate: today,
-			end:         new(time.Date(0, 1, 1, future.Hour(), future.Minute(), future.Second(), 0, location)),
+			end:         func() *time.Time { t := today.Add(13 * time.Hour); return &t }(),
 			want:        false,
-			skip:        future.Day() != now.Day() || future.Month() != now.Month() || future.Year() != now.Year(),
-			skipReason:  "cannot create a later same-day time near midnight",
 		},
 		{
 			name:        "returns false when today's auction has no end time",
@@ -83,12 +77,8 @@ func TestAuction_ShouldBeCompleted(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.skip {
-				t.Skip(tt.skipReason)
-			}
-
 			auction := newAuction(tt.status, tt.auctionDate, tt.end)
-			assert.Equal(t, tt.want, auction.ShouldBeCompleted())
+			assert.Equal(t, tt.want, auction.ShouldBeCompleted(now))
 		})
 	}
 }
