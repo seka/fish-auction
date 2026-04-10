@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
 )
@@ -77,7 +78,7 @@ func TestSignupAndSigninFlow(t *testing.T) {
 
 	txMgr := &mock.MockTransactionManager{}
 	createUC := buyer.NewCreateBuyerUseCase(buyerRepo, authRepo, txMgr)
-	loginUC := buyer.NewLoginBuyerUseCase(buyerRepo, authRepo)
+	loginUC := buyer.NewLoginBuyerUseCase(buyerRepo, authRepo, service.NewRealClock())
 
 	ctx := context.Background()
 	email := "test@example.com"

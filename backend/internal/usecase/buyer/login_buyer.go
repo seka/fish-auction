@@ -8,6 +8,7 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 const (
@@ -29,13 +30,18 @@ type LoginBuyerUseCase interface {
 type loginBuyerUseCase struct {
 	buyerRepo repository.BuyerRepository
 	authRepo  repository.AuthenticationRepository
+	clock     service.Clock
 }
 
 var _ LoginBuyerUseCase = (*loginBuyerUseCase)(nil)
 
 // NewLoginBuyerUseCase creates a new instance of LoginBuyerUseCase
-func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository) LoginBuyerUseCase {
-	return &loginBuyerUseCase{buyerRepo: buyerRepo, authRepo: authRepo}
+func NewLoginBuyerUseCase(buyerRepo repository.BuyerRepository, authRepo repository.AuthenticationRepository, clock service.Clock) LoginBuyerUseCase {
+	return &loginBuyerUseCase{
+		buyerRepo: buyerRepo,
+		authRepo:  authRepo,
+		clock:     clock,
+	}
 }
 
 // Execute authenticates a buyer
@@ -52,7 +58,8 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	}
 
 	// Check if account is locked
-	if auth.LockedUntil != nil && time.Now().Before(*auth.LockedUntil) {
+	now := uc.clock.Now()
+	if auth.LockedUntil != nil && now.Before(*auth.LockedUntil) {
 		return nil, &apperrors.UnauthorizedError{Message: "account is locked due to too many failed attempts"}
 	}
 
@@ -64,7 +71,7 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 
 		// Lock account if too many failed attempts
 		if auth.FailedAttempts+1 >= MaxFailedLoginAttempts {
-			lockUntil := time.Now().Add(AccountLockDuration)
+			lockUntil := uc.clock.Now().Add(AccountLockDuration)
 			_ = uc.authRepo.LockAccount(ctx, auth.ID, lockUntil)
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
 		}
@@ -73,7 +80,7 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	}
 
 	// Update last login and reset failed attempts
-	if err := uc.authRepo.UpdateLoginSuccess(ctx, auth.ID, time.Now()); err != nil {
+	if err := uc.authRepo.UpdateLoginSuccess(ctx, auth.ID, uc.clock.Now()); err != nil {
 		return nil, fmt.Errorf("failed to update login success: %w", err)
 	}
 
