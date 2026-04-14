@@ -34,6 +34,9 @@ type Config struct {
 	WriteTimeout     time.Duration
 	IdleTimeout      time.Duration
 	FrontendURL      *url.URL
+	SQSQueueURL      string
+	SQSRegion        string
+	SQSEndpoint      string
 }
 
 // Load provides Load related functionality.
@@ -77,6 +80,9 @@ func Load() (*Config, error) {
 			}
 			return frontendURL
 		}(),
+		SQSQueueURL:      getEnv("SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
+		SQSRegion:        getEnv("SQS_REGION", "ap-northeast-1"),
+		SQSEndpoint:      getEnv("SQS_ENDPOINT", "http://localhost:4566"),
 	}
 
 	if cfg.PostgresHost == "" || cfg.PostgresPort == "" || cfg.PostgresUser == "" || cfg.PostgresPassword == "" || cfg.PostgresDB == "" {

@@ -98,7 +98,7 @@ func TestServerIntegration(t *testing.T) {
 	// 5. サーバーを goroutine で起動
 	errChan := make(chan error, 1)
 	go func() {
-		if err := srv.Start(cfg.ServerAddr()); err != nil && err != http.ErrServerClosed {
+		if err := srv.Start(ctx, cfg.ServerAddr()); err != nil && err != http.ErrServerClosed {
 			errChan <- err
 		}
 	}()
