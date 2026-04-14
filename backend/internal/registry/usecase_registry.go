@@ -276,8 +276,7 @@ func (u *useCaseRegistry) NewSubscribeNotificationUseCase() notification.Subscri
 
 func (u *useCaseRegistry) NewPublishNotificationUseCase() notification.PublishNotificationUseCase {
 	return notification.NewPublishNotificationUseCase(
-		u.repo.NewPushRepository(),
-		u.service.NewPushNotificationService(),
+		u.service.NewJobQueue(),
 	)
 }
 

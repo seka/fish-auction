@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/seka/fish-auction/backend/config"
@@ -8,6 +9,8 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/mailhog"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 	pushNotification "github.com/seka/fish-auction/backend/internal/infrastructure/push_notification"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/memory"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
 )
 
 // Service defines the interface for creating domain services
@@ -16,6 +19,7 @@ type Service interface {
 	NewAdminEmailService() service.AdminEmailService
 	NewBuyerEmailService() service.BuyerEmailService
 	NewClock() service.Clock
+	NewJobQueue() service.JobQueue
 }
 
 type serviceRegistry struct {
@@ -23,6 +27,7 @@ type serviceRegistry struct {
 	adminEmailService       service.AdminEmailService
 	buyerEmailService       service.BuyerEmailService
 	clock                   service.Clock
+	jobQueue                service.JobQueue
 }
 
 // NewServiceRegistry creates a new Service registry
@@ -36,11 +41,24 @@ func NewServiceRegistry(cfg *config.Config) Service {
 
 	pushNotificationService := pushNotification.NewWebpushService(cfg)
 
+	var jobQueue service.JobQueue
+	if cfg.SQSQueueURL != "" {
+		var err error
+		// Use a local context for initialization
+		jobQueue, err = sqs.NewClient(context.Background(), cfg.SQSRegion, cfg.SQSQueueURL, cfg.SQSEndpoint)
+		if err != nil {
+			panic(fmt.Sprintf("failed to initialize SQS client: %v", err))
+		}
+	} else {
+		jobQueue = memory.NewMemoryQueue()
+	}
+
 	return &serviceRegistry{
 		pushNotificationService: pushNotificationService,
 		adminEmailService:       adminEmailService,
 		buyerEmailService:       buyerEmailService,
 		clock:                   service.NewRealClock(),
+		jobQueue:                jobQueue,
 	}
 }
 
@@ -58,4 +76,8 @@ func (s *serviceRegistry) NewBuyerEmailService() service.BuyerEmailService {
 
 func (s *serviceRegistry) NewClock() service.Clock {
 	return s.clock
+}
+
+func (s *serviceRegistry) NewJobQueue() service.JobQueue {
+	return s.jobQueue
 }
