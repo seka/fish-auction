@@ -70,9 +70,22 @@ app.test: ## Run tests
 	go test -v ./...
 
 .PHONY: app.integration-test
-app.integration-test: ## Run integration tests
-	@echo "Running integration tests..."
-	RUN_INTEGRATION_TESTS=true go test ./cmd/testing/... -run TestServerIntegration -v
+app.integration-test: ## Run integration tests with dynamic DB lifecycle
+	@TEST_DB_NAME=fish_auction_test_$$(date +%s); \
+	TEST_DB_USER=$${POSTGRES_USER:-postgres}; \
+	TEST_DB_HOST=$${POSTGRES_HOST:-localhost}; \
+	echo "Preparing integration test environment (DB: $$TEST_DB_NAME)..."; \
+	psql -h $$TEST_DB_HOST -U $$TEST_DB_USER -d postgres -c "CREATE DATABASE $$TEST_DB_NAME;"; \
+	echo "Running integration tests..."; \
+	export RUN_INTEGRATION_TESTS=true; \
+	export POSTGRES_DB=$$TEST_DB_NAME; \
+	export REDIS_DB=15; \
+	export SERVER_PORT=18080; \
+	go test ./cmd/testing/... -run TestServerIntegration -v; \
+	EXIT_CODE=$$?; \
+	echo "Cleaning up test environment..."; \
+	psql -h $$TEST_DB_HOST -U $$TEST_DB_USER -d postgres -c "DROP DATABASE $$TEST_DB_NAME;"; \
+	exit $$EXIT_CODE
 
 # Stress test parameters
 LOAD_TEST_CONCURRENCY ?= 100
