@@ -2,61 +2,52 @@ package notification
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
+	"fmt"
 
-	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
-	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 // PublishNotificationUseCase defines the interface for publish notifications.
 type PublishNotificationUseCase interface {
-	// Execute sends a notification to a buyer.
+	// Execute enqueues a notification job for a buyer.
 	Execute(ctx context.Context, buyerID int, payload any) error
 }
 
 type publishNotificationUseCase struct {
-	repo                    repository.PushRepository
-	pushNotificationService service.PushNotificationService
+	jobQueue service.JobQueue
 }
 
 var _ PublishNotificationUseCase = (*publishNotificationUseCase)(nil)
 
 // NewPublishNotificationUseCase creates a new instance of PublishNotificationUseCase.
 func NewPublishNotificationUseCase(
-	repo repository.PushRepository,
-	pushNotificationService service.PushNotificationService,
+	jobQueue service.JobQueue,
 ) PublishNotificationUseCase {
 	return &publishNotificationUseCase{
-		repo:                    repo,
-		pushNotificationService: pushNotificationService,
+		jobQueue: jobQueue,
 	}
 }
 
+// pushNotificationJobDTO is a private DTO for marshaling the job payload to the queue.
+type pushNotificationJobDTO struct {
+	BuyerID int `json:"buyer_id"`
+	Payload any `json:"payload"`
+}
+
 func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, payload any) error {
-	subs, err := uc.repo.GetSubscriptionsByBuyerID(ctx, buyerID)
+	// Use DTO for serialization to avoid JSON tags in domain model.
+	job := pushNotificationJobDTO{
+		BuyerID: buyerID,
+		Payload: payload,
+	}
+
+	jobBytes, err := json.Marshal(job)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal notification job: %w", err)
 	}
 
-	if len(subs) == 0 {
-		return nil
-	}
-
-	// Send to all subscriptions for the user
-	// In production, this should probably be done asynchronously via a queue
-	for _, sub := range subs {
-		if err := uc.pushNotificationService.Send(ctx, &sub, payload); err != nil {
-			// If subscription is expired or not found, delete it
-			var goneErr *domainErrors.GoneError
-			var notFoundErr *domainErrors.NotFoundError
-			if (errors.As(err, &goneErr) && goneErr.Resource == "Subscription") ||
-				(errors.As(err, &notFoundErr) && notFoundErr.Resource == "Subscription") {
-				_ = uc.repo.DeleteSubscription(ctx, sub.Endpoint)
-			}
-			continue
-		}
-	}
-
-	return nil
+	// Enqueue the job for the worker to process asynchronously.
+	return uc.jobQueue.Enqueue(ctx, model.JobTypePushNotification, jobBytes)
 }
