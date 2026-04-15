@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -10,28 +11,30 @@ import (
 
 // Config represents the application configuration loaded from environment variables.
 type Config struct {
-	DBHost          string
-	DBPort          string
-	DBUser          string
-	DBPassword      string
-	DBName          string
-	ServerAddress   string
-	RedisAddr       string
-	CacheTTL        time.Duration
-	SessionTTL      time.Duration
-	AppEnv          string
-	AllowedOrigins  string
-	SMTPHost        string
-	SMTPPort        string
-	SMTPFrom        string
-	VAPIDPublicKey  string
-	VAPIDPrivateKey string
-	VAPIDSubject    string
-	DBSslMode       string
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	IdleTimeout     time.Duration
-	FrontendURL     *url.URL
+	PostgresHost     string
+	PostgresPort     string
+	PostgresUser     string
+	PostgresPassword string
+	PostgresDB       string
+	ServerHost       string
+	ServerPort       string
+	RedisAddr        string
+	RedisDB          int
+	CacheTTL         time.Duration
+	SessionTTL       time.Duration
+	AppEnv           string
+	AllowedOrigins   string
+	SMTPHost         string
+	SMTPPort         string
+	SMTPFrom         string
+	VAPIDPublicKey   string
+	VAPIDPrivateKey  string
+	VAPIDSubject     string
+	PostgresSslMode  string
+	ReadTimeout      time.Duration
+	WriteTimeout     time.Duration
+	IdleTimeout      time.Duration
+	FrontendURL      *url.URL
 }
 
 // Load provides Load related functionality.
@@ -40,27 +43,29 @@ func Load() (*Config, error) {
 	sessionTTL := getEnvInt("SESSION_TTL_SECONDS", 86400) // デフォルト24時間
 
 	cfg := &Config{
-		DBHost:          os.Getenv("DB_HOST"),
-		DBPort:          os.Getenv("DB_PORT"),
-		DBUser:          os.Getenv("DB_USER"),
-		DBPassword:      os.Getenv("DB_PASSWORD"),
-		DBName:          os.Getenv("DB_NAME"),
-		ServerAddress:   os.Getenv("SERVER_ADDRESS"),
-		RedisAddr:       getEnv("REDIS_ADDR", "localhost:6379"),
-		CacheTTL:        time.Duration(cacheTTL) * time.Second,
-		SessionTTL:      time.Duration(sessionTTL) * time.Second,
-		AppEnv:          getEnv("APP_ENV", "production"),
-		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
-		SMTPHost:        getEnv("SMTP_HOST", "mailhog"),
-		SMTPPort:        getEnv("SMTP_PORT", "1025"),
-		SMTPFrom:        getEnv("SMTP_FROM", "noreply@fish-auction.com"),
-		VAPIDPublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
-		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
-		VAPIDSubject:    getEnv("VAPID_SUBJECT", "mailto:admin@example.com"),
-		DBSslMode:       getEnv("DB_SSLMODE", "disable"),
-		ReadTimeout:     time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
-		WriteTimeout:    time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
-		IdleTimeout:     time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
+		PostgresHost:     os.Getenv("POSTGRES_HOST"),
+		PostgresPort:     os.Getenv("POSTGRES_PORT"),
+		PostgresUser:     os.Getenv("POSTGRES_USER"),
+		PostgresPassword: os.Getenv("POSTGRES_PASSWORD"),
+		PostgresDB:       os.Getenv("POSTGRES_DB"),
+		ServerHost:       os.Getenv("SERVER_HOST"),
+		ServerPort:       getEnv("SERVER_PORT", "8080"),
+		RedisAddr:        getEnv("REDIS_ADDR", "localhost:6379"),
+		RedisDB:          getEnvInt("REDIS_DB", 0),
+		CacheTTL:         time.Duration(cacheTTL) * time.Second,
+		SessionTTL:       time.Duration(sessionTTL) * time.Second,
+		AppEnv:           getEnv("APP_ENV", "production"),
+		AllowedOrigins:   getEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
+		SMTPHost:         getEnv("SMTP_HOST", "mailhog"),
+		SMTPPort:         getEnv("SMTP_PORT", "1025"),
+		SMTPFrom:         getEnv("SMTP_FROM", "noreply@fish-auction.com"),
+		VAPIDPublicKey:   getEnv("VAPID_PUBLIC_KEY", ""),
+		VAPIDPrivateKey:  getEnv("VAPID_PRIVATE_KEY", ""),
+		VAPIDSubject:     getEnv("VAPID_SUBJECT", "mailto:admin@example.com"),
+		PostgresSslMode:  getEnv("POSTGRES_SSLMODE", "disable"),
+		ReadTimeout:      time.Duration(getEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
+		WriteTimeout:     time.Duration(getEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
+		IdleTimeout:      time.Duration(getEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 		FrontendURL: func() *url.URL {
 			frontendURLStr := getEnv("FRONTEND_URL", "https://localhost")
 			frontendURL, err := url.Parse(frontendURLStr)
@@ -74,12 +79,8 @@ func Load() (*Config, error) {
 		}(),
 	}
 
-	if cfg.ServerAddress == "" {
-		cfg.ServerAddress = ":8080"
-	}
-
-	if cfg.DBHost == "" || cfg.DBPort == "" || cfg.DBUser == "" || cfg.DBPassword == "" || cfg.DBName == "" {
-		return nil, fmt.Errorf("missing required environment variables")
+	if cfg.PostgresHost == "" || cfg.PostgresPort == "" || cfg.PostgresUser == "" || cfg.PostgresPassword == "" || cfg.PostgresDB == "" {
+		return nil, fmt.Errorf("missing required environment variables (POSTGRES_*)")
 	}
 
 	if cfg.FrontendURL == nil {
@@ -105,10 +106,15 @@ func getEnvInt(key string, defaultValue int) int {
 	return defaultValue
 }
 
+// ServerAddr returns the joined host and port address for the server.
+func (c *Config) ServerAddr() string {
+	return net.JoinHostPort(c.ServerHost, c.ServerPort)
+}
+
 // DBConnectionURL returns the PostgreSQL connection string based on the configuration.
 func (c *Config) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSslMode)
+		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
 }
 
 // SMTPAddress returns the SMTP server address in host:port format.
