@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
@@ -96,7 +99,10 @@ func run() error {
 	)
 
 	// Start Server
-	if err := srv.Start(cfg.ServerAddr()); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := srv.Start(ctx, cfg.ServerAddr()); err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
 	}
 	return nil
