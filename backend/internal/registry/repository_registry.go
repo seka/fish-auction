@@ -34,8 +34,6 @@ type Repository interface {
 	PasswordReset() repository.PasswordResetRepository
 	NewItemCacheInvalidator() repository.CacheInvalidator
 	NewSessionRepository() repository.SessionRepository
-	// DB returns the underlying database connection (use with caution, mainly for tests/seeding).
-	DB() *sql.DB
 	// Cleanup closes underlying connections (DB, Redis, etc.) via their interfaces.
 	Cleanup() error
 }
@@ -46,26 +44,25 @@ type repositoryRegistry struct {
 	cache      datastore.Cache
 	cacheTTL   time.Duration
 	sessionTTL time.Duration
-	rawDB      *sql.DB
 }
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(cfg *config.Config) (Repository, error) {
+func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
 	db, err := connectDB(cfg.DBConnectionURL())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := runMigrations(db); err != nil {
 		_ = db.Close()
-		return nil, err
+		return nil, nil, err
 	}
 
 	redisClient, err := connectRedis(cfg.RedisAddr, cfg.RedisDB)
 	if err != nil {
 		_ = db.Close()
-		return nil, err
+		return nil, nil, err
 	}
 
 	return &repositoryRegistry{
@@ -73,8 +70,7 @@ func NewRepositoryRegistry(cfg *config.Config) (Repository, error) {
 		cache:      cacheStore.NewClient(redisClient),
 		cacheTTL:   cfg.CacheTTL,
 		sessionTTL: cfg.SessionTTL,
-		rawDB:      db,
-	}, nil
+	}, db, nil
 }
 
 func (r *repositoryRegistry) Cleanup() error {
@@ -219,8 +215,4 @@ func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository 
 
 func (r *repositoryRegistry) NewSessionRepository() repository.SessionRepository {
 	return cacheStore.NewSessionStore(r.cache, r.sessionTTL)
-}
-
-func (r *repositoryRegistry) DB() *sql.DB {
-	return r.rawDB
 }
