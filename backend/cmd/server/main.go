@@ -55,7 +55,7 @@ func run() error {
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	repoReg, _, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		return err
 	}

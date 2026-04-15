@@ -28,7 +28,7 @@ func run() error {
 	}
 
 	// Initialize Repository Registry
-	repoReg, _, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		return err
 	}
