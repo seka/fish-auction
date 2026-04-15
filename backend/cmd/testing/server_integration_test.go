@@ -39,7 +39,7 @@ func TestServerIntegration(t *testing.T) {
 	cfg := config.LoadTest()
 
 	// 2. テスト用 DB 名を生成
-	testDBName := fmt.Sprintf("test_fish_auction_%d", time.Now().Unix())
+	testPostgresDB := fmt.Sprintf("test_fish_auction_%d", time.Now().Unix())
 
 	// 3. 管理用 DB に接続
 	adminDB, err := sql.Open("postgres", cfg.AdminConnStr())
@@ -49,21 +49,21 @@ func TestServerIntegration(t *testing.T) {
 	defer func() { _ = adminDB.Close() }()
 
 	// 4. テスト用 DB を作成
-	if err := createTestDatabase(adminDB, testDBName); err != nil {
+	if err := createTestDatabase(adminDB, testPostgresDB); err != nil {
 		t.Fatalf("Failed to create test database: %v", err)
 	}
 	defer func() {
-		if err := dropTestDatabase(adminDB, testDBName); err != nil {
+		if err := dropTestDatabase(adminDB, testPostgresDB); err != nil {
 			t.Errorf("Failed to drop test database: %v", err)
 		}
 	}()
 
 	appCfg := &config.Config{
-		DBHost:      cfg.DBHost,
-		DBPort:      cfg.DBPort,
-		DBUser:      cfg.DBUser,
-		DBPassword:  cfg.DBPassword,
-		DBName:      testDBName,
+		PostgresHost:      cfg.PostgresHost,
+		PostgresPort:      cfg.PostgresPort,
+		PostgresUser:      cfg.PostgresUser,
+		PostgresPassword:  cfg.PostgresPassword,
+		PostgresDB:      testPostgresDB,
 		RedisAddr:   getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
 		CacheTTL:    5 * time.Minute,
 		SessionTTL:  24 * time.Hour,
@@ -71,7 +71,7 @@ func TestServerIntegration(t *testing.T) {
 		SMTPHost:    getEnvOrDefault("SMTP_HOST", "localhost"),
 		SMTPPort:    getEnvOrDefault("SMTP_PORT", "1025"),
 		SMTPFrom:    getEnvOrDefault("SMTP_FROM", "test@example.com"),
-		DBSslMode:   cfg.DBSslMode,
+		PostgresSslMode:   cfg.PostgresSslMode,
 		FrontendURL: func() *url.URL { u, _ := url.Parse("https://localhost"); return u }(),
 	}
 

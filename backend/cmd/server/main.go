@@ -96,7 +96,7 @@ func run() error {
 	)
 
 	// Start Server
-	if err := srv.Start(cfg.ServerAddress); err != nil {
+	if err := srv.Start(cfg.ServerAddr()); err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
 	}
 	return nil

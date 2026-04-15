@@ -38,3 +38,8 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 func (c *Client) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }
+
+// Close closes the Redis connection.
+func (c *Client) Close() error {
+	return c.client.Close()
+}
