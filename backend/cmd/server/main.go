@@ -52,11 +52,11 @@ func run() error {
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	repoReg, db, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = db.Close() }()
+	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
 	serviceReg := registry.NewServiceRegistry(cfg)

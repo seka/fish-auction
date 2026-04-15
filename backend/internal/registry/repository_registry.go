@@ -48,21 +48,21 @@ type repositoryRegistry struct {
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
+func NewRepositoryRegistry(cfg *config.Config) (Repository, error) {
 	db, err := connectDB(cfg.DBConnectionURL())
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if err := runMigrations(db); err != nil {
 		_ = db.Close()
-		return nil, nil, err
+		return nil, err
 	}
 
 	redisClient, err := connectRedis(cfg.RedisAddr, cfg.RedisDB)
 	if err != nil {
 		_ = db.Close()
-		return nil, nil, err
+		return nil, err
 	}
 
 	return &repositoryRegistry{
@@ -70,7 +70,7 @@ func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
 		cache:      cacheStore.NewClient(redisClient),
 		cacheTTL:   cfg.CacheTTL,
 		sessionTTL: cfg.SessionTTL,
-	}, db, nil
+	}, nil
 }
 
 func (r *repositoryRegistry) Cleanup() error {
