@@ -29,21 +29,14 @@ func GetEnvInt(key string, defaultValue int) int {
 	return value
 }
 
-func loadFrontendURL() *url.URL {
+func loadFrontendURL() (*url.URL, error) {
 	frontendURLStr := GetEnv("FRONTEND_URL", "https://localhost")
 	frontendURL, err := url.Parse(frontendURLStr)
-	if err != nil || frontendURL.Scheme == "" || frontendURL.Host == "" {
-		return nil
+	if err != nil {
+		return nil, fmt.Errorf("invalid FRONTEND_URL: %w", err)
 	}
-	return frontendURL
-}
-
-func validateBase(host, port, user, password, db string, frontendURL *url.URL) error {
-	if host == "" || port == "" || user == "" || password == "" || db == "" {
-		return fmt.Errorf("missing required environment variables (POSTGRES_*)")
+	if frontendURL.Scheme == "" || frontendURL.Host == "" {
+		return nil, fmt.Errorf("invalid FRONTEND_URL: missing scheme or host")
 	}
-	if frontendURL == nil {
-		return fmt.Errorf("invalid or missing FRONTEND_URL")
-	}
-	return nil
+	return frontendURL, nil
 }
