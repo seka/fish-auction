@@ -22,20 +22,20 @@ func main() {
 
 func run() error {
 	// Load Config
-	cfg, err := config.Load()
+	cfg, err := config.LoadWorkerConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Initialize Repository Registry
-	repoReg, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg := registry.NewServiceRegistry(cfg)
+	serviceReg := registry.NewServiceRegistry(cfg, cfg, cfg)
 
 	// Initialize Worker Registry
 	workerReg := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)

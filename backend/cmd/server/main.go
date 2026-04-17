@@ -49,20 +49,20 @@ func main() {
 
 func run() error {
 	// Load Config
-	cfg, err := config.Load()
+	cfg, err := config.LoadAppServerConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	repoReg, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg := registry.NewServiceRegistry(cfg)
+	serviceReg := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
 
 	// Initialize UseCase Registry
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)

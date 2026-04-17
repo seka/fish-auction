@@ -41,7 +41,7 @@ func run() error {
 		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
 	}
 
-	cfg, err := config.Load()
+	cfg, err := config.LoadAppServerConfig()
 	if err != nil {
 		log.Printf("Failed to load config: %v", err)
 		log.Println("Usage: POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
