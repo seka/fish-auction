@@ -77,7 +77,7 @@ app.integration-test: ## Run integration tests with dynamic DB lifecycle
 	TEST_DB_HOST=$${POSTGRES_HOST:-localhost}; \
 	TEST_DB_PORT=$${POSTGRES_PORT:-5432}; \
 	echo "Preparing integration test environment (DB: $$TEST_DB_NAME)..."; \
-	PGPASSWORD=$$TEST_DB_PASSWORD psql -h $$TEST_DB_HOST -U $$TEST_DB_USER -d postgres -c "CREATE DATABASE $$TEST_DB_NAME;"; \
+	PGPASSWORD=$$TEST_DB_PASSWORD psql -h $$TEST_DB_HOST -U $$TEST_DB_USER -d postgres -c "CREATE DATABASE $$TEST_DB_NAME;" || exit 1; \
 	echo "Running integration tests..."; \
 	export RUN_INTEGRATION_TESTS=true; \
 	export POSTGRES_HOST=$$TEST_DB_HOST; \
