@@ -17,7 +17,7 @@ func TestBuyerEmailService(t *testing.T) {
 		t.Fatalf("failed to create template loader: %v", err)
 	}
 
-	cfg := &config.Config{
+	cfg := &config.AppServerConfig{
 		SMTPHost: "localhost",
 		SMTPPort: "1025",
 		SMTPFrom: "noreply@example.com",

@@ -18,13 +18,13 @@ var webpushSendNotification = webpush.SendNotification
 
 // WebpushNotificationService provides WebpushNotificationService related functionality.
 type WebpushNotificationService struct {
-	cfg *config.Config
+	cfg config.WebpushConfig
 }
 
 var _ service.PushNotificationService = (*WebpushNotificationService)(nil)
 
 // NewWebpushService creates a new PushNotificationService implementation using webpush-go
-func NewWebpushService(cfg *config.Config) *WebpushNotificationService {
+func NewWebpushService(cfg config.WebpushConfig) *WebpushNotificationService {
 	return &WebpushNotificationService{
 		cfg: cfg,
 	}
@@ -45,10 +45,11 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 		},
 	}
 
+	vapidPublic, vapidPrivate, vapidSubject := s.cfg.VAPIDConfig()
 	resp, err := webpushSendNotification(message, pushSub, &webpush.Options{
-		Subscriber:      s.cfg.VAPIDSubject,
-		VAPIDPublicKey:  s.cfg.VAPIDPublicKey,
-		VAPIDPrivateKey: s.cfg.VAPIDPrivateKey,
+		Subscriber:      vapidSubject,
+		VAPIDPublicKey:  vapidPublic,
+		VAPIDPrivateKey: vapidPrivate,
 		TTL:             30, // seconds
 	})
 	if err != nil {

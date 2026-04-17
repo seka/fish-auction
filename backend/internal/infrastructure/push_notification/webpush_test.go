@@ -16,7 +16,7 @@ import (
 )
 
 func TestWebpushNotificationService_Send(t *testing.T) {
-	cfg := &config.Config{
+	cfg := &config.WorkerConfig{
 		VAPIDPublicKey:  "test-public-key",
 		VAPIDPrivateKey: "test-private-key",
 		VAPIDSubject:    "mailto:test@example.com",

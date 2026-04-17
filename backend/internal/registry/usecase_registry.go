@@ -63,11 +63,11 @@ type UseCase interface {
 type useCaseRegistry struct {
 	repo    Repository
 	service Service
-	cfg     *config.Config
+	cfg     config.FrontendConfig
 }
 
 // NewUseCaseRegistry creates a new UseCase registry
-func NewUseCaseRegistry(repo Repository, service Service, cfg *config.Config) UseCase {
+func NewUseCaseRegistry(repo Repository, service Service, cfg config.FrontendConfig) UseCase {
 	return &useCaseRegistry{
 		repo:    repo,
 		service: service,
@@ -227,7 +227,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
 		u.service.NewBuyerEmailService(),
-		u.cfg.FrontendURL,
+		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
 	)
@@ -251,7 +251,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 		u.repo.NewAdminRepository(),
 		u.repo.PasswordReset(),
 		u.service.NewAdminEmailService(),
-		u.cfg.FrontendURL,
+		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
 	)

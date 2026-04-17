@@ -15,14 +15,14 @@ var buyerSendMailFunc = smtp.SendMail
 
 // BuyerEmailService provides BuyerEmailService related functionality.
 type BuyerEmailService struct {
-	cfg            *config.Config
+	cfg            config.EmailConfig
 	templateLoader templates.TemplateProvider
 }
 
 var _ service.BuyerEmailService = (*BuyerEmailService)(nil)
 
 // NewBuyerEmailService creates a new BuyerEmailService instance.
-func NewBuyerEmailService(cfg *config.Config, loader templates.TemplateProvider) *BuyerEmailService {
+func NewBuyerEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) *BuyerEmailService {
 	return &BuyerEmailService{
 		cfg:            cfg,
 		templateLoader: loader,
@@ -37,7 +37,7 @@ func (s *BuyerEmailService) send(to, subject, body string) error {
 		"%s", to, subject, body)
 
 	// MailHog doesn't require auth
-	return buyerSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.SMTPFrom, []string{to}, msg)
+	return buyerSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.GetSMTPFrom(), []string{to}, msg)
 }
 
 // SendBuyerPasswordReset provides SendBuyerPasswordReset related functionality.

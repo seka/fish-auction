@@ -31,21 +31,26 @@ type serviceRegistry struct {
 }
 
 // NewServiceRegistry creates a new Service registry
-func NewServiceRegistry(cfg *config.Config) Service {
+func NewServiceRegistry(
+	emailCfg config.EmailConfig,
+	webpushCfg config.WebpushConfig,
+	queueCfg config.QueueConfig,
+) Service {
 	loader, err := templates.NewTemplateLoader()
 	if err != nil {
 		panic(fmt.Sprintf("failed to load templates: %v", err))
 	}
-	adminEmailService := mailhog.NewAdminEmailService(cfg, loader)
-	buyerEmailService := mailhog.NewBuyerEmailService(cfg, loader)
+	adminEmailService := mailhog.NewAdminEmailService(emailCfg, loader)
+	buyerEmailService := mailhog.NewBuyerEmailService(emailCfg, loader)
 
-	pushNotificationService := pushNotification.NewWebpushService(cfg)
+	pushNotificationService := pushNotification.NewWebpushService(webpushCfg)
 
 	var jobQueue service.JobQueue
-	if cfg.SQSQueueURL != "" {
+	sqsRegion, sqsURL, sqsEndpoint := queueCfg.SQSConfig()
+	if sqsURL != "" {
 		var err error
 		// Use a local context for initialization
-		jobQueue, err = sqs.NewClient(context.Background(), cfg.SQSRegion, cfg.SQSQueueURL, cfg.SQSEndpoint)
+		jobQueue, err = sqs.NewClient(context.Background(), sqsRegion, sqsURL, sqsEndpoint)
 		if err != nil {
 			panic(fmt.Sprintf("failed to initialize SQS client: %v", err))
 		}

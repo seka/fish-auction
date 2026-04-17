@@ -17,13 +17,13 @@ type WorkerRegistry interface {
 }
 
 type workerRegistry struct {
-	cfg        *config.Config
+	cfg        config.QueueConfig
 	repoReg    Repository
 	serviceReg Service
 }
 
 // NewWorkerRegistry creates a new WorkerRegistry instance.
-func NewWorkerRegistry(cfg *config.Config, repoReg Repository, serviceReg Service) WorkerRegistry {
+func NewWorkerRegistry(cfg config.QueueConfig, repoReg Repository, serviceReg Service) WorkerRegistry {
 	return &workerRegistry{
 		cfg:        cfg,
 		repoReg:    repoReg,
@@ -32,11 +32,12 @@ func NewWorkerRegistry(cfg *config.Config, repoReg Repository, serviceReg Servic
 }
 
 func (r *workerRegistry) NewWorker() (*worker.Worker, error) {
-	if r.cfg.SQSQueueURL == "" {
+	sqsRegion, sqsURL, sqsEndpoint := r.cfg.SQSConfig()
+	if sqsURL == "" {
 		return nil, fmt.Errorf("SQS_QUEUE_URL is not set")
 	}
 
-	sqsClient, err := sqs.NewClient(context.Background(), r.cfg.SQSRegion, r.cfg.SQSQueueURL, r.cfg.SQSEndpoint)
+	sqsClient, err := sqs.NewClient(context.Background(), sqsRegion, sqsURL, sqsEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize SQS client for worker: %w", err)
 	}
