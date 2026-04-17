@@ -47,7 +47,7 @@ func TestServerIntegration(t *testing.T) {
 	serviceReg := registry.NewServiceRegistry(cfg)
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
-	// 6. Handlers を初期化
+	// 3. Handlers を初期化
 	healthHandler := publicHandler.NewHealthHandler()
 	fishermanHandler := adminHandler.NewFishermanHandler(useCaseReg)
 	sessionRepo := repoReg.NewSessionRepository()
@@ -68,7 +68,7 @@ func TestServerIntegration(t *testing.T) {
 	adminAuthResetHandler := adminHandler.NewAuthResetHandler(useCaseReg)
 	pushHandler := buyerHandler.NewPushHandler(useCaseReg)
 
-	// 7. Server を起動
+	// 4. Server を起動
 	srv := server.NewServer(
 		healthHandler,
 		fishermanHandler,
@@ -95,7 +95,7 @@ func TestServerIntegration(t *testing.T) {
 		time.Minute,
 	)
 
-	// 8. サーバーを goroutine で起動
+	// 5. サーバーを goroutine で起動
 	errChan := make(chan error, 1)
 	go func() {
 		if err := srv.Start(cfg.ServerAddr()); err != nil && err != http.ErrServerClosed {
@@ -103,13 +103,13 @@ func TestServerIntegration(t *testing.T) {
 		}
 	}()
 
-	// 9. サーバーの準備完了を待機
+	// 6. サーバーの準備完了を待機
 	serverURL := "http://localhost:18080"
 	if err := waitForServer(serverURL + "/api/health"); err != nil {
 		t.Fatalf("Server failed to start: %v", err)
 	}
 
-	// 10. Health エンドポイントをテスト
+	// 7. Health エンドポイントをテスト
 	t.Run("Health", func(t *testing.T) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, serverURL+"/api/health", http.NoBody)
 		if err != nil {
@@ -126,7 +126,7 @@ func TestServerIntegration(t *testing.T) {
 		}
 	})
 
-	// 11. Full Auction Flow Test
+	// 8. Full Auction Flow Test
 	t.Run("FullAuctionFlow", func(t *testing.T) {
 		jar, _ := cookiejar.New(nil)
 		client := &http.Client{
