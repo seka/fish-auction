@@ -2,14 +2,11 @@ package testing
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -34,57 +31,21 @@ func TestServerIntegration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// 1. テスト設定を読み込む
-	cfg := config.LoadTest()
-
-	// 2. テスト用 DB 名を生成
-	testPostgresDB := fmt.Sprintf("test_fish_auction_%d", time.Now().Unix())
-
-	// 3. 管理用 DB に接続
-	adminDB, err := sql.Open("postgres", cfg.AdminConnStr())
+	// 1. 設定を読み込む
+	cfg, err := config.Load()
 	if err != nil {
-		t.Fatalf("Failed to connect to admin database: %v", err)
-	}
-	defer func() { _ = adminDB.Close() }()
-
-	// 4. テスト用 DB を作成
-	if err := createTestDatabase(adminDB, testPostgresDB); err != nil {
-		t.Fatalf("Failed to create test database: %v", err)
-	}
-	defer func() {
-		if err := dropTestDatabase(adminDB, testPostgresDB); err != nil {
-			t.Errorf("Failed to drop test database: %v", err)
-		}
-	}()
-
-	appCfg := &config.Config{
-		PostgresHost:     cfg.PostgresHost,
-		PostgresPort:     cfg.PostgresPort,
-		PostgresUser:     cfg.PostgresUser,
-		PostgresPassword: cfg.PostgresPassword,
-		PostgresDB:       testPostgresDB,
-		RedisAddr:        getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
-		CacheTTL:         5 * time.Minute,
-		SessionTTL:       24 * time.Hour,
-		AppEnv:           "test",
-		SMTPHost:         getEnvOrDefault("SMTP_HOST", "localhost"),
-		SMTPPort:         getEnvOrDefault("SMTP_PORT", "1025"),
-		SMTPFrom:         getEnvOrDefault("SMTP_FROM", "test@example.com"),
-		PostgresSslMode:  cfg.PostgresSslMode,
-		FrontendURL:      func() *url.URL { u, _ := url.Parse("https://localhost"); return u }(),
-		ServerHost:       "0.0.0.0",
-		ServerPort:       "18080",
+		t.Fatalf("Failed to load config: %v", err)
 	}
 
-	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, err := registry.NewRepositoryRegistry(appCfg)
+	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
+	repoReg, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
-	serviceReg := registry.NewServiceRegistry(appCfg)
-	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, appCfg)
+	serviceReg := registry.NewServiceRegistry(cfg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
 	// 6. Handlers を初期化
 	healthHandler := publicHandler.NewHealthHandler()
@@ -137,7 +98,7 @@ func TestServerIntegration(t *testing.T) {
 	// 8. サーバーを goroutine で起動
 	errChan := make(chan error, 1)
 	go func() {
-		if err := srv.Start(appCfg.ServerAddr()); err != nil && err != http.ErrServerClosed {
+		if err := srv.Start(cfg.ServerAddr()); err != nil && err != http.ErrServerClosed {
 			errChan <- err
 		}
 	}()
@@ -233,26 +194,6 @@ func TestServerIntegration(t *testing.T) {
 	if err := srv.Shutdown(ctx); err != nil {
 		t.Errorf("Failed to shutdown server: %v", err)
 	}
-}
-
-// createTestDatabase はテスト用 DB を作成
-func createTestDatabase(db *sql.DB, dbName string) error {
-	_, err := db.ExecContext(context.Background(), fmt.Sprintf("CREATE DATABASE %s", dbName))
-	return err
-}
-
-// dropTestDatabase はテスト用 DB を削除
-func dropTestDatabase(db *sql.DB, dbName string) error {
-	//nolint:bodyclose,noctx // アクティブな接続を切断するため意図的にクローズしない。テスト用DB削除のため Context は使用しない（または Background を使う）
-	_, _ = db.ExecContext(context.Background(), fmt.Sprintf(`
-		SELECT pg_terminate_backend(pg_stat_activity.pid)
-		FROM pg_stat_activity
-		WHERE pg_stat_activity.datname = '%s'
-		AND pid <> pg_backend_pid()
-	`, dbName))
-
-	_, err := db.ExecContext(context.Background(), fmt.Sprintf("DROP DATABASE IF EXISTS %s", dbName))
-	return err
 }
 
 // waitForServer はサーバーが起動するまで待機
@@ -451,13 +392,6 @@ func seedAdmin(t *testing.T, useCaseReg registry.UseCase, email, password string
 	if err != nil {
 		t.Fatalf("Failed to seed admin: %v", err)
 	}
-}
-
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
 
 // HttpCookieClient wrapper for standard client to simplify logic if needed
