@@ -104,7 +104,7 @@ func TestServerIntegration(t *testing.T) {
 	}()
 
 	// 6. サーバーの準備完了を待機
-	serverURL := "http://localhost:18080"
+	serverURL := "http://" + cfg.ServerAddr()
 	if err := waitForServer(serverURL + "/api/health"); err != nil {
 		t.Fatalf("Server failed to start: %v", err)
 	}
