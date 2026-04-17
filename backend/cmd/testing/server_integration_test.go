@@ -32,19 +32,19 @@ func TestServerIntegration(t *testing.T) {
 	}
 
 	// 1. 設定を読み込む
-	cfg, err := config.Load()
+	cfg, err := config.LoadAppServerConfig()
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
 
 	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
-	serviceReg := registry.NewServiceRegistry(cfg)
+	serviceReg := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
 	// 3. Handlers を初期化
