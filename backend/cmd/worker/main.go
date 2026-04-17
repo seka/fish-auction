@@ -28,14 +28,14 @@ func run() error {
 	}
 
 	// Initialize Repository Registry
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg := registry.NewServiceRegistry(cfg, cfg, cfg)
+	serviceReg := registry.NewServiceRegistry(config.NoEmailConfig, cfg, cfg)
 
 	// Initialize Worker Registry
 	workerReg := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
