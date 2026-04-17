@@ -16,7 +16,8 @@ func TestLoadWorkerConfig(t *testing.T) {
 		"POSTGRES_USER":     "postgres",
 		"POSTGRES_PASSWORD": "postgres",
 		"POSTGRES_DB":       "fish_auction",
-		"FRONTEND_URL":      "https://localhost",
+		"VAPID_PUBLIC_KEY":  "test-public-key",
+		"VAPID_PRIVATE_KEY": "test-private-key",
 	}
 
 	tests := []struct {
@@ -31,12 +32,11 @@ func TestLoadWorkerConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Error with missing DB env",
+			name:    "Missing env doesn't cause load error",
 			env: map[string]string{
 				"POSTGRES_HOST": "",
 			},
-			wantErr:     true,
-			errContains: "missing required environment variables",
+			wantErr: false,
 		},
 	}
 

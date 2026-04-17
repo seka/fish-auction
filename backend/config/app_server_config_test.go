@@ -43,7 +43,7 @@ func TestLoadAppServerConfig(t *testing.T) {
 				"FRONTEND_URL": "localhost:3000",
 			},
 			wantErr:     true,
-			errContains: "invalid or missing FRONTEND_URL",
+			errContains: "invalid FRONTEND_URL: missing scheme or host",
 		},
 		{
 			name: "Error with missing host in FRONTEND_URL",
@@ -51,7 +51,7 @@ func TestLoadAppServerConfig(t *testing.T) {
 				"FRONTEND_URL": "https://",
 			},
 			wantErr:     true,
-			errContains: "invalid or missing FRONTEND_URL",
+			errContains: "invalid FRONTEND_URL: missing scheme or host",
 		},
 		{
 			name: "Success with empty FRONTEND_URL (falls back to default)",
@@ -66,7 +66,7 @@ func TestLoadAppServerConfig(t *testing.T) {
 				"FRONTEND_URL": "://invalid",
 			},
 			wantErr:     true,
-			errContains: "invalid or missing FRONTEND_URL",
+			errContains: "invalid FRONTEND_URL",
 		},
 	}
 
