@@ -67,13 +67,14 @@ jobs:
         run: go test -v ./...
         working-directory: backend
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          DB_NAME: fish_auction
-          DB_SSLMODE: disable
-          REDIS_ADDR: localhost:6379
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fish_auction
+          POSTGRES_SSLMODE: disable
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           RUN_INTEGRATION_TESTS: "false"
           RUN_STRESS_TESTS: "false"
 
@@ -84,12 +85,13 @@ jobs:
           go test -v ./internal/infrastructure/datastore/postgres -run 'TestVenueStore_Delete_Conflict_Integration'
         working-directory: backend
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          DB_NAME: fish_auction
-          DB_SSLMODE: disable
-          REDIS_ADDR: localhost:6379
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fish_auction
+          POSTGRES_SSLMODE: disable
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           RUN_INTEGRATION_TESTS: "true"
           RUN_STRESS_TESTS: "false"

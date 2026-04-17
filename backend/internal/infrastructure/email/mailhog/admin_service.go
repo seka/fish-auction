@@ -36,9 +36,8 @@ func (s *AdminEmailService) send(to, subject, body string) error {
 		"\r\n"+
 		"%s", to, subject, body)
 
-	addr := fmt.Sprintf("%s:%s", s.cfg.SMTPHost, s.cfg.SMTPPort)
 	// MailHog doesn't require auth
-	return adminSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
+	return adminSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
 // SendAdminPasswordReset provides SendAdminPasswordReset related functionality.

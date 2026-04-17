@@ -11,12 +11,12 @@ import (
 func TestLoad(t *testing.T) {
 	// 必要な環境変数の最小セットをデフォルトで持っておく
 	defaultEnv := map[string]string{
-		"SERVER_ADDRESS": ":8080",
-		"DB_HOST":        "localhost",
-		"DB_PORT":        "5432",
-		"DB_USER":        "postgres",
-		"DB_PASSWORD":    "postgres",
-		"DB_NAME":        "fish_auction",
+		"SERVER_PORT":       "8080",
+		"POSTGRES_HOST":     "localhost",
+		"POSTGRES_PORT":     "5432",
+		"POSTGRES_USER":     "postgres",
+		"POSTGRES_PASSWORD": "postgres",
+		"POSTGRES_DB":       "fish_auction",
 	}
 
 	tests := []struct {

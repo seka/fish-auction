@@ -58,6 +58,7 @@ type MockRegistry struct {
 	DeleteBuyerUC               buyer.DeleteBuyerUseCase
 	SubscribeNotificationUC     notification.SubscribeNotificationUseCase
 	PublishNotificationUC       notification.PublishNotificationUseCase
+	CreateAdminUC               admin.CreateAdminUseCase
 }
 
 // NewItemRepository creates a new ItemRepository instance.
@@ -288,6 +289,11 @@ func (m *MockRegistry) NewSubscribeNotificationUseCase() notification.SubscribeN
 // NewPublishNotificationUseCase creates a new PublishNotificationUseCase instance.
 func (m *MockRegistry) NewPublishNotificationUseCase() notification.PublishNotificationUseCase {
 	return m.PublishNotificationUC
+}
+
+// NewCreateAdminUseCase creates a new CreateAdminUseCase instance.
+func (m *MockRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {
+	return m.CreateAdminUC
 }
 
 // Ensure MockRegistry implements registry.UseCase

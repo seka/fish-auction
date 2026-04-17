@@ -19,7 +19,7 @@ import (
 	"github.com/seka/fish-auction/backend/migrations"
 )
 
-// Repository defines the interface for creating repositories
+// Repository defines the interface for creating repositories and managing lifecycle.
 type Repository interface {
 	NewItemRepository() repository.ItemRepository
 	NewBidRepository() repository.BidRepository
@@ -29,11 +29,13 @@ type Repository interface {
 	NewTransactionManager() repository.TransactionManager
 	NewVenueRepository() repository.VenueRepository
 	NewAuctionRepository() repository.AuctionRepository
-	NewAdminRepository() repository.AdminRepository // ... other repositories
+	NewAdminRepository() repository.AdminRepository
 	NewPushRepository() repository.PushRepository
 	PasswordReset() repository.PasswordResetRepository
 	NewItemCacheInvalidator() repository.CacheInvalidator
 	NewSessionRepository() repository.SessionRepository
+	// Cleanup closes underlying connections (DB, Redis, etc.) via their interfaces.
+	Cleanup() error
 }
 
 // repositoryRegistry implements the Repository interface
@@ -46,21 +48,21 @@ type repositoryRegistry struct {
 
 // NewRepositoryRegistry creates a new Repository registry
 // It handles DB connection, Redis connection, and migration initialization
-func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
+func NewRepositoryRegistry(cfg *config.Config) (Repository, error) {
 	db, err := connectDB(cfg.DBConnectionURL())
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if err := runMigrations(db); err != nil {
 		_ = db.Close()
-		return nil, nil, err
+		return nil, err
 	}
 
-	redisClient, err := connectRedis(cfg.RedisAddr)
+	redisClient, err := connectRedis(cfg.RedisAddr(), cfg.RedisDB)
 	if err != nil {
 		_ = db.Close()
-		return nil, nil, err
+		return nil, err
 	}
 
 	return &repositoryRegistry{
@@ -68,7 +70,21 @@ func NewRepositoryRegistry(cfg *config.Config) (Repository, *sql.DB, error) {
 		cache:      cacheStore.NewClient(redisClient),
 		cacheTTL:   cfg.CacheTTL,
 		sessionTTL: cfg.SessionTTL,
-	}, db, nil
+	}, nil
+}
+
+func (r *repositoryRegistry) Cleanup() error {
+	var errs []string
+	if err := r.db.Close(); err != nil {
+		errs = append(errs, fmt.Sprintf("database close error: %v", err))
+	}
+	if err := r.cache.Close(); err != nil {
+		errs = append(errs, fmt.Sprintf("cache close error: %v", err))
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("cleanup errors: %s", strings.Join(errs, "; "))
+	}
+	return nil
 }
 
 func connectDB(postgresAddr string) (*sql.DB, error) {
@@ -119,9 +135,10 @@ func runMigrations(db *sql.DB) error {
 	return nil
 }
 
-func connectRedis(redisAddr string) (*redis.Client, error) {
+func connectRedis(redisAddr string, db int) (*redis.Client, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
+		DB:   db,
 	})
 
 	var redisErr error

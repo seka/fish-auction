@@ -2,14 +2,11 @@ package testing
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -21,7 +18,6 @@ import (
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestServerIntegration(t *testing.T) {
@@ -35,57 +31,23 @@ func TestServerIntegration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// 1. テスト設定を読み込む
-	cfg := config.LoadTest()
-
-	// 2. テスト用 DB 名を生成
-	testPostgresDB := fmt.Sprintf("test_fish_auction_%d", time.Now().Unix())
-
-	// 3. 管理用 DB に接続
-	adminDB, err := sql.Open("postgres", cfg.AdminConnStr())
+	// 1. 設定を読み込む
+	cfg, err := config.Load()
 	if err != nil {
-		t.Fatalf("Failed to connect to admin database: %v", err)
-	}
-	defer func() { _ = adminDB.Close() }()
-
-	// 4. テスト用 DB を作成
-	if err := createTestDatabase(adminDB, testPostgresDB); err != nil {
-		t.Fatalf("Failed to create test database: %v", err)
-	}
-	defer func() {
-		if err := dropTestDatabase(adminDB, testPostgresDB); err != nil {
-			t.Errorf("Failed to drop test database: %v", err)
-		}
-	}()
-
-	appCfg := &config.Config{
-		PostgresHost:      cfg.PostgresHost,
-		PostgresPort:      cfg.PostgresPort,
-		PostgresUser:      cfg.PostgresUser,
-		PostgresPassword:  cfg.PostgresPassword,
-		PostgresDB:      testPostgresDB,
-		RedisAddr:   getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
-		CacheTTL:    5 * time.Minute,
-		SessionTTL:  24 * time.Hour,
-		AppEnv:      "test",
-		SMTPHost:    getEnvOrDefault("SMTP_HOST", "localhost"),
-		SMTPPort:    getEnvOrDefault("SMTP_PORT", "1025"),
-		SMTPFrom:    getEnvOrDefault("SMTP_FROM", "test@example.com"),
-		PostgresSslMode:   cfg.PostgresSslMode,
-		FrontendURL: func() *url.URL { u, _ := url.Parse("https://localhost"); return u }(),
+		t.Fatalf("Failed to load config: %v", err)
 	}
 
-	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, db, err := registry.NewRepositoryRegistry(appCfg)
+	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
+	repoReg, err := registry.NewRepositoryRegistry(cfg)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
-	defer func() { _ = db.Close() }()
+	defer func() { _ = repoReg.Cleanup() }()
 
-	serviceReg := registry.NewServiceRegistry(appCfg)
-	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, appCfg)
+	serviceReg := registry.NewServiceRegistry(cfg)
+	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
-	// 6. Handlers を初期化
+	// 3. Handlers を初期化
 	healthHandler := publicHandler.NewHealthHandler()
 	fishermanHandler := adminHandler.NewFishermanHandler(useCaseReg)
 	sessionRepo := repoReg.NewSessionRepository()
@@ -106,7 +68,7 @@ func TestServerIntegration(t *testing.T) {
 	adminAuthResetHandler := adminHandler.NewAuthResetHandler(useCaseReg)
 	pushHandler := buyerHandler.NewPushHandler(useCaseReg)
 
-	// 7. Server を起動
+	// 4. Server を起動
 	srv := server.NewServer(
 		healthHandler,
 		fishermanHandler,
@@ -133,22 +95,21 @@ func TestServerIntegration(t *testing.T) {
 		time.Minute,
 	)
 
-	// 8. サーバーを goroutine で起動
-	serverAddr := ":18080" // テスト用ポート
+	// 5. サーバーを goroutine で起動
 	errChan := make(chan error, 1)
 	go func() {
-		if err := srv.Start(serverAddr); err != nil && err != http.ErrServerClosed {
+		if err := srv.Start(cfg.ServerAddr()); err != nil && err != http.ErrServerClosed {
 			errChan <- err
 		}
 	}()
 
-	// 9. サーバーの準備完了を待機
-	serverURL := "http://localhost:18080"
+	// 6. サーバーの準備完了を待機
+	serverURL := "http://" + cfg.ServerAddr()
 	if err := waitForServer(serverURL + "/api/health"); err != nil {
 		t.Fatalf("Server failed to start: %v", err)
 	}
 
-	// 10. Health エンドポイントをテスト
+	// 7. Health エンドポイントをテスト
 	t.Run("Health", func(t *testing.T) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, serverURL+"/api/health", http.NoBody)
 		if err != nil {
@@ -165,15 +126,15 @@ func TestServerIntegration(t *testing.T) {
 		}
 	})
 
-	// 11. Full Auction Flow Test
+	// 8. Full Auction Flow Test
 	t.Run("FullAuctionFlow", func(t *testing.T) {
 		jar, _ := cookiejar.New(nil)
 		client := &http.Client{
 			Jar: jar,
 		}
 
-		// 1. Seed Admin (Direct DB)
-		seedAdmin(t, db, "admin@example.com", "Admin-Password123")
+		// 1. Seed Admin (using UseCase)
+		seedAdmin(t, useCaseReg, "admin@example.com", "Admin-Password123")
 
 		// 2. Login Admin
 		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
@@ -233,26 +194,6 @@ func TestServerIntegration(t *testing.T) {
 	if err := srv.Shutdown(ctx); err != nil {
 		t.Errorf("Failed to shutdown server: %v", err)
 	}
-}
-
-// createTestDatabase はテスト用 DB を作成
-func createTestDatabase(db *sql.DB, dbName string) error {
-	_, err := db.ExecContext(context.Background(), fmt.Sprintf("CREATE DATABASE %s", dbName))
-	return err
-}
-
-// dropTestDatabase はテスト用 DB を削除
-func dropTestDatabase(db *sql.DB, dbName string) error {
-	//nolint:bodyclose,noctx // アクティブな接続を切断するため意図的にクローズしない。テスト用DB削除のため Context は使用しない（または Background を使う）
-	_, _ = db.ExecContext(context.Background(), fmt.Sprintf(`
-		SELECT pg_terminate_backend(pg_stat_activity.pid)
-		FROM pg_stat_activity
-		WHERE pg_stat_activity.datname = '%s'
-		AND pid <> pg_backend_pid()
-	`, dbName))
-
-	_, err := db.ExecContext(context.Background(), fmt.Sprintf("DROP DATABASE IF EXISTS %s", dbName))
-	return err
 }
 
 // waitForServer はサーバーが起動するまで待機
@@ -446,23 +387,11 @@ func verifyBid(t *testing.T, client *http.Client, urlStr string, itemID, expecte
 	}
 }
 
-func seedAdmin(t *testing.T, db *sql.DB, email, password string) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		t.Fatalf("Failed to hash password: %v", err)
-	}
-	// Correct column is password_hash
-	_, err = db.ExecContext(context.Background(), "INSERT INTO admins (email, password_hash, created_at) VALUES ($1, $2, NOW())", email, string(hash))
+func seedAdmin(t *testing.T, useCaseReg registry.UseCase, email, password string) {
+	_, err := useCaseReg.NewCreateAdminUseCase().Execute(context.Background(), email, password)
 	if err != nil {
 		t.Fatalf("Failed to seed admin: %v", err)
 	}
-}
-
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
 
 // HttpCookieClient wrapper for standard client to simplify logic if needed

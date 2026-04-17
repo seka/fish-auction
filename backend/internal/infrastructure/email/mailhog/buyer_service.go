@@ -36,9 +36,8 @@ func (s *BuyerEmailService) send(to, subject, body string) error {
 		"\r\n"+
 		"%s", to, subject, body)
 
-	addr := fmt.Sprintf("%s:%s", s.cfg.SMTPHost, s.cfg.SMTPPort)
 	// MailHog doesn't require auth
-	return buyerSendMailFunc(addr, nil, s.cfg.SMTPFrom, []string{to}, msg)
+	return buyerSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.SMTPFrom, []string{to}, msg)
 }
 
 // SendBuyerPasswordReset provides SendBuyerPasswordReset related functionality.
