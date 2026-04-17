@@ -21,7 +21,6 @@ import (
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestServerIntegration(t *testing.T) {
@@ -64,17 +63,17 @@ func TestServerIntegration(t *testing.T) {
 		PostgresUser:     cfg.PostgresUser,
 		PostgresPassword: cfg.PostgresPassword,
 		PostgresDB:       testPostgresDB,
-		RedisAddr:   getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
-		CacheTTL:    5 * time.Minute,
-		SessionTTL:  24 * time.Hour,
-		AppEnv:      "test",
-		SMTPHost:    getEnvOrDefault("SMTP_HOST", "localhost"),
-		SMTPPort:    getEnvOrDefault("SMTP_PORT", "1025"),
-		SMTPFrom:    getEnvOrDefault("SMTP_FROM", "test@example.com"),
-		PostgresSslMode: cfg.PostgresSslMode,
-		FrontendURL:     func() *url.URL { u, _ := url.Parse("https://localhost"); return u }(),
-		ServerHost:      "0.0.0.0",
-		ServerPort:      "18080",
+		RedisAddr:        getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
+		CacheTTL:         5 * time.Minute,
+		SessionTTL:       24 * time.Hour,
+		AppEnv:           "test",
+		SMTPHost:         getEnvOrDefault("SMTP_HOST", "localhost"),
+		SMTPPort:         getEnvOrDefault("SMTP_PORT", "1025"),
+		SMTPFrom:         getEnvOrDefault("SMTP_FROM", "test@example.com"),
+		PostgresSslMode:  cfg.PostgresSslMode,
+		FrontendURL:      func() *url.URL { u, _ := url.Parse("https://localhost"); return u }(),
+		ServerHost:       "0.0.0.0",
+		ServerPort:       "18080",
 	}
 
 	// 5. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
@@ -173,8 +172,8 @@ func TestServerIntegration(t *testing.T) {
 			Jar: jar,
 		}
 
-		// 1. Seed Admin (Direct DB)
-		seedAdmin(t, db, "admin@example.com", "Admin-Password123")
+		// 1. Seed Admin (using UseCase)
+		seedAdmin(t, useCaseReg, "admin@example.com", "Admin-Password123")
 
 		// 2. Login Admin
 		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
@@ -447,13 +446,8 @@ func verifyBid(t *testing.T, client *http.Client, urlStr string, itemID, expecte
 	}
 }
 
-func seedAdmin(t *testing.T, db *sql.DB, email, password string) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		t.Fatalf("Failed to hash password: %v", err)
-	}
-	// Correct column is password_hash
-	_, err = db.ExecContext(context.Background(), "INSERT INTO admins (email, password_hash, created_at) VALUES ($1, $2, NOW())", email, string(hash))
+func seedAdmin(t *testing.T, useCaseReg registry.UseCase, email, password string) {
+	_, err := useCaseReg.NewCreateAdminUseCase().Execute(context.Background(), email, password)
 	if err != nil {
 		t.Fatalf("Failed to seed admin: %v", err)
 	}

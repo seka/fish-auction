@@ -2,7 +2,22 @@ package testing
 
 import (
 	"context"
+
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
+
+// MockCreateAdminUseCase is a mock implementation of CreateAdminUseCase for testing.
+type MockCreateAdminUseCase struct {
+	ExecuteFunc func(ctx context.Context, email, password string) (*model.Admin, error)
+}
+
+// Execute executes the use case logic.
+func (m *MockCreateAdminUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(ctx, email, password)
+	}
+	return nil, nil
+}
 
 // MockAdminUpdatePasswordUseCase is a mock implementation of AdminUpdatePasswordUseCase for testing.
 type MockAdminUpdatePasswordUseCase struct {

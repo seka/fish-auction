@@ -57,6 +57,7 @@ type UseCase interface {
 	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
 	NewSubscribeNotificationUseCase() notification.SubscribeNotificationUseCase
 	NewPublishNotificationUseCase() notification.PublishNotificationUseCase
+	NewCreateAdminUseCase() admin.CreateAdminUseCase
 }
 
 type useCaseRegistry struct {
@@ -278,4 +279,8 @@ func (u *useCaseRegistry) NewPublishNotificationUseCase() notification.PublishNo
 		u.repo.NewPushRepository(),
 		u.service.NewPushNotificationService(),
 	)
+}
+
+func (u *useCaseRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {
+	return admin.NewCreateAdminUseCase(u.repo.NewAdminRepository())
 }
