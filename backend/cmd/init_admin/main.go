@@ -44,7 +44,7 @@ func run() error {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Printf("Failed to load config: %v", err)
-		log.Println("Usage: DB_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
+		log.Println("Usage: POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
 		return err
 	}
 
