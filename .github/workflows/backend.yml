@@ -73,7 +73,8 @@ jobs:
           DB_PASSWORD: postgres
           DB_NAME: fish_auction
           DB_SSLMODE: disable
-          REDIS_ADDR: localhost:6379
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           RUN_INTEGRATION_TESTS: "false"
           RUN_STRESS_TESTS: "false"
 
@@ -90,6 +91,7 @@ jobs:
           DB_PASSWORD: postgres
           DB_NAME: fish_auction
           DB_SSLMODE: disable
-          REDIS_ADDR: localhost:6379
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           RUN_INTEGRATION_TESTS: "true"
           RUN_STRESS_TESTS: "false"
