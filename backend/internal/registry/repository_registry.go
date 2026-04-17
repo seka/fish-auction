@@ -59,7 +59,7 @@ func NewRepositoryRegistry(cfg *config.Config) (Repository, error) {
 		return nil, err
 	}
 
-	redisClient, err := connectRedis(cfg.RedisAddr, cfg.RedisDB)
+	redisClient, err := connectRedis(cfg.RedisAddr(), cfg.RedisDB)
 	if err != nil {
 		_ = db.Close()
 		return nil, err
