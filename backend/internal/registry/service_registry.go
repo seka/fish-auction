@@ -9,7 +9,6 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/mailhog"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 	pushNotification "github.com/seka/fish-auction/backend/internal/infrastructure/push_notification"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/memory"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
 )
 
@@ -34,28 +33,21 @@ type serviceRegistry struct {
 func NewServiceRegistry(
 	emailCfg config.EmailConfig,
 	webpushCfg config.WebpushConfig,
-	queueCfg config.QueueConfig,
-) Service {
+	jobQueueCfg config.QueueConfig,
+) (Service, error) {
 	loader, err := templates.NewTemplateLoader()
 	if err != nil {
-		panic(fmt.Sprintf("failed to load templates: %v", err))
+		return nil, fmt.Errorf("failed to load templates: %w", err)
 	}
 	adminEmailService := mailhog.NewAdminEmailService(emailCfg, loader)
 	buyerEmailService := mailhog.NewBuyerEmailService(emailCfg, loader)
 
 	pushNotificationService := pushNotification.NewWebpushService(webpushCfg)
 
-	var jobQueue service.JobQueue
-	sqsRegion, sqsURL, sqsEndpoint := queueCfg.SQSConfig()
-	if sqsURL != "" {
-		var err error
-		// Use a local context for initialization
-		jobQueue, err = sqs.NewClient(context.Background(), sqsRegion, sqsURL, sqsEndpoint)
-		if err != nil {
-			panic(fmt.Sprintf("failed to initialize SQS client: %v", err))
-		}
-	} else {
-		jobQueue = memory.NewMemoryQueue()
+	region, url, endpoint := jobQueueCfg.SQSConfig()
+	jobQueue, err := sqs.NewClient(context.Background(), region, url, endpoint)
+	if err != nil {
+		return nil, err
 	}
 
 	return &serviceRegistry{
@@ -64,7 +56,7 @@ func NewServiceRegistry(
 		buyerEmailService:       buyerEmailService,
 		clock:                   service.NewRealClock(),
 		jobQueue:                jobQueue,
-	}
+	}, nil
 }
 
 func (s *serviceRegistry) NewPushNotificationService() service.PushNotificationService {
