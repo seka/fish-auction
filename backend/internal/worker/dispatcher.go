@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/worker/job"
 )
@@ -26,18 +25,12 @@ func (d *Dispatcher) Register(jobType model.JobType, handler job.Handler) {
 	d.handlers[jobType] = handler
 }
 
-// Dispatch routes the message to the correct handler based on the JobType message attribute.
-func (d *Dispatcher) Dispatch(ctx context.Context, msg types.Message) error {
-	jobTypeStr := ""
-	if attr, ok := msg.MessageAttributes["JobType"]; ok {
-		jobTypeStr = *attr.StringValue
-	}
-
-	jobType := model.JobType(jobTypeStr)
-	handler, ok := d.handlers[jobType]
+// Dispatch routes the message to the correct handler based on the JobType.
+func (d *Dispatcher) Dispatch(ctx context.Context, msg *model.JobMessage) error {
+	handler, ok := d.handlers[msg.JobType]
 	if !ok {
-		return fmt.Errorf("no handler registered for job type: %s", jobType)
+		return fmt.Errorf("no handler registered for job type: %s", msg.JobType)
 	}
 
-	return handler.Handle(ctx, []byte(*msg.Body))
+	return handler.Handle(ctx, msg.Payload)
 }

@@ -62,8 +62,8 @@ func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload []b
 	return nil
 }
 
-// ReceiveMessages polls for messages from the SQS queue.
-func (c *Client) ReceiveMessages(ctx context.Context, waitTimeSeconds int32) ([]types.Message, error) {
+// Dequeue polls for messages from the SQS queue.
+func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error) {
 	output, err := c.client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(c.queueURL),
 		MaxNumberOfMessages:   10,
@@ -73,14 +73,30 @@ func (c *Client) ReceiveMessages(ctx context.Context, waitTimeSeconds int32) ([]
 	if err != nil {
 		return nil, fmt.Errorf("failed to receive SQS messages: %w", err)
 	}
-	return output.Messages, nil
+
+	messages := make([]*model.JobMessage, 0, len(output.Messages))
+	for _, m := range output.Messages {
+		jobType := model.JobType("")
+		if attr, ok := m.MessageAttributes["JobType"]; ok && attr.StringValue != nil {
+			jobType = model.JobType(*attr.StringValue)
+		}
+
+		messages = append(messages, &model.JobMessage{
+			ID:            *m.MessageId,
+			ReceiptHandle: *m.ReceiptHandle,
+			JobType:       jobType,
+			Payload:       []byte(*m.Body),
+		})
+	}
+
+	return messages, nil
 }
 
 // DeleteMessage deletes a message from the SQS queue.
-func (c *Client) DeleteMessage(ctx context.Context, receiptHandle string) error {
+func (c *Client) DeleteMessage(ctx context.Context, message *model.JobMessage) error {
 	_, err := c.client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(c.queueURL),
-		ReceiptHandle: aws.String(receiptHandle),
+		ReceiptHandle: aws.String(message.ReceiptHandle),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to delete SQS message: %w", err)

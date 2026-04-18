@@ -17,6 +17,14 @@ func (m *mockJobQueue) Enqueue(ctx context.Context, jobType model.JobType, paylo
 	return m.enqueueFunc(ctx, jobType, payload)
 }
 
+func (m *mockJobQueue) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error) {
+	return nil, nil
+}
+
+func (m *mockJobQueue) DeleteMessage(ctx context.Context, message *model.JobMessage) error {
+	return nil
+}
+
 func TestPublishNotificationUseCase_Execute(t *testing.T) {
 	ctx := context.Background()
 	buyerID := 1

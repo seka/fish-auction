@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 const (
@@ -17,15 +17,15 @@ const (
 
 // Worker represents the background job worker.
 type Worker struct {
-	sqsClient  *sqs.Client
+	queue      service.JobQueue
 	dispatcher *Dispatcher
 	wg         sync.WaitGroup
 }
 
 // NewWorker creates a new Worker instance.
-func NewWorker(sqsClient *sqs.Client, dispatcher *Dispatcher) *Worker {
+func NewWorker(queue service.JobQueue, dispatcher *Dispatcher) *Worker {
 	return &Worker{
-		sqsClient:  sqsClient,
+		queue:      queue,
 		dispatcher: dispatcher,
 	}
 }
@@ -72,7 +72,7 @@ func (w *Worker) runLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			messages, err := w.sqsClient.ReceiveMessages(ctx, waitTimeSeconds)
+			messages, err := w.queue.Dequeue(ctx, waitTimeSeconds)
 			if err != nil {
 				// Avoid log spamming if the context is cancelled
 				if ctx.Err() != nil {
@@ -86,12 +86,12 @@ func (w *Worker) runLoop(ctx context.Context) {
 			for _, msg := range messages {
 				if err := w.dispatcher.Dispatch(ctx, msg); err != nil {
 					// Message is not deleted, will be retried after visibility timeout
-					log.Printf("Error processing message %v: %v", *msg.MessageId, err)
+					log.Printf("Error processing message %v: %v", msg.ID, err)
 					continue
 				}
 
-				if err := w.sqsClient.DeleteMessage(ctx, *msg.ReceiptHandle); err != nil {
-					log.Printf("Error deleting message %v: %v", *msg.MessageId, err)
+				if err := w.queue.DeleteMessage(ctx, msg); err != nil {
+					log.Printf("Error deleting message %v: %v", msg.ID, err)
 				}
 			}
 		}

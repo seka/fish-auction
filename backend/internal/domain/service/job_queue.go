@@ -9,4 +9,6 @@ import (
 // JobQueue defines the interface for asynchronous job messaging.
 type JobQueue interface {
 	Enqueue(ctx context.Context, jobType model.JobType, payload []byte) error
+	Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error)
+	DeleteMessage(ctx context.Context, message *model.JobMessage) error
 }
