@@ -35,10 +35,16 @@ func run() error {
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg := registry.NewServiceRegistry(config.NoEmailConfig, cfg, cfg)
+	serviceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, cfg, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to initialize service registry: %w", err)
+	}
 
 	// Initialize Worker Registry
-	workerReg := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
+	workerReg, err := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
+	if err != nil {
+		return fmt.Errorf("failed to initialize worker registry: %w", err)
+	}
 
 	// Create Worker
 	w, err := workerReg.NewWorker()
