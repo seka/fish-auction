@@ -7,8 +7,8 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
+	"github.com/seka/fish-auction/backend/internal/job/handler"
 	"github.com/seka/fish-auction/backend/internal/worker"
-	"github.com/seka/fish-auction/backend/internal/worker/job"
 )
 
 // WorkerRegistry handles the initialization of the background worker.
@@ -43,7 +43,7 @@ func (r *workerRegistry) NewWorker() (*worker.Worker, error) {
 	// Register job handlers
 	pushRepo := r.repoReg.NewPushRepository()
 	pushSvc := r.serviceReg.NewPushNotificationService()
-	dispatcher.Register(model.JobTypePushNotification, job.NewPushNotificationHandler(pushRepo, pushSvc))
+	dispatcher.Register(model.JobTypePushNotification, handler.NewPushNotificationHandler(pushRepo, pushSvc))
 
 	return worker.NewWorker(r.queue, dispatcher), nil
 }
