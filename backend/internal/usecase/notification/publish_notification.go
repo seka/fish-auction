@@ -2,11 +2,10 @@ package notification
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
 // PublishNotificationUseCase defines the interface for publish notifications.
@@ -30,24 +29,11 @@ func NewPublishNotificationUseCase(
 	}
 }
 
-// pushNotificationJobDTO is a private DTO for marshaling the job payload to the queue.
-type pushNotificationJobDTO struct {
-	BuyerID int `json:"buyer_id"`
-	Payload any `json:"payload"`
-}
-
 func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, payload any) error {
-	// Use DTO for serialization to avoid JSON tags in domain model.
-	job := pushNotificationJobDTO{
+	jobParams := notificationMessage.PushNotificationMessage{
 		BuyerID: buyerID,
 		Payload: payload,
 	}
 
-	jobBytes, err := json.Marshal(job)
-	if err != nil {
-		return fmt.Errorf("failed to marshal notification job: %w", err)
-	}
-
-	// Enqueue the job for the worker to process asynchronously.
-	return uc.jobQueue.Enqueue(ctx, model.JobTypePushNotification, jobBytes)
+	return uc.jobQueue.Enqueue(ctx, model.JobTypePushNotification, jobParams)
 }
