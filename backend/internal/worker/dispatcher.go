@@ -5,24 +5,24 @@ import (
 	"fmt"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/worker/job"
+	"github.com/seka/fish-auction/backend/internal/job/handler"
 )
 
 // Dispatcher handles job dispatching to the appropriate handler.
 type Dispatcher struct {
-	handlers map[model.JobType]job.Handler
+	handlers map[model.JobType]handler.Handler
 }
 
 // NewDispatcher creates a new Dispatcher instance.
 func NewDispatcher() *Dispatcher {
 	return &Dispatcher{
-		handlers: make(map[model.JobType]job.Handler),
+		handlers: make(map[model.JobType]handler.Handler),
 	}
 }
 
 // Register adds a handler for a given JobType.
-func (d *Dispatcher) Register(jobType model.JobType, handler job.Handler) {
-	d.handlers[jobType] = handler
+func (d *Dispatcher) Register(jobType model.JobType, h handler.Handler) {
+	d.handlers[jobType] = h
 }
 
 // Dispatch routes the message to the correct handler based on the JobType.

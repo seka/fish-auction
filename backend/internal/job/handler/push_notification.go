@@ -1,4 +1,4 @@
-package job
+package handler
 
 import (
 	"context"
@@ -10,14 +10,10 @@ import (
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-// pushNotificationJobDTO is a private DTO for unmarshaling the job payload.
-type pushNotificationJobDTO struct {
-	BuyerID int `json:"buyer_id"`
-	Payload any `json:"payload"`
-}
-
+// pushNotificationHandler implements the Handler interface for push notifications.
 type pushNotificationHandler struct {
 	repo    repository.PushRepository
 	pushSvc service.PushNotificationService
@@ -35,7 +31,7 @@ func NewPushNotificationHandler(
 }
 
 func (h *pushNotificationHandler) Handle(ctx context.Context, payload []byte) error {
-	var job pushNotificationJobDTO
+	var job notificationMessage.PushNotificationMessage
 	if err := json.Unmarshal(payload, &job); err != nil {
 		return fmt.Errorf("failed to unmarshal job payload: %w", err)
 	}
