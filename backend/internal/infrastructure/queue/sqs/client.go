@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -10,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
 // Client implements service.JobQueue using AWS SQS.
@@ -45,9 +47,51 @@ func NewClient(ctx context.Context, region, queueURL, endpoint string) (*Client,
 }
 
 // Enqueue sends a message to the SQS queue.
-func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload []byte) error {
-	_, err := c.client.SendMessage(ctx, &sqs.SendMessageInput{
-		MessageBody: aws.String(string(payload)),
+func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
+	var body []byte
+	var err error
+
+	// Map domain payload to infrastructure DTO and marshal to JSON.
+	switch jobType {
+	case model.JobTypePushNotification:
+		// Map the payload to the message. Use reflection or type assertion if more complex,
+		// but for now we expect a compatible struct or map.
+		msg := notificationMessage.PushNotificationMessage{
+			// Since UseCase passes a tag-less struct or map, we can rely on json.Marshal/Unmarshal
+			// or manual mapping here. For simplicity and to satisfy the user's "infra knowledge"
+			// requirement, we can re-marshal/unmarshal if payload is already generic,
+			// or directly populate if we know the domain structure.
+			// Here we assume the UseCase passes a struct with matching field names.
+			Payload: payload,
+		}
+
+		// Because the legacy implementation had BuyerID separately, we need to extract it if needed.
+		// However, to keep UseCase clean, we can expect the payload passed to Enqueue to be the full data.
+		// If payload is already the "parameters" from UseCase, we map it.
+		if p, ok := payload.(map[string]any); ok {
+			if bid, ok := p["BuyerID"].(int); ok {
+				msg.BuyerID = bid
+			}
+			if bpayload, ok := p["Payload"]; ok {
+				msg.Payload = bpayload
+			}
+		} else {
+			// Fallback: Use json trick to fill DTO if payload is a tag-less struct
+			tmp, _ := json.Marshal(payload)
+			_ = json.Unmarshal(tmp, &msg)
+		}
+
+		body, err = json.Marshal(msg)
+	default:
+		body, err = json.Marshal(payload)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to marshal job payload: %w", err)
+	}
+
+	_, err = c.client.SendMessage(ctx, &sqs.SendMessageInput{
+		MessageBody: aws.String(string(body)),
 		QueueUrl:    aws.String(c.queueURL),
 		MessageAttributes: map[string]types.MessageAttributeValue{
 			"JobType": {
