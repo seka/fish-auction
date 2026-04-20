@@ -43,11 +43,14 @@ func NewServiceRegistry(
 	buyerEmailService := mailhog.NewBuyerEmailService(emailCfg, loader)
 
 	pushNotificationService := pushNotification.NewWebpushService(webpushCfg)
-
-	region, url, endpoint := jobQueueCfg.SQSConfig()
-	jobQueue, err := sqs.NewClient(context.Background(), region, url, endpoint)
-	if err != nil {
-		return nil, err
+	var jobQueue service.JobQueue
+	if jobQueueCfg != config.NoQueueConfig {
+		region, url, endpoint := jobQueueCfg.SQSConfig()
+		var err error
+		jobQueue, err = sqs.NewClient(context.Background(), region, url, endpoint)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &serviceRegistry{

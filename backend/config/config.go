@@ -83,3 +83,11 @@ func (n noFrontendConfig) GetFrontendURL() *url.URL { return nil }
 
 // NoFrontendConfig can be used when a process doesn't need to know the frontend URL.
 var NoFrontendConfig FrontendConfig = noFrontendConfig{}
+
+// noQueueConfig is a null implementation for processes that don't need a queue.
+type noQueueConfig struct{}
+
+func (n noQueueConfig) SQSConfig() (string, string, string) { return "", "", "" }
+
+// NoQueueConfig can be used when a process doesn't need to initialize a queue.
+var NoQueueConfig QueueConfig = noQueueConfig{}
