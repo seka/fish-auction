@@ -8,11 +8,14 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
@@ -45,11 +48,35 @@ func TestServerIntegration(t *testing.T) {
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// 3. Service を初期化
-	serviceReg, err := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
+	realServiceReg, err := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
 	if err != nil {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
+
+	// 統合テスト用にプッシュ通知サービスをモックに差し替え
+	mockPush := &mockPushService{}
+	serviceReg := &wrappedServiceRegistry{
+		Service:  realServiceReg,
+		mockPush: mockPush,
+	}
+
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
+
+	// 4. Worker を初期化して起動
+	workerReg, err := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
+	if err != nil {
+		t.Fatalf("Failed to initialize worker registry: %v", err)
+	}
+	w, err := workerReg.NewWorker()
+	if err != nil {
+		t.Fatalf("Failed to create worker: %v", err)
+	}
+
+	go func() {
+		if err := w.Start(ctx); err != nil && ctx.Err() == nil {
+			t.Errorf("Worker failed: %v", err)
+		}
+	}()
 
 	// 3. Handlers を初期化
 	healthHandler := publicHandler.NewHealthHandler()
@@ -191,6 +218,79 @@ func TestServerIntegration(t *testing.T) {
 		verifyBid(t, client, serverURL+fmt.Sprintf("/api/auctions/%d/items", auctionID), itemID, 5000)
 	})
 
+	// 9. Asynchronous Notification Flow Test
+	t.Run("AsynchronousNotificationFlow", func(t *testing.T) {
+		jarA, _ := cookiejar.New(nil)
+		clientA := &http.Client{Jar: jarA}
+		jarB, _ := cookiejar.New(nil)
+		clientB := &http.Client{Jar: jarB}
+
+		// 1. Create and Login Buyer A (Previous Bidder)
+		_ = registerUser(t, clientA, serverURL+"/api/admin/buyers", `{"name": "Buyer A", "email": "buyera@example.com", "password": "Password123", "organization": "Org A", "contact_info": "email"}`)
+		cookiesA := login(t, clientA, serverURL+"/api/buyer/login", `{"email": "buyera@example.com", "password": "Password123"}`)
+
+		// 2. Subscribe Buyer A to Push Notifications
+		subscribePush(t, clientA, serverURL+"/api/buyer/push/subscribe", `{"endpoint": "https://fcm.googleapis.com/fcm/send/fake-token", "keys": {"p256dh": "fake-p256dh", "auth": "fake-auth"}}`, cookiesA)
+
+		// 3. Create and Login Buyer B (New Bidder)
+		_ = registerUser(t, clientB, serverURL+"/api/admin/buyers", `{"name": "Buyer B", "email": "buyerb@example.com", "password": "Password123", "organization": "Org B", "contact_info": "email"}`)
+		cookiesB := login(t, clientB, serverURL+"/api/buyer/login", `{"email": "buyerb@example.com", "password": "Password123"}`)
+
+		// 4. Setup Item for Bidding (reuse setup from previous test or create new one)
+		// To be safe, let's just use the item created in the previous run if possible,
+		// but since it's a separate t.Run, let's find the item or rely on IDs.
+		// For simplicity, we assume the environment is clean and we use a direct repository call to get an available item
+		// or just repeat the minimal setup.
+		// Here, we'll reuse the itemID = 1 if the previous test was successful.
+		// BUT it's better to create a fresh one.
+		adminCookies := login(t, clientA, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
+		fishermanID := registerUser(t, clientA, serverURL+"/api/admin/fishermen", `{"name": "Notification Fisherman"}`)
+		venueID := createResource(t, clientA, serverURL+"/api/admin/venues", `{"name": "Notification Venue"}`, adminCookies)
+		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+		auctionDate := time.Now().In(jst).Format("2006-01-02")
+		auctionID := createResource(t, clientA, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": %q, "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
+		itemID := createResource(t, clientA, serverURL+"/api/admin/items", fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Tuna", "quantity": 10, "unit": "kg"}`, auctionID, fishermanID), adminCookies)
+		putResource(t, clientA, serverURL+fmt.Sprintf("/api/admin/items/%d", itemID), fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Tuna", "quantity": 10, "unit": "kg", "status": "Available"}`, auctionID, fishermanID), adminCookies)
+
+		// 5. Buyer A Places Initial Bid (10,000)
+		postResource(t, clientA, serverURL+"/api/buyer/bids", fmt.Sprintf(`{"item_id": %d, "price": 10000}`, itemID), cookiesA)
+
+		// 6. Buyer B Places Higher Bid (15,000)
+		// This triggers an outbid notification for Buyer A.
+		postResource(t, clientB, serverURL+"/api/buyer/bids", fmt.Sprintf(`{"item_id": %d, "price": 15000}`, itemID), cookiesB)
+
+		// 7. Verify Notification via Worker (Async)
+		t.Log("Waiting for worker to process outbid notification...")
+		found := false
+		for i := 0; i < 30; i++ { // Try for 15 seconds (30 * 500ms)
+			calls := mockPush.getCalls()
+			for _, call := range calls {
+				// Buyer A (ID 2 or similar) should have received a notification
+				// We checking by email or just knowing it's Buyer A.
+				// In this test, Buyer A is the first buyer we created in this t.Run.
+				// Their ID depends on DB state, but we know it's not Buyer B.
+				// Let's just check if ANY notification reached Buyer A.
+				if call.payload != nil {
+					payloadMap, ok := call.payload.(map[string]any)
+					if ok && strings.Contains(payloadMap["title"].(string), "高値更新") {
+						found = true
+						break
+					}
+				}
+			}
+			if found {
+				break
+			}
+			time.Sleep(500 * time.Millisecond)
+		}
+
+		if !found {
+			t.Error("Timed out waiting for outbid notification to be sent by worker")
+		} else {
+			t.Log("Successfully verified asynchronous outbid notification!")
+		}
+	})
+
 	// 11. サーバーをシャットダウン
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -324,6 +424,24 @@ func postResource(t *testing.T, client *http.Client, urlStr, jsonBody string, co
 	}
 }
 
+func subscribePush(t *testing.T, client *http.Client, urlStr, jsonBody string, cookies []*http.Cookie) {
+	req, _ := http.NewRequestWithContext(context.Background(), "POST", urlStr, strings.NewReader(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("Failed to subscribe at %s: %v", urlStr, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("Expected status 200 at %s, got %d: %s", urlStr, resp.StatusCode, string(body))
+	}
+}
+
 func putResource(t *testing.T, client *http.Client, urlStr, jsonBody string, cookies []*http.Cookie) {
 	req, _ := http.NewRequestWithContext(context.Background(), "PUT", urlStr, strings.NewReader(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -401,3 +519,40 @@ func seedAdmin(t *testing.T, useCaseReg registry.UseCase, email, password string
 // HttpCookieClient wrapper for standard client to simplify logic if needed
 // Actually, standard http.Client with cookiejar is enough.
 type CookieClient = http.Client // Alias for simplicity in signatures
+
+// Mocks for Worker Integration Testing
+
+type mockPushService struct {
+	sentCalls []pushCall
+	mu        sync.Mutex
+}
+
+type pushCall struct {
+	buyerID int
+	payload any
+}
+
+func (m *mockPushService) Send(_ context.Context, sub *model.PushSubscription, payload any) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.sentCalls = append(m.sentCalls, pushCall{
+		buyerID: sub.BuyerID,
+		payload: payload,
+	})
+	return nil
+}
+
+func (m *mockPushService) getCalls() []pushCall {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.sentCalls
+}
+
+type wrappedServiceRegistry struct {
+	registry.Service
+	mockPush service.PushNotificationService
+}
+
+func (w *wrappedServiceRegistry) NewPushNotificationService() service.PushNotificationService {
+	return w.mockPush
+}
