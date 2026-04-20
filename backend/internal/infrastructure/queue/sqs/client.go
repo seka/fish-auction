@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -111,7 +112,9 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 
 			receiveCount := 1
 			if val, ok := m.Attributes["ApproximateReceiveCount"]; ok {
-				fmt.Sscanf(val, "%d", &receiveCount)
+				if n, err := strconv.Atoi(val); err == nil {
+					receiveCount = n
+				}
 			}
 
 			msg := &model.JobMessage{
