@@ -101,8 +101,8 @@ func TestSignupAndSigninFlow(t *testing.T) {
 		t.Fatalf("Signin failed with correct password: %v", err)
 		return
 	}
-	if createdBuyer == nil || loggedInBuyer == nil {
-		t.Fatal("createdBuyer or loggedInBuyer is nil")
+	if loggedInBuyer == nil {
+		t.Fatal("loggedInBuyer is nil")
 		return
 	}
 	if loggedInBuyer.ID != createdBuyer.ID {
