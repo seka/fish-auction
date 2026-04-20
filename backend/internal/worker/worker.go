@@ -74,7 +74,7 @@ func (w *Worker) runLoop(ctx context.Context) {
 		default:
 			messages, err := w.queue.Dequeue(ctx, waitTimeSeconds)
 			if err != nil {
-				// Avoid log spamming if the context is cancelled
+				// Avoid log spamming if the context is canceled
 				if ctx.Err() != nil {
 					return
 				}
