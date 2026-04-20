@@ -54,36 +54,13 @@ func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload any
 	// Map domain payload to infrastructure DTO and marshal to JSON.
 	switch jobType {
 	case model.JobTypePushNotification:
-		// Map the payload to the message. Use reflection or type assertion if more complex,
-		// but for now we expect a compatible struct or map.
-		msg := notificationMessage.PushNotificationMessage{
-			// Since UseCase passes a tag-less struct or map, we can rely on json.Marshal/Unmarshal
-			// or manual mapping here. For simplicity and to satisfy the user's "infra knowledge"
-			// requirement, we can re-marshal/unmarshal if payload is already generic,
-			// or directly populate if we know the domain structure.
-			// Here we assume the UseCase passes a struct with matching field names.
-			Payload: payload,
+		p, ok := payload.(notificationMessage.PushNotificationMessage)
+		if !ok {
+			return fmt.Errorf("invalid payload type for push notification: %T", payload)
 		}
-
-		// Because the legacy implementation had BuyerID separately, we need to extract it if needed.
-		// However, to keep UseCase clean, we can expect the payload passed to Enqueue to be the full data.
-		// If payload is already the "parameters" from UseCase, we map it.
-		if p, ok := payload.(map[string]any); ok {
-			if bid, ok := p["BuyerID"].(int); ok {
-				msg.BuyerID = bid
-			}
-			if bpayload, ok := p["Payload"]; ok {
-				msg.Payload = bpayload
-			}
-		} else {
-			// Fallback: Use json trick to fill DTO if payload is a tag-less struct
-			tmp, _ := json.Marshal(payload)
-			_ = json.Unmarshal(tmp, &msg)
-		}
-
-		body, err = json.Marshal(msg)
+		body, err = json.Marshal(p)
 	default:
-		body, err = json.Marshal(payload)
+		return fmt.Errorf("unsupported job type: %s", jobType)
 	}
 
 	if err != nil {
@@ -113,6 +90,7 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 		MaxNumberOfMessages:   10,
 		WaitTimeSeconds:       waitTimeSeconds,
 		MessageAttributeNames: []string{"All"},
+		AttributeNames:        []types.QueueAttributeName{"ApproximateReceiveCount"},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to receive SQS messages: %w", err)
@@ -120,17 +98,31 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 
 	messages := make([]*model.JobMessage, 0, len(output.Messages))
 	for _, m := range output.Messages {
-		jobType := model.JobType("")
-		if attr, ok := m.MessageAttributes["JobType"]; ok && attr.StringValue != nil {
-			jobType = model.JobType(*attr.StringValue)
+		// SQS からの必須フィールドが nil の場合はスキップしてパニックを防止。
+		if m.MessageId == nil || m.ReceiptHandle == nil || m.Body == nil {
+			continue
 		}
 
-		messages = append(messages, &model.JobMessage{
-			ID:            *m.MessageId,
-			ReceiptHandle: *m.ReceiptHandle,
-			JobType:       jobType,
-			Payload:       []byte(*m.Body),
-		})
+		if attr, ok := m.MessageAttributes["JobType"]; ok && attr.StringValue != nil {
+			jobType, err := model.NewJobType(*attr.StringValue)
+			if err != nil {
+				continue
+			}
+
+			receiveCount := 1
+			if val, ok := m.Attributes["ApproximateReceiveCount"]; ok {
+				fmt.Sscanf(val, "%d", &receiveCount)
+			}
+
+			msg := &model.JobMessage{
+				ID:            *m.MessageId,
+				ReceiptHandle: *m.ReceiptHandle,
+				JobType:       jobType,
+				Payload:       []byte(*m.Body),
+				ReceiveCount:  receiveCount,
+			}
+			messages = append(messages, msg)
+		}
 	}
 
 	return messages, nil

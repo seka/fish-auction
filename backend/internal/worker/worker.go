@@ -85,8 +85,10 @@ func (w *Worker) runLoop(ctx context.Context) {
 
 			for _, msg := range messages {
 				if err := w.dispatcher.Dispatch(ctx, msg); err != nil {
-					// Message is not deleted, will be retried after visibility timeout
-					log.Printf("Error processing message %v: %v", msg.ID, err)
+					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
+					// 無限ループを防ぐため、インフラ（SQS）側で DLQ（Dead Letter Queue）および
+					// RedrivePolicy（maxReceiveCount）が設定されている必要があります。
+					log.Printf("Error processing message %v (attempt %d): %v", msg.ID, msg.ReceiveCount, err)
 					continue
 				}
 

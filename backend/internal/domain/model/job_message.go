@@ -6,4 +6,5 @@ type JobMessage struct {
 	ReceiptHandle string // Implementation-specific handle for deletion
 	JobType       JobType
 	Payload       []byte
+	ReceiveCount  int // Number of times this message has been received
 }
