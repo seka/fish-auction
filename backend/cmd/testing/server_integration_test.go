@@ -545,7 +545,9 @@ func (m *mockPushService) Send(_ context.Context, sub *model.PushSubscription, p
 func (m *mockPushService) getCalls() []pushCall {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	return m.sentCalls
+	calls := make([]pushCall, len(m.sentCalls))
+	copy(calls, m.sentCalls)
+	return calls
 }
 
 type wrappedServiceRegistry struct {

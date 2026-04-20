@@ -24,7 +24,7 @@ func (m *mockPushRepository) DeleteSubscription(ctx context.Context, endpoint st
 	return m.deleteSubscriptionFunc(ctx, endpoint)
 }
 
-func (m *mockPushRepository) SaveSubscription(ctx context.Context, sub *model.PushSubscription) error {
+func (m *mockPushRepository) SaveSubscription(_ context.Context, _ *model.PushSubscription) error {
 	return nil
 }
 
@@ -34,6 +34,44 @@ type mockPushNotificationService struct {
 
 func (m *mockPushNotificationService) Send(ctx context.Context, sub *model.PushSubscription, payload any) error {
 	return m.sendFunc(ctx, sub, payload)
+}
+
+func TestPushNotificationHandler_Handle_InvalidPayload(t *testing.T) {
+	ctx := context.Background()
+
+	h := NewPushNotificationHandler(&mockPushRepository{}, &mockPushNotificationService{})
+	err := h.Handle(ctx, []byte("invalid json"))
+
+	if err == nil {
+		t.Error("Expected error for invalid JSON payload, got nil")
+	}
+}
+
+func TestPushNotificationHandler_Handle_RepositoryError(t *testing.T) {
+	ctx := context.Background()
+	repoErr := errors.New("db connection failed")
+
+	job := notificationMessage.PushNotificationMessage{BuyerID: 1, Payload: "test"}
+	payloadBytes, _ := json.Marshal(job)
+
+	repo := &mockPushRepository{
+		getSubscriptionsByBuyerIDFunc: func(_ context.Context, _ int) ([]model.PushSubscription, error) {
+			return nil, repoErr
+		},
+	}
+	pushSvc := &mockPushNotificationService{
+		sendFunc: func(_ context.Context, _ *model.PushSubscription, _ any) error {
+			t.Error("Send should not be called")
+			return nil
+		},
+	}
+
+	h := NewPushNotificationHandler(repo, pushSvc)
+	err := h.Handle(ctx, payloadBytes)
+
+	if !errors.Is(err, repoErr) {
+		t.Errorf("Expected error %v, got %v", repoErr, err)
+	}
 }
 
 func TestPushNotificationHandler_Handle(t *testing.T) {

@@ -88,15 +88,22 @@ func TestSignupAndSigninFlow(t *testing.T) {
 	createdBuyer, err := createUC.Execute(ctx, "Test User", email, password, "Test Org", "Contact")
 	if err != nil {
 		t.Fatalf("Signup failed: %v", err)
+		return
 	}
 	if createdBuyer == nil {
 		t.Fatal("Signup returned nil buyer")
+		return
 	}
 
 	// 2. Signin (Success)
 	loggedInBuyer, err := loginUC.Execute(ctx, email, password)
 	if err != nil {
 		t.Fatalf("Signin failed with correct password: %v", err)
+		return
+	}
+	if createdBuyer == nil || loggedInBuyer == nil {
+		t.Fatal("createdBuyer or loggedInBuyer is nil")
+		return
 	}
 	if loggedInBuyer.ID != createdBuyer.ID {
 		t.Errorf("Signin returned wrong buyer ID: got %d, want %d", loggedInBuyer.ID, createdBuyer.ID)
