@@ -9,5 +9,5 @@ awslocal sqs create-queue \
 
 # DLQ 設定
 awslocal sqs set-queue-attributes \
-  --queue-url http://localstack:4566/000000000000/notification-queue \
+  --queue-url http://localhost:4566/000000000000/notification-queue \
   --attributes '{"RedrivePolicy":"{\"deadLetterTargetArn\":\"arn:aws:sqs:ap-northeast-1:000000000000:notification-queue-dlq\",\"maxReceiveCount\":\"3\"}"}'
