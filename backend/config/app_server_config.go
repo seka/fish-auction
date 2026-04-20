@@ -105,7 +105,7 @@ func (c *AppServerConfig) GetSMTPFrom() string {
 	return c.SMTPFrom
 }
 
-func (c *AppServerConfig) SQSConfig() (string, string, string) {
+func (c *AppServerConfig) SQSConfig() (region, queueURL, endpoint string) {
 	return c.SQSRegion, c.SQSQueueURL, c.SQSEndpoint
 }
 

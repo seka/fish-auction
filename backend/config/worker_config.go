@@ -57,11 +57,11 @@ func (c *WorkerConfig) GetRedisDB() int {
 	return c.RedisDB
 }
 
-func (c *WorkerConfig) VAPIDConfig() (string, string, string) {
+func (c *WorkerConfig) VAPIDConfig() (publicKey, privateKey, subject string) {
 	return c.VAPIDPublicKey, c.VAPIDPrivateKey, c.VAPIDSubject
 }
 
-func (c *WorkerConfig) SQSConfig() (string, string, string) {
+func (c *WorkerConfig) SQSConfig() (region, queueURL, endpoint string) {
 	return c.SQSRegion, c.SQSQueueURL, c.SQSEndpoint
 }
 

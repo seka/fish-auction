@@ -32,7 +32,7 @@ func TestLoadWorkerConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Missing env doesn't cause load error",
+			name: "Missing env doesn't cause load error",
 			env: map[string]string{
 				"POSTGRES_HOST": "",
 			},

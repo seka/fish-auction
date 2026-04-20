@@ -49,7 +49,7 @@ type EmailConfig interface {
 type noEmailConfig struct{}
 
 func (n noEmailConfig) SMTPAddress() string { return "" }
-func (n noEmailConfig) GetSMTPFrom() string  { return "" }
+func (n noEmailConfig) GetSMTPFrom() string { return "" }
 
 // NoEmailConfig can be used when a process doesn't need to send emails.
 var NoEmailConfig EmailConfig = noEmailConfig{}
@@ -61,7 +61,7 @@ type WebpushConfig interface {
 // noWebpushConfig is a null implementation for processes that don't need webpush.
 type noWebpushConfig struct{}
 
-func (n noWebpushConfig) VAPIDConfig() (string, string, string) {
+func (n noWebpushConfig) VAPIDConfig() (publicKey, privateKey, subject string) {
 	return "", "", ""
 }
 
@@ -69,7 +69,7 @@ func (n noWebpushConfig) VAPIDConfig() (string, string, string) {
 var NoWebpushConfig WebpushConfig = noWebpushConfig{}
 
 type QueueConfig interface {
-	SQSConfig() (region, url, endpoint string)
+	SQSConfig() (region, queueURL, endpoint string)
 }
 
 type FrontendConfig interface {
@@ -87,7 +87,7 @@ var NoFrontendConfig FrontendConfig = noFrontendConfig{}
 // noQueueConfig is a null implementation for processes that don't need a queue.
 type noQueueConfig struct{}
 
-func (n noQueueConfig) SQSConfig() (string, string, string) { return "", "", "" }
+func (n noQueueConfig) SQSConfig() (region, queueURL, endpoint string) { return "", "", "" }
 
 // NoQueueConfig can be used when a process doesn't need to initialize a queue.
 var NoQueueConfig QueueConfig = noQueueConfig{}
