@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -15,6 +12,10 @@ import (
 	"github.com/seka/fish-auction/backend/internal/server/handler/buyer"
 	"github.com/seka/fish-auction/backend/internal/server/handler/public"
 	"github.com/seka/fish-auction/backend/internal/server/middleware"
+)
+
+const (
+	defaultShutdownTimeout = 30 * time.Second
 )
 
 // Server serves the request.
@@ -157,8 +158,8 @@ func (s *Server) registerBuyerRoutes() {
 	s.router.Handle("/api/buyer/", s.buyerAuth.Handle(http.StripPrefix("/api/buyer", buyerMux)))
 }
 
-// Start provides Start related functionality.
-func (s *Server) Start(addr string) error {
+// Start starts the HTTP server and blocks until the context is canceled.
+func (s *Server) Start(ctx context.Context, addr string) error {
 	if addr == "" {
 		addr = ":8080"
 	}
@@ -187,14 +188,12 @@ func (s *Server) Start(addr string) error {
 		}
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	<-ctx.Done()
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), defaultShutdownTimeout)
 	defer cancel()
-	if err := s.httpServer.Shutdown(ctx); err != nil {
+	if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
 

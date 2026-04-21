@@ -24,7 +24,9 @@ services:
       - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
       - VAPID_SUBJECT=${VAPID_SUBJECT}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
-
+      - SQS_QUEUE_URL=http://localstack:4566/000000000000/notification-queue
+      - SQS_REGION=ap-northeast-1
+      - SQS_ENDPOINT=http://localstack:4566
     depends_on:
       postgres:
         condition: service_healthy
@@ -147,6 +149,58 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - DEFAULT_REGION=ap-northeast-1
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+    volumes:
+      - ./backend/scripts/init.saws.sh:/etc/localstack/init/ready.d/init.saws.sh
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: ./backend
+      target: dev
+    command: ["go", "run", "./cmd/worker/main.go"]
+    environment:
+      - APP_ENV=${APP_ENV}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=5432
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_SUBJECT=${VAPID_SUBJECT}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - SQS_QUEUE_URL=http://localstack:4566/000000000000/notification-queue
+      - SQS_REGION=ap-northeast-1
+      - SQS_ENDPOINT=http://localstack:4566
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
     networks:
       - app-network
 

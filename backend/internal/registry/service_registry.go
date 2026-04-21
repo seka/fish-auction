@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/seka/fish-auction/backend/config"
@@ -8,6 +9,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/mailhog"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 	pushNotification "github.com/seka/fish-auction/backend/internal/infrastructure/push_notification"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
 )
 
 // Service defines the interface for creating domain services
@@ -16,6 +18,7 @@ type Service interface {
 	NewAdminEmailService() service.AdminEmailService
 	NewBuyerEmailService() service.BuyerEmailService
 	NewClock() service.Clock
+	NewJobQueue() service.JobQueue
 }
 
 type serviceRegistry struct {
@@ -23,25 +26,40 @@ type serviceRegistry struct {
 	adminEmailService       service.AdminEmailService
 	buyerEmailService       service.BuyerEmailService
 	clock                   service.Clock
+	jobQueue                service.JobQueue
 }
 
 // NewServiceRegistry creates a new Service registry
-func NewServiceRegistry(cfg *config.Config) Service {
+func NewServiceRegistry(
+	emailCfg config.EmailConfig,
+	webpushCfg config.WebpushConfig,
+	jobQueueCfg config.QueueConfig,
+) (Service, error) {
 	loader, err := templates.NewTemplateLoader()
 	if err != nil {
-		panic(fmt.Sprintf("failed to load templates: %v", err))
+		return nil, fmt.Errorf("failed to load templates: %w", err)
 	}
-	adminEmailService := mailhog.NewAdminEmailService(cfg, loader)
-	buyerEmailService := mailhog.NewBuyerEmailService(cfg, loader)
+	adminEmailService := mailhog.NewAdminEmailService(emailCfg, loader)
+	buyerEmailService := mailhog.NewBuyerEmailService(emailCfg, loader)
 
-	pushNotificationService := pushNotification.NewWebpushService(cfg)
+	pushNotificationService := pushNotification.NewWebpushService(webpushCfg)
+	var jobQueue service.JobQueue
+	if jobQueueCfg != config.NoQueueConfig {
+		region, url, endpoint := jobQueueCfg.SQSConfig()
+		var err error
+		jobQueue, err = sqs.NewClient(context.Background(), region, url, endpoint)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return &serviceRegistry{
 		pushNotificationService: pushNotificationService,
 		adminEmailService:       adminEmailService,
 		buyerEmailService:       buyerEmailService,
 		clock:                   service.NewRealClock(),
-	}
+		jobQueue:                jobQueue,
+	}, nil
 }
 
 func (s *serviceRegistry) NewPushNotificationService() service.PushNotificationService {
@@ -58,4 +76,8 @@ func (s *serviceRegistry) NewBuyerEmailService() service.BuyerEmailService {
 
 func (s *serviceRegistry) NewClock() service.Clock {
 	return s.clock
+}
+
+func (s *serviceRegistry) NewJobQueue() service.JobQueue {
+	return s.jobQueue
 }

@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
@@ -46,20 +49,23 @@ func main() {
 
 func run() error {
 	// Load Config
-	cfg, err := config.Load()
+	cfg, err := config.LoadAppServerConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	repoReg, err := registry.NewRepositoryRegistry(cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg := registry.NewServiceRegistry(cfg)
+	serviceReg, err := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to initialize service registry: %w", err)
+	}
 
 	// Initialize UseCase Registry
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
@@ -96,7 +102,10 @@ func run() error {
 	)
 
 	// Start Server
-	if err := srv.Start(cfg.ServerAddr()); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := srv.Start(ctx, cfg.ServerAddr()); err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
 	}
 	return nil

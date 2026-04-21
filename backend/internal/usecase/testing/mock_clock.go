@@ -20,7 +20,7 @@ func (m *MockClock) Now() time.Time {
 	return m.NowTime
 }
 
-func (m *MockClock) NowIn(name model.LocationName) time.Time {
+func (m *MockClock) NowIn(_ model.LocationName) time.Time {
 	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 	return m.NowTime.In(jst)
 }

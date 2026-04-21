@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoad(t *testing.T) {
+func TestLoadAppServerConfig(t *testing.T) {
 	// 必要な環境変数の最小セットをデフォルトで持っておく
 	defaultEnv := map[string]string{
 		"SERVER_PORT":       "8080",
@@ -43,7 +43,7 @@ func TestLoad(t *testing.T) {
 				"FRONTEND_URL": "localhost:3000",
 			},
 			wantErr:     true,
-			errContains: "invalid or missing FRONTEND_URL",
+			errContains: "invalid FRONTEND_URL: missing scheme or host",
 		},
 		{
 			name: "Error with missing host in FRONTEND_URL",
@@ -51,7 +51,7 @@ func TestLoad(t *testing.T) {
 				"FRONTEND_URL": "https://",
 			},
 			wantErr:     true,
-			errContains: "invalid or missing FRONTEND_URL",
+			errContains: "invalid FRONTEND_URL: missing scheme or host",
 		},
 		{
 			name: "Success with empty FRONTEND_URL (falls back to default)",
@@ -66,7 +66,7 @@ func TestLoad(t *testing.T) {
 				"FRONTEND_URL": "://invalid",
 			},
 			wantErr:     true,
-			errContains: "invalid or missing FRONTEND_URL",
+			errContains: "invalid FRONTEND_URL",
 		},
 	}
 
@@ -80,7 +80,7 @@ func TestLoad(t *testing.T) {
 				t.Setenv(k, v)
 			}
 
-			cfg, err := Load()
+			cfg, err := LoadAppServerConfig()
 			if tt.wantErr {
 				require.Error(t, err)
 				if tt.errContains != "" {
@@ -91,9 +91,9 @@ func TestLoad(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, cfg)
 				if val, ok := tt.env["FRONTEND_URL"]; ok && val != "" {
-					assert.Equal(t, val, cfg.FrontendURL.String())
+					assert.Equal(t, val, cfg.GetFrontendURL().String())
 				} else {
-					assert.Equal(t, "https://localhost", cfg.FrontendURL.String())
+					assert.Equal(t, "https://localhost", cfg.GetFrontendURL().String())
 				}
 			}
 		})

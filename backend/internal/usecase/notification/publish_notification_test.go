@@ -5,128 +5,80 @@ import (
 	"errors"
 	"testing"
 
-	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-type mockPushNotificationService struct {
-	sendFunc func(ctx context.Context, sub *model.PushSubscription, payload any) error
+type mockJobQueue struct {
+	enqueueFunc func(ctx context.Context, jobType model.JobType, payload any) error
 }
 
-func (m *mockPushNotificationService) Send(ctx context.Context, sub *model.PushSubscription, payload any) error {
-	return m.sendFunc(ctx, sub, payload)
+func (m *mockJobQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
+	return m.enqueueFunc(ctx, jobType, payload)
+}
+
+func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+	return nil, nil
+}
+
+func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+	return nil
 }
 
 func TestPublishNotificationUseCase_Execute(t *testing.T) {
 	ctx := context.Background()
 	buyerID := 1
-	payload := "test-notification"
+	payload := map[string]string{"title": "test", "body": "hello"}
 
 	t.Run("success", func(t *testing.T) {
-		subs := []model.PushSubscription{
-			{Endpoint: "endpoint-1"},
-			{Endpoint: "endpoint-2"},
-		}
+		enqueueCalled := false
+		var capturedJobType model.JobType
+		var capturedPayload any
 
-		repo := &mockPushRepository{
-			getSubscriptionsByBuyerIDFunc: func(_ context.Context, _ int) ([]model.PushSubscription, error) {
-				return subs, nil
-			},
-		}
-
-		sendCount := 0
-		svc := &mockPushNotificationService{
-			sendFunc: func(_ context.Context, _ *model.PushSubscription, _ any) error {
-				sendCount++
+		mockQueue := &mockJobQueue{
+			enqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
+				enqueueCalled = true
+				capturedJobType = jobType
+				capturedPayload = payload
 				return nil
 			},
 		}
 
-		uc := NewPublishNotificationUseCase(repo, svc)
+		uc := NewPublishNotificationUseCase(mockQueue)
 		err := uc.Execute(ctx, buyerID, payload)
+
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			t.Fatalf("Expected no error, got %v", err)
 		}
-		if sendCount != len(subs) {
-			t.Errorf("Expected %d sends, got %d", len(subs), sendCount)
+		if !enqueueCalled {
+			t.Error("Expected JobQueue.Enqueue to be called")
+		}
+		if capturedJobType != model.JobTypePushNotification {
+			t.Errorf("Expected jobType '%s', got '%s'", model.JobTypePushNotification, capturedJobType)
+		}
+
+		p, ok := capturedPayload.(notificationMessage.PushNotificationMessage)
+		if !ok {
+			t.Fatalf("Captured payload is not the expected struct type: %T", capturedPayload)
+		}
+		if p.BuyerID != buyerID {
+			t.Errorf("Expected BuyerID %d, got %d", buyerID, p.BuyerID)
 		}
 	})
 
-	t.Run("no subscriptions", func(t *testing.T) {
-		repo := &mockPushRepository{
-			getSubscriptionsByBuyerIDFunc: func(_ context.Context, _ int) ([]model.PushSubscription, error) {
-				return []model.PushSubscription{}, nil
+	t.Run("enqueue error", func(t *testing.T) {
+		enqueueErr := errors.New("enqueue failed")
+		mockQueue := &mockJobQueue{
+			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
+				return enqueueErr
 			},
 		}
 
-		svc := &mockPushNotificationService{
-			sendFunc: func(_ context.Context, _ *model.PushSubscription, _ any) error {
-				t.Error("Send should not be called")
-				return nil
-			},
-		}
-
-		uc := NewPublishNotificationUseCase(repo, svc)
+		uc := NewPublishNotificationUseCase(mockQueue)
 		err := uc.Execute(ctx, buyerID, payload)
-		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
-		}
-	})
 
-	t.Run("error from repository", func(t *testing.T) {
-		repoErr := errors.New("repository error")
-		repo := &mockPushRepository{
-			getSubscriptionsByBuyerIDFunc: func(_ context.Context, _ int) ([]model.PushSubscription, error) {
-				return nil, repoErr
-			},
-		}
-
-		uc := NewPublishNotificationUseCase(repo, &mockPushNotificationService{})
-		err := uc.Execute(ctx, buyerID, payload)
-		if !errors.Is(err, repoErr) {
-			t.Errorf("Expected error %v, got %v", repoErr, err)
-		}
-	})
-
-	t.Run("cleanup invalid subscriptions", func(t *testing.T) {
-		subs := []model.PushSubscription{
-			{Endpoint: "endpoint-1"},
-			{Endpoint: "endpoint-2"},
-		}
-
-		deletedEndpoints := make(map[string]bool)
-		repo := &mockPushRepository{
-			getSubscriptionsByBuyerIDFunc: func(_ context.Context, _ int) ([]model.PushSubscription, error) {
-				return subs, nil
-			},
-			deleteSubscriptionFunc: func(_ context.Context, endpoint string) error {
-				deletedEndpoints[endpoint] = true
-				return nil
-			},
-		}
-
-		svc := &mockPushNotificationService{
-			sendFunc: func(_ context.Context, sub *model.PushSubscription, _ any) error {
-				if sub.Endpoint == "endpoint-1" {
-					return &domainErrors.GoneError{Resource: "Subscription"}
-				}
-				if sub.Endpoint == "endpoint-2" {
-					return &domainErrors.NotFoundError{Resource: "Subscription"}
-				}
-				return nil
-			},
-		}
-
-		uc := NewPublishNotificationUseCase(repo, svc)
-		err := uc.Execute(ctx, buyerID, payload)
-		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
-		}
-		if !deletedEndpoints["endpoint-1"] {
-			t.Error("Expected endpoint-1 to be deleted")
-		}
-		if !deletedEndpoints["endpoint-2"] {
-			t.Error("Expected endpoint-2 to be deleted")
+		if !errors.Is(err, enqueueErr) {
+			t.Errorf("Expected error %v, got %v", enqueueErr, err)
 		}
 	})
 }
