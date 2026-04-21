@@ -83,8 +83,8 @@ BEGIN
     SELECT id INTO vid FROM venues WHERE name = '函館港';
     IF vid IS NOT NULL THEN
         INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
-        SELECT vid, CURRENT_DATE, '08:00', '16:00', 'in_progress'
-        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = vid AND auction_date = CURRENT_DATE);
+        SELECT vid, (CURRENT_TIMESTAMP + interval '9 hours')::date, '00:00', '23:59:59', 'in_progress'
+        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = vid AND auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date);
     END IF;
 END $$;
 
@@ -96,9 +96,9 @@ BEGIN
     SELECT id INTO default_venue_id FROM venues WHERE name = '豊洲市場' LIMIT 1;
 
     IF default_venue_id IS NOT NULL THEN
-        INSERT INTO auctions (venue_id, auction_date, status)
-        SELECT default_venue_id, CURRENT_DATE, 'in_progress'
-        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = default_venue_id AND auction_date = CURRENT_DATE);
+        INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
+        SELECT default_venue_id, (CURRENT_TIMESTAMP + interval '9 hours')::date, '00:00', '23:59:59', 'in_progress'
+        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = default_venue_id AND auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date);
     END IF;
 END $$;
 
@@ -113,19 +113,19 @@ BEGIN
     SELECT a.id INTO aid
     FROM auctions a
     JOIN venues v ON a.venue_id = v.id
-    WHERE v.name = '函館港' AND a.auction_date = CURRENT_DATE
+    WHERE v.name = '函館港' AND a.auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, 'スルメイカ', 100, 'kg', 'Pending', 1
+        SELECT fid, aid, 'スルメイカ', 100, 'kg', 'Available', 1
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'スルメイカ'
         );
 
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, 'ホッケ', 50, 'kg', 'Pending', 2
+        SELECT fid, aid, 'ホッケ', 50, 'kg', 'Available', 2
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'ホッケ'
@@ -143,12 +143,12 @@ BEGIN
     SELECT a.id INTO aid
     FROM auctions a
     JOIN venues v ON a.venue_id = v.id
-    WHERE v.name = '函館港' AND a.auction_date = CURRENT_DATE
+    WHERE v.name = '函館港' AND a.auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, 'マグロ', 200, 'kg', 'Pending', 3
+        SELECT fid, aid, 'マグロ', 200, 'kg', 'Available', 3
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'マグロ'
@@ -167,26 +167,26 @@ BEGIN
     SELECT a.id INTO aid
     FROM auctions a
     JOIN venues v ON a.venue_id = v.id
-    WHERE v.name = '豊洲市場' AND a.auction_date = CURRENT_DATE
+    WHERE v.name = '豊洲市場' AND a.auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, '本マグロ', 1, '本', 'Pending', 1
+        SELECT fid, aid, '本マグロ', 1, '本', 'Available', 1
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '本マグロ'
         );
 
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, '天然真鯛', 20, 'kg', 'Pending', 2
+        SELECT fid, aid, '天然真鯛', 20, 'kg', 'Available', 2
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '天然真鯛'
         );
 
         INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, '生ウニ', 5, '板', 'Pending', 3
+        SELECT fid, aid, '生ウニ', 5, '板', 'Available', 3
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '生ウニ'
