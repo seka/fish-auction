@@ -41,7 +41,7 @@ func TestServerIntegration(t *testing.T) {
 	}
 
 	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, true)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}

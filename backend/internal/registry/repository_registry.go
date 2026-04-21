@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -54,20 +53,18 @@ func NewRepositoryRegistry(
 	redisCfg config.RedisConfig,
 	cacheCfg config.CacheConfig,
 	sessionCfg config.SessionConfig,
+	shouldMigrate bool,
 ) (Repository, error) {
 	db, err := connectDB(dbCfg.DBConnectionURL())
 	if err != nil {
 		return nil, err
 	}
 
-	skipMigrations := strings.ToLower(os.Getenv("DB_SKIP_MIGRATIONS"))
-	if skipMigrations != "true" && skipMigrations != "1" && skipMigrations != "yes" {
+	if shouldMigrate {
 		if err := runMigrations(db); err != nil {
 			_ = db.Close()
 			return nil, err
 		}
-	} else {
-		log.Println("Skipping database migrations as DB_SKIP_MIGRATIONS is set")
 	}
 
 	redisClient, err := connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())
