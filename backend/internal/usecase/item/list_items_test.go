@@ -13,13 +13,11 @@ import (
 func TestListItemsUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
-		status  string
 		items   []model.AuctionItem
 		wantErr error
 	}{
 		{
-			name:   "Success",
-			status: "Available",
+			name: "Success",
 			items: []model.AuctionItem{
 				{ID: 1, FishType: "Tuna"},
 				{ID: 2, FishType: "Salmon"},
@@ -27,7 +25,6 @@ func TestListItemsUseCase_Execute(t *testing.T) {
 		},
 		{
 			name:    "Error",
-			status:  "Sold",
 			wantErr: errors.New("list failed"),
 		},
 	}
@@ -35,10 +32,7 @@ func TestListItemsUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mock.MockItemRepository{
-				ListFunc: func(_ context.Context, status string) ([]model.AuctionItem, error) {
-					if status != tt.status {
-						t.Fatalf("unexpected status %s", status)
-					}
+				ListFunc: func(_ context.Context) ([]model.AuctionItem, error) {
 					if tt.wantErr != nil {
 						return nil, tt.wantErr
 					}
@@ -47,7 +41,7 @@ func TestListItemsUseCase_Execute(t *testing.T) {
 			}
 
 			uc := item.NewListItemsUseCase(repo)
-			got, err := uc.Execute(context.Background(), tt.status)
+			got, err := uc.Execute(context.Background())
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) {

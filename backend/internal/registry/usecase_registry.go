@@ -191,7 +191,7 @@ func (u *useCaseRegistry) NewListAuctionsUseCase() auction.ListAuctionsUseCase {
 }
 
 func (u *useCaseRegistry) NewGetAuctionUseCase() auction.GetAuctionUseCase {
-	return auction.NewGetAuctionUseCase(u.repo.NewAuctionRepository(), u.service.NewClock())
+	return auction.NewGetAuctionUseCase(u.repo.NewAuctionRepository())
 }
 
 func (u *useCaseRegistry) NewGetAuctionItemsUseCase() auction.GetAuctionItemsUseCase {

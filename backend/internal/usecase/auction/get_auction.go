@@ -5,7 +5,6 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 // GetAuctionUseCase defines the interface for getting an auction by ID.
@@ -16,34 +15,19 @@ type GetAuctionUseCase interface {
 
 // GetAuctionUseCase handles getting an auction
 type getAuctionUseCase struct {
-	repo  repository.AuctionRepository
-	clock service.Clock
+	repo repository.AuctionRepository
 }
 
 var _ GetAuctionUseCase = (*getAuctionUseCase)(nil)
 
 // NewGetAuctionUseCase creates a new instance of GetAuctionUseCase
-func NewGetAuctionUseCase(auctionRepo repository.AuctionRepository, clock service.Clock) GetAuctionUseCase {
+func NewGetAuctionUseCase(auctionRepo repository.AuctionRepository) GetAuctionUseCase {
 	return &getAuctionUseCase{
-		repo:  auctionRepo,
-		clock: clock,
+		repo: auctionRepo,
 	}
 }
 
 // Execute gets an auction by ID
 func (uc *getAuctionUseCase) Execute(ctx context.Context, id int) (*model.Auction, error) {
-	auction, err := uc.repo.FindByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	now := uc.clock.Now()
-	if auction.ShouldBeCompleted(now) {
-		if err := uc.repo.UpdateStatus(ctx, auction.ID, model.AuctionStatusCompleted); err != nil {
-			return nil, err
-		}
-		auction.Status = model.AuctionStatusCompleted
-	}
-
-	return auction, nil
+	return uc.repo.FindByID(ctx, id)
 }

@@ -141,12 +141,6 @@ func (uc *createBidUseCase) getAndValidateItem(ctx context.Context, itemID int, 
 		}
 	}
 
-	if item.Status != model.ItemStatusAvailable {
-		return nil, &errors.ConflictError{
-			Message: fmt.Sprintf("bidding is not allowed for item with status %s", item.Status),
-		}
-	}
-
 	if err := uc.validateBidPrice(item, price); err != nil {
 		return nil, err
 	}
