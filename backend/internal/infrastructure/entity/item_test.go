@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/errors"
-	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/entity"
 )
 
@@ -22,7 +21,6 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "Tuna",
 				Quantity:    10,
 				Unit:        "kg",
-				Status:      model.ItemStatusAvailable,
 			},
 		},
 		{
@@ -32,7 +30,6 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "Tuna",
 				Quantity:    10,
 				Unit:        "kg",
-				Status:      model.ItemStatusAvailable,
 			},
 			wantErr:   true,
 			wantField: "fisherman_id",
@@ -44,7 +41,6 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "Tuna",
 				Quantity:    10,
 				Unit:        "kg",
-				Status:      model.ItemStatusAvailable,
 			},
 			wantErr:   true,
 			wantField: "fisherman_id",
@@ -56,7 +52,6 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "",
 				Quantity:    10,
 				Unit:        "kg",
-				Status:      model.ItemStatusAvailable,
 			},
 			wantErr:   true,
 			wantField: "fish_type",
@@ -68,7 +63,6 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "   ",
 				Quantity:    10,
 				Unit:        "kg",
-				Status:      model.ItemStatusAvailable,
 			},
 			wantErr:   true,
 			wantField: "fish_type",
@@ -80,7 +74,6 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "Tuna",
 				Quantity:    0,
 				Unit:        "kg",
-				Status:      model.ItemStatusAvailable,
 			},
 			wantErr:   true,
 			wantField: "quantity",
@@ -92,22 +85,9 @@ func TestAuctionItem_Validate(t *testing.T) {
 				FishType:    "Tuna",
 				Quantity:    10,
 				Unit:        "",
-				Status:      model.ItemStatusAvailable,
 			},
 			wantErr:   true,
 			wantField: "unit",
-		},
-		{
-			name: "Invalid_Status",
-			item: &entity.AuctionItem{
-				FishermanID: 1,
-				FishType:    "Tuna",
-				Quantity:    10,
-				Unit:        "kg",
-				Status:      model.ItemStatus("Invalid"),
-			},
-			wantErr:   true,
-			wantField: "status",
 		},
 	}
 
@@ -143,7 +123,6 @@ func TestAuctionItem_ToModel(t *testing.T) {
 		FishType:    "Tuna",
 		Quantity:    10,
 		Unit:        "kg",
-		Status:      model.ItemStatusAvailable,
 	}
 
 	modelItem := item.ToModel()
@@ -162,8 +141,5 @@ func TestAuctionItem_ToModel(t *testing.T) {
 	}
 	if modelItem.Unit != item.Unit {
 		t.Errorf("expected Unit %s, got %s", item.Unit, modelItem.Unit)
-	}
-	if modelItem.Status != item.Status {
-		t.Errorf("expected Status %s, got %s", item.Status, modelItem.Status)
 	}
 }

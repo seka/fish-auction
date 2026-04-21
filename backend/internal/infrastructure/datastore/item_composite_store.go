@@ -16,11 +16,10 @@ type ItemCache interface {
 // ItemStore defines the interface for Item persistence.
 type ItemStore interface {
 	Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
-	List(ctx context.Context, status string) ([]model.AuctionItem, error)
+	List(ctx context.Context) ([]model.AuctionItem, error)
 	ListByAuction(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 	FindByID(ctx context.Context, id int) (*model.AuctionItem, error)
 	FindByIDWithLock(ctx context.Context, id int) (*model.AuctionItem, error)
-	UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error
 	Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 	Delete(ctx context.Context, id int) error
 	UpdateSortOrder(ctx context.Context, id, sortOrder int) error
@@ -48,9 +47,9 @@ func (s *ItemCompositeStore) Create(ctx context.Context, item *model.AuctionItem
 	return newItem, nil
 }
 
-// List returns all auction items with the given status from the persistence layer.
-func (s *ItemCompositeStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	return s.store.List(ctx, status)
+// List returns all auction items from the persistence layer.
+func (s *ItemCompositeStore) List(ctx context.Context) ([]model.AuctionItem, error) {
+	return s.store.List(ctx)
 }
 
 // ListByAuction returns all auction items for the given auction ID from the persistence layer.
@@ -80,15 +79,6 @@ func (s *ItemCompositeStore) FindByIDWithLock(ctx context.Context, id int) (*mod
 	}
 	// ロック取得後の値でキャッシュは更新しない（トランザクション終了後に別の場所で無効化されるため）
 	return item, nil
-}
-
-// UpdateStatus updates the status of an auction item in the persistence layer and invalidates the cache.
-func (s *ItemCompositeStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
-	if err := s.store.UpdateStatus(ctx, id, status); err != nil {
-		return err
-	}
-	_ = s.cache.Delete(ctx, id)
-	return nil
 }
 
 // Update updates an auction item in the persistence layer and invalidates the cache.
