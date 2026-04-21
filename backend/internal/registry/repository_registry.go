@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -59,9 +60,14 @@ func NewRepositoryRegistry(
 		return nil, err
 	}
 
-	if err := runMigrations(db); err != nil {
-		_ = db.Close()
-		return nil, err
+	skipMigrations := strings.ToLower(os.Getenv("DB_SKIP_MIGRATIONS"))
+	if skipMigrations != "true" && skipMigrations != "1" && skipMigrations != "yes" {
+		if err := runMigrations(db); err != nil {
+			_ = db.Close()
+			return nil, err
+		}
+	} else {
+		log.Println("Skipping database migrations as DB_SKIP_MIGRATIONS is set")
 	}
 
 	redisClient, err := connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())
