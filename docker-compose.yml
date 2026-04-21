@@ -27,6 +27,8 @@ services:
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/notification-queue
       - SQS_REGION=ap-northeast-1
       - SQS_ENDPOINT=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -194,6 +196,8 @@ services:
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/notification-queue
       - SQS_REGION=ap-northeast-1
       - SQS_ENDPOINT=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       postgres:
         condition: service_healthy
