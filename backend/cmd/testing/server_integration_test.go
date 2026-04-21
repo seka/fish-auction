@@ -272,9 +272,12 @@ func TestServerIntegration(t *testing.T) {
 				// Let's just check if ANY notification reached Buyer A.
 				if call.payload != nil {
 					payloadMap, ok := call.payload.(map[string]any)
-					if ok && strings.Contains(payloadMap["title"].(string), "高値更新") {
-						found = true
-						break
+					if ok {
+						title, ok := payloadMap["title"].(string)
+						if ok && strings.Contains(title, "高値更新") {
+							found = true
+							break
+						}
 					}
 				}
 			}
