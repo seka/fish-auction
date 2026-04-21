@@ -16,7 +16,6 @@ type UpdateItem struct {
 	FishType    string `json:"fish_type"`
 	Quantity    int    `json:"quantity"`
 	Unit        string `json:"unit"`
-	Status      string `json:"status"`
 }
 
 // UpdateItemSortOrder holds data for updating an item's sort order.

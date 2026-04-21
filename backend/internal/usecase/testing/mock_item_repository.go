@@ -9,13 +9,12 @@ import (
 // MockItemRepository is a mock implementation of ItemRepository
 type MockItemRepository struct {
 	CreateFunc           func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
-	ListFunc             func(ctx context.Context, status string) ([]model.AuctionItem, error)
+	ListFunc             func(ctx context.Context) ([]model.AuctionItem, error)
 	ListByAuctionFunc    func(ctx context.Context, auctionID int) ([]model.AuctionItem, error)
 	FindByIDFunc         func(ctx context.Context, id int) (*model.AuctionItem, error)
 	FindByIDWithLockFunc func(ctx context.Context, id int) (*model.AuctionItem, error)
 	UpdateFunc           func(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error)
 	DeleteFunc           func(ctx context.Context, id int) error
-	UpdateStatusFunc     func(ctx context.Context, id int, status model.ItemStatus) error
 	UpdateSortOrderFunc  func(ctx context.Context, id int, sortOrder int) error
 	ReorderFunc          func(ctx context.Context, auctionID int, ids []int) error
 }
@@ -26,8 +25,8 @@ func (m *MockItemRepository) Create(ctx context.Context, item *model.AuctionItem
 }
 
 // List retrieves a list of records.
-func (m *MockItemRepository) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	return m.ListFunc(ctx, status)
+func (m *MockItemRepository) List(ctx context.Context) ([]model.AuctionItem, error) {
+	return m.ListFunc(ctx)
 }
 
 // ListByAuction retrieves a list of records.
@@ -53,11 +52,6 @@ func (m *MockItemRepository) Update(ctx context.Context, item *model.AuctionItem
 // Delete removes a record by ID.
 func (m *MockItemRepository) Delete(ctx context.Context, id int) error {
 	return m.DeleteFunc(ctx, id)
-}
-
-// UpdateStatus updates an existing record.
-func (m *MockItemRepository) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
-	return m.UpdateStatusFunc(ctx, id, status)
 }
 
 // UpdateSortOrder updates an existing record.

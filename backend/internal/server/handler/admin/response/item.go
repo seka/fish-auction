@@ -10,7 +10,6 @@ type Item struct {
 	FishType          string    `json:"fish_type"`
 	Quantity          int       `json:"quantity"`
 	Unit              string    `json:"unit"`
-	Status            string    `json:"status"`
 	HighestBid        *int      `json:"highest_bid,omitempty"`
 	HighestBidderID   *int      `json:"highest_bidder_id,omitempty"`
 	HighestBidderName *string   `json:"highest_bidder_name,omitempty"`

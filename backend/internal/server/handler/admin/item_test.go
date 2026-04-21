@@ -20,7 +20,6 @@ func TestAdminItemHandler_Create(t *testing.T) {
 		mockCreateUC := &mock.MockCreateItemUseCase{
 			ExecuteFunc: func(_ context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 				item.ID = 1
-				item.Status = model.ItemStatusAvailable
 				return item, nil
 			},
 		}
@@ -186,7 +185,7 @@ func TestAdminItemHandler_UpdateSortOrder(t *testing.T) {
 
 func TestItemHandler_RegisterRoutes(t *testing.T) {
 	mockReg := &mock.MockRegistry{
-		ListItemsUC:  &mock.MockListItemsUseCase{ExecuteFunc: func(_ context.Context, _ string) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
+		ListItemsUC:  &mock.MockListItemsUseCase{ExecuteFunc: func(_ context.Context) ([]model.AuctionItem, error) { return []model.AuctionItem{}, nil }},
 		CreateItemUC: &mock.MockCreateItemUseCase{ExecuteFunc: func(_ context.Context, i *model.AuctionItem) (*model.AuctionItem, error) { return i, nil }},
 	}
 
