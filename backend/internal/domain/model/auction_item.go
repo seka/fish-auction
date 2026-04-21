@@ -10,7 +10,6 @@ type AuctionItem struct {
 	FishType          string
 	Quantity          int
 	Unit              string
-	Status            ItemStatus
 	HighestBid        *BidPrice
 	HighestBidderID   *int
 	HighestBidderName *string
