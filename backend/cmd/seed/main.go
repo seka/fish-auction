@@ -69,7 +69,7 @@ func run() error {
 	}
 
 	for _, table := range tables {
-		_, err := db.ExecContext(ctx, fmt.Sprintf("TRUNCATE TABLE %s CASCADE", table))
+		_, err := db.ExecContext(ctx, fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", table))
 		if err != nil {
 			// Ignore error if table doesn't exist, but log it
 			log.Printf("Warning: failed to truncate table %s: %v", table, err)

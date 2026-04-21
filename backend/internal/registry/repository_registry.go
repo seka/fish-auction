@@ -53,15 +53,18 @@ func NewRepositoryRegistry(
 	redisCfg config.RedisConfig,
 	cacheCfg config.CacheConfig,
 	sessionCfg config.SessionConfig,
+	shouldMigrate bool,
 ) (Repository, error) {
 	db, err := connectDB(dbCfg.DBConnectionURL())
 	if err != nil {
 		return nil, err
 	}
 
-	if err := runMigrations(db); err != nil {
-		_ = db.Close()
-		return nil, err
+	if shouldMigrate {
+		if err := runMigrations(db); err != nil {
+			_ = db.Close()
+			return nil, err
+		}
 	}
 
 	redisClient, err := connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())

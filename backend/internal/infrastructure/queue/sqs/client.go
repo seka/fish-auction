@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -104,28 +105,35 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 			continue
 		}
 
+		var jobType model.JobType
 		if attr, ok := m.MessageAttributes["JobType"]; ok && attr.StringValue != nil {
-			jobType, err := model.NewJobType(*attr.StringValue)
+			jt, err := model.NewJobType(*attr.StringValue)
 			if err != nil {
-				continue
+				log.Printf("Received SQS message %v with invalid JobType '%s': %v", *m.MessageId, *attr.StringValue, err)
+				jobType = model.JobType(fmt.Sprintf("INVALID:%s", *attr.StringValue))
+			} else {
+				jobType = jt
 			}
-
-			receiveCount := 1
-			if val, ok := m.Attributes["ApproximateReceiveCount"]; ok {
-				if n, err := strconv.Atoi(val); err == nil {
-					receiveCount = n
-				}
-			}
-
-			msg := &model.JobMessage{
-				ID:            *m.MessageId,
-				ReceiptHandle: *m.ReceiptHandle,
-				JobType:       jobType,
-				Payload:       []byte(*m.Body),
-				ReceiveCount:  receiveCount,
-			}
-			messages = append(messages, msg)
+		} else {
+			log.Printf("Received SQS message %v without JobType attribute", *m.MessageId)
+			jobType = "UNKNOWN"
 		}
+
+		receiveCount := 1
+		if val, ok := m.Attributes["ApproximateReceiveCount"]; ok {
+			if n, err := strconv.Atoi(val); err == nil {
+				receiveCount = n
+			}
+		}
+
+		msg := &model.JobMessage{
+			ID:            *m.MessageId,
+			ReceiptHandle: *m.ReceiptHandle,
+			JobType:       jobType,
+			Payload:       []byte(*m.Body),
+			ReceiveCount:  receiveCount,
+		}
+		messages = append(messages, msg)
 	}
 
 	return messages, nil

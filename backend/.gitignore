@@ -32,3 +32,4 @@ build/*
 .cache/
 lint_output.txt
 .gopath/
+scratch/
