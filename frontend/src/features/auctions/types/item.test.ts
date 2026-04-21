@@ -12,7 +12,6 @@ describe('auctions/types/item', () => {
         fishType: 'Maguro',
         quantity: 100,
         unit: 'kg',
-        status: 'Bidding',
         highestBid: 5000,
         highestBidderId: 2,
         highestBidderName: 'Buyer A',
@@ -23,8 +22,6 @@ describe('auctions/types/item', () => {
       const result = toAuctionItem(entity);
 
       expect(result.fishType).toBe('Maguro');
-      expect(result.status.value).toBe('Bidding');
-      expect(result.status.variant).toBe('success');
       expect(result.bidding.highestBid).toBe(5000);
       expect(result.bidding.highestBidderId).toBe(2);
       expect(result.bidding.highestBidderName).toBe('Buyer A');
@@ -43,7 +40,6 @@ describe('auctions/types/item', () => {
         fishType: 'Saba',
         quantity: 50,
         unit: 'kg',
-        status: 'Pending',
       } as EntityAuctionItem;
 
       const result = toAuctionItem(entity);

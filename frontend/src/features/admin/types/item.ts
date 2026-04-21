@@ -1,5 +1,5 @@
 import { AuctionItem as EntityAuctionItem } from '@entities/auction';
-import { selectItemStatus, selectNextMinimumBid } from '../selectors/selectItem';
+import { selectNextMinimumBid } from '../selectors/selectItem';
 
 export interface AuctionItem {
   id: number;
@@ -14,15 +14,6 @@ export interface AuctionItem {
   price: {
     value: number;
     label: string;
-  };
-  status: {
-    value: 'Pending' | 'Bidding' | 'Sold' | 'Unsold';
-    labelKey: string;
-    variant: 'success' | 'warning' | 'error' | 'info' | 'neutral';
-    isPending: boolean;
-    isBidding: boolean;
-    isSold: boolean;
-    isUnsold: boolean;
   };
   bidding: {
     highestBid: number | null;
@@ -42,7 +33,6 @@ const formatJPY = (value: number): string => {
 };
 
 export const toAuctionItem = (entity: EntityAuctionItem): AuctionItem => {
-  const itemStatus = entity.status;
   const highestBid = entity.highestBid ?? null;
   const nextMinBidValue = selectNextMinimumBid(highestBid ?? 0);
 
@@ -60,7 +50,6 @@ export const toAuctionItem = (entity: EntityAuctionItem): AuctionItem => {
       value: highestBid ?? 0,
       label: highestBid !== null ? formatJPY(highestBid) : '-',
     },
-    status: selectItemStatus(itemStatus),
     bidding: {
       highestBid: entity.highestBid ?? null,
       highestBidderId: entity.highestBidderId ?? null,

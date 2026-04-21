@@ -1,7 +1,6 @@
 'use client';
 
 import { Box, Text, Stack, Card, HStack } from '@atoms';
-import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
 import { AuctionItem } from '../types';
 
@@ -107,7 +106,6 @@ export const AuctionItemList = ({
                     )}
                   </Box>
                 </HStack>
-                <ItemStatusBadge status={item.status} />
               </Box>
             </Card>
           ))

@@ -4,11 +4,9 @@ import { UseFormReturn } from 'react-hook-form';
 import { BidFormData } from '@schemas/auction';
 import { AuctionItem, Auction } from '../types';
 import { Box, Text, Card, Stack, Input, Button } from '@atoms';
-import { ItemStatusBadge } from './ItemStatusBadge';
 import { css } from 'styled-system/css';
 
 import { useTranslations } from 'next-intl';
-import { ReactNode } from 'react';
 
 interface BiddingPanelProps {
   selectedItem: AuctionItem | null;
@@ -71,15 +69,6 @@ export const BiddingPanel = ({
                 <Text fontSize="lg" className={css({ color: 'gray.700' })}>
                   {selectedItem.quantity.label}
                 </Text>
-                <Box fontSize="sm" className={css({ color: 'gray.600' })} mt="2">
-                  {t.rich('Public.AuctionDetail.status', {
-                    status: (chunks: ReactNode) => (
-                      <Box as="span" display="inline-flex" alignItems="center" gap="1">
-                        {chunks} <ItemStatusBadge status={selectedItem.status} />
-                      </Box>
-                    ),
-                  })}
-                </Box>
                 {selectedItem.bidding.highestBid && (
                   <Text
                     fontSize="sm"
@@ -101,93 +90,87 @@ export const BiddingPanel = ({
                 )}
               </Box>
 
-              {selectedItem.status.isPending ? (
-                !auctionActive ? (
-                  <Box
-                    textAlign="center"
-                    py="6"
-                    bg="yellow.50"
-                    borderRadius="lg"
-                    borderWidth="1px"
-                    borderColor="yellow.200"
-                  >
-                    <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">
-                      {t('Public.AuctionDetail.out_of_hours_title')}
+              {auctionActive ? (
+                <>
+                  <Box>
+                    <Text
+                      as="label"
+                      display="block"
+                      fontSize="sm"
+                      fontWeight="bold"
+                      className={css({ color: 'gray.700' })}
+                      mb="1"
+                    >
+                      {t('Public.AuctionDetail.bid_amount_label')}
                     </Text>
-                    {auction.duration.label && (
-                      <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
-                        {t('Public.AuctionDetail.out_of_hours_msg', {
-                          duration: auction.duration.label,
-                        })}
+                    <Text fontSize="xs" className={css({ color: 'gray.500', mb: '2' })}>
+                      {t('Public.AuctionDetail.next_min_bid', {
+                        price: selectedItem.bidding.nextMinBid.label,
+                      })}
+                    </Text>
+                    <Box position="relative">
+                      <Box
+                        position="absolute"
+                        top="50%"
+                        left="3"
+                        transform="translateY(-50%)"
+                        pointerEvents="none"
+                      >
+                        <Text fontSize="sm" className={css({ color: 'gray.600' })}>
+                          ¥
+                        </Text>
+                      </Box>
+                      <Input
+                        type="number"
+                        {...register('price')}
+                        placeholder={selectedItem.bidding.nextMinBid.value.toString()}
+                        className={css({ pl: '7' })}
+                      />
+                    </Box>
+                    {errors.price && (
+                      <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">
+                        {errors.price.message}
                       </Text>
                     )}
                   </Box>
-                ) : (
-                  <>
-                    <Box>
-                      <Text
-                        as="label"
-                        display="block"
-                        fontSize="sm"
-                        fontWeight="bold"
-                        className={css({ color: 'gray.700' })}
-                        mb="1"
-                      >
-                        {t('Public.AuctionDetail.bid_amount_label')}
-                      </Text>
-                      <Text fontSize="xs" className={css({ color: 'gray.500', mb: '2' })}>
-                        {t('Public.AuctionDetail.next_min_bid', {
-                          price: selectedItem.bidding.nextMinBid.label,
-                        })}
-                      </Text>
-                      <Box position="relative">
-                        <Box
-                          position="absolute"
-                          top="50%"
-                          left="3"
-                          transform="translateY(-50%)"
-                          pointerEvents="none"
-                        >
-                          <Text fontSize="sm" className={css({ color: 'gray.600' })}>
-                            ¥
-                          </Text>
-                        </Box>
-                        <Input
-                          type="number"
-                          {...register('price')}
-                          placeholder={selectedItem.bidding.nextMinBid.value.toString()}
-                          className={css({ pl: '7' })}
-                        />
-                      </Box>
-                      {errors.price && (
-                        <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">
-                          {errors.price.message}
-                        </Text>
-                      )}
-                    </Box>
 
-                    <Button
-                      type="submit"
-                      disabled={isBidLoading}
-                      width="full"
-                      size="lg"
-                      className={css({
-                        bg: 'red.600',
-                        _hover: { bg: 'red.700', transform: 'scale(1.02)' },
-                        color: 'white',
-                        shadow: 'md',
-                        transition: 'all 0.2s',
-                      })}
-                    >
-                      {isBidLoading
-                        ? t('Public.AuctionDetail.bidding_process')
-                        : t('Public.AuctionDetail.bid_button')}
-                    </Button>
-                  </>
-                )
+                  <Button
+                    type="submit"
+                    disabled={isBidLoading}
+                    width="full"
+                    size="lg"
+                    className={css({
+                      bg: 'red.600',
+                      _hover: { bg: 'red.700', transform: 'scale(1.02)' },
+                      color: 'white',
+                      shadow: 'md',
+                      transition: 'all 0.2s',
+                    })}
+                  >
+                    {isBidLoading
+                      ? t('Public.AuctionDetail.bidding_process')
+                      : t('Public.AuctionDetail.bid_button')}
+                  </Button>
+                </>
               ) : (
-                <Box textAlign="center" py="4" bg="gray.100" borderRadius="md" color="gray.500">
-                  {t('Public.AuctionDetail.item_ended')}
+                <Box
+                  textAlign="center"
+                  py="6"
+                  bg="yellow.50"
+                  borderRadius="lg"
+                  borderWidth="1px"
+                  borderColor="yellow.200"
+                >
+                  <Text className={css({ color: 'yellow.800' })} fontWeight="bold" mb="2">
+                    {t('Public.AuctionDetail.out_of_hours_title')}
+                  </Text>
+                  {auction.duration.label && (
+                    <Text fontSize="sm" className={css({ color: 'yellow.700' })}>
+                      {t('Public.AuctionDetail.out_of_hours_msg', {
+                        duration: auction.duration.label,
+                      })}
+                    </Text>
+                  )}
                 </Box>
               )}
             </Stack>

@@ -67,7 +67,6 @@ export const useItemManagement = () => {
           fishType: data.fishType,
           quantity: parseInt(data.quantity),
           unit: data.unit,
-          status: editingItem.status.value,
         });
         setMessage(t('Admin.Items.success_update'));
         setEditingItem(null);
