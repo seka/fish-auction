@@ -37,11 +37,22 @@ export const useAuctionManagement = () => {
 
   const { reset, handleSubmit, setValue } = form;
 
+  // "YYYY-MM-DDTHH:MM" (datetime-local) を RFC3339 JST 文字列に変換する
+  const toJSTISOString = (localDatetime: string): string => `${localDatetime}:00+09:00`;
+
+  // Date オブジェクトを datetime-local 入力形式 "YYYY-MM-DDTHH:MM" (JST) に変換する
+  const toDatetimeLocalString = (date: Date): string => {
+    const jst = new Date(date.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }));
+    return jst.toISOString().slice(0, 16);
+  };
+
   const onSubmit = async (data: AuctionFormInput) => {
     try {
       const payload = {
         ...data,
         venueId: Number(data.venueId),
+        startAt: toJSTISOString(data.startAt),
+        endAt: data.endAt ? toJSTISOString(data.endAt) : undefined,
       };
 
       if (editingAuction) {
@@ -72,9 +83,12 @@ export const useAuctionManagement = () => {
   const onEdit = (auction: Auction) => {
     setEditingAuction(auction);
     setValue('venueId', auction.venueId);
-    setValue('auctionDate', auction.duration.dateLabel);
-    setValue('startTime', auction.duration.startTime ?? undefined);
-    setValue('endTime', auction.duration.endTime ?? undefined);
+    if (auction.duration.startAt) {
+      setValue('startAt', toDatetimeLocalString(auction.duration.startAt));
+    }
+    if (auction.duration.endAt) {
+      setValue('endAt', toDatetimeLocalString(auction.duration.endAt));
+    }
   };
 
   const onCancelEdit = () => {

@@ -46,28 +46,15 @@ export const selectAuctionStatus = (status: EntityAuctionStatus): Auction['statu
 };
 
 /**
- * 表示用に時間をフォーマットする (HH:MM - HH:MM)
+ * 表示用に時間をフォーマットする (HH:MM ~ HH:MM)
  */
-export const selectTimeLabel = (startTime: string | null, endTime: string | null): string => {
-  const start = selectTime(startTime);
-  const end = selectTime(endTime);
-  if (!start && !end) return '';
-  return `${start || '--:--'} ~ ${end || '--:--'}`;
-};
-
-/**
- * 表示用に時間をフォーマットする (HH:MM)
- */
-export const selectTime = (time?: string | null): string => {
-  if (!time) return '';
-  return time.substring(0, 5); // HH:MM:SS から HH:MM を抽出
-};
-
-/**
- * 文字列の日付と時刻を JST として Date オブジェクトに変換する
- */
-export const toJSTDate = (date: string, time: string | null): Date => {
-  const t = time || '00:00:00';
-  // ISO 8601 形式に +09:00 を付与して JST としてパースさせる
-  return new Date(`${date.replace(/\//g, '-')}T${t}+09:00`);
+export const selectTimeLabel = (startAt: Date | null, endAt: Date | null): string => {
+  const format = (d: Date) =>
+    d.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo',
+    });
+  if (!startAt && !endAt) return '';
+  return `${startAt ? format(startAt) : '--:--'} ~ ${endAt ? format(endAt) : '--:--'}`;
 };

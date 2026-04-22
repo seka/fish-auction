@@ -3,33 +3,24 @@ import { Auction as EntityAuction } from '@entities/auction';
 import {
   selectIsAuctionActive,
   selectTimeLabel,
-  selectTime,
   selectMinimumBidIncrement,
   selectNextMinimumBid,
   selectVisiblePublicAuctions,
 } from './selectAuction';
 
 describe('auctions/selectors/selectAuction', () => {
-  describe('selectTime', () => {
-    it('should format HH:MM:SS to HH:MM', () => {
-      expect(selectTime('10:00:00')).toBe('10:00');
-      expect(selectTime('23:59:59')).toBe('23:59');
-    });
-
-    it('should return empty string for null/undefined', () => {
-      expect(selectTime(null)).toBe('');
-      expect(selectTime(undefined)).toBe('');
-    });
-  });
-
   describe('selectTimeLabel', () => {
     it('should format time range with ~ separator', () => {
-      expect(selectTimeLabel('10:00:00', '12:00:00')).toBe('10:00 ~ 12:00');
+      const start = new Date('2024-03-30T01:00:00Z'); // JST 10:00
+      const end = new Date('2024-03-30T03:00:00Z');   // JST 12:00
+      expect(selectTimeLabel(start, end)).toBe('10:00 ~ 12:00');
     });
 
     it('should handle null/missing times with placeholders', () => {
-      expect(selectTimeLabel('10:00:00', null)).toBe('10:00 ~ --:--');
-      expect(selectTimeLabel(null, '12:00:00')).toBe('--:-- ~ 12:00');
+      const start = new Date('2024-03-30T01:00:00Z'); // JST 10:00
+      const end = new Date('2024-03-30T03:00:00Z');   // JST 12:00
+      expect(selectTimeLabel(start, null)).toBe('10:00 ~ --:--');
+      expect(selectTimeLabel(null, end)).toBe('--:-- ~ 12:00');
       expect(selectTimeLabel(null, null)).toBe('');
     });
   });
@@ -60,9 +51,8 @@ describe('auctions/selectors/selectAuction', () => {
   describe('selectIsAuctionActive', () => {
     it('should return true if status is in_progress and current time is within auction hours', () => {
       const auction: EntityAuction = {
-        auctionDate: '2024-03-30',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
+        startAt: '2024-03-30T10:00:00+09:00',
+        endAt: '2024-03-30T12:00:00+09:00',
         status: 'in_progress',
       } as EntityAuction;
       const now = new Date('2024-03-30T11:00:00+09:00');
@@ -71,9 +61,8 @@ describe('auctions/selectors/selectAuction', () => {
 
     it('should return false if status is scheduled regardless of time', () => {
       const auction: EntityAuction = {
-        auctionDate: '2024-03-30',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
+        startAt: '2024-03-30T10:00:00+09:00',
+        endAt: '2024-03-30T12:00:00+09:00',
         status: 'scheduled',
       } as EntityAuction;
       const now = new Date('2024-03-30T11:00:00+09:00');
@@ -87,9 +76,8 @@ describe('auctions/selectors/selectAuction', () => {
 
     it('should return false if status is in_progress but current time is before auction start', () => {
       const auction = {
-        auctionDate: '2024-03-30',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
+        startAt: '2024-03-30T10:00:00+09:00',
+        endAt: '2024-03-30T12:00:00+09:00',
         status: 'in_progress',
       } as EntityAuction;
       const now = new Date('2024-03-30T09:59:59+09:00');
@@ -98,20 +86,18 @@ describe('auctions/selectors/selectAuction', () => {
 
     it('should return false if status is in_progress but current time is after auction end', () => {
       const auction = {
-        auctionDate: '2024-03-30',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
+        startAt: '2024-03-30T10:00:00+09:00',
+        endAt: '2024-03-30T12:00:00+09:00',
         status: 'in_progress',
       } as EntityAuction;
       const now = new Date('2024-03-30T12:00:01+09:00');
       expect(selectIsAuctionActive(auction, now)).toBe(false);
     });
 
-    it('should return false if status is in_progress but startTime or endTime is not set', () => {
+    it('should return false if status is in_progress but startAt or endAt is not set', () => {
       const auction = {
-        auctionDate: '2024-03-30',
-        startTime: null,
-        endTime: null,
+        startAt: undefined,
+        endAt: undefined,
         status: 'in_progress',
       } as EntityAuction;
       expect(selectIsAuctionActive(auction)).toBe(false);
@@ -125,23 +111,20 @@ describe('auctions/selectors/selectAuction', () => {
         {
           id: 1,
           status: 'scheduled',
-          auctionDate: '2024-03-31',
-          startTime: '10:00:00',
-          endTime: '12:00:00',
+          startAt: '2024-03-31T10:00:00+09:00',
+          endAt: '2024-03-31T12:00:00+09:00',
         },
         {
           id: 2,
           status: 'in_progress',
-          auctionDate: '2024-03-30',
-          startTime: '11:00:00', // Active (11:00-13:00) vs now (12:00)
-          endTime: '13:00:00',
+          startAt: '2024-03-30T11:00:00+09:00', // Active (11:00-13:00) vs now (12:00)
+          endAt: '2024-03-30T13:00:00+09:00',
         },
         {
           id: 3,
           status: 'scheduled',
-          auctionDate: '2024-03-29', // Past (inactive)
-          startTime: '10:00:00',
-          endTime: '12:00:00',
+          startAt: '2024-03-29T10:00:00+09:00', // Past (inactive)
+          endAt: '2024-03-29T12:00:00+09:00',
         },
       ] as EntityAuction[];
 

@@ -55,21 +55,17 @@ export const selectAuctionStatus = (
 };
 
 /**
- * 表示用に時間をフォーマットする (HH:MM - HH:MM)
+ * 表示用に時間をフォーマットする (HH:MM ~ HH:MM)
  */
-export const selectTimeLabel = (startTime: string | null, endTime: string | null): string => {
-  const start = selectTime(startTime);
-  const end = selectTime(endTime);
-  if (!start && !end) return '';
-  return `${start || '--:--'} ~ ${end || '--:--'}`;
-};
-
-/**
- * 表示用に時間をフォーマットする (HH:MM)
- */
-export const selectTime = (time?: string | null): string => {
-  if (!time) return '';
-  return time.substring(0, 5); // HH:MM:SS から HH:MM を抽出
+export const selectTimeLabel = (startAt: Date | null, endAt: Date | null): string => {
+  const format = (d: Date) =>
+    d.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo',
+    });
+  if (!startAt && !endAt) return '';
+  return `${startAt ? format(startAt) : '--:--'} ~ ${endAt ? format(endAt) : '--:--'}`;
 };
 
 /**
@@ -90,38 +86,24 @@ export const selectNextMinimumBid = (currentHighestBid: number): number => {
 };
 
 /**
- * 文字列の日付と時刻を JST として Date オブジェクトに変換する
- */
-export const toJSTDate = (date: string, time: string | null): Date => {
-  const t = time || '00:00:00';
-  // ISO 8601 形式に +09:00 を付与して JST としてパースさせる
-  return new Date(`${date.replace(/\//g, '-')}T${t}+09:00`);
-};
-
-/**
  * オークションが現在開催中（入札可能時間内）かどうかをチェックする
  */
 export const selectIsAuctionActive = (
-  auction: Pick<EntityAuction, 'status' | 'auctionDate' | 'startTime' | 'endTime'>,
+  auction: Pick<EntityAuction, 'status' | 'startAt' | 'endAt'>,
   now = new Date(),
 ): boolean => {
-  const { status, auctionDate, startTime, endTime } = auction;
+  const { status, startAt, endAt } = auction;
 
-  // in_progress 以外は非アクティブ
   if (status !== 'in_progress') {
     return false;
   }
 
-  // 時間が未設定なら判定不能 → 非アクティブ
-  if (!startTime || !endTime) {
+  if (!startAt || !endAt) {
     return false;
   }
 
   try {
-    const startDateTime = toJSTDate(auctionDate, startTime);
-    const endDateTime = toJSTDate(auctionDate, endTime);
-
-    return now >= startDateTime && now <= endDateTime;
+    return now >= new Date(startAt) && now <= new Date(endAt);
   } catch (e) {
     console.error('Failed to parse auction time', e);
     return false;
@@ -144,13 +126,11 @@ export const selectVisiblePublicAuctions = (
       const aActive = selectIsAuctionActive(a, now);
       const bActive = selectIsAuctionActive(b, now);
 
-      // 開催中を優先する
       if (aActive && !bActive) return -1;
       if (!aActive && bActive) return 1;
 
-      // 日付順でソート
-      const aStart = toJSTDate(a.auctionDate, a.startTime || '00:00:00').getTime();
-      const bStart = toJSTDate(b.auctionDate, b.startTime || '00:00:00').getTime();
+      const aStart = a.startAt ? new Date(a.startAt).getTime() : 0;
+      const bStart = b.startAt ? new Date(b.startAt).getTime() : 0;
       return aStart - bStart;
     });
 };
