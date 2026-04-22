@@ -56,18 +56,19 @@ CREATE INDEX IF NOT EXISTS idx_venues_deleted_at ON venues(deleted_at);
 CREATE TABLE IF NOT EXISTS auctions (
     id SERIAL PRIMARY KEY,
     venue_id INTEGER NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
-    auction_date DATE NOT NULL,
-    start_time TIME,
-    end_time TIME,
+    start_at TIMESTAMPTZ,
+    end_at   TIMESTAMPTZ,
     status VARCHAR(50) NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'in_progress', 'completed', 'cancelled')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (venue_id, auction_date)
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_auctions_venue_id ON auctions(venue_id);
-CREATE INDEX IF NOT EXISTS idx_auctions_date ON auctions(auction_date);
+CREATE INDEX IF NOT EXISTS idx_auctions_start_at ON auctions(start_at);
 CREATE INDEX IF NOT EXISTS idx_auctions_status ON auctions(status);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_auctions_venue_date
+    ON auctions (venue_id, (start_at AT TIME ZONE 'Asia/Tokyo')::date)
+    WHERE start_at IS NOT NULL;
 
 -- Auction Items
 CREATE TABLE IF NOT EXISTS auction_items (
