@@ -199,8 +199,8 @@ func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error 
 
 	now := uc.clock.NowIn(model.LocationJST)
 	if !auction.Period.IsBiddingOpen(now) {
-		start := auction.Period.GetStartDateTime()
-		end := auction.Period.GetEndDateTime()
+		start := auction.Period.StartAt
+		end := auction.Period.EndAt
 		return &errors.ValidationError{
 			Field: "auction_time",
 			Message: fmt.Sprintf("Bidding is not allowed outside auction hours (%02d:%02d - %02d:%02d)",
