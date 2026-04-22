@@ -9,11 +9,10 @@ import (
 
 // AuctionFilters represents filters for listing auctions
 type AuctionFilters struct {
-	VenueID     *int
-	AuctionDate *time.Time
-	Status      *model.AuctionStatus
-	StartDate   *time.Time
-	EndDate     *time.Time
+	VenueID   *int
+	StartFrom *time.Time
+	StartTo   *time.Time
+	Status    *model.AuctionStatus
 }
 
 // AuctionRepository defines the interface for auction data access

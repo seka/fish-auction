@@ -20,20 +20,19 @@ func TestAuctionStore_Create(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
-	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	auction := &model.Auction{
 		VenueID: 1,
 		Status:  model.AuctionStatusScheduled,
-		Period:  model.NewAuctionPeriod(date, &start, &end),
+		Period:  model.NewAuctionPeriod(&start, &end),
 	}
 
 	mock.ExpectQuery("INSERT INTO auctions").
-		WithArgs(auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "auction_date", "start_time", "end_time", "status", "created_at", "updated_at"}).
-			AddRow(1, 1, date, start, end, "scheduled", time.Now(), time.Now()))
+		WithArgs(auction.VenueID, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "start_at", "end_at", "status", "created_at", "updated_at"}).
+			AddRow(1, 1, start, end, "scheduled", time.Now(), time.Now()))
 
 	created, err := repo.Create(context.Background(), auction)
 	assert.NoError(t, err)
@@ -49,14 +48,13 @@ func TestAuctionStore_FindByID(t *testing.T) {
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
 	id := 1
-	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 
-	mock.ExpectQuery("SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at FROM auctions WHERE id = \\$1").
+	mock.ExpectQuery("SELECT id, venue_id, start_at, end_at, status, created_at, updated_at FROM auctions WHERE id = \\$1").
 		WithArgs(id).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "auction_date", "start_time", "end_time", "status", "created_at", "updated_at"}).
-			AddRow(1, 1, date, start, end, "scheduled", time.Now(), time.Now()))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "start_at", "end_at", "status", "created_at", "updated_at"}).
+			AddRow(1, 1, start, end, "scheduled", time.Now(), time.Now()))
 
 	got, err := repo.FindByID(context.Background(), id)
 	assert.NoError(t, err)
@@ -71,14 +69,13 @@ func TestAuctionStore_List(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
-	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	t.Run("NoFilters", func(t *testing.T) {
-		mock.ExpectQuery("SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at FROM auctions ORDER BY auction_date DESC, created_at DESC").
-			WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "auction_date", "start_time", "end_time", "status", "created_at", "updated_at"}).
-				AddRow(1, 1, date, start, end, "scheduled", time.Now(), time.Now()))
+		mock.ExpectQuery("SELECT id, venue_id, start_at, end_at, status, created_at, updated_at FROM auctions ORDER BY start_at DESC, created_at DESC").
+			WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "start_at", "end_at", "status", "created_at", "updated_at"}).
+				AddRow(1, 1, start, end, "scheduled", time.Now(), time.Now()))
 
 		list, err := repo.List(context.Background(), nil)
 		assert.NoError(t, err)
@@ -88,10 +85,10 @@ func TestAuctionStore_List(t *testing.T) {
 	t.Run("WithFilters", func(t *testing.T) {
 		venueID := 1
 		filters := &repository.AuctionFilters{VenueID: &venueID}
-		mock.ExpectQuery("SELECT .* FROM auctions WHERE venue_id = \\$1 ORDER BY auction_date DESC, created_at DESC").
+		mock.ExpectQuery("SELECT .* FROM auctions WHERE venue_id = \\$1 ORDER BY start_at DESC, created_at DESC").
 			WithArgs(venueID).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "auction_date", "start_time", "end_time", "status", "created_at", "updated_at"}).
-				AddRow(1, 1, date, start, end, "scheduled", time.Now(), time.Now()))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "venue_id", "start_at", "end_at", "status", "created_at", "updated_at"}).
+				AddRow(1, 1, start, end, "scheduled", time.Now(), time.Now()))
 
 		list, err := repo.List(context.Background(), filters)
 		assert.NoError(t, err)
@@ -107,7 +104,6 @@ func TestAuctionStore_Update(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	repo := postgres.NewAuctionStore(postgres.NewClient(db))
-	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	start := time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 
@@ -115,11 +111,11 @@ func TestAuctionStore_Update(t *testing.T) {
 		ID:      1,
 		VenueID: 1,
 		Status:  model.AuctionStatusCompleted,
-		Period:  model.NewAuctionPeriod(date, &start, &end),
+		Period:  model.NewAuctionPeriod(&start, &end),
 	}
 
 	mock.ExpectExec("UPDATE auctions SET").
-		WithArgs(auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status, auction.ID).
+		WithArgs(auction.VenueID, auction.Period.StartAt, auction.Period.EndAt, auction.Status, auction.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.Update(context.Background(), auction)
