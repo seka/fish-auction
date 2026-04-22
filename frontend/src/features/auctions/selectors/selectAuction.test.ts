@@ -131,7 +131,7 @@ describe('auctions/selectors/selectAuction', () => {
         },
         {
           id: 2,
-          status: 'scheduled',
+          status: 'in_progress',
           auctionDate: '2024-03-30',
           startTime: '11:00:00', // Active (11:00-13:00) vs now (12:00)
           endTime: '13:00:00',
