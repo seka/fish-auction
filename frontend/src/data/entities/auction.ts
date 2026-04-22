@@ -3,9 +3,8 @@ export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancell
 export interface Auction {
   id: number;
   venueId: number;
-  auctionDate: string;
-  startTime?: string;
-  endTime?: string;
+  startAt?: string;
+  endAt?: string;
   status: AuctionStatus;
   createdAt: string;
   updatedAt: string;

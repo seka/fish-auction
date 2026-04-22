@@ -18,9 +18,8 @@ export const getAuctionSchema = (t: ValidationT) =>
       .union([z.string(), z.number()])
       .transform(Number)
       .refine((n) => n >= 1, t('select_required', { field: t('Admin.Auctions.venue') })),
-    auctionDate: z.string().min(1, t('required', { field: t('Admin.Auctions.date') })),
-    startTime: z.string().optional(),
-    endTime: z.string().optional(),
+    startAt: z.string().min(1, t('required', { field: t('Admin.Auctions.start_time') })),
+    endAt: z.string().optional(),
     status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),

@@ -8,9 +8,8 @@ describe('auctions/types/auction', () => {
       const entity: EntityAuction = {
         id: 1,
         venueId: 10,
-        auctionDate: '2024-03-30',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
+        startAt: '2024-03-30T10:00:00+09:00',
+        endAt: '2024-03-30T12:00:00+09:00',
         status: 'in_progress',
         createdAt: '2024-03-01',
         updatedAt: '2024-03-01',
@@ -31,17 +30,16 @@ describe('auctions/types/auction', () => {
       expect(result.duration.startAt).toBeInstanceOf(Date);
       expect(result.duration.endAt).toBeInstanceOf(Date);
       // JST (UTC+9) 10:00 -> UTC 01:00
-      expect(result.duration.startAt.toISOString()).toBe('2024-03-30T01:00:00.000Z');
+      expect(result.duration.startAt!.toISOString()).toBe('2024-03-30T01:00:00.000Z');
       // JST (UTC+9) 12:00 -> UTC 03:00
-      expect(result.duration.endAt.toISOString()).toBe('2024-03-30T03:00:00.000Z');
+      expect(result.duration.endAt!.toISOString()).toBe('2024-03-30T03:00:00.000Z');
       expect(result.duration.label).toBe('10:00 ~ 12:00');
     });
 
-    it('should handle undefined/null startTime/endTime', () => {
+    it('should handle undefined startAt/endAt', () => {
       const entity = {
         id: 2,
         venueId: 10,
-        auctionDate: '2024-03-30',
         status: 'scheduled',
         createdAt: '2024-03-01',
         updatedAt: '2024-03-01',
@@ -50,7 +48,7 @@ describe('auctions/types/auction', () => {
       const result = toAuction(entity);
 
       expect(result.duration.label).toBe('');
-      expect(result.duration.startTime).toBeNull();
+      expect(result.duration.startAt).toBeNull();
     });
   });
 });

@@ -5,17 +5,15 @@ export type AuctionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancell
 export interface Auction {
   id: number;
   status: AuctionStatus;
-  auctionDate: string;
-  startTime: string | null;
-  endTime: string | null;
+  startAt: string | null;
+  endAt: string | null;
 }
 
 export const toAuction = (entity: AuctionSummary): Auction => {
   return {
     id: entity.id,
     status: entity.status,
-    auctionDate: entity.auctionDate,
-    startTime: entity.startTime ?? null,
-    endTime: entity.endTime ?? null,
+    startAt: entity.startAt ?? null,
+    endAt: entity.endAt ?? null,
   };
 };
