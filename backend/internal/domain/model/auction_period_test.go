@@ -9,11 +9,10 @@ import (
 
 func TestAuctionPeriod_IsBiddingOpen(t *testing.T) {
 	jst := NewTimeZone(LocationJST).Location()
-	date := time.Date(2026, 3, 15, 0, 0, 0, 0, jst)
-	start := time.Date(0, 1, 1, 9, 0, 0, 0, jst)
-	end := time.Date(0, 1, 1, 17, 0, 0, 0, jst)
+	start := time.Date(2026, 3, 15, 9, 0, 0, 0, jst)
+	end := time.Date(2026, 3, 15, 17, 0, 0, 0, jst)
 
-	p := NewAuctionPeriod(date, &start, &end)
+	p := NewAuctionPeriod(&start, &end)
 
 	tests := []struct {
 		name     string
@@ -56,9 +55,8 @@ func TestAuctionPeriod_IsBiddingOpen(t *testing.T) {
 
 func TestAuctionPeriod_ShouldExtend(t *testing.T) {
 	jst := NewTimeZone(LocationJST).Location()
-	date := time.Date(2026, 3, 15, 0, 0, 0, 0, jst)
-	end := time.Date(0, 1, 1, 17, 0, 0, 0, jst)
-	p := NewAuctionPeriod(date, nil, &end)
+	end := time.Date(2026, 3, 15, 17, 0, 0, 0, jst)
+	p := NewAuctionPeriod(nil, &end)
 
 	threshold := 5 * time.Minute
 
@@ -93,17 +91,12 @@ func TestAuctionPeriod_ShouldExtend(t *testing.T) {
 
 func TestAuctionPeriod_Extend(t *testing.T) {
 	jst := NewTimeZone(LocationJST).Location()
-	date := time.Date(2026, 3, 15, 0, 0, 0, 0, jst)
-	end := time.Date(0, 1, 1, 17, 0, 0, 0, jst)
-	p := NewAuctionPeriod(date, nil, &end)
+	end := time.Date(2026, 3, 15, 17, 0, 0, 0, jst)
+	p := NewAuctionPeriod(nil, &end)
 
 	duration := 5 * time.Minute
 	extendedP := p.Extend(duration)
 
-	expectedEnd := time.Date(0, 1, 1, 17, 5, 0, 0, jst)
+	expectedEnd := time.Date(2026, 3, 15, 17, 5, 0, 0, jst)
 	assert.Equal(t, &expectedEnd, extendedP.EndAt)
-
-	// Check GetEndDateTime also returns updated absolute time
-	expectedEndFull := time.Date(2026, 3, 15, 17, 5, 0, 0, jst)
-	assert.Equal(t, &expectedEndFull, extendedP.GetEndDateTime())
 }

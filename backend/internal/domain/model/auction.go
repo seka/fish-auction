@@ -44,32 +44,21 @@ func (a *Auction) ShouldBeCompleted(now time.Time) bool {
 		return false
 	}
 
-	tz := NewTimeZone(LocationJST)
-	location := tz.Location()
+	if a.Period.StartAt == nil {
+		return false
+	}
 
-	// If auction date is in the past
+	location := NewTimeZone(LocationJST).Location()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
-	auctionDateInTZ := tz.At(a.Period.AuctionDate)
-	auctionDate := time.Date(
-		auctionDateInTZ.Year(),
-		auctionDateInTZ.Month(),
-		auctionDateInTZ.Day(),
-		0,
-		0,
-		0,
-		0,
-		location,
-	)
-	if auctionDate.Before(today) {
+	startInJST := a.Period.StartAt.In(location)
+	startDate := time.Date(startInJST.Year(), startInJST.Month(), startInJST.Day(), 0, 0, 0, 0, location)
+
+	if startDate.Before(today) {
 		return true
 	}
 
-	// If auction date is today, check end time using AuctionPeriod method
-	if auctionDate.Equal(today) {
-		end := a.Period.GetEndDateTime()
-		if end != nil && now.After(*end) {
-			return true
-		}
+	if startDate.Equal(today) && a.Period.EndAt != nil && now.After(*a.Period.EndAt) {
+		return true
 	}
 
 	return false
