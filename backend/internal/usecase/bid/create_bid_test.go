@@ -35,6 +35,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	today := time.Date(2024, 1, 1, 0, 0, 0, 0, jst)
 	mockClock := mock.NewMockClock(fixedNow)
 
+	// テスト用の開催時間範囲: validStart(09:00) 〜 validEnd(11:00) で、fixedNow(10:00) が範囲内に入る
+	validStart := fixedNow.Add(-1 * time.Hour)
+	validEnd := fixedNow.Add(1 * time.Hour)
+
 	tests := []struct {
 		name             string
 		input            *model.Bid
@@ -70,7 +74,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -90,7 +94,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -179,12 +183,12 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
 		{
-			name: "Success_MissingStartTimeSkipsAuctionWindowChecks",
+			name: "Error_NoTimeRange",
 			input: &model.Bid{
 				ItemID:  1,
 				BuyerID: 1,
@@ -192,10 +196,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			wantID:           1,
-			wantCreateCalled: true,
+			wantErr:          &domainErrors.ValidationError{Field: "auction_time"},
+			wantCreateCalled: false,
 			wantTxCalled:     true,
-			wantUpdateCalled: false,
 			mockAuction: func() *model.Auction {
 				endTime := fixedNow.Add(2 * time.Minute)
 
@@ -223,7 +226,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -242,7 +245,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -325,7 +328,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -363,8 +366,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			wantTxCalled:     true,
 			wantNotification: false,
 			mockAuction: &model.Auction{
-				ID:     1,
-				Status: model.AuctionStatusInProgress,
+				ID:      1,
+				VenueID: 1,
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
+				Status:  model.AuctionStatusInProgress,
 			},
 		},
 		{
@@ -391,7 +396,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
