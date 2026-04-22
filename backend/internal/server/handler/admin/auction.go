@@ -43,16 +43,10 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auctionDate, err := time.Parse("2006-01-02", req.AuctionDate)
-	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "Invalid date format (YYYY-MM-DD)")
-		return
-	}
-
 	auc := &model.Auction{
 		VenueID: req.VenueID,
 		Status:  model.AuctionStatus(req.Status),
-		Period:  model.NewAuctionPeriod(auctionDate, parseTime(req.StartTime), parseTime(req.EndTime)),
+		Period:  model.NewAuctionPeriod(parseTimestamp(req.StartAt), parseTimestamp(req.EndAt)),
 	}
 
 	if auc.Status == "" {
@@ -83,17 +77,11 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auctionDate, err := time.Parse("2006-01-02", req.AuctionDate)
-	if err != nil {
-		util.WriteError(w, http.StatusBadRequest, "Invalid date format (YYYY-MM-DD)")
-		return
-	}
-
 	auc := &model.Auction{
 		ID:      id,
 		VenueID: req.VenueID,
 		Status:  model.AuctionStatus(req.Status),
-		Period:  model.NewAuctionPeriod(auctionDate, parseTime(req.StartTime), parseTime(req.EndTime)),
+		Period:  model.NewAuctionPeriod(parseTimestamp(req.StartAt), parseTimestamp(req.EndAt)),
 	}
 
 	if err := h.updateUseCase.Execute(r.Context(), auc); err != nil {
@@ -167,27 +155,23 @@ func (h *AuctionHandler) Reorder(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuctionHandler) toResponse(a *model.Auction) response.Auction {
 	return response.Auction{
-		ID:          a.ID,
-		VenueID:     a.VenueID,
-		AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-		StartTime:   util.FormatTime(a.Period.StartAt),
-		EndTime:     util.FormatTime(a.Period.EndAt),
-		Status:      string(a.Status),
-		CreatedAt:   a.CreatedAt,
-		UpdatedAt:   a.UpdatedAt,
+		ID:        a.ID,
+		VenueID:   a.VenueID,
+		StartAt:   util.FormatTimestamp(a.Period.StartAt),
+		EndAt:     util.FormatTimestamp(a.Period.EndAt),
+		Status:    string(a.Status),
+		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
 	}
 }
 
-func parseTime(s *string) *time.Time {
+func parseTimestamp(s *string) *time.Time {
 	if s == nil || *s == "" {
 		return nil
 	}
-	t, err := time.Parse("15:04:05", *s)
+	t, err := time.Parse(time.RFC3339, *s)
 	if err != nil {
-		t, err = time.Parse("15:04", *s)
-		if err != nil {
-			return nil
-		}
+		return nil
 	}
 	return &t
 }

@@ -42,7 +42,8 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	if dateStr := r.URL.Query().Get("date"); dateStr != "" {
 		if date, err := time.Parse("2006-01-02", dateStr); err == nil {
-			filters.AuctionDate = &date
+			filters.StartFrom = &date
+			filters.StartTo = &date
 		}
 	}
 
@@ -60,14 +61,13 @@ func (h *AuctionHandler) List(w http.ResponseWriter, r *http.Request) {
 	resp := make([]response.Auction, len(auctions))
 	for i, a := range auctions {
 		resp[i] = response.Auction{
-			ID:          a.ID,
-			VenueID:     a.VenueID,
-			AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-			StartTime:   util.FormatTime(a.Period.StartAt),
-			EndTime:     util.FormatTime(a.Period.EndAt),
-			Status:      string(a.Status),
-			CreatedAt:   a.CreatedAt,
-			UpdatedAt:   a.UpdatedAt,
+			ID:        a.ID,
+			VenueID:   a.VenueID,
+			StartAt:   util.FormatTimestamp(a.Period.StartAt),
+			EndAt:     util.FormatTimestamp(a.Period.EndAt),
+			Status:    string(a.Status),
+			CreatedAt: a.CreatedAt,
+			UpdatedAt: a.UpdatedAt,
 		}
 	}
 
@@ -91,14 +91,13 @@ func (h *AuctionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response.Auction{
-		ID:          a.ID,
-		VenueID:     a.VenueID,
-		AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-		StartTime:   util.FormatTime(a.Period.StartAt),
-		EndTime:     util.FormatTime(a.Period.EndAt),
-		Status:      string(a.Status),
-		CreatedAt:   a.CreatedAt,
-		UpdatedAt:   a.UpdatedAt,
+		ID:        a.ID,
+		VenueID:   a.VenueID,
+		StartAt:   util.FormatTimestamp(a.Period.StartAt),
+		EndAt:     util.FormatTimestamp(a.Period.EndAt),
+		Status:    string(a.Status),
+		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

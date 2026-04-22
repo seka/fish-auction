@@ -61,7 +61,7 @@ func TestPublicAuctionHandler_List(t *testing.T) {
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListAuctionsUC = &mock.MockListAuctionsUseCase{
 					ExecuteFunc: func(_ context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
-						if filters.VenueID != nil || filters.AuctionDate != nil {
+						if filters.VenueID != nil || filters.StartFrom != nil {
 							return nil, errors.New("filters should be ignored")
 						}
 						return []model.Auction{{ID: 1}}, nil

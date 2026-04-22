@@ -31,9 +31,8 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 		{
 			name: "Success",
 			body: request.CreateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
-				Status:      "Scheduled",
+				VenueID: 1,
+				Status:  "Scheduled",
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateAuctionUC = &mock.MockCreateAuctionUseCase{
@@ -54,19 +53,9 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name: "InvalidDateFormat",
-			body: request.CreateAuction{
-				VenueID:     1,
-				AuctionDate: "invalid-date",
-			},
-			mockSetup:  func(_ *mock.MockRegistry) {},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
 			name: "UseCaseError",
 			body: request.CreateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
+				VenueID: 1,
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateAuctionUC = &mock.MockCreateAuctionUseCase{
@@ -118,9 +107,8 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 			name:  "Success",
 			idStr: "1",
 			body: request.UpdateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
-				Status:      "Completed",
+				VenueID: 1,
+				Status:  "Completed",
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
@@ -149,8 +137,7 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 			name:  "UseCaseError",
 			idStr: "1",
 			body: request.UpdateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
+				VenueID: 1,
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
@@ -327,7 +314,7 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 	h.RegisterRoutes(mux)
 
 	// Create
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{"auction_date":"2023-01-01"}`))
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{}`))
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	if w.Code != http.StatusCreated {
