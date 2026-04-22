@@ -67,24 +67,6 @@ export const AuctionForm = ({
               </Text>
             )}
           </Box>
-          <Box>
-            <Text
-              as="label"
-              display="block"
-              fontSize="sm"
-              fontWeight="bold"
-              className={css({ color: 'gray.700' })}
-              mb="1"
-            >
-              {t('Admin.Auctions.date')}
-            </Text>
-            <Input type="date" {...register('auctionDate')} error={!!errors.auctionDate} />
-            {errors.auctionDate && (
-              <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">
-                {String(errors.auctionDate.message)}
-              </Text>
-            )}
-          </Box>
           <HStack spacing="4">
             <Box flex="1">
               <Text
@@ -97,7 +79,12 @@ export const AuctionForm = ({
               >
                 {t('Admin.Auctions.start_time')}
               </Text>
-              <Input type="time" {...register('startTime')} error={!!errors.startTime} />
+              <Input type="datetime-local" {...register('startAt')} error={!!errors.startAt} />
+              {errors.startAt && (
+                <Text className={css({ color: 'red.500' })} fontSize="sm" mt="1">
+                  {String(errors.startAt.message)}
+                </Text>
+              )}
             </Box>
             <Box flex="1">
               <Text
@@ -110,7 +97,7 @@ export const AuctionForm = ({
               >
                 {t('Admin.Auctions.end_time')}
               </Text>
-              <Input type="time" {...register('endTime')} error={!!errors.endTime} />
+              <Input type="datetime-local" {...register('endAt')} error={!!errors.endAt} />
             </Box>
           </HStack>
 

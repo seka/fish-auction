@@ -37,7 +37,10 @@ export const AuctionHeader = ({ auction, t }: AuctionHeaderProps) => {
           {t('Public.AuctionDetail.auction_venue_title', { id: auction.id })}
         </Text>
         <Text className={css({ color: 'gray.600' })}>
-          {auction.duration?.dateLabel} {auction.duration?.label}
+          {auction.duration?.startAt
+            ? auction.duration.startAt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
+            : ''}{' '}
+          {auction.duration?.label}
         </Text>
       </Box>
       <Box textAlign="right" display={{ base: 'none', md: 'block' }}>

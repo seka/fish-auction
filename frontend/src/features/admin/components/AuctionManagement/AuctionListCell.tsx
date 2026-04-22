@@ -30,7 +30,9 @@ export const AuctionListCell = ({
     <Tr>
       <Td>
         <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>
-          {auction.duration.dateLabel}
+          {auction.duration.startAt
+            ? auction.duration.startAt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
+            : '-'}
         </Text>
         <Text fontSize="sm" className={css({ color: 'gray.500' })}>
           {auction.duration.label}

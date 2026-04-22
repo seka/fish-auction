@@ -41,7 +41,9 @@ export const AuctionCard = ({ auction, venueName }: AuctionCardProps) => {
           <HStack justify="between" mb="4">
             <AuctionStatusBadge status={auction.status} />
             <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-              {auction.duration.dateLabel}
+              {auction.duration.startAt
+                ? auction.duration.startAt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
+                : '-'}
             </Text>
           </HStack>
 
