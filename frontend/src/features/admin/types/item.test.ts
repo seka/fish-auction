@@ -12,7 +12,6 @@ describe('admin/types/item', () => {
         fishType: 'Saba',
         quantity: 100,
         unit: 'kg',
-        status: 'Bidding',
         highestBid: 2000,
         highestBidderId: 2,
         highestBidderName: 'Buyer A',
@@ -23,15 +22,6 @@ describe('admin/types/item', () => {
       const result = toAuctionItem(entity);
 
       expect(result.id).toBe(101);
-      expect(result.status).toEqual({
-        value: 'Bidding',
-        labelKey: 'Bidding',
-        variant: 'success',
-        isPending: false,
-        isBidding: true,
-        isSold: false,
-        isUnsold: false,
-      });
       expect(result.bidding).toEqual({
         highestBid: 2000,
         highestBidderId: 2,
@@ -59,7 +49,6 @@ describe('admin/types/item', () => {
         fishType: 'Maguro',
         quantity: 50,
         unit: 'kg',
-        status: 'Pending',
         sortOrder: 2,
       } as EntityAuctionItem;
 

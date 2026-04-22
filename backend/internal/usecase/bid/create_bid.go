@@ -141,12 +141,6 @@ func (uc *createBidUseCase) getAndValidateItem(ctx context.Context, itemID int, 
 		}
 	}
 
-	if item.Status != model.ItemStatusAvailable {
-		return nil, &errors.ConflictError{
-			Message: fmt.Sprintf("bidding is not allowed for item with status %s", item.Status),
-		}
-	}
-
 	if err := uc.validateBidPrice(item, price); err != nil {
 		return nil, err
 	}
@@ -197,7 +191,10 @@ func (uc *createBidUseCase) validateBidPrice(item *model.AuctionItem, bidPrice m
 
 func (uc *createBidUseCase) validateAuctionPeriod(auction *model.Auction) error {
 	if !auction.Period.HasTimeRange() {
-		return nil
+		return &errors.ValidationError{
+			Field:   "auction_time",
+			Message: "Bidding is not allowed: auction time range is not set",
+		}
 	}
 
 	now := uc.clock.NowIn(model.LocationJST)

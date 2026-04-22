@@ -135,7 +135,6 @@ func (h *AuctionHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 			FishType:    item.FishType,
 			Quantity:    item.Quantity,
 			Unit:        item.Unit,
-			Status:      item.Status.String(),
 			HighestBid:  highestBid,
 			SortOrder:   item.SortOrder,
 			CreatedAt:   item.CreatedAt,

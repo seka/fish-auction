@@ -45,7 +45,6 @@ func (h *ItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		FishType:    req.FishType,
 		Quantity:    req.Quantity,
 		Unit:        req.Unit,
-		Status:      model.ItemStatusPending,
 	}
 
 	created, err := h.createUseCase.Execute(r.Context(), it)
@@ -79,7 +78,6 @@ func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 		FishType:    req.FishType,
 		Quantity:    req.Quantity,
 		Unit:        req.Unit,
-		Status:      model.ItemStatus(req.Status),
 	}
 
 	updated, err := h.updateUseCase.Execute(r.Context(), itemModel)
@@ -144,7 +142,6 @@ func (h *ItemHandler) toResponse(it *model.AuctionItem) response.Item {
 		FishType:          it.FishType,
 		Quantity:          it.Quantity,
 		Unit:              it.Unit,
-		Status:            it.Status.String(),
 		HighestBid:        highestBid,
 		HighestBidderID:   it.HighestBidderID,
 		HighestBidderName: it.HighestBidderName,

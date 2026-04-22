@@ -18,7 +18,6 @@ export interface RegisterItemParams {
 
 export interface UpdateItemParams extends RegisterItemParams {
   id: number;
-  status: string;
 }
 
 export interface UpdateItemSortOrderParams {

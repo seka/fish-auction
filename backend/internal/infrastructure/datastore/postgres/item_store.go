@@ -25,44 +25,32 @@ func NewItemStore(db datastore.Database) *ItemStore {
 
 // Create stores a new auction item.
 func (r *ItemStore) Create(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-	status := item.Status
-	if status == "" {
-		status = model.ItemStatusPending
-	}
-
 	e := entity.AuctionItem{
 		AuctionID:   item.AuctionID,
 		FishermanID: item.FishermanID,
 		FishType:    item.FishType,
 		Quantity:    item.Quantity,
 		Unit:        item.Unit,
-		Status:      status,
 	}
 	if err := e.Validate(); err != nil {
 		return nil, err
 	}
 
 	err := r.db.QueryRow(ctx,
-		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at",
-		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit, status,
-	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
+		"INSERT INTO auction_items (auction_id, fisherman_id, fish_type, quantity, unit) VALUES ($1, $2, $3, $4, $5) RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, sort_order, created_at",
+		item.AuctionID, item.FishermanID, item.FishType, item.Quantity, item.Unit,
+	).Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.SortOrder, &e.CreatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Item", nil, "failed to create item")
 	}
 	return e.ToModel(), nil
 }
 
-// List returns all auction items with the given status.
-func (r *ItemStore) List(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL"
-	var args []any
-	if status != "" {
-		query += " AND status = $1"
-		args = append(args, status)
-	}
-	query += " ORDER BY auction_id DESC, sort_order ASC, created_at DESC"
+// List returns all auction items.
+func (r *ItemStore) List(ctx context.Context) ([]model.AuctionItem, error) {
+	query := "SELECT id, auction_id, fisherman_id, fish_type, quantity, unit, sort_order, created_at, deleted_at FROM auction_items WHERE deleted_at IS NULL ORDER BY auction_id DESC, sort_order ASC, created_at DESC"
 
-	rows, err := r.db.Query(ctx, query, args...)
+	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Item", nil, "failed to list items")
 	}
@@ -71,7 +59,7 @@ func (r *ItemStore) List(ctx context.Context, status string) ([]model.AuctionIte
 	var items []model.AuctionItem
 	for rows.Next() {
 		var e entity.AuctionItem
-		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt, &e.DeletedAt); err != nil {
+		if err := rows.Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.SortOrder, &e.CreatedAt, &e.DeletedAt); err != nil {
 			return nil, dserrors.HandleError(err, "Item", nil, "failed to scan item row")
 		}
 		items = append(items, *e.ToModel())
@@ -87,7 +75,7 @@ func (r *ItemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
-			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
+			ai.quantity, ai.unit, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
@@ -123,7 +111,7 @@ func (r *ItemStore) ListByAuction(ctx context.Context, auctionID int) ([]model.A
 
 		if err := rows.Scan(
 			&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
-			&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+			&e.Quantity, &e.Unit, &e.CreatedAt,
 			&e.SortOrder,
 			&highestBid, &highestBidderID, &highestBidderName,
 		); err != nil {
@@ -160,7 +148,7 @@ func (r *ItemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
-			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
+			ai.quantity, ai.unit, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
@@ -183,7 +171,7 @@ func (r *ItemStore) FindByID(ctx context.Context, id int) (*model.AuctionItem, e
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
-		&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+		&e.Quantity, &e.Unit, &e.CreatedAt,
 		&e.SortOrder,
 		&highestBid, &highestBidderID, &highestBidderName,
 	)
@@ -217,7 +205,7 @@ func (r *ItemStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auctio
 	query := `
 		SELECT
 			ai.id, ai.auction_id, ai.fisherman_id, ai.fish_type,
-			ai.quantity, ai.unit, ai.status, ai.created_at, ai.sort_order,
+			ai.quantity, ai.unit, ai.created_at, ai.sort_order,
 			t_max.max_price as highest_bid,
 			t_max.buyer_id as highest_bidder_id,
 			b.name as highest_bidder_name
@@ -241,7 +229,7 @@ func (r *ItemStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auctio
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType,
-		&e.Quantity, &e.Unit, &e.Status, &e.CreatedAt,
+		&e.Quantity, &e.Unit, &e.CreatedAt,
 		&e.SortOrder,
 		&highestBid, &highestBidderID, &highestBidderName,
 	)
@@ -265,15 +253,6 @@ func (r *ItemStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auctio
 	return e.ToModel(), nil
 }
 
-// UpdateStatus updates the status of an auction item.
-func (r *ItemStore) UpdateStatus(ctx context.Context, id int, status model.ItemStatus) error {
-	_, err := r.db.Execute(ctx, "UPDATE auction_items SET status = $1 WHERE id = $2", status, id)
-	if err != nil {
-		return dserrors.HandleError(err, "Item", id, "failed to update item status")
-	}
-	return nil
-}
-
 // Update updates an existing auction item.
 func (r *ItemStore) Update(ctx context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
 	e := entity.AuctionItem{
@@ -283,7 +262,6 @@ func (r *ItemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 		FishType:    item.FishType,
 		Quantity:    item.Quantity,
 		Unit:        item.Unit,
-		Status:      item.Status,
 	}
 
 	if err := e.Validate(); err != nil {
@@ -292,12 +270,12 @@ func (r *ItemStore) Update(ctx context.Context, item *model.AuctionItem) (*model
 
 	query := `
 		UPDATE auction_items
-		SET auction_id = $1, fisherman_id = $2, fish_type = $3, quantity = $4, unit = $5, status = $6
-		WHERE id = $7
-		RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, status, sort_order, created_at
+		SET auction_id = $1, fisherman_id = $2, fish_type = $3, quantity = $4, unit = $5
+		WHERE id = $6
+		RETURNING id, auction_id, fisherman_id, fish_type, quantity, unit, sort_order, created_at
 	`
-	err := r.db.QueryRow(ctx, query, e.AuctionID, e.FishermanID, e.FishType, e.Quantity, e.Unit, e.Status, e.ID).
-		Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.Status, &e.SortOrder, &e.CreatedAt)
+	err := r.db.QueryRow(ctx, query, e.AuctionID, e.FishermanID, e.FishType, e.Quantity, e.Unit, e.ID).
+		Scan(&e.ID, &e.AuctionID, &e.FishermanID, &e.FishType, &e.Quantity, &e.Unit, &e.SortOrder, &e.CreatedAt)
 
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Item", e.ID, "failed to update item")

@@ -11,8 +11,6 @@ export interface Auction {
   updatedAt: string;
 }
 
-export type ItemStatus = 'Pending' | 'Sold' | 'Unsold' | 'Bidding';
-
 export interface AuctionItem {
   id: number;
   auctionId: number;
@@ -20,7 +18,6 @@ export interface AuctionItem {
   fishType: string;
   quantity: number;
   unit: string;
-  status: ItemStatus;
   highestBid?: number;
   highestBidderId?: number;
   highestBidderName?: string;

@@ -5,12 +5,6 @@
     "completed": "終了",
     "cancelled": "中止"
   },
-  "ItemStatus": {
-    "Pending": "入札受付中",
-    "Sold": "落札済",
-    "Unsold": "不落",
-    "Bidding": "入札中"
-  },
   "Common": {
     "title": "FISHING AUCTION",
     "app_name": "FISHING AUCTION",

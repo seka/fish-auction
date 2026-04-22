@@ -24,7 +24,7 @@ func TestPublicItemHandler_List(t *testing.T) {
 			name: "Success",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListItemsUC = &mock.MockListItemsUseCase{
-					ExecuteFunc: func(_ context.Context, _ string) ([]model.AuctionItem, error) {
+					ExecuteFunc: func(_ context.Context) ([]model.AuctionItem, error) {
 						return []model.AuctionItem{{ID: 1, FishType: "Tuna"}}, nil
 					},
 				}
@@ -35,7 +35,7 @@ func TestPublicItemHandler_List(t *testing.T) {
 			name: "UseCaseError",
 			mockSetup: func(r *mock.MockRegistry) {
 				r.ListItemsUC = &mock.MockListItemsUseCase{
-					ExecuteFunc: func(_ context.Context, _ string) ([]model.AuctionItem, error) {
+					ExecuteFunc: func(_ context.Context) ([]model.AuctionItem, error) {
 						return nil, errors.New("db error")
 					},
 				}

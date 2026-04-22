@@ -9,7 +9,7 @@ import (
 
 // ListItemsUseCase defines the interface for listing auction items
 type ListItemsUseCase interface {
-	Execute(ctx context.Context, status string) ([]model.AuctionItem, error)
+	Execute(ctx context.Context) ([]model.AuctionItem, error)
 }
 
 // ListItemsUseCase handles listing auction items
@@ -24,7 +24,7 @@ func NewListItemsUseCase(repo repository.ItemRepository) ListItemsUseCase {
 	return &listItemsUseCase{repo: repo}
 }
 
-// Execute lists auction items by status
-func (uc *listItemsUseCase) Execute(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	return uc.repo.List(ctx, status)
+// Execute lists auction items
+func (uc *listItemsUseCase) Execute(ctx context.Context) ([]model.AuctionItem, error) {
+	return uc.repo.List(ctx)
 }

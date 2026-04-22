@@ -25,10 +25,7 @@ func intPtr(i int) *int {
 	return &i
 }
 
-//go:fix inline
-
 func TestCreateBidUseCase_Execute(t *testing.T) {
-	updateStatusErr := errors.New("update status failed")
 	createBidErr := errors.New("create bid failed")
 	txErr := errors.New("tx error")
 	dbErr := errors.New("db error")
@@ -38,14 +35,17 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 	today := time.Date(2024, 1, 1, 0, 0, 0, 0, jst)
 	mockClock := mock.NewMockClock(fixedNow)
 
+	// テスト用の開催時間範囲: validStart(09:00) 〜 validEnd(11:00) で、fixedNow(10:00) が範囲内に入る
+	validStart := fixedNow.Add(-1 * time.Hour)
+	validEnd := fixedNow.Add(1 * time.Hour)
+
 	tests := []struct {
 		name             string
 		input            *model.Bid
 		listItemsErr     error
 		itemFound        bool
-		mockItem         *model.AuctionItem // Custom item for specific tests (e.g. HighestBid)
+		mockItem         *model.AuctionItem
 		getAuctionErr    error
-		updateStatusErr  error
 		createErr        error
 		txErr            error
 		wantID           int
@@ -53,12 +53,11 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 		wantCreateCalled bool
 		wantTxCalled     bool
 		wantUpdateCalled bool
-		wantNotification bool // Check if SendNotification is called
+		wantNotification bool
 		mockAuction      *model.Auction
 		buyerFound       bool
 		buyerRepoErr     error
-		itemStatus       model.ItemStatus
-		notificationErr  error // Error from PublishNotificationUseCase
+		notificationErr  error
 	}{
 		{
 			name: "Success",
@@ -69,14 +68,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -85,19 +83,18 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			input: &model.Bid{
 				ItemID:  1,
 				BuyerID: 1,
-				Price:   bp(1500), // 1000 + 500 (min increment for < 10000 is 500)
+				Price:   bp(1500),
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
-			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, Status: model.ItemStatusAvailable, HighestBid: bpp(1000)}, // Current price 1000
+			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: bpp(1000)},
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -106,12 +103,11 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			input: &model.Bid{
 				ItemID:  1,
 				BuyerID: 1,
-				Price:   bp(1499), // 1000 + 500 = 1500 required
+				Price:   bp(1499),
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
-			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, Status: model.ItemStatusAvailable, HighestBid: bpp(1000)},
+			mockItem:         &model.AuctionItem{ID: 1, AuctionID: 1, HighestBid: bpp(1000)},
 			wantErr:          &domainErrors.ValidationError{Field: "price"},
 			mockAuction:      nil,
 			wantCreateCalled: false,
@@ -130,20 +126,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			wantTxCalled:     true,
 		},
 		{
-			name: "Error_ItemStatusNotAvailable",
-			input: &model.Bid{
-				ItemID:  1,
-				BuyerID: 1,
-				Price:   bp(1000),
-			},
-			buyerFound:       true,
-			itemFound:        true,
-			itemStatus:       model.ItemStatusPending,
-			wantErr:          &domainErrors.ConflictError{},
-			wantCreateCalled: false,
-			wantTxCalled:     true,
-		},
-		{
 			name: "Error_AuctionStatusNotInProgress",
 			input: &model.Bid{
 				ItemID:  1,
@@ -152,7 +134,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound: true,
 			itemFound:  true,
-			itemStatus: model.ItemStatusAvailable,
 			mockAuction: &model.Auction{
 				ID:     1,
 				Status: model.AuctionStatusScheduled,
@@ -170,14 +151,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
 			wantUpdateCalled: true,
 			mockAuction: func() *model.Auction {
 				startTime := fixedNow.Add(-1 * time.Hour)
-				endTime := fixedNow.Add(2 * time.Minute) // within 5 mins threshold
+				endTime := fixedNow.Add(2 * time.Minute)
 
 				return &model.Auction{
 					ID:      1,
@@ -196,7 +176,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
 			wantID:           1,
 			wantCreateCalled: true,
 			wantTxCalled:     true,
@@ -204,12 +183,12 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
 		{
-			name: "Success_MissingStartTimeSkipsAuctionWindowChecks",
+			name: "Error_NoTimeRange",
 			input: &model.Bid{
 				ItemID:  1,
 				BuyerID: 1,
@@ -217,11 +196,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
-			wantID:           1,
-			wantCreateCalled: true,
+			wantErr:          &domainErrors.ValidationError{Field: "auction_time"},
+			wantCreateCalled: false,
 			wantTxCalled:     true,
-			wantUpdateCalled: false,
 			mockAuction: func() *model.Auction {
 				endTime := fixedNow.Add(2 * time.Minute)
 
@@ -234,28 +211,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}(),
 		},
 		{
-			name: "Error_UpdateStatusFails",
-			input: &model.Bid{
-				ItemID:  1,
-				BuyerID: 1,
-				Price:   bp(1000),
-			},
-			buyerFound:       true,
-			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
-			updateStatusErr:  updateStatusErr,
-			wantErr:          nil,
-			wantTxCalled:     true,
-			wantCreateCalled: true,
-			wantID:           1,
-			mockAuction: &model.Auction{
-				ID:      1,
-				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
-				Status:  model.AuctionStatusInProgress,
-			},
-		},
-		{
 			name: "Error_CreateBidFails",
 			input: &model.Bid{
 				ItemID:  1,
@@ -264,7 +219,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:       true,
 			itemFound:        true,
-			itemStatus:       model.ItemStatusAvailable,
 			createErr:        createBidErr,
 			wantErr:          createBidErr,
 			wantCreateCalled: true,
@@ -272,7 +226,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -285,14 +239,13 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound:   true,
 			itemFound:    true,
-			itemStatus:   model.ItemStatusAvailable,
 			txErr:        txErr,
 			wantErr:      txErr,
 			wantTxCalled: true,
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -305,10 +258,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound: true,
 			itemFound:  true,
-			itemStatus: model.ItemStatusAvailable,
 			wantErr:    &domainErrors.ValidationError{Field: "auction_time"},
 			mockAuction: func() *model.Auction {
-				startTime := today.Add(12 * time.Hour) // in the future (fixedNow is 10:00)
+				startTime := today.Add(12 * time.Hour)
 				endTime := today.Add(13 * time.Hour)
 				return &model.Auction{
 					ID:     1,
@@ -340,7 +292,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			buyerFound:    true,
 			input:         &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
 			itemFound:     true,
-			itemStatus:    model.ItemStatusAvailable,
 			getAuctionErr: dbErr,
 			wantErr:       dbErr,
 			wantTxCalled:  true,
@@ -350,7 +301,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			buyerFound:   true,
 			input:        &model.Bid{ItemID: 1, BuyerID: 1, Price: bp(1000)},
 			itemFound:    true,
-			itemStatus:   model.ItemStatusAvailable,
 			mockAuction:  nil,
 			wantErr:      &domainErrors.NotFoundError{Resource: "Auction"},
 			wantTxCalled: true,
@@ -359,16 +309,14 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			name: "Success_SendNotification_WhenOutbid",
 			input: &model.Bid{
 				ItemID:  1,
-				BuyerID: 2, // New bidder
+				BuyerID: 2,
 				Price:   bp(2000),
 			},
 			buyerFound: true,
 			itemFound:  true,
-			itemStatus: model.ItemStatusAvailable,
 			mockItem: &model.AuctionItem{
 				ID:              1,
 				AuctionID:       1,
-				Status:          model.ItemStatusAvailable,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
 				HighestBidderID: intPtr(1),
@@ -380,7 +328,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -401,16 +349,14 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			name: "Success_NoNotification_WhenSameBidder",
 			input: &model.Bid{
 				ItemID:  1,
-				BuyerID: 1, // Same bidder
+				BuyerID: 1,
 				Price:   bp(2000),
 			},
 			buyerFound: true,
 			itemFound:  true,
-			itemStatus: model.ItemStatusAvailable,
 			mockItem: &model.AuctionItem{
 				ID:              1,
 				AuctionID:       1,
-				Status:          model.ItemStatusAvailable,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
 				HighestBidderID: intPtr(1),
@@ -420,8 +366,10 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			wantTxCalled:     true,
 			wantNotification: false,
 			mockAuction: &model.Auction{
-				ID:     1,
-				Status: model.AuctionStatusInProgress,
+				ID:      1,
+				VenueID: 1,
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
+				Status:  model.AuctionStatusInProgress,
 			},
 		},
 		{
@@ -433,11 +381,9 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			},
 			buyerFound: true,
 			itemFound:  true,
-			itemStatus: model.ItemStatusAvailable,
 			mockItem: &model.AuctionItem{
 				ID:              1,
 				AuctionID:       1,
-				Status:          model.ItemStatusAvailable,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
 				HighestBidderID: intPtr(1),
@@ -450,7 +396,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			mockAuction: &model.Auction{
 				ID:      1,
 				VenueID: 1,
-				Period:  model.NewAuctionPeriod(today, nil, nil),
+				Period:  model.NewAuctionPeriod(today, &validStart, &validEnd),
 				Status:  model.AuctionStatusInProgress,
 			},
 		},
@@ -477,7 +423,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 						ID:        tt.input.ItemID,
 						AuctionID: 1,
 						FishType:  "Aji",
-						Status:    tt.itemStatus,
 					}, nil
 				},
 			}
@@ -592,7 +537,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				if created != nil {
 					t.Fatalf("expected nil result, got %+v", created)
 				}
-			} else if tt.wantErr == nil { // No error expected
+			} else {
 				if err != nil {
 					t.Fatalf("expected no error, got %v", err)
 				}

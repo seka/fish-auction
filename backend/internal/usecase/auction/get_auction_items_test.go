@@ -24,7 +24,7 @@ func (m *mockItemRepository) FindByID(_ context.Context, _ int) (*model.AuctionI
 func (m *mockItemRepository) FindByIDWithLock(_ context.Context, _ int) (*model.AuctionItem, error) {
 	return nil, nil
 }
-func (m *mockItemRepository) List(_ context.Context, _ string) ([]model.AuctionItem, error) {
+func (m *mockItemRepository) List(_ context.Context) ([]model.AuctionItem, error) {
 	return nil, nil
 }
 func (m *mockItemRepository) ListByAuction(_ context.Context, _ int) ([]model.AuctionItem, error) {
@@ -37,9 +37,6 @@ func (m *mockItemRepository) Update(_ context.Context, _ *model.AuctionItem) (*m
 	return nil, nil
 }
 func (m *mockItemRepository) Delete(_ context.Context, _ int) error {
-	return nil
-}
-func (m *mockItemRepository) UpdateStatus(_ context.Context, _ int, _ model.ItemStatus) error {
 	return nil
 }
 func (m *mockItemRepository) UpdateSortOrder(_ context.Context, _, _ int) error {

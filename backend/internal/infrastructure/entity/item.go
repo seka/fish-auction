@@ -16,7 +16,6 @@ type AuctionItem struct {
 	FishType          string           `db:"fish_type"`
 	Quantity          int              `db:"quantity"`
 	Unit              string           `db:"unit"`
-	Status            model.ItemStatus `db:"status"`
 	HighestBid        *int             `db:"highest_bid"`
 	HighestBidderID   *int             `db:"highest_bidder_id"`
 	HighestBidderName *string          `db:"highest_bidder_name"`
@@ -51,12 +50,6 @@ func (e *AuctionItem) Validate() error {
 			Message: "cannot be empty",
 		}
 	}
-	if !e.Status.IsValid() {
-		return &errors.ValidationError{
-			Field:   "status",
-			Message: "invalid status value",
-		}
-	}
 	return nil
 }
 
@@ -74,7 +67,6 @@ func (e *AuctionItem) ToModel() *model.AuctionItem {
 		FishType:          e.FishType,
 		Quantity:          e.Quantity,
 		Unit:              e.Unit,
-		Status:            e.Status,
 		HighestBid:        highestBid,
 		HighestBidderID:   e.HighestBidderID,
 		HighestBidderName: e.HighestBidderName,

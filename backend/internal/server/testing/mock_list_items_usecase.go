@@ -8,10 +8,10 @@ import (
 
 // MockListItemsUseCase is a mock implementation of ListItemsUseCase
 type MockListItemsUseCase struct {
-	ExecuteFunc func(ctx context.Context, status string) ([]model.AuctionItem, error)
+	ExecuteFunc func(ctx context.Context) ([]model.AuctionItem, error)
 }
 
 // Execute executes the use case logic.
-func (m *MockListItemsUseCase) Execute(ctx context.Context, status string) ([]model.AuctionItem, error) {
-	return m.ExecuteFunc(ctx, status)
+func (m *MockListItemsUseCase) Execute(ctx context.Context) ([]model.AuctionItem, error) {
+	return m.ExecuteFunc(ctx)
 }

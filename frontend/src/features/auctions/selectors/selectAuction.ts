@@ -107,19 +107,14 @@ export const selectIsAuctionActive = (
 ): boolean => {
   const { status, auctionDate, startTime, endTime } = auction;
 
-  // ステータスが明確に終了または中止なら非アクティブ
-  if (status === 'completed' || status === 'cancelled') {
+  // in_progress 以外は非アクティブ
+  if (status !== 'in_progress') {
     return false;
   }
 
-  // ステータスが開催中ならアクティブ
-  if (status === 'in_progress') {
-    return true;
-  }
-
-  // 予定ステータスの場合は時間の整合性をチェック
+  // 時間が未設定なら判定不能 → 非アクティブ
   if (!startTime || !endTime) {
-    return status === 'scheduled';
+    return false;
   }
 
   try {

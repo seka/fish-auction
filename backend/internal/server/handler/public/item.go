@@ -24,8 +24,7 @@ func NewItemHandler(r registry.UseCase) *ItemHandler {
 
 // List handles the request to list items.
 func (h *ItemHandler) List(w http.ResponseWriter, r *http.Request) {
-	status := r.URL.Query().Get("status")
-	items, err := h.listUseCase.Execute(r.Context(), status)
+	items, err := h.listUseCase.Execute(r.Context())
 	if err != nil {
 		util.HandleError(w, err)
 		return
@@ -53,7 +52,6 @@ func (h *ItemHandler) toResponse(it *model.AuctionItem) response.Item {
 		FishType:    it.FishType,
 		Quantity:    it.Quantity,
 		Unit:        it.Unit,
-		Status:      it.Status.String(),
 		HighestBid:  highestBid,
 		SortOrder:   it.SortOrder,
 		CreatedAt:   it.CreatedAt,
