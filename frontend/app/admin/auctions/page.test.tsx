@@ -59,7 +59,13 @@ describe('AuctionsPage', () => {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
           createMockAuction(1, 1, null, 'scheduled'),
-          createMockAuction(2, 1, '2023-01-02T10:00:00+09:00', 'in_progress', '2023-01-02T12:00:00+09:00'),
+          createMockAuction(
+            2,
+            1,
+            '2023-01-02T10:00:00+09:00',
+            'in_progress',
+            '2023-01-02T12:00:00+09:00',
+          ),
         ],
         isLoading: false,
         isCreating: false,
@@ -194,7 +200,15 @@ describe('AuctionsPage', () => {
     vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
-        auctions: [createMockAuction(2, 1, '2023-01-02T10:00:00+09:00', 'in_progress', '2023-01-02T12:00:00+09:00')],
+        auctions: [
+          createMockAuction(
+            2,
+            1,
+            '2023-01-02T10:00:00+09:00',
+            'in_progress',
+            '2023-01-02T12:00:00+09:00',
+          ),
+        ],
         isLoading: false,
         isCreating: false,
         isUpdating: false,

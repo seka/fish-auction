@@ -5,6 +5,7 @@ import { Tr, Td } from '@molecules';
 import { AuctionStatusBadge } from '../AuctionStatusBadge';
 import { css } from 'styled-system/css';
 import Link from 'next/link';
+import { formatDate } from '@/src/utils/date';
 import { Auction, Venue } from '../../types';
 
 interface AuctionListCellProps {
@@ -30,9 +31,7 @@ export const AuctionListCell = ({
     <Tr>
       <Td>
         <Text fontSize="sm" fontWeight="medium" className={css({ color: 'gray.900' })}>
-          {auction.duration.startAt
-            ? auction.duration.startAt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
-            : '-'}
+          {auction.duration.startAt ? formatDate(auction.duration.startAt) : '-'}
         </Text>
         <Text fontSize="sm" className={css({ color: 'gray.500' })}>
           {auction.duration.label}

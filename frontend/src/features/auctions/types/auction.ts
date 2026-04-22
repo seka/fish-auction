@@ -1,5 +1,9 @@
 import { Auction as EntityAuction } from '@entities/auction';
-import { selectIsAuctionActive, selectTimeLabel, selectAuctionStatus } from '../selectors/selectAuction';
+import {
+  selectIsAuctionActive,
+  selectTimeLabel,
+  selectAuctionStatus,
+} from '../selectors/selectAuction';
 
 export interface Auction {
   id: number;

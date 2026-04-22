@@ -12,13 +12,13 @@ describe('auctions/selectors/selectAuction', () => {
   describe('selectTimeLabel', () => {
     it('should format time range with ~ separator', () => {
       const start = new Date('2024-03-30T01:00:00Z'); // JST 10:00
-      const end = new Date('2024-03-30T03:00:00Z');   // JST 12:00
+      const end = new Date('2024-03-30T03:00:00Z'); // JST 12:00
       expect(selectTimeLabel(start, end)).toBe('10:00 ~ 12:00');
     });
 
     it('should handle null/missing times with placeholders', () => {
       const start = new Date('2024-03-30T01:00:00Z'); // JST 10:00
-      const end = new Date('2024-03-30T03:00:00Z');   // JST 12:00
+      const end = new Date('2024-03-30T03:00:00Z'); // JST 12:00
       expect(selectTimeLabel(start, null)).toBe('10:00 ~ --:--');
       expect(selectTimeLabel(null, end)).toBe('--:-- ~ 12:00');
       expect(selectTimeLabel(null, null)).toBe('');

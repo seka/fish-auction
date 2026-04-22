@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { formatDateTimeForInput } from '@/src/utils/date';
 import { getAuctionSchema, AuctionFormInput } from '@schemas/auction';
 import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
 import { useAdminVenues } from '../queries/useVenues';
@@ -41,10 +42,7 @@ export const useAuctionManagement = () => {
   const toJSTISOString = (localDatetime: string): string => `${localDatetime}:00+09:00`;
 
   // Date オブジェクトを datetime-local 入力形式 "YYYY-MM-DDTHH:MM" (JST) に変換する
-  const toDatetimeLocalString = (date: Date): string => {
-    const jst = new Date(date.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }));
-    return jst.toISOString().slice(0, 16);
-  };
+  const toDatetimeLocalString = (date: Date): string => formatDateTimeForInput(date);
 
   const onSubmit = async (data: AuctionFormInput) => {
     try {

@@ -5,6 +5,7 @@ import { AuctionStatusBadge } from './AuctionStatusBadge';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { formatDate } from '@/src/utils/date';
 import { useParticipatingAuctions } from '../queries/useAuctions';
 import { AuctionStatus } from '../types/auction';
 
@@ -70,11 +71,7 @@ export const ParticipatingAuctions = () => {
                     className={css({ color: 'gray.900' })}
                     mb="1"
                   >
-                    {auction.startAt
-                    ? new Date(auction.startAt).toLocaleDateString('sv-SE', {
-                        timeZone: 'Asia/Tokyo',
-                      })
-                    : '-'}
+                    {auction.startAt ? formatDate(new Date(auction.startAt)) : '-'}
                   </Text>
                   {auction.startAt && auction.endAt && (
                     <Text fontSize="sm" className={css({ color: 'gray.700' })}>

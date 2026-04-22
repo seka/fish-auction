@@ -86,7 +86,9 @@ export const ItemManagementContainer = () => {
                   {state.auctions.map((auction) => (
                     <option key={auction.id} value={auction.id}>
                       {auction.duration.startAt
-                        ? auction.duration.startAt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
+                        ? auction.duration.startAt.toLocaleDateString('sv-SE', {
+                            timeZone: 'Asia/Tokyo',
+                          })
                         : '-'}{' '}
                       (ID: {auction.id})
                     </option>
