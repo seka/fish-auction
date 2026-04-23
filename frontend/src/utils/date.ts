@@ -11,6 +11,11 @@ export const formatDate = (date: Date): string => {
 };
 
 /**
+ * datetime-local 入力値 "YYYY-MM-DDTHH:MM" を RFC3339 JST 文字列 "YYYY-MM-DDTHH:MM:00+09:00" に変換する
+ */
+export const toJSTISOString = (localDatetime: string): string => `${localDatetime}:00+09:00`;
+
+/**
  * Dateオブジェクトを datetime-local 入力形式 "YYYY-MM-DDTHH:mm" に変換する（日本時間固定）
  */
 export const formatDateTimeForInput = (date: Date): string => {
