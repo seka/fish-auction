@@ -43,10 +43,21 @@ func (h *AuctionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	startAt, err := parseTimestamp(req.StartAt)
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "Invalid start_at format (RFC3339)")
+		return
+	}
+	endAt, err := parseTimestamp(req.EndAt)
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "Invalid end_at format (RFC3339)")
+		return
+	}
+
 	auc := &model.Auction{
 		VenueID: req.VenueID,
 		Status:  model.AuctionStatus(req.Status),
-		Period:  model.NewAuctionPeriod(parseTimestamp(req.StartAt), parseTimestamp(req.EndAt)),
+		Period:  model.NewAuctionPeriod(startAt, endAt),
 	}
 
 	if auc.Status == "" {
@@ -77,11 +88,22 @@ func (h *AuctionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	startAt, err := parseTimestamp(req.StartAt)
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "Invalid start_at format (RFC3339)")
+		return
+	}
+	endAt, err := parseTimestamp(req.EndAt)
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "Invalid end_at format (RFC3339)")
+		return
+	}
+
 	auc := &model.Auction{
 		ID:      id,
 		VenueID: req.VenueID,
 		Status:  model.AuctionStatus(req.Status),
-		Period:  model.NewAuctionPeriod(parseTimestamp(req.StartAt), parseTimestamp(req.EndAt)),
+		Period:  model.NewAuctionPeriod(startAt, endAt),
 	}
 
 	if err := h.updateUseCase.Execute(r.Context(), auc); err != nil {
@@ -165,15 +187,15 @@ func (h *AuctionHandler) toResponse(a *model.Auction) response.Auction {
 	}
 }
 
-func parseTimestamp(s *string) *time.Time {
+func parseTimestamp(s *string) (*time.Time, error) {
 	if s == nil || *s == "" {
-		return nil
+		return nil, nil
 	}
 	t, err := time.Parse(time.RFC3339, *s)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return &t
+	return &t, nil
 }
 
 // RegisterRoutes registers the admin auction handler routes to the given mux.

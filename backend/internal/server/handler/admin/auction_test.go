@@ -53,6 +53,27 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
+			name: "InvalidStartAtFormat",
+			body: map[string]any{
+				"venue_id": 1,
+				"start_at": "2026-03-15",
+				"status":   "scheduled",
+			},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidEndAtFormat",
+			body: map[string]any{
+				"venue_id": 1,
+				"start_at": "2026-03-15T09:00:00+09:00",
+				"end_at":   "not-a-timestamp",
+				"status":   "scheduled",
+			},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
 			name: "UseCaseError",
 			body: request.CreateAuction{
 				VenueID: 1,
@@ -125,6 +146,17 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 			body:       "invalid-json",
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name:  "InvalidStartAtFormat",
+			idStr: "1",
+			body: map[string]any{
+				"venue_id": 1,
+				"start_at": "2026-03-15",
+				"status":   "scheduled",
+			},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "InvalidID",
