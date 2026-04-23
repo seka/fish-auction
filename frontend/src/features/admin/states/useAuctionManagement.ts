@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { formatDateTimeForInput } from '@/src/utils/date';
+import { formatDateTimeForInput, toJSTISOString } from '@/src/utils/date';
 import { getAuctionSchema, AuctionFormInput } from '@schemas/auction';
 import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
 import { useAdminVenues } from '../queries/useVenues';
@@ -37,9 +37,6 @@ export const useAuctionManagement = () => {
   });
 
   const { reset, handleSubmit, setValue } = form;
-
-  // "YYYY-MM-DDTHH:MM" (datetime-local) を RFC3339 JST 文字列に変換する
-  const toJSTISOString = (localDatetime: string): string => `${localDatetime}:00+09:00`;
 
   // Date オブジェクトを datetime-local 入力形式 "YYYY-MM-DDTHH:MM" (JST) に変換する
   const toDatetimeLocalString = (date: Date): string => formatDateTimeForInput(date);
@@ -81,12 +78,8 @@ export const useAuctionManagement = () => {
   const onEdit = (auction: Auction) => {
     setEditingAuction(auction);
     setValue('venueId', auction.venueId);
-    if (auction.duration.startAt) {
-      setValue('startAt', toDatetimeLocalString(auction.duration.startAt));
-    }
-    if (auction.duration.endAt) {
-      setValue('endAt', toDatetimeLocalString(auction.duration.endAt));
-    }
+    setValue('startAt', auction.duration.startAt ? toDatetimeLocalString(auction.duration.startAt) : '');
+    setValue('endAt', auction.duration.endAt ? toDatetimeLocalString(auction.duration.endAt) : '');
   };
 
   const onCancelEdit = () => {
