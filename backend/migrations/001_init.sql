@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS auctions (
 CREATE INDEX IF NOT EXISTS idx_auctions_venue_id ON auctions(venue_id);
 CREATE INDEX IF NOT EXISTS idx_auctions_start_at ON auctions(start_at);
 CREATE INDEX IF NOT EXISTS idx_auctions_status ON auctions(status);
+CREATE INDEX IF NOT EXISTS idx_auctions_start_at_jst_date ON auctions ((start_at AT TIME ZONE 'Asia/Tokyo')::date);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_auctions_venue_date
     ON auctions (venue_id, (start_at AT TIME ZONE 'Asia/Tokyo')::date)
     WHERE start_at IS NOT NULL;
