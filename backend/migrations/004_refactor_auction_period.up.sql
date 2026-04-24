@@ -14,16 +14,23 @@ BEGIN
         -- auction_date + start_time/end_time を JST タイムスタンプとして start_at/end_at へ移行
         UPDATE auctions
         SET
-            start_at = CASE
-                WHEN start_time IS NOT NULL
-                    THEN (auction_date::timestamp + start_time) AT TIME ZONE 'Asia/Tokyo'
-                ELSE NULL
-            END,
-            end_at = CASE
-                WHEN end_time IS NOT NULL
-                    THEN (auction_date::timestamp + end_time) AT TIME ZONE 'Asia/Tokyo'
-                ELSE NULL
-            END;
+            start_at = COALESCE(
+                start_at,
+                CASE
+                    WHEN auction_date IS NULL THEN NULL
+                    WHEN start_time IS NOT NULL
+                        THEN (auction_date::timestamp + start_time) AT TIME ZONE 'Asia/Tokyo'
+                    ELSE auction_date::timestamp AT TIME ZONE 'Asia/Tokyo'
+                END
+            ),
+            end_at = COALESCE(
+                end_at,
+                CASE
+                    WHEN auction_date IS NOT NULL AND end_time IS NOT NULL
+                        THEN (auction_date::timestamp + end_time) AT TIME ZONE 'Asia/Tokyo'
+                    ELSE NULL
+                END
+            );
 
         -- 旧ユニーク制約を削除
         ALTER TABLE auctions DROP CONSTRAINT IF EXISTS auctions_venue_id_auction_date_key;
