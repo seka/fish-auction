@@ -14,6 +14,7 @@ BEGIN
         ALTER TABLE auctions ADD COLUMN IF NOT EXISTS end_time TIME;
 
         -- start_at/end_at を JST の日付・時刻へ分解して移行
+        -- NOTE: start_at が NULL の行は auction_date に CURRENT_DATE を設定する（仮作成レコードの開発用フォールバック）
         UPDATE auctions
         SET
             auction_date = COALESCE(

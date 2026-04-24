@@ -63,10 +63,6 @@ CREATE TABLE IF NOT EXISTS auctions (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Ensure start_at exists (in case table was created by older migration)
-ALTER TABLE auctions ADD COLUMN IF NOT EXISTS start_at TIMESTAMPTZ;
-ALTER TABLE auctions ADD COLUMN IF NOT EXISTS end_at TIMESTAMPTZ;
-
 CREATE INDEX IF NOT EXISTS idx_auctions_venue_id ON auctions(venue_id);
 CREATE INDEX IF NOT EXISTS idx_auctions_start_at ON auctions(start_at);
 CREATE INDEX IF NOT EXISTS idx_auctions_status ON auctions(status);
