@@ -18,6 +18,7 @@ import (
 // AuctionHandler handles admin HTTP requests related to auctions.
 type AuctionHandler struct {
 	createUseCase       auction.CreateAuctionUseCase
+	getUseCase          auction.GetAuctionUseCase
 	updateUseCase       auction.UpdateAuctionUseCase
 	updateStatusUseCase auction.UpdateAuctionStatusUseCase
 	deleteUseCase       auction.DeleteAuctionUseCase
@@ -28,6 +29,7 @@ type AuctionHandler struct {
 func NewAuctionHandler(r registry.UseCase) *AuctionHandler {
 	return &AuctionHandler{
 		createUseCase:       r.NewCreateAuctionUseCase(),
+		getUseCase:          r.NewGetAuctionUseCase(),
 		updateUseCase:       r.NewUpdateAuctionUseCase(),
 		updateStatusUseCase: r.NewUpdateAuctionStatusUseCase(),
 		deleteUseCase:       r.NewDeleteAuctionUseCase(),
@@ -130,6 +132,30 @@ func (h *AuctionHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := model.AuctionStatus(req.Status)
+	startAt, err := parseTimestamp(req.StartAt)
+	if err != nil {
+		util.WriteError(w, http.StatusBadRequest, "Invalid start_at format (RFC3339)")
+		return
+	}
+
+	if status == model.AuctionStatusInProgress {
+		if startAt == nil {
+			util.WriteError(w, http.StatusBadRequest, "start_at is required when status is in_progress")
+			return
+		}
+
+		auc, err := h.getUseCase.Execute(r.Context(), id)
+		if err != nil {
+			util.HandleError(w, err)
+			return
+		}
+		auc.Period.StartAt = startAt
+		if err := h.updateUseCase.Execute(r.Context(), auc); err != nil {
+			util.HandleError(w, err)
+			return
+		}
+	}
+
 	if err := h.updateStatusUseCase.Execute(r.Context(), id, status); err != nil {
 		util.HandleError(w, err)
 		return

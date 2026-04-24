@@ -18,5 +18,6 @@ type UpdateAuction struct {
 
 // UpdateAuctionStatus holds data for updating an auction's status.
 type UpdateAuctionStatus struct {
-	Status string `json:"status"`
+	Status  string  `json:"status"`
+	StartAt *string `json:"start_at"`
 }

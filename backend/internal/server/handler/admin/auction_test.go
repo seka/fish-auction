@@ -232,6 +232,56 @@ func TestAdminAuctionHandler_UpdateStatus(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
+			name:  "InProgressSuccessWithStartAt",
+			idStr: "1",
+			body: map[string]any{
+				"status":   "in_progress",
+				"start_at": "2026-03-15T09:00:00+09:00",
+			},
+			mockSetup: func(r *mock.MockRegistry) {
+				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
+					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
+						return &model.Auction{
+							ID:      1,
+							VenueID: 1,
+							Status:  model.AuctionStatusScheduled,
+							Period:  model.NewAuctionPeriod(nil, nil),
+						}, nil
+					},
+				}
+				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
+					ExecuteFunc: func(_ context.Context, _ *model.Auction) error {
+						return nil
+					},
+				}
+				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
+					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
+						return nil
+					},
+				}
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:  "InProgressWithoutStartAt",
+			idStr: "1",
+			body:  request.UpdateAuctionStatus{Status: "in_progress"},
+			mockSetup: func(_ *mock.MockRegistry) {
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:  "InvalidStartAtFormat",
+			idStr: "1",
+			body: map[string]any{
+				"status":   "in_progress",
+				"start_at": "2026-03-15",
+			},
+			mockSetup: func(_ *mock.MockRegistry) {
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
 			name:       "InvalidID",
 			idStr:      "invalid",
 			body:       request.UpdateAuctionStatus{Status: "Closed"},
