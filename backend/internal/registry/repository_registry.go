@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/fs"
 	"log"
-	"sort"
 	"strings"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	migratepg "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -115,31 +116,27 @@ func connectDB(postgresAddr string) (*sql.DB, error) {
 }
 
 func runMigrations(db *sql.DB) error {
-	entries, err := fs.ReadDir(migrations.FS, ".")
+	src, err := iofs.New(migrations.FS, ".")
 	if err != nil {
-		return fmt.Errorf("failed to read migrations directory: %w", err)
+		return fmt.Errorf("failed to create migration source: %w", err)
 	}
 
-	var migrationFiles []string
-	for _, entry := range entries {
-		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".sql") {
-			migrationFiles = append(migrationFiles, entry.Name())
-		}
+	driver, err := migratepg.WithInstance(db, &migratepg.Config{})
+	if err != nil {
+		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
-	sort.Strings(migrationFiles)
 
-	for _, file := range migrationFiles {
-		log.Printf("Applying migration: %s", file)
-		migrationSQL, err := migrations.FS.ReadFile(file)
-		if err != nil {
-			return fmt.Errorf("failed to read migration file %s: %w", file, err)
-		}
-
-		_, err = db.ExecContext(context.Background(), string(migrationSQL))
-		if err != nil {
-			return fmt.Errorf("failed to apply migration %s: %w", file, err)
-		}
+	m, err := migrate.NewWithInstance("iofs", src, "postgres", driver)
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrator: %w", err)
 	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("failed to run migrations: %w", err)
+	}
+
+	version, dirty, _ := m.Version()
+	log.Printf("Migration complete: version=%d, dirty=%v", version, dirty)
 	return nil
 }
 
