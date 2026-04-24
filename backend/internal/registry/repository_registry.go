@@ -135,7 +135,13 @@ func runMigrations(db *sql.DB) error {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	version, dirty, _ := m.Version()
+	version, dirty, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion {
+		return fmt.Errorf("failed to get migration version: %w", err)
+	}
+	if dirty {
+		return fmt.Errorf("migration is in dirty state at version %d, manual intervention required", version)
+	}
 	log.Printf("Migration complete: version=%d, dirty=%v", version, dirty)
 	return nil
 }
