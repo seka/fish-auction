@@ -1,0 +1,1 @@
+ALTER TABLE auction_items ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Pending';
