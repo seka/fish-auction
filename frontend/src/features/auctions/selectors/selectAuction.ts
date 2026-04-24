@@ -129,8 +129,8 @@ export const selectVisiblePublicAuctions = (
       if (aActive && !bActive) return -1;
       if (!aActive && bActive) return 1;
 
-      const aStart = a.startAt ? new Date(a.startAt).getTime() : 0;
-      const bStart = b.startAt ? new Date(b.startAt).getTime() : 0;
+      const aStart = a.startAt ? new Date(a.startAt).getTime() : Infinity;
+      const bStart = b.startAt ? new Date(b.startAt).getTime() : Infinity;
       return aStart - bStart;
     });
 };
