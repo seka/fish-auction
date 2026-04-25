@@ -103,12 +103,12 @@ export const useAuctionManagement = () => {
       let startAt: string | undefined;
       if (status === 'in_progress') {
         const defaultValue = formatDateTimeForInput(new Date());
-        const input = window.prompt('開始時刻を入力してください (YYYY-MM-DDTHH:mm)', defaultValue);
+        const input = window.prompt(t('Admin.Auctions.prompt_start_at'), defaultValue);
         if (input === null) {
           return;
         }
         if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
-          setMessage('開始時刻の形式が不正です');
+          setMessage(t('Admin.Auctions.error_start_at_format'));
           return;
         }
         startAt = toJSTISOString(input);
