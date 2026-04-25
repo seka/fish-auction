@@ -141,7 +141,7 @@ func TestBuyerHandler_GetAuctions(t *testing.T) {
 				r.GetBuyerAuctionsUC = &mock.MockGetBuyerAuctionsUseCase{
 					ExecuteFunc: func(_ context.Context, _ int) ([]model.Auction, error) {
 						now := time.Now()
-						return []model.Auction{{ID: 1, Period: model.NewAuctionPeriod(now, &now, &now)}}, nil
+						return []model.Auction{{ID: 1, Period: model.NewAuctionPeriod(&now, &now)}}, nil
 					},
 				}
 			},
