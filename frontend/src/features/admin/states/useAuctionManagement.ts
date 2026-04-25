@@ -100,7 +100,21 @@ export const useAuctionManagement = () => {
 
   const onStatusChange = async (id: number, status: string) => {
     try {
-      await updateStatus({ id, status });
+      let startAt: string | undefined;
+      if (status === 'in_progress') {
+        const defaultValue = formatDateTimeForInput(new Date());
+        const input = window.prompt('開始時刻を入力してください (YYYY-MM-DDTHH:mm)', defaultValue);
+        if (input === null) {
+          return;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
+          setMessage('開始時刻の形式が不正です');
+          return;
+        }
+        startAt = toJSTISOString(input);
+      }
+
+      await updateStatus({ id, status, startAt });
       setMessage(t('Admin.Auctions.success_status_update'));
     } catch {
       setMessage(t('Admin.Auctions.fail_status_update'));
