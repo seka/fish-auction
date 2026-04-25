@@ -79,12 +79,19 @@ END $$;
 DO $$
 DECLARE
     vid INTEGER;
+    today_jst timestamptz;
 BEGIN
     SELECT id INTO vid FROM venues WHERE name = '函館港';
+    today_jst := date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Tokyo') AT TIME ZONE 'Asia/Tokyo';
     IF vid IS NOT NULL THEN
-        INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
-        SELECT vid, (CURRENT_TIMESTAMP + interval '9 hours')::date, '00:00', '23:59:59', 'in_progress'
-        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = vid AND auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date);
+        INSERT INTO auctions (venue_id, start_at, end_at, status)
+        SELECT vid, today_jst, today_jst + interval '1 day' - interval '1 second', 'in_progress'
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auctions 
+            WHERE venue_id = vid 
+              AND start_at >= today_jst 
+              AND start_at < today_jst + interval '1 day'
+        );
     END IF;
 END $$;
 
@@ -92,13 +99,20 @@ END $$;
 DO $$
 DECLARE
     default_venue_id INTEGER;
+    today_jst timestamptz;
 BEGIN
     SELECT id INTO default_venue_id FROM venues WHERE name = '豊洲市場' LIMIT 1;
+    today_jst := date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Tokyo') AT TIME ZONE 'Asia/Tokyo';
 
     IF default_venue_id IS NOT NULL THEN
-        INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
-        SELECT default_venue_id, (CURRENT_TIMESTAMP + interval '9 hours')::date, '00:00', '23:59:59', 'in_progress'
-        WHERE NOT EXISTS (SELECT 1 FROM auctions WHERE venue_id = default_venue_id AND auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date);
+        INSERT INTO auctions (venue_id, start_at, end_at, status)
+        SELECT default_venue_id, today_jst, today_jst + interval '1 day' - interval '1 second', 'in_progress'
+        WHERE NOT EXISTS (
+            SELECT 1 FROM auctions 
+            WHERE venue_id = default_venue_id 
+              AND start_at >= today_jst 
+              AND start_at < today_jst + interval '1 day'
+        );
     END IF;
 END $$;
 
@@ -107,25 +121,29 @@ DO $$
 DECLARE
     fid INTEGER;
     aid INTEGER;
+    today_jst timestamptz;
 BEGIN
     SELECT id INTO fid FROM fishermen WHERE name = '田中 一郎';
+    today_jst := date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Tokyo') AT TIME ZONE 'Asia/Tokyo';
     -- Get today's auction at Hakodate
     SELECT a.id INTO aid
     FROM auctions a
     JOIN venues v ON a.venue_id = v.id
-    WHERE v.name = '函館港' AND a.auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date
+    WHERE v.name = '函館港' 
+      AND a.start_at >= today_jst 
+      AND a.start_at < today_jst + interval '1 day'
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, 'スルメイカ', 100, 'kg', 'Available', 1
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, sort_order)
+        SELECT fid, aid, 'スルメイカ', 100, 'kg', 1
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'スルメイカ'
         );
 
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, 'ホッケ', 50, 'kg', 'Available', 2
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, sort_order)
+        SELECT fid, aid, 'ホッケ', 50, 'kg', 2
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'ホッケ'
@@ -137,18 +155,22 @@ DO $$
 DECLARE
     fid INTEGER;
     aid INTEGER;
+    today_jst timestamptz;
 BEGIN
     SELECT id INTO fid FROM fishermen WHERE name = '鈴木 次郎';
+    today_jst := date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Tokyo') AT TIME ZONE 'Asia/Tokyo';
     -- Get today's auction at Hakodate
     SELECT a.id INTO aid
     FROM auctions a
     JOIN venues v ON a.venue_id = v.id
-    WHERE v.name = '函館港' AND a.auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date
+    WHERE v.name = '函館港' 
+      AND a.start_at >= today_jst 
+      AND a.start_at < today_jst + interval '1 day'
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, 'マグロ', 200, 'kg', 'Available', 3
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, sort_order)
+        SELECT fid, aid, 'マグロ', 200, 'kg', 3
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = 'マグロ'
@@ -161,36 +183,45 @@ DO $$
 DECLARE
     fid INTEGER;
     aid INTEGER;
+    today_jst timestamptz;
 BEGIN
     SELECT id INTO fid FROM fishermen WHERE name = '佐藤 三郎';
+    today_jst := date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Tokyo') AT TIME ZONE 'Asia/Tokyo';
     -- Get today's auction at Toyosu
     SELECT a.id INTO aid
     FROM auctions a
     JOIN venues v ON a.venue_id = v.id
-    WHERE v.name = '豊洲市場' AND a.auction_date = (CURRENT_TIMESTAMP + interval '9 hours')::date
+    WHERE v.name = '豊洲市場' 
+      AND a.start_at >= today_jst 
+      AND a.start_at < today_jst + interval '1 day'
     LIMIT 1;
 
     IF fid IS NOT NULL AND aid IS NOT NULL THEN
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, '本マグロ', 1, '本', 'Available', 1
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, sort_order)
+        SELECT fid, aid, '本マグロ', 1, '本', 1
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '本マグロ'
         );
 
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, '天然真鯛', 20, 'kg', 'Available', 2
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, sort_order)
+        SELECT fid, aid, '天然真鯛', 20, 'kg', 2
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '天然真鯛'
         );
 
-        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status, sort_order)
-        SELECT fid, aid, '生ウニ', 5, '板', 'Available', 3
+        INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, sort_order)
+        SELECT fid, aid, '生ウニ', 5, '板', 3
         WHERE NOT EXISTS (
             SELECT 1 FROM auction_items
             WHERE fisherman_id = fid AND auction_id = aid AND fish_type = '生ウニ'
         );
     END IF;
 END $$;
+
+-- Admins
+INSERT INTO admins (email, password_hash)
+SELECT 'admin@example.com', '$2a$10$bBUXj3ggxD38hbMPPcXRYe/CiPPfiP8pBv0x593dA5YrlEEjL.AxG'
+WHERE NOT EXISTS (SELECT 1 FROM admins WHERE email = 'admin@example.com');
 

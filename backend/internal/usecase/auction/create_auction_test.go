@@ -55,10 +55,11 @@ func (m *mockAuctionRepoForCreate) Delete(_ context.Context, _ int) error { retu
 // Alternatively, embed the full mock if we extract it to a shared file, but for now local stub.
 
 func TestCreateAuctionUseCase_Execute(t *testing.T) {
+	now := time.Now()
 	validAuction := &model.Auction{
 		VenueID: 1,
 		Status:  model.AuctionStatusScheduled,
-		Period:  model.NewAuctionPeriod(time.Now(), nil, nil),
+		Period:  model.NewAuctionPeriod(&now, nil),
 	}
 
 	tests := []struct {
