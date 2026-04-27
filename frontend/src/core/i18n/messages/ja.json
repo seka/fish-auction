@@ -147,8 +147,8 @@
       "list_title": "セリ一覧",
       "venue": "会場",
       "date": "開催日",
-      "start_time": "開始時間",
-      "end_time": "終了時間",
+      "start_time": "開始時間 (JST)",
+      "end_time": "終了時間 (JST)",
       "placeholder_select_venue": "会場を選択してください",
       "filter_venue": "会場絞り込み:",
       "filter_all": "すべて",
@@ -164,7 +164,9 @@
       "success_status_update": "ステータスを更新しました",
       "fail_delete": "削除に失敗しました",
       "fail_status_update": "ステータスの更新に失敗しました",
-      "error_conflict": "指定された会場と日付のセリは既に登録されています"
+      "error_conflict": "指定された会場と日付のセリは既に登録されています",
+      "prompt_start_at": "開始時刻を入力してください (YYYY-MM-DDTHH:mm)",
+      "error_start_at_format": "開始時刻の形式が不正です"
     },
     "Login": {
       "title": "管理者ログイン",

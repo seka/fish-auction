@@ -186,10 +186,12 @@ func TestServerIntegration(t *testing.T) {
 		// 7. Create Auction (as Admin)
 		// POST /api/admin/auctions
 		// Links to Venue.
-		// StartTime 00:00, EndTime 23:59
+		// StartAt 00:00, EndAt 23:59 (JST)
 		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-		auctionDate := time.Now().In(jst).Format("2006-01-02")
-		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": %q, "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
+		now := time.Now().In(jst)
+		startAt := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst).Format(time.RFC3339)
+		endAt := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, jst).Format(time.RFC3339)
+		auctionID := createResource(t, client, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "start_at": %q, "end_at": %q, "status": "in_progress"}`, venueID, startAt, endAt), adminCookies)
 
 		// 8. Create Item (as Admin)
 		// POST /api/admin/items
@@ -247,8 +249,10 @@ func TestServerIntegration(t *testing.T) {
 		fishermanID := registerUser(t, clientA, serverURL+"/api/admin/fishermen", `{"name": "Notification Fisherman"}`)
 		venueID := createResource(t, clientA, serverURL+"/api/admin/venues", `{"name": "Notification Venue"}`, adminCookies)
 		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-		auctionDate := time.Now().In(jst).Format("2006-01-02")
-		auctionID := createResource(t, clientA, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "auction_date": %q, "start_time": "00:00:00", "end_time": "23:59:59", "status": "in_progress"}`, venueID, auctionDate), adminCookies)
+		now := time.Now().In(jst)
+		startAt := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst).Format(time.RFC3339)
+		endAt := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, jst).Format(time.RFC3339)
+		auctionID := createResource(t, clientA, serverURL+"/api/admin/auctions", fmt.Sprintf(`{"venue_id": %d, "start_at": %q, "end_at": %q, "status": "in_progress"}`, venueID, startAt, endAt), adminCookies)
 		itemID := createResource(t, clientA, serverURL+"/api/admin/items", fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Tuna", "quantity": 10, "unit": "kg"}`, auctionID, fishermanID), adminCookies)
 		putResource(t, clientA, serverURL+fmt.Sprintf("/api/admin/items/%d", itemID), fmt.Sprintf(`{"auction_id": %d, "fisherman_id": %d, "fish_type": "Tuna", "quantity": 10, "unit": "kg", "status": "Available"}`, auctionID, fishermanID), adminCookies)
 

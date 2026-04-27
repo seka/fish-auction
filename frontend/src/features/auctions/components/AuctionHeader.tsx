@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Box, Text, HStack } from '@atoms';
 import { AuctionStatusBadge } from './AuctionStatusBadge';
 import { css } from 'styled-system/css';
+import { formatDate } from '@/src/utils/date';
 import { Auction } from '../types';
 
 import { useTranslations } from 'next-intl';
@@ -37,7 +38,8 @@ export const AuctionHeader = ({ auction, t }: AuctionHeaderProps) => {
           {t('Public.AuctionDetail.auction_venue_title', { id: auction.id })}
         </Text>
         <Text className={css({ color: 'gray.600' })}>
-          {auction.duration?.dateLabel} {auction.duration?.label}
+          {auction.duration?.startAt ? formatDate(auction.duration.startAt) : ''}{' '}
+          {auction.duration?.label}
         </Text>
       </Box>
       <Box textAlign="right" display={{ base: 'none', md: 'block' }}>

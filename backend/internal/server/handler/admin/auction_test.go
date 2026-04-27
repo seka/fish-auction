@@ -31,9 +31,8 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 		{
 			name: "Success",
 			body: request.CreateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
-				Status:      "Scheduled",
+				VenueID: 1,
+				Status:  "Scheduled",
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateAuctionUC = &mock.MockCreateAuctionUseCase{
@@ -54,10 +53,22 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name: "InvalidDateFormat",
-			body: request.CreateAuction{
-				VenueID:     1,
-				AuctionDate: "invalid-date",
+			name: "InvalidStartAtFormat",
+			body: map[string]any{
+				"venue_id": 1,
+				"start_at": "2026-03-15",
+				"status":   "scheduled",
+			},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidEndAtFormat",
+			body: map[string]any{
+				"venue_id": 1,
+				"start_at": "2026-03-15T09:00:00+09:00",
+				"end_at":   "not-a-timestamp",
+				"status":   "scheduled",
 			},
 			mockSetup:  func(_ *mock.MockRegistry) {},
 			wantStatus: http.StatusBadRequest,
@@ -65,8 +76,7 @@ func TestAdminAuctionHandler_Create(t *testing.T) {
 		{
 			name: "UseCaseError",
 			body: request.CreateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
+				VenueID: 1,
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.CreateAuctionUC = &mock.MockCreateAuctionUseCase{
@@ -118,9 +128,8 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 			name:  "Success",
 			idStr: "1",
 			body: request.UpdateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
-				Status:      "Completed",
+				VenueID: 1,
+				Status:  "Completed",
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
@@ -139,6 +148,17 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
+			name:  "InvalidStartAtFormat",
+			idStr: "1",
+			body: map[string]any{
+				"venue_id": 1,
+				"start_at": "2026-03-15",
+				"status":   "scheduled",
+			},
+			mockSetup:  func(_ *mock.MockRegistry) {},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
 			name:       "InvalidID",
 			idStr:      "invalid",
 			body:       request.UpdateAuction{},
@@ -149,8 +169,7 @@ func TestAdminAuctionHandler_Update(t *testing.T) {
 			name:  "UseCaseError",
 			idStr: "1",
 			body: request.UpdateAuction{
-				VenueID:     1,
-				AuctionDate: "2023-01-01",
+				VenueID: 1,
 			},
 			mockSetup: func(r *mock.MockRegistry) {
 				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
@@ -211,6 +230,56 @@ func TestAdminAuctionHandler_UpdateStatus(t *testing.T) {
 				}
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name:  "InProgressSuccessWithStartAt",
+			idStr: "1",
+			body: map[string]any{
+				"status":   "in_progress",
+				"start_at": "2026-03-15T09:00:00+09:00",
+			},
+			mockSetup: func(r *mock.MockRegistry) {
+				r.GetAuctionUC = &mock.MockGetAuctionUseCase{
+					ExecuteFunc: func(_ context.Context, _ int) (*model.Auction, error) {
+						return &model.Auction{
+							ID:      1,
+							VenueID: 1,
+							Status:  model.AuctionStatusScheduled,
+							Period:  model.NewAuctionPeriod(nil, nil),
+						}, nil
+					},
+				}
+				r.UpdateAuctionUC = &mock.MockUpdateAuctionUseCase{
+					ExecuteFunc: func(_ context.Context, _ *model.Auction) error {
+						return nil
+					},
+				}
+				r.UpdateAuctionStatusUC = &mock.MockUpdateAuctionStatusUseCase{
+					ExecuteFunc: func(_ context.Context, _ int, _ model.AuctionStatus) error {
+						return nil
+					},
+				}
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:  "InProgressWithoutStartAt",
+			idStr: "1",
+			body:  request.UpdateAuctionStatus{Status: "in_progress"},
+			mockSetup: func(_ *mock.MockRegistry) {
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:  "InvalidStartAtFormat",
+			idStr: "1",
+			body: map[string]any{
+				"status":   "in_progress",
+				"start_at": "2026-03-15",
+			},
+			mockSetup: func(_ *mock.MockRegistry) {
+			},
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "InvalidID",
@@ -327,7 +396,7 @@ func TestAuctionHandler_RegisterRoutes(t *testing.T) {
 	h.RegisterRoutes(mux)
 
 	// Create
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{"auction_date":"2023-01-01"}`))
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/auctions", strings.NewReader(`{}`))
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	if w.Code != http.StatusCreated {

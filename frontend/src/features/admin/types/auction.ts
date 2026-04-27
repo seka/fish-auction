@@ -1,5 +1,5 @@
 import { Auction as EntityAuction } from '@entities/auction';
-import { selectAuctionStatus, selectTimeLabel, toJSTDate } from '../selectors/selectAuction';
+import { selectAuctionStatus, selectTimeLabel } from '../selectors/selectAuction';
 
 export interface Auction {
   id: number;
@@ -14,11 +14,8 @@ export interface Auction {
     isCancelled: boolean;
   };
   duration: {
-    startAt: Date;
-    endAt: Date;
-    dateLabel: string;
-    startTime: string | null;
-    endTime: string | null;
+    startAt: Date | null;
+    endAt: Date | null;
     label: string;
   };
   actions: {
@@ -30,9 +27,8 @@ export interface Auction {
 }
 
 export const toAuction = (entity: EntityAuction): Auction => {
-  const auctionDate = entity.auctionDate;
-  const startTime = entity.startTime || '00:00:00';
-  const endTime = entity.endTime || '23:59:59';
+  const startAt = entity.startAt ? new Date(entity.startAt) : null;
+  const endAt = entity.endAt ? new Date(entity.endAt) : null;
 
   const status = selectAuctionStatus(entity.status);
 
@@ -41,12 +37,9 @@ export const toAuction = (entity: EntityAuction): Auction => {
     venueId: entity.venueId,
     status,
     duration: {
-      startAt: toJSTDate(auctionDate, startTime),
-      endAt: toJSTDate(auctionDate, endTime),
-      dateLabel: auctionDate,
-      startTime: entity.startTime ?? null,
-      endTime: entity.endTime ?? null,
-      label: selectTimeLabel(entity.startTime ?? null, entity.endTime ?? null),
+      startAt,
+      endAt,
+      label: selectTimeLabel(startAt, endAt),
     },
     actions: {
       canStart: status.isScheduled,

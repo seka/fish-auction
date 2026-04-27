@@ -40,7 +40,9 @@ describe('useAuctionDetail', () => {
       mockQueryClient as unknown as ReturnType<typeof useQueryClient>,
     );
     vi.mocked(useAuctionDetailData).mockReturnValue({
-      auction: { id: 1, isActive: true } as unknown as ReturnType<typeof useAuctionDetailData>['auction'],
+      auction: { id: 1, isActive: true } as unknown as ReturnType<
+        typeof useAuctionDetailData
+      >['auction'],
       items: [],
       isLoading: false,
       refetchItems: vi.fn(),

@@ -16,9 +16,8 @@ export interface Purchase {
 export interface AuctionSummary {
   id: number;
   venueId: number;
-  auctionDate: string;
-  startTime: string | null;
-  endTime: string | null;
+  startAt: string | null;
+  endAt: string | null;
   status: AuctionStatus;
   createdAt: string;
   updatedAt: string;

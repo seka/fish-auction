@@ -2,7 +2,7 @@ package migrations
 
 import "embed"
 
-// FS represents a fs in the system.
+// FS is used by golang-migrate. Contains *.up.sql and *.down.sql.
 //
 //go:embed *.sql
 var FS embed.FS

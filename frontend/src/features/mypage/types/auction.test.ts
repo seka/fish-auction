@@ -9,9 +9,8 @@ describe('mypage/types/auction', () => {
         id: 1,
         venueId: 10,
         status: 'in_progress',
-        auctionDate: '2024-03-30',
-        startTime: '10:00:00',
-        endTime: '12:00:00',
+        startAt: '2024-03-30T10:00:00+09:00',
+        endAt: '2024-03-30T12:00:00+09:00',
         createdAt: '2024-03-01T00:00:00Z',
         updatedAt: '2024-03-01T00:00:00Z',
       };
@@ -20,25 +19,22 @@ describe('mypage/types/auction', () => {
 
       expect(result.id).toBe(1);
       expect(result.status).toBe('in_progress');
-      expect(result.startTime).toBe('10:00:00');
+      expect(result.startAt).toBe('2024-03-30T10:00:00+09:00');
     });
 
-    it('should handle null startTime', () => {
+    it('should handle null startAt', () => {
       const entity: AuctionSummary = {
         id: 2,
         venueId: 10,
         status: 'scheduled',
-        auctionDate: '2024-03-30',
-        startTime: null,
-        endTime: null,
         createdAt: '2024-03-01T00:00:00Z',
         updatedAt: '2024-03-01T00:00:00Z',
-      };
+      } as AuctionSummary;
 
       const result = toAuction(entity);
 
-      expect(result.startTime).toBeNull();
-      expect(result.endTime).toBeNull();
+      expect(result.startAt).toBeNull();
+      expect(result.endAt).toBeNull();
     });
   });
 });

@@ -102,14 +102,13 @@ func (h *BuyerHandler) GetAuctions(w http.ResponseWriter, r *http.Request) {
 	resp := make([]response.Auction, len(auctions))
 	for i, a := range auctions {
 		resp[i] = response.Auction{
-			ID:          a.ID,
-			VenueID:     a.VenueID,
-			AuctionDate: a.Period.AuctionDate.Format("2006-01-02"),
-			StartTime:   util.FormatTime(a.Period.StartAt),
-			EndTime:     util.FormatTime(a.Period.EndAt),
-			Status:      string(a.Status),
-			CreatedAt:   a.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:   a.UpdatedAt.Format(time.RFC3339),
+			ID:        a.ID,
+			VenueID:   a.VenueID,
+			StartAt:   util.FormatTimestamp(a.Period.StartAt),
+			EndAt:     util.FormatTimestamp(a.Period.EndAt),
+			Status:    string(a.Status),
+			CreatedAt: a.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: a.UpdatedAt.Format(time.RFC3339),
 		}
 	}
 

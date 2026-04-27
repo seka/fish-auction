@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -92,7 +91,7 @@ func (r *BidStore) ListPurchasesByBuyerID(ctx context.Context, buyerID int) ([]m
 			t.price,
 			t.buyer_id,
 			ai.auction_id,
-			a.auction_date,
+			TO_CHAR(a.start_at AT TIME ZONE 'Asia/Tokyo', 'YYYY-MM-DD'),
 			t.created_at
 		FROM transactions t
 		JOIN auction_items ai ON t.item_id = ai.id
@@ -133,9 +132,8 @@ func (r *BidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]mo
 		SELECT DISTINCT
 			a.id,
 			a.venue_id,
-			a.auction_date,
-			a.start_time,
-			a.end_time,
+			a.start_at,
+			a.end_at,
 			a.status,
 			a.created_at,
 			a.updated_at
@@ -143,7 +141,7 @@ func (r *BidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]mo
 		JOIN auction_items ai ON a.id = ai.auction_id
 		JOIN transactions t ON ai.id = t.item_id
 		WHERE t.buyer_id = $1
-		ORDER BY a.auction_date DESC, a.created_at DESC
+		ORDER BY a.start_at DESC, a.created_at DESC
 	`, buyerID)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Auction", buyerID, "ListAuctionsByBuyerID")
@@ -153,21 +151,18 @@ func (r *BidStore) ListAuctionsByBuyerID(ctx context.Context, buyerID int) ([]mo
 	var auctions []model.Auction
 	for rows.Next() {
 		var a model.Auction
-		var auctionDate time.Time
-		var startTime, endTime *time.Time
 		if err := rows.Scan(
 			&a.ID,
 			&a.VenueID,
-			&auctionDate,
-			&startTime,
-			&endTime,
+			&a.Period.StartAt,
+			&a.Period.EndAt,
 			&a.Status,
 			&a.CreatedAt,
 			&a.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
-		a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
+		a.Period = model.NewAuctionPeriod(a.Period.StartAt, a.Period.EndAt)
 		auctions = append(auctions, a)
 	}
 	return auctions, dserrors.HandleError(rows.Err(), "Auction", buyerID, "ListAuctionsByBuyerID")

@@ -29,7 +29,15 @@ export const useAuctionMutation = () => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: string }) => updateAuctionStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+      startAt,
+    }: {
+      id: number;
+      status: string;
+      startAt?: string;
+    }) => updateAuctionStatus(id, status, startAt),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminAuctionKeys.all });
       queryClient.invalidateQueries({ queryKey: auctionKeys.publicAll });

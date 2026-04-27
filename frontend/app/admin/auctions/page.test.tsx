@@ -2,11 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AuctionsPage from './page';
 import { useAuctionManagement } from '@/src/features/admin/states/useAuctionManagement';
-import {
-  selectAuctionStatus,
-  selectTimeLabel,
-  toJSTDate,
-} from '@/src/features/auctions/selectors/selectAuction';
+import { selectAuctionStatus, selectTimeLabel } from '@/src/features/admin/selectors/selectAuction';
 import { Auction } from '@/src/features/admin/types/auction';
 import { AuctionStatus } from '@/src/data/entities/auction';
 
@@ -14,23 +10,21 @@ import { AuctionStatus } from '@/src/data/entities/auction';
 const createMockAuction = (
   id: number,
   venueId: number,
-  auctionDate: string,
+  startAt: string | null,
   status: AuctionStatus,
-  startTime: string | null = null,
-  endTime: string | null = null,
+  endAt: string | null = null,
 ): Auction => {
   const statusObj = selectAuctionStatus(status);
+  const startDate = startAt ? new Date(startAt) : null;
+  const endDate = endAt ? new Date(endAt) : null;
   return {
     id,
     venueId,
     status: statusObj,
     duration: {
-      startAt: toJSTDate(auctionDate, startTime),
-      endAt: toJSTDate(auctionDate, endTime),
-      dateLabel: auctionDate,
-      startTime: startTime || '',
-      endTime: endTime || '',
-      label: selectTimeLabel(startTime, endTime),
+      startAt: startDate,
+      endAt: endDate,
+      label: selectTimeLabel(startDate, endDate),
     },
     actions: {
       canStart: statusObj.isScheduled,
@@ -64,8 +58,14 @@ describe('AuctionsPage', () => {
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
         auctions: [
-          createMockAuction(1, 1, '2023-01-01', 'scheduled'),
-          createMockAuction(2, 1, '2023-01-02', 'in_progress', '10:00:00', '12:00:00'),
+          createMockAuction(1, 1, null, 'scheduled'),
+          createMockAuction(
+            2,
+            1,
+            '2023-01-02T10:00:00+09:00',
+            'in_progress',
+            '2023-01-02T12:00:00+09:00',
+          ),
         ],
         isLoading: false,
         isCreating: false,
@@ -160,7 +160,7 @@ describe('AuctionsPage', () => {
     vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
-        auctions: [createMockAuction(1, 1, '2023-01-01', 'scheduled')],
+        auctions: [createMockAuction(1, 1, null, 'scheduled')],
         isLoading: false,
         isCreating: false,
         isUpdating: false,
@@ -200,7 +200,15 @@ describe('AuctionsPage', () => {
     vi.mocked(useAuctionManagement).mockReturnValue({
       state: {
         venues: [{ id: 1, name: 'Venue 1', createdAt: '2023-01-01' }],
-        auctions: [createMockAuction(2, 1, '2023-01-02', 'in_progress', '10:00:00', '12:00:00')],
+        auctions: [
+          createMockAuction(
+            2,
+            1,
+            '2023-01-02T10:00:00+09:00',
+            'in_progress',
+            '2023-01-02T12:00:00+09:00',
+          ),
+        ],
         isLoading: false,
         isCreating: false,
         isUpdating: false,

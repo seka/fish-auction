@@ -46,15 +46,11 @@ func (m *mockAuctionRepository) Delete(_ context.Context, _ int) error {
 }
 
 func TestListAuctionsUseCase_Execute(t *testing.T) {
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	fixedNow := time.Date(2024, 1, 1, 10, 0, 0, 0, jst)
-	today := time.Date(2024, 1, 1, 0, 0, 0, 0, jst)
-	pastDate := today.AddDate(0, 0, -1)
-	mockClock := mock.NewMockClock(fixedNow)
+	mockClock := mock.NewMockClock(time.Date(2024, 1, 1, 10, 0, 0, 0, time.UTC))
 
 	auctions := []model.Auction{
-		{ID: 1, Status: model.AuctionStatusScheduled, Period: model.NewAuctionPeriod(today, nil, nil)},
-		{ID: 2, Status: model.AuctionStatusInProgress, Period: model.NewAuctionPeriod(pastDate, nil, nil)},
+		{ID: 1, Status: model.AuctionStatusScheduled, Period: model.NewAuctionPeriod(nil, nil)},
+		{ID: 2, Status: model.AuctionStatusInProgress, Period: model.NewAuctionPeriod(nil, nil)},
 	}
 
 	tests := []struct {

@@ -4,6 +4,7 @@ import { Box, Button, Stack, Text, Input, Card, HStack, Select } from '@atoms';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
+import { formatDate } from '@/src/utils/date';
 import { ItemFormData } from '@schemas/admin';
 import { Auction, Fisherman, AuctionItem } from '../../types';
 
@@ -59,7 +60,8 @@ export const ItemForm = ({
               <option value="">{t('Admin.Items.placeholder_select_auction')}</option>
               {auctions.map((auction) => (
                 <option key={auction.id} value={auction.id}>
-                  {auction.duration.dateLabel} {auction.duration.label} (ID: {auction.id})
+                  {auction.duration.startAt ? formatDate(auction.duration.startAt) : '-'}{' '}
+                  {auction.duration.label} (ID: {auction.id})
                 </option>
               ))}
             </Select>

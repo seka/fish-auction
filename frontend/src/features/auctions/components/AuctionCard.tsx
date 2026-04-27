@@ -5,6 +5,7 @@ import { Box, HStack, Text, Card, Stack } from '@atoms';
 import { AuctionStatusBadge } from './AuctionStatusBadge';
 import { css } from 'styled-system/css';
 import { useTranslations } from 'next-intl';
+import { formatDate } from '@/src/utils/date';
 import { Auction } from '../types';
 
 interface AuctionCardProps {
@@ -41,7 +42,7 @@ export const AuctionCard = ({ auction, venueName }: AuctionCardProps) => {
           <HStack justify="between" mb="4">
             <AuctionStatusBadge status={auction.status} />
             <Text fontSize="sm" className={css({ color: 'gray.500' })}>
-              {auction.duration.dateLabel}
+              {auction.duration.startAt ? formatDate(auction.duration.startAt) : '-'}
             </Text>
           </HStack>
 

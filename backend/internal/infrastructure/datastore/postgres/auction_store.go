@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -27,63 +26,57 @@ func NewAuctionStore(db datastore.Database) *AuctionStore {
 
 // Create stores a new auction.
 func (r *AuctionStore) Create(ctx context.Context, auction *model.Auction) (*model.Auction, error) {
-	query := `INSERT INTO auctions (venue_id, auction_date, start_time, end_time, status)
-			  VALUES ($1, $2, $3, $4, $5)
-			  RETURNING id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at`
+	query := `INSERT INTO auctions (venue_id, start_at, end_at, status)
+			  VALUES ($1, $2, $3, $4)
+			  RETURNING id, venue_id, start_at, end_at, status, created_at, updated_at`
 
 	var a model.Auction
-	var auctionDate time.Time
-	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query,
-		auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
-		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+		auction.VenueID, auction.Period.StartAt, auction.Period.EndAt, auction.Status).
+		Scan(&a.ID, &a.VenueID, &a.Period.StartAt, &a.Period.EndAt, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		if dserrors.IsUniqueViolation(err) {
-			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on %s", auction.VenueID, auction.Period.AuctionDate.Format("2006-01-02"))}
+			return nil, &apperrors.ConflictError{Message: fmt.Sprintf("Auction already exists for venue %d on this date", auction.VenueID)}
 		}
 		return nil, dserrors.HandleError(err, "Auction", nil, "failed to create auction")
 	}
-	a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
+	a.Period = model.NewAuctionPeriod(a.Period.StartAt, a.Period.EndAt)
 	return &a, nil
 }
 
 // FindByID returns an auction by its ID.
 func (r *AuctionStore) FindByID(ctx context.Context, id int) (*model.Auction, error) {
-	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
+	query := `SELECT id, venue_id, start_at, end_at, status, created_at, updated_at
 			  FROM auctions WHERE id = $1`
 
 	var a model.Auction
-	var auctionDate time.Time
-	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query, id).
-		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+		Scan(&a.ID, &a.VenueID, &a.Period.StartAt, &a.Period.EndAt, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Auction", id, "failed to get auction by ID")
 	}
-	a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
+	a.Period = model.NewAuctionPeriod(a.Period.StartAt, a.Period.EndAt)
 	return &a, nil
 }
 
 // FindByIDWithLock returns an auction by its ID with a lock.
 func (r *AuctionStore) FindByIDWithLock(ctx context.Context, id int) (*model.Auction, error) {
-	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
+	query := `SELECT id, venue_id, start_at, end_at, status, created_at, updated_at
 			  FROM auctions WHERE id = $1 FOR UPDATE`
 
 	var a model.Auction
-	var auctionDate time.Time
-	var startTime, endTime *time.Time
 	err := r.db.QueryRow(ctx, query, id).
-		Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt)
+		Scan(&a.ID, &a.VenueID, &a.Period.StartAt, &a.Period.EndAt, &a.Status, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Auction", id, "failed to get auction by ID with lock")
 	}
-	a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
+	a.Period = model.NewAuctionPeriod(a.Period.StartAt, a.Period.EndAt)
 	return &a, nil
 }
 
 // List returns a list of auctions based on the given filters.
 func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilters) ([]model.Auction, error) {
-	query := `SELECT id, venue_id, auction_date, start_time, end_time, status, created_at, updated_at
+	query := `SELECT id, venue_id, start_at, end_at, status, created_at, updated_at
 			  FROM auctions`
 
 	var conditions []string
@@ -96,9 +89,14 @@ func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 			args = append(args, *filters.VenueID)
 			argIndex++
 		}
-		if filters.AuctionDate != nil {
-			conditions = append(conditions, fmt.Sprintf("auction_date = $%d", argIndex))
-			args = append(args, *filters.AuctionDate)
+		if filters.StartFrom != nil {
+			conditions = append(conditions, fmt.Sprintf("(start_at AT TIME ZONE 'Asia/Tokyo')::date >= ($%d::timestamptz AT TIME ZONE 'Asia/Tokyo')::date", argIndex))
+			args = append(args, *filters.StartFrom)
+			argIndex++
+		}
+		if filters.StartTo != nil {
+			conditions = append(conditions, fmt.Sprintf("(start_at AT TIME ZONE 'Asia/Tokyo')::date <= ($%d::timestamptz AT TIME ZONE 'Asia/Tokyo')::date", argIndex))
+			args = append(args, *filters.StartTo)
 			argIndex++
 		}
 		if filters.Status != nil {
@@ -106,21 +104,12 @@ func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 			args = append(args, *filters.Status)
 			argIndex++
 		}
-		if filters.StartDate != nil {
-			conditions = append(conditions, fmt.Sprintf("auction_date >= $%d", argIndex))
-			args = append(args, *filters.StartDate)
-			argIndex++
-		}
-		if filters.EndDate != nil {
-			conditions = append(conditions, fmt.Sprintf("auction_date <= $%d", argIndex))
-			args = append(args, *filters.EndDate)
-		}
 	}
 
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
-	query += " ORDER BY auction_date DESC, created_at DESC"
+	query += " ORDER BY start_at DESC, created_at DESC"
 
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
@@ -131,12 +120,10 @@ func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 	var auctions []model.Auction
 	for rows.Next() {
 		var a model.Auction
-		var auctionDate time.Time
-		var startTime, endTime *time.Time
-		if err := rows.Scan(&a.ID, &a.VenueID, &auctionDate, &startTime, &endTime, &a.Status, &a.CreatedAt, &a.UpdatedAt); err != nil {
+		if err := rows.Scan(&a.ID, &a.VenueID, &a.Period.StartAt, &a.Period.EndAt, &a.Status, &a.CreatedAt, &a.UpdatedAt); err != nil {
 			return nil, dserrors.HandleError(err, "Auction", nil, "failed to scan auction row")
 		}
-		a.Period = model.NewAuctionPeriod(auctionDate, startTime, endTime)
+		a.Period = model.NewAuctionPeriod(a.Period.StartAt, a.Period.EndAt)
 		auctions = append(auctions, a)
 	}
 	if err := rows.Err(); err != nil {
@@ -156,11 +143,11 @@ func (r *AuctionStore) ListByVenue(ctx context.Context, venueID int) ([]model.Au
 // Update updates an existing auction.
 func (r *AuctionStore) Update(ctx context.Context, auction *model.Auction) error {
 	query := `UPDATE auctions
-			  SET venue_id = $1, auction_date = $2, start_time = $3, end_time = $4, status = $5, updated_at = CURRENT_TIMESTAMP
-			  WHERE id = $6`
+			  SET venue_id = $1, start_at = $2, end_at = $3, status = $4, updated_at = CURRENT_TIMESTAMP
+			  WHERE id = $5`
 
 	rowsAffected, err := r.db.Execute(ctx, query,
-		auction.VenueID, auction.Period.AuctionDate, auction.Period.StartAt, auction.Period.EndAt, auction.Status, auction.ID)
+		auction.VenueID, auction.Period.StartAt, auction.Period.EndAt, auction.Status, auction.ID)
 	if err != nil {
 		if dserrors.IsUniqueViolation(err) {
 			return &apperrors.ConflictError{Message: "Auction already exists for this venue and time"}

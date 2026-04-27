@@ -7,9 +7,8 @@ describe('admin/types/auction toAuction', () => {
     const entity: EntityAuction = {
       id: 1,
       venueId: 10,
-      auctionDate: '2024-03-30',
-      startTime: '10:00:00',
-      endTime: '12:00:00',
+      startAt: '2024-03-30T10:00:00+09:00',
+      endAt: '2024-03-30T12:00:00+09:00',
       status: 'in_progress',
       createdAt: '2024-03-01T00:00:00Z',
       updatedAt: '2024-03-01T00:00:00Z',
@@ -28,7 +27,7 @@ describe('admin/types/auction toAuction', () => {
       isCancelled: false,
     });
     expect(result.duration.startAt).toBeInstanceOf(Date);
-    expect(result.duration.startAt.toISOString()).toBe('2024-03-30T01:00:00.000Z');
+    expect(result.duration.startAt!.toISOString()).toBe('2024-03-30T01:00:00.000Z');
     expect(result.duration.label).toBe('10:00 ~ 12:00');
     expect(result.actions).toEqual({
       canStart: false,
@@ -37,11 +36,10 @@ describe('admin/types/auction toAuction', () => {
     expect(result.createdAt).toBe('2024-03-01T00:00:00Z');
   });
 
-  it('should handle null startTime in admin mapping', () => {
+  it('should handle null startAt in admin mapping', () => {
     const entity: EntityAuction = {
       id: 1,
       venueId: 10,
-      auctionDate: '2024-03-30',
       status: 'scheduled',
       createdAt: '2024-03-01T00:00:00Z',
       updatedAt: '2024-03-01T00:00:00Z',

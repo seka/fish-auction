@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { formatDateTimeForInput, toJSTISOString } from '@/src/utils/date';
 import { getAuctionSchema, AuctionFormInput } from '@schemas/auction';
 import { useAdminAuctions, useAdminAuctionMutations } from '../queries/useAuctions';
 import { useAdminVenues } from '../queries/useVenues';
@@ -37,11 +38,16 @@ export const useAuctionManagement = () => {
 
   const { reset, handleSubmit, setValue } = form;
 
+  // Date オブジェクトを datetime-local 入力形式 "YYYY-MM-DDTHH:MM" (JST) に変換する
+  const toDatetimeLocalString = (date: Date): string => formatDateTimeForInput(date);
+
   const onSubmit = async (data: AuctionFormInput) => {
     try {
       const payload = {
         ...data,
         venueId: Number(data.venueId),
+        startAt: toJSTISOString(data.startAt),
+        endAt: data.endAt ? toJSTISOString(data.endAt) : undefined,
       };
 
       if (editingAuction) {
@@ -72,9 +78,8 @@ export const useAuctionManagement = () => {
   const onEdit = (auction: Auction) => {
     setEditingAuction(auction);
     setValue('venueId', auction.venueId);
-    setValue('auctionDate', auction.duration.dateLabel);
-    setValue('startTime', auction.duration.startTime ?? undefined);
-    setValue('endTime', auction.duration.endTime ?? undefined);
+    setValue('startAt', auction.duration.startAt ? toDatetimeLocalString(auction.duration.startAt) : '');
+    setValue('endAt', auction.duration.endAt ? toDatetimeLocalString(auction.duration.endAt) : '');
   };
 
   const onCancelEdit = () => {
@@ -95,7 +100,21 @@ export const useAuctionManagement = () => {
 
   const onStatusChange = async (id: number, status: string) => {
     try {
-      await updateStatus({ id, status });
+      let startAt: string | undefined;
+      if (status === 'in_progress') {
+        const defaultValue = formatDateTimeForInput(new Date());
+        const input = window.prompt(t('Admin.Auctions.prompt_start_at'), defaultValue);
+        if (input === null) {
+          return;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
+          setMessage(t('Admin.Auctions.error_start_at_format'));
+          return;
+        }
+        startAt = toJSTISOString(input);
+      }
+
+      await updateStatus({ id, status, startAt });
       setMessage(t('Admin.Auctions.success_status_update'));
     } catch {
       setMessage(t('Admin.Auctions.fail_status_update'));

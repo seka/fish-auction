@@ -33,8 +33,15 @@ export const updateAuction = async (id: number, data: AuctionFormData): Promise<
   return apiClient.put<void>(`/api/admin/auctions/${id}`, data);
 };
 
-export const updateAuctionStatus = async (id: number, status: string): Promise<void> => {
-  return apiClient.patch<void>(`/api/admin/auctions/${id}/status`, { status });
+export const updateAuctionStatus = async (
+  id: number,
+  status: string,
+  startAt?: string,
+): Promise<void> => {
+  return apiClient.patch<void>(`/api/admin/auctions/${id}/status`, {
+    status,
+    startAt,
+  });
 };
 
 export const deleteAuction = async (id: number): Promise<void> => {
