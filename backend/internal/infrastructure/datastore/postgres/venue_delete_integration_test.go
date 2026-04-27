@@ -65,8 +65,8 @@ func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
 	var itemID int
 	t.Logf("DEBUG: venue_delete: fishermanID=%d, auctionID=%d", fishermanID, auctionID)
 	err = db.QueryRowContext(ctx, `
-		INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit, status)
-		VALUES ($1, $2, 'Maguro', 10, 'kg', 'Pending') RETURNING id
+		INSERT INTO auction_items (fisherman_id, auction_id, fish_type, quantity, unit)
+		VALUES ($1, $2, 'Maguro', 10, 'kg') RETURNING id
 	`, fishermanID, auctionID).Scan(&itemID)
 	assert.NoError(t, err)
 
