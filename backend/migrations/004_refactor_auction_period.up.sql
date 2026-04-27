@@ -1,7 +1,8 @@
 -- 004_refactor_auction_period.up.sql
 -- auctions テーブルを auction_date/start_time/end_time から start_at/end_at (TIMESTAMPTZ) へ移行する。
--- 001_init.up.sql で start_at/end_at カラムと新インデックスは作成済みのため、
--- このマイグレーションはデータ移行と旧カラムの削除のみを担う。
+-- フレッシュ DB では 001_init.up.sql に start_at/end_at が含まれるが、
+-- 既存 DB では auctions テーブルが既に存在すると 001 が列追加を行わないため、
+-- 本マイグレーション内でも必要に応じて start_at/end_at を追加する。
 -- フレッシュ DB（001 から構築済み）では旧カラムが存在しないため全 DO ブロックが no-op となる。
 
 DO $$
@@ -11,6 +12,10 @@ BEGIN
         SELECT 1 FROM information_schema.columns
         WHERE table_name = 'auctions' AND column_name = 'auction_date'
     ) THEN
+        -- 既存DBアップグレード時に start_at/end_at が未作成でも失敗しないよう補完
+        ALTER TABLE auctions ADD COLUMN IF NOT EXISTS start_at TIMESTAMPTZ;
+        ALTER TABLE auctions ADD COLUMN IF NOT EXISTS end_at TIMESTAMPTZ;
+
         -- auction_date + start_time/end_time を JST タイムスタンプとして start_at/end_at へ移行
         UPDATE auctions
         SET
