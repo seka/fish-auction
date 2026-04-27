@@ -12,10 +12,12 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 	github.com/lib/pq v1.12.3
-	github.com/redis/go-redis/v9 v9.17.3
+	github.com/redis/go-redis/v9 v9.18.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.50.0
 )
+
+require go.uber.org/atomic v1.11.0 // indirect
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.14 // indirect
