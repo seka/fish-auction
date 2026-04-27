@@ -171,10 +171,10 @@ func TestServerIntegration(t *testing.T) {
 		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
 
 		// 3. Register Fisherman (using Admin URL)
-		fishermanID := registerUser(t, client, serverURL+"/api/admin/fishermen", `{"name": "Captain Ahab"}`)
+		fishermanID := registerUser(t, client, serverURL+"/api/admin/fishermen", `{"name": "Captain Ahab"}`, adminCookies)
 
 		// 4. Register Buyer (using Admin URL)
-		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "Password123", "organization": "Pequod", "contact_info": "sea"}`)
+		_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Ishmael", "email": "ishmael@example.com", "password": "Password123", "organization": "Pequod", "contact_info": "sea"}`, adminCookies)
 
 		// 5. Login Buyer
 		_ = login(t, client, serverURL+"/api/buyer/login", `{"email": "ishmael@example.com", "password": "Password123"}`)
@@ -227,26 +227,22 @@ func TestServerIntegration(t *testing.T) {
 		jarB, _ := cookiejar.New(nil)
 		clientB := &http.Client{Jar: jarB}
 
-		// 1. Create and Login Buyer A (Previous Bidder)
-		_ = registerUser(t, clientA, serverURL+"/api/admin/buyers", `{"name": "Buyer A", "email": "buyera@example.com", "password": "Password123", "organization": "Org A", "contact_info": "email"}`)
+		// 1. Login Admin first (required to register buyers)
+		adminCookies := login(t, clientA, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
+
+		// 2. Create and Login Buyer A (Previous Bidder)
+		_ = registerUser(t, clientA, serverURL+"/api/admin/buyers", `{"name": "Buyer A", "email": "buyera@example.com", "password": "Password123", "organization": "Org A", "contact_info": "email"}`, adminCookies)
 		cookiesA := login(t, clientA, serverURL+"/api/buyer/login", `{"email": "buyera@example.com", "password": "Password123"}`)
 
-		// 2. Subscribe Buyer A to Push Notifications
+		// 3. Subscribe Buyer A to Push Notifications
 		subscribePush(t, clientA, serverURL+"/api/buyer/push/subscribe", `{"endpoint": "https://fcm.googleapis.com/fcm/send/fake-token", "keys": {"p256dh": "fake-p256dh", "auth": "fake-auth"}}`, cookiesA)
 
-		// 3. Create and Login Buyer B (New Bidder)
-		_ = registerUser(t, clientB, serverURL+"/api/admin/buyers", `{"name": "Buyer B", "email": "buyerb@example.com", "password": "Password123", "organization": "Org B", "contact_info": "email"}`)
+		// 4. Create and Login Buyer B (New Bidder)
+		_ = registerUser(t, clientB, serverURL+"/api/admin/buyers", `{"name": "Buyer B", "email": "buyerb@example.com", "password": "Password123", "organization": "Org B", "contact_info": "email"}`, adminCookies)
 		cookiesB := login(t, clientB, serverURL+"/api/buyer/login", `{"email": "buyerb@example.com", "password": "Password123"}`)
 
-		// 4. Setup Item for Bidding (reuse setup from previous test or create new one)
-		// To be safe, let's just use the item created in the previous run if possible,
-		// but since it's a separate t.Run, let's find the item or rely on IDs.
-		// For simplicity, we assume the environment is clean and we use a direct repository call to get an available item
-		// or just repeat the minimal setup.
-		// Here, we'll reuse the itemID = 1 if the previous test was successful.
-		// BUT it's better to create a fresh one.
-		adminCookies := login(t, clientA, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
-		fishermanID := registerUser(t, clientA, serverURL+"/api/admin/fishermen", `{"name": "Notification Fisherman"}`)
+		// 5. Setup Item for Bidding
+		fishermanID := registerUser(t, clientA, serverURL+"/api/admin/fishermen", `{"name": "Notification Fisherman"}`, adminCookies)
 		venueID := createResource(t, clientA, serverURL+"/api/admin/venues", `{"name": "Notification Venue"}`, adminCookies)
 		jst := time.FixedZone("Asia/Tokyo", 9*60*60)
 		now := time.Now().In(jst)
@@ -340,12 +336,15 @@ func waitForServer(targetURL string) error {
 
 // Helper functions (registerUser, login, etc) follow...
 
-func registerUser(t *testing.T, client *http.Client, urlStr, jsonBody string) int {
+func registerUser(t *testing.T, client *http.Client, urlStr, jsonBody string, cookies []*http.Cookie) int {
 	req, err := http.NewRequestWithContext(context.Background(), "POST", urlStr, strings.NewReader(jsonBody))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to register: %v", err)
