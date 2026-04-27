@@ -3,12 +3,12 @@ name: Backend CI
 on:
   push:
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yml'
+      - "backend/**"
+      - ".github/workflows/backend.yml"
   pull_request:
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yml'
+      - "backend/**"
+      - ".github/workflows/backend.yml"
 
 jobs:
   test:
@@ -57,6 +57,18 @@ jobs:
         env:
           PGPASSWORD: postgres
 
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.2
+        with:
+          image-tag: "latest"
+          install-awslocal: "true"
+          use-pro: "true"
+        env:
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+
+      - name: Setup LocalStack resources
+        run: bash backend/scripts/init.saws.sh
+
       - name: Run migrations
         run: |
           for f in $(ls migrations/*.up.sql | sort); do
@@ -98,3 +110,10 @@ jobs:
           REDIS_PORT: 6379
           RUN_INTEGRATION_TESTS: "true"
           RUN_STRESS_TESTS: "false"
+          SQS_QUEUE_URL: "http://localhost:4566/000000000000/notification-queue"
+          SQS_REGION: ap-northeast-1
+          SQS_ENDPOINT: "http://localhost:4566"
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-northeast-1
+          AWS_REGION: ap-northeast-1
