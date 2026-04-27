@@ -203,7 +203,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			if tc.method == http.MethodPost || tc.method == http.MethodPut || tc.method == http.MethodPatch {
 				payload := `{"name": "test", "email": "test@example.com", "password": "pass", "organization": "org", "contact_info": "info", "status": "in_progress"}`
 				if strings.Contains(tc.path, "auctions") {
-					payload = `{"venue_id": 1, "auction_date": "2025-01-01", "start_time": "10:00:00", "end_time": "11:00:00", "status": "scheduled"}`
+					payload = `{"venue_id": 1, "start_at": "2025-01-01T10:00:00+09:00", "end_at": "2025-01-01T11:00:00+09:00", "status": "scheduled"}`
 				}
 				body = strings.NewReader(payload)
 			}

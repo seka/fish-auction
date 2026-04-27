@@ -27,7 +27,7 @@ describe('Auction Schemas', () => {
     it('should accept valid auction data', () => {
       const data = {
         venueId: '1',
-        auctionDate: '2026-03-30',
+        startAt: '2026-03-30',
         status: 'scheduled',
       };
       const result = auctionSchema.safeParse(data);
@@ -53,11 +53,11 @@ describe('Auction Schemas', () => {
     it('should reject empty auctionDate', () => {
       const result = auctionSchema.safeParse({
         venueId: '1',
-        auctionDate: '',
+        startAt: '',
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('key:required(field:key:Admin.Auctions.date)');
+        expect(result.error.issues[0].message).toBe('key:required(field:key:Admin.Auctions.start_time)');
       }
     });
   });
