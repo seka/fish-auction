@@ -51,9 +51,9 @@ func TestVenueStore_Delete_Conflict_Integration(t *testing.T) {
 	endTime := today.Add(21 * time.Hour)
 
 	err = db.QueryRowContext(ctx, `
-		INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date)
-		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
-	`, createdVenue.ID, startTime, endTime, today).Scan(&auctionID)
+		INSERT INTO auctions (venue_id, status, start_at, end_at)
+		VALUES ($1, 'scheduled', $2, $3) RETURNING id
+	`, createdVenue.ID, startTime, endTime).Scan(&auctionID)
 	assert.NoError(t, err)
 
 	// 2c. Create Fisherman

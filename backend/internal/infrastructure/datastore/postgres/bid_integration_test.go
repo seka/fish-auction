@@ -70,9 +70,9 @@ func TestItemStore_FindByID_IncludesHighestBid(t *testing.T) {
 
 	var auctionID int
 	err = tx.QueryRowContext(ctx, `
-		INSERT INTO public.auctions (venue_id, status, start_time, end_time, auction_date)
-		VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id
-	`, venueID, startTime, endTime, today).Scan(&auctionID)
+		INSERT INTO public.auctions (venue_id, status, start_at, end_at)
+		VALUES ($1, 'scheduled', $2, $3) RETURNING id
+	`, venueID, startTime, endTime).Scan(&auctionID)
 	require.NoError(t, err)
 
 	// Fisherman
@@ -167,7 +167,7 @@ func TestItemStore_FindByID_NoBids(t *testing.T) {
 	endTime := today.Add(21 * time.Hour)
 
 	var auctionID int
-	_ = db.QueryRowContext(ctx, "INSERT INTO auctions (venue_id, status, start_time, end_time, auction_date) VALUES ($1, 'scheduled', $2, $3, $4) RETURNING id", venueID, startTime, endTime, today).Scan(&auctionID)
+	_ = db.QueryRowContext(ctx, "INSERT INTO auctions (venue_id, status, start_at, end_at) VALUES ($1, 'scheduled', $2, $3) RETURNING id", venueID, startTime, endTime).Scan(&auctionID)
 
 	// Fisherman
 	var fishermanID int
