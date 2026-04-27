@@ -58,7 +58,10 @@ jobs:
           PGPASSWORD: postgres
 
       - name: Run migrations
-        run: psql -h localhost -U postgres -d fish_auction -f migrations/001_init.sql
+        run: |
+          for f in $(ls migrations/*.up.sql | sort); do
+            psql -h localhost -U postgres -d fish_auction -f "$f"
+          done
         working-directory: backend
         env:
           PGPASSWORD: postgres
