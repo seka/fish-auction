@@ -45,9 +45,9 @@ func TestBidStore_ListPurchasesByBuyerID(t *testing.T) {
 	repo := postgres.NewBidStore(postgres.NewClient(db))
 	buyerID := 1
 
-	mock.ExpectQuery("SELECT t.id, t.item_id, ai.fish_type, ai.quantity, ai.unit, t.price, t.buyer_id, ai.auction_id, a.auction_date, t.created_at FROM transactions t .* WHERE t.buyer_id = \\$1").
+	mock.ExpectQuery("SELECT t.id, t.item_id, ai.fish_type, ai.quantity, ai.unit, t.price, t.buyer_id, ai.auction_id, TO_CHAR\\(a\\.start_at AT TIME ZONE 'Asia/Tokyo', 'YYYY-MM-DD'\\), t.created_at FROM transactions t .* WHERE t.buyer_id = \\$1").
 		WithArgs(buyerID).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "item_id", "fish_type", "quantity", "unit", "price", "buyer_id", "auction_id", "auction_date", "created_at"}).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "item_id", "fish_type", "quantity", "unit", "price", "buyer_id", "auction_id", "start_at", "created_at"}).
 			AddRow(1, 101, "Tuna", 1, "kg", 1500, buyerID, 1, "2023-01-01", time.Now()))
 
 	list, err := repo.ListPurchasesByBuyerID(context.Background(), buyerID)
