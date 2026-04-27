@@ -174,8 +174,8 @@ describe('AuctionsListPage', () => {
       .filter((link) => link.getAttribute('href')?.startsWith('/auctions/'));
 
     expect(cards[0]).toHaveTextContent('AuctionStatus.in_progress'); // ID 2
-    expect(cards[1]).toHaveTextContent('2023-12-01');
-    expect(cards[2]).toHaveTextContent('2023-12-05');
+    expect(cards[1]).toHaveTextContent('2023/12/01');
+    expect(cards[2]).toHaveTextContent('2023/12/05');
   });
 
   it('resolves and displays venue name', () => {
