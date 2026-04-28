@@ -10,6 +10,8 @@ type JobType string
 const (
 	// JobTypePushNotification is the job type for sending push notifications.
 	JobTypePushNotification JobType = "push_notification"
+	// JobTypeEmail is the job type for sending emails.
+	JobTypeEmail JobType = "email"
 )
 
 // NewJobType creates a JobType from a string and validates it.
@@ -17,6 +19,8 @@ func NewJobType(s string) (JobType, error) {
 	switch JobType(s) {
 	case JobTypePushNotification:
 		return JobTypePushNotification, nil
+	case JobTypeEmail:
+		return JobTypeEmail, nil
 	default:
 		return "", fmt.Errorf("unsupported job type: %s", s)
 	}
