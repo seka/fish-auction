@@ -48,7 +48,7 @@ func TestServerIntegration(t *testing.T) {
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// 3. Service を初期化
-	realServiceReg, err := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
+	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg)
 	if err != nil {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
