@@ -1,17 +1,17 @@
-name: Frontend CI
+name: Frontend Lint
 
 on:
   push:
     paths:
       - 'frontend/**'
-      - '.github/workflows/frontend.yml'
+      - '.github/workflows/frontend-lint.yml'
   pull_request:
     paths:
       - 'frontend/**'
-      - '.github/workflows/frontend.yml'
+      - '.github/workflows/frontend-lint.yml'
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -27,6 +27,14 @@ jobs:
         run: npm install
         working-directory: frontend
 
-      - name: Run tests
-        run: npm test
+      - name: Run lint
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Run format check
+        run: npm run format:check
+        working-directory: frontend
+
+      - name: Run typecheck
+        run: npm run typecheck
         working-directory: frontend
