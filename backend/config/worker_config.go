@@ -23,6 +23,9 @@ type WorkerConfig struct {
 	SQSQueueURL      string
 	SQSRegion        string
 	SQSEndpoint      string
+	SMTPHost         string
+	SMTPPort         string
+	SMTPFrom         string
 }
 
 // LoadWorkerConfig loads configuration for the background worker.
@@ -44,6 +47,9 @@ func LoadWorkerConfig() (*WorkerConfig, error) {
 		SQSQueueURL:      GetEnv("SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
 		SQSRegion:        GetEnv("SQS_REGION", "ap-northeast-1"),
 		SQSEndpoint:      GetEnv("SQS_ENDPOINT", "http://localhost:4566"),
+		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
+		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
+		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
 	}
 
 	return cfg, nil
@@ -63,6 +69,14 @@ func (c *WorkerConfig) VAPIDConfig() (publicKey, privateKey, subject string) {
 
 func (c *WorkerConfig) SQSConfig() (region, queueURL, endpoint string) {
 	return c.SQSRegion, c.SQSQueueURL, c.SQSEndpoint
+}
+
+func (c *WorkerConfig) SMTPAddress() string {
+	return net.JoinHostPort(c.SMTPHost, c.SMTPPort)
+}
+
+func (c *WorkerConfig) GetSMTPFrom() string {
+	return c.SMTPFrom
 }
 
 func (c *WorkerConfig) DBConnectionURL() string {

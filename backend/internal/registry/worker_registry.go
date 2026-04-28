@@ -45,5 +45,9 @@ func (r *workerRegistry) NewWorker() (*worker.Worker, error) {
 	pushSvc := r.serviceReg.NewPushNotificationService()
 	dispatcher.Register(model.JobTypePushNotification, handler.NewPushNotificationHandler(pushRepo, pushSvc))
 
+	buyerEmailSvc := r.serviceReg.NewBuyerEmailService()
+	adminEmailSvc := r.serviceReg.NewAdminEmailService()
+	dispatcher.Register(model.JobTypeEmail, handler.NewEmailHandler(buyerEmailSvc, adminEmailSvc))
+
 	return worker.NewWorker(r.queue, dispatcher), nil
 }
