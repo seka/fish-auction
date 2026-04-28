@@ -18,6 +18,7 @@ linters:
     - noctx
     - copyloopvar
     - misspell
+    - gofmt
   settings:
     govet:
       enable-all: true

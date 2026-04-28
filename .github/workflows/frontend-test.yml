@@ -1,0 +1,21 @@
+name: Frontend Test
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-test.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-test.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/setup-frontend
+
+      - name: Run tests
+        run: npm test
+        working-directory: frontend

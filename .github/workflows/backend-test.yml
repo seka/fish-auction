@@ -1,14 +1,14 @@
-name: Backend CI
+name: Backend Test
 
 on:
   push:
     paths:
       - "backend/**"
-      - ".github/workflows/backend.yml"
+      - ".github/workflows/backend-test.yml"
   pull_request:
     paths:
       - "backend/**"
-      - ".github/workflows/backend.yml"
+      - ".github/workflows/backend-test.yml"
 
 jobs:
   test:
@@ -37,16 +37,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-
-      - name: Install dependencies
-        run: go mod download
-        working-directory: backend
+      - uses: ./.github/actions/setup-backend
 
       - name: Wait for PostgreSQL
         run: |
