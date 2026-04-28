@@ -10,7 +10,7 @@ const (
 
 // EmailMessage is the wire format for email job messages.
 type EmailMessage struct {
-	EmailType EmailType         `json:"email_type"`
-	To        string            `json:"to"`
+	EmailType EmailType `json:"email_type"`
+	To        string    `json:"to"`
 	ResetURL  string    `json:"reset_url,omitempty"`
 }
