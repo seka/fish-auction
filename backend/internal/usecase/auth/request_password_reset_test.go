@@ -67,7 +67,7 @@ type mockPublishEmailUseCase struct {
 	err      error
 }
 
-func (m *mockPublishEmailUseCase) Execute(_ context.Context, _ emailMessage.EmailType, _ string, _ map[string]string) error {
+func (m *mockPublishEmailUseCase) Execute(_ context.Context, _ emailMessage.EmailMessage) error {
 	if m.err != nil {
 		return m.err
 	}

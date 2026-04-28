@@ -98,7 +98,12 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	q.Set("token", token)
 	resetURL.RawQuery = q.Encode()
 
-	if err := u.publishEmail.Execute(ctx, emailMessage.EmailTypeBuyerPasswordReset, email, map[string]string{"ResetURL": resetURL.String()}); err != nil {
+	msg := emailMessage.EmailMessage{
+		EmailType: emailMessage.EmailTypeBuyerPasswordReset,
+		To:        email,
+		ResetURL:  resetURL.String(),
+	}
+	if err := u.publishEmail.Execute(ctx, msg); err != nil {
 		return fmt.Errorf("failed to enqueue password reset email: %w", err)
 	}
 

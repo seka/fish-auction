@@ -12,5 +12,5 @@ const (
 type EmailMessage struct {
 	EmailType EmailType         `json:"email_type"`
 	To        string            `json:"to"`
-	Data      map[string]string `json:"data"`
+	ResetURL  string    `json:"reset_url,omitempty"`
 }

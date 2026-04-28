@@ -10,7 +10,7 @@ import (
 
 // PublishEmailUseCase defines the interface for enqueuing email jobs.
 type PublishEmailUseCase interface {
-	Execute(ctx context.Context, emailType emailMessage.EmailType, to string, data map[string]string) error
+	Execute(ctx context.Context, msg emailMessage.EmailMessage) error
 }
 
 type publishEmailUseCase struct {
@@ -24,11 +24,6 @@ func NewPublishEmailUseCase(jobQueue service.JobQueue) PublishEmailUseCase {
 	return &publishEmailUseCase{jobQueue: jobQueue}
 }
 
-func (uc *publishEmailUseCase) Execute(ctx context.Context, emailType emailMessage.EmailType, to string, data map[string]string) error {
-	msg := emailMessage.EmailMessage{
-		EmailType: emailType,
-		To:        to,
-		Data:      data,
-	}
+func (uc *publishEmailUseCase) Execute(ctx context.Context, msg emailMessage.EmailMessage) error {
 	return uc.jobQueue.Enqueue(ctx, model.JobTypeEmail, msg)
 }

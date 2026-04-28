@@ -65,7 +65,7 @@ type mockPublishEmailUseCaseForAdmin struct {
 	err error
 }
 
-func (m *mockPublishEmailUseCaseForAdmin) Execute(_ context.Context, _ emailMessage.EmailType, _ string, _ map[string]string) error {
+func (m *mockPublishEmailUseCaseForAdmin) Execute(_ context.Context, _ emailMessage.EmailMessage) error {
 	return m.err
 }
 

@@ -30,9 +30,9 @@ func (h *emailHandler) Handle(ctx context.Context, payload []byte) error {
 
 	switch msg.EmailType {
 	case emailMessage.EmailTypeBuyerPasswordReset:
-		return h.buyerEmailSvc.SendBuyerPasswordReset(ctx, msg.To, msg.Data["ResetURL"])
+		return h.buyerEmailSvc.SendBuyerPasswordReset(ctx, msg.To, msg.ResetURL)
 	case emailMessage.EmailTypeAdminPasswordReset:
-		return h.adminEmailSvc.SendAdminPasswordReset(ctx, msg.To, msg.Data["ResetURL"])
+		return h.adminEmailSvc.SendAdminPasswordReset(ctx, msg.To, msg.ResetURL)
 	default:
 		return fmt.Errorf("unsupported email type: %s", msg.EmailType)
 	}
