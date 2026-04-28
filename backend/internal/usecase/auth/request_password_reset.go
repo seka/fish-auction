@@ -12,6 +12,8 @@ import (
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
 var randRead = rand.Read
@@ -25,7 +27,7 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	buyerRepo    repository.BuyerRepository
 	pwdResetRepo repository.PasswordResetRepository
-	emailService service.BuyerEmailService
+	publishEmail notification.PublishEmailUseCase
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
 	clock        service.Clock
@@ -37,7 +39,7 @@ var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
 func NewRequestPasswordResetUseCase(
 	buyerRepo repository.BuyerRepository,
 	pwdResetRepo repository.PasswordResetRepository,
-	emailService service.BuyerEmailService,
+	publishEmail notification.PublishEmailUseCase,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
 	clock service.Clock,
@@ -45,7 +47,7 @@ func NewRequestPasswordResetUseCase(
 	return &requestPasswordResetUseCase{
 		buyerRepo:    buyerRepo,
 		pwdResetRepo: pwdResetRepo,
-		emailService: emailService,
+		publishEmail: publishEmail,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
 		clock:        clock,
@@ -90,14 +92,14 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 		return err
 	}
 
-	// 4. Send Email
+	// 4. Enqueue Email Job
 	resetURL := u.frontendURL.JoinPath("/login/reset_password")
 	q := resetURL.Query()
 	q.Set("token", token)
 	resetURL.RawQuery = q.Encode()
 
-	if err := u.emailService.SendBuyerPasswordReset(ctx, email, resetURL.String()); err != nil {
-		return fmt.Errorf("failed to send password reset email: %w", err)
+	if err := u.publishEmail.Execute(ctx, emailMessage.EmailTypeBuyerPasswordReset, email, map[string]string{"ResetURL": resetURL.String()}); err != nil {
+		return fmt.Errorf("failed to enqueue password reset email: %w", err)
 	}
 
 	return nil

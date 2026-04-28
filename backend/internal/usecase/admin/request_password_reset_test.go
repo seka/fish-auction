@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -60,15 +61,12 @@ func (m *mockPwdResetRepoForReqPwd) DeleteAllByUserID(ctx context.Context, userI
 	return args.Error(0)
 }
 
-type mockEmailServiceForReqPwd struct {
-	sndErr error
+type mockPublishEmailUseCaseForAdmin struct {
+	err error
 }
 
-func (m *mockEmailServiceForReqPwd) SendAdminPasswordReset(_ context.Context, _, _ string) error {
-	return m.sndErr
-}
-func (m *mockEmailServiceForReqPwd) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
-	return nil
+func (m *mockPublishEmailUseCaseForAdmin) Execute(_ context.Context, _ emailMessage.EmailType, _ string, _ map[string]string) error {
+	return m.err
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
@@ -98,7 +96,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 		{
 			name:      "AdminNotFound",
 			email:     "unknown@example.com",
-			mockAdmin: nil, // Repo returns nil, nil
+			mockAdmin: nil,
 			wantErr:   true,
 		},
 		{
@@ -139,7 +137,6 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Mock rand
 			restore := admin.SetRandRead(admin.GetRandReadFunc(tt.mockRandErr))
 			defer restore()
 
@@ -147,18 +144,17 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			pwdResetRepo := &mockPwdResetRepoForReqPwd{}
 
 			if tt.mockFindErr == nil && tt.mockAdmin != nil {
-				// Happy path for finding admin.
 				pwdResetRepo.On("DeleteAllByUserID", mock.Anything, tt.mockAdmin.ID, "admin").Return(tt.mockDelErr)
 				if tt.mockDelErr == nil {
 					pwdResetRepo.On("Create", mock.Anything, tt.mockAdmin.ID, "admin", mock.AnythingOfType("string"), expectedExpiresAt).Return(tt.mockCreErr)
 				}
 			}
 
-			emailService := &mockEmailServiceForReqPwd{sndErr: tt.mockSndErr}
+			publishEmail := &mockPublishEmailUseCaseForAdmin{err: tt.mockSndErr}
 			txMgr := &usetesting.MockTransactionManager{}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, emailService, frontendURL, txMgr, mockClock)
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, publishEmail, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantErr {
