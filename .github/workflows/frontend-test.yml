@@ -1,14 +1,14 @@
-name: Frontend CI
+name: Frontend Test
 
 on:
   push:
     paths:
       - 'frontend/**'
-      - '.github/workflows/frontend.yml'
+      - '.github/workflows/frontend-test.yml'
   pull_request:
     paths:
       - 'frontend/**'
-      - '.github/workflows/frontend.yml'
+      - '.github/workflows/frontend-test.yml'
 
 jobs:
   test:
