@@ -6,23 +6,18 @@ import (
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-type mockJobQueue struct {
-	enqueueFunc func(ctx context.Context, jobType model.JobType, payload any) error
+type mockPushService struct {
+	publishFunc func(ctx context.Context, buyerID int, payload any) error
 }
 
-func (m *mockJobQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
-	return m.enqueueFunc(ctx, jobType, payload)
-}
-
-func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
-	return nil, nil
-}
-
-func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockPushService) Send(_ context.Context, _ *model.PushSubscription, _ any) error {
 	return nil
+}
+
+func (m *mockPushService) PublishToBuyer(ctx context.Context, buyerID int, payload any) error {
+	return m.publishFunc(ctx, buyerID, payload)
 }
 
 func TestPublishNotificationUseCase_Execute(t *testing.T) {
@@ -31,54 +26,44 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 	payload := map[string]string{"title": "test", "body": "hello"}
 
 	t.Run("success", func(t *testing.T) {
-		enqueueCalled := false
-		var capturedJobType model.JobType
-		var capturedPayload any
+		publishCalled := false
+		var capturedBuyerID int
 
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
-				enqueueCalled = true
-				capturedJobType = jobType
-				capturedPayload = payload
+		mockSvc := &mockPushService{
+			publishFunc: func(_ context.Context, bID int, p any) error {
+				publishCalled = true
+				capturedBuyerID = bID
 				return nil
 			},
 		}
 
-		uc := NewPublishNotificationUseCase(mockQueue)
+		uc := NewPublishNotificationUseCase(mockSvc)
 		err := uc.Execute(ctx, buyerID, payload)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
-		if !enqueueCalled {
-			t.Error("Expected JobQueue.Enqueue to be called")
+		if !publishCalled {
+			t.Error("Expected PushNotificationService.PublishToBuyer to be called")
 		}
-		if capturedJobType != model.JobTypePushNotification {
-			t.Errorf("Expected jobType '%s', got '%s'", model.JobTypePushNotification, capturedJobType)
-		}
-
-		p, ok := capturedPayload.(notificationMessage.PushNotificationMessage)
-		if !ok {
-			t.Fatalf("Captured payload is not the expected struct type: %T", capturedPayload)
-		}
-		if p.BuyerID != buyerID {
-			t.Errorf("Expected BuyerID %d, got %d", buyerID, p.BuyerID)
+		if capturedBuyerID != buyerID {
+			t.Errorf("Expected BuyerID %d, got %d", buyerID, capturedBuyerID)
 		}
 	})
 
-	t.Run("enqueue error", func(t *testing.T) {
-		enqueueErr := errors.New("enqueue failed")
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
-				return enqueueErr
+	t.Run("publish error", func(t *testing.T) {
+		publishErr := errors.New("publish failed")
+		mockSvc := &mockPushService{
+			publishFunc: func(_ context.Context, _ int, _ any) error {
+				return publishErr
 			},
 		}
 
-		uc := NewPublishNotificationUseCase(mockQueue)
+		uc := NewPublishNotificationUseCase(mockSvc)
 		err := uc.Execute(ctx, buyerID, payload)
 
-		if !errors.Is(err, enqueueErr) {
-			t.Errorf("Expected error %v, got %v", enqueueErr, err)
+		if !errors.Is(err, publishErr) {
+			t.Errorf("Expected error %v, got %v", publishErr, err)
 		}
 	})
 }
