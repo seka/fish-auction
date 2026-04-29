@@ -12,17 +12,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
+	jobMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-// Client implements service.JobQueue using AWS SQS.
+// Client implements queue.JobQueue using AWS SQS.
 type Client struct {
 	client   *sqs.Client
 	queueURL string
 }
 
-var _ service.JobQueue = (*Client)(nil)
+var _ queue.JobQueue = (*Client)(nil)
 
 // NewClient creates a new SQS client.
 func NewClient(ctx context.Context, region, queueURL, endpoint string) (*Client, error) {
@@ -56,9 +56,15 @@ func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload any
 	// Map domain payload to infrastructure DTO and marshal to JSON.
 	switch jobType {
 	case model.JobTypePushNotification:
-		p, ok := payload.(notificationMessage.PushNotificationMessage)
+		p, ok := payload.(jobMessage.PushNotificationMessage)
 		if !ok {
 			return fmt.Errorf("invalid payload type for push notification: %T", payload)
+		}
+		body, err = json.Marshal(p)
+	case model.JobTypeEmail:
+		p, ok := payload.(jobMessage.EmailMessage)
+		if !ok {
+			return fmt.Errorf("invalid payload type for email: %T", payload)
 		}
 		body, err = json.Marshal(p)
 	default:
