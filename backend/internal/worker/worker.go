@@ -20,13 +20,15 @@ type Worker struct {
 	queue      queue.JobQueue
 	dispatcher *Dispatcher
 	wg         sync.WaitGroup
+	stopCh     chan struct{}
 }
 
 // NewWorker creates a new Worker instance.
-func NewWorker(queue queue.JobQueue, dispatcher *Dispatcher) *Worker {
+func NewWorker(jobQueue queue.JobQueue, dispatcher *Dispatcher) *Worker {
 	return &Worker{
-		queue:      queue,
+		queue:      jobQueue,
 		dispatcher: dispatcher,
+		stopCh:     make(chan struct{}),
 	}
 }
 

@@ -30,7 +30,7 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 		var capturedBuyerID int
 
 		mockSvc := &mockPushService{
-			publishFunc: func(_ context.Context, bID int, p any) error {
+			publishFunc: func(_ context.Context, bID int, _ any) error {
 				publishCalled = true
 				capturedBuyerID = bID
 				return nil

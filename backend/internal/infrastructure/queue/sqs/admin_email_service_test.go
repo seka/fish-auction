@@ -17,11 +17,11 @@ func (m *mockJobQueue) Enqueue(ctx context.Context, jobType model.JobType, paylo
 	return m.enqueueFunc(ctx, jobType, payload)
 }
 
-func (m *mockJobQueue) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error) {
+func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
 	return nil, nil
 }
 
-func (m *mockJobQueue) DeleteMessage(ctx context.Context, message *model.JobMessage) error {
+func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
 	return nil
 }
 

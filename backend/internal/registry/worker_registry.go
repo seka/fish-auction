@@ -25,13 +25,13 @@ type workerRegistry struct {
 // NewWorkerRegistry creates a new WorkerRegistry instance.
 func NewWorkerRegistry(queueCfg config.QueueConfig, repoReg Repository, serviceReg Service) (WorkerRegistry, error) {
 	region, url, endpoint := queueCfg.SQSConfig()
-	queue, err := sqs.NewClient(context.Background(), region, url, endpoint)
+	jobQueue, err := sqs.NewClient(context.Background(), region, url, endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	return &workerRegistry{
-		queue:      queue,
+		queue:      jobQueue,
 		repoReg:    repoReg,
 		serviceReg: serviceReg,
 	}, nil
