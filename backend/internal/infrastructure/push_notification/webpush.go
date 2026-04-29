@@ -24,7 +24,10 @@ type WebpushNotificationService struct {
 var _ service.PushNotificationService = (*WebpushNotificationService)(nil)
 
 // NewWebpushService creates a new PushNotificationService implementation using webpush-go
-func NewWebpushService(cfg config.WebpushConfig) *WebpushNotificationService {
+func NewWebpushService(cfg config.WebpushConfig) service.PushNotificationService {
+	if cfg == config.NoWebpushConfig {
+		return &noopPushNotificationService{}
+	}
 	return &WebpushNotificationService{
 		cfg: cfg,
 	}
@@ -73,4 +76,9 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 	}
 
 	return nil
+}
+
+// PublishToBuyer provides PublishToBuyer related functionality.
+func (s *WebpushNotificationService) PublishToBuyer(_ context.Context, _ int, _ any) error {
+	return fmt.Errorf("PublishToBuyer is not supported in WebpushNotificationService")
 }

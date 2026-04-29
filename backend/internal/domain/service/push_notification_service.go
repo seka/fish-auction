@@ -9,4 +9,5 @@ import (
 // PushNotificationService defines the interface for delivering push notifications
 type PushNotificationService interface {
 	Send(ctx context.Context, sub *model.PushSubscription, payload any) error
+	PublishToBuyer(ctx context.Context, buyerID int, payload any) error
 }

@@ -21,7 +21,10 @@ type AdminEmailService struct {
 
 var _ service.AdminEmailService = (*AdminEmailService)(nil)
 
-func NewAdminEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) *AdminEmailService {
+func NewAdminEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) service.AdminEmailService {
+	if cfg == config.NoEmailConfig {
+		return &noopAdminEmailService{}
+	}
 	return &AdminEmailService{
 		cfg:            cfg,
 		templateLoader: loader,
@@ -36,7 +39,7 @@ func (s *AdminEmailService) send(to, subject, body string) error {
 		"%s", to, subject, body)
 
 	// MailHog doesn't require auth
-	return adminSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.GetSMTPFrom(), []string{to}, msg)
+	return adminSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.SMTPFrom(), []string{to}, msg)
 }
 
 // SendAdminPasswordReset provides SendAdminPasswordReset related functionality.
