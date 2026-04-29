@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/domain/service"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
 )
 
 const (
@@ -17,13 +17,13 @@ const (
 
 // Worker represents the background job worker.
 type Worker struct {
-	queue      service.JobQueue
+	queue      queue.JobQueue
 	dispatcher *Dispatcher
 	wg         sync.WaitGroup
 }
 
 // NewWorker creates a new Worker instance.
-func NewWorker(queue service.JobQueue, dispatcher *Dispatcher) *Worker {
+func NewWorker(queue queue.JobQueue, dispatcher *Dispatcher) *Worker {
 	return &Worker{
 		queue:      queue,
 		dispatcher: dispatcher,
