@@ -13,6 +13,11 @@ import (
 	"github.com/seka/fish-auction/backend/internal/registry"
 )
 
+const (
+	shouldMigrate = false
+	isWorker      = true
+)
+
 func main() {
 	if err := run(); err != nil {
 		log.Printf("Worker Error: %v", err)
@@ -28,14 +33,14 @@ func run() error {
 	}
 
 	// Initialize Repository Registry
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig, false)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig, shouldMigrate)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg, err := registry.NewServiceRegistry(cfg, cfg, config.NoQueueConfig, true)
+	serviceReg, err := registry.NewServiceRegistry(cfg, cfg, config.NoQueueConfig, isWorker)
 	if err != nil {
 		return fmt.Errorf("failed to initialize service registry: %w", err)
 	}

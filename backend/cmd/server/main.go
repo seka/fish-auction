@@ -19,6 +19,11 @@ import (
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 )
 
+const (
+	shouldMigrate = true
+	isWorker      = false
+)
+
 type handlers struct {
 	health         *publicHandler.HealthHandler
 	fisherman      *adminHandler.FishermanHandler
@@ -55,14 +60,14 @@ func run() error {
 	}
 
 	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, true)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, shouldMigrate)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, false)
+	serviceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, isWorker)
 	if err != nil {
 		return fmt.Errorf("failed to initialize service registry: %w", err)
 	}

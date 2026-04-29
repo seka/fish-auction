@@ -23,6 +23,11 @@ import (
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 )
 
+const (
+	shouldMigrate = true
+	isWorker      = false
+)
+
 func TestServerIntegration(t *testing.T) {
 	requireIntegrationTests(t)
 
@@ -41,14 +46,14 @@ func TestServerIntegration(t *testing.T) {
 	}
 
 	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, true)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, shouldMigrate)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// 3. Service を初期化
-	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, false)
+	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, isWorker)
 	if err != nil {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
