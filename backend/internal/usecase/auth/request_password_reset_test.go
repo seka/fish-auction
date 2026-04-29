@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -62,12 +61,12 @@ func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context
 	return args.Error(0)
 }
 
-type mockPublishEmailUseCase struct {
+type mockBuyerEmailService struct {
 	executed bool
 	err      error
 }
 
-func (m *mockPublishEmailUseCase) Execute(_ context.Context, _ emailMessage.EmailMessage) error {
+func (m *mockBuyerEmailService) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
 	if m.err != nil {
 		return m.err
 	}
@@ -159,7 +158,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			}
 
-			publishEmail := &mockPublishEmailUseCase{err: tt.mockEmailErr}
+			publishEmail := &mockBuyerEmailService{err: tt.mockEmailErr}
 			txMgr := &usetesting.MockTransactionManager{}
 
 			if tt.name == "RandomError" {
@@ -182,10 +181,10 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			}
 
 			if tt.wantSent && !publishEmail.executed {
-				t.Error("expected email job to be enqueued, but wasn't")
+				t.Error("expected email to be sent, but wasn't")
 			}
 			if !tt.wantSent && publishEmail.executed {
-				t.Error("expected email job NOT to be enqueued, but was")
+				t.Error("expected email NOT to be sent, but was")
 			}
 		})
 	}

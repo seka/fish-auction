@@ -36,6 +36,10 @@ func (m *mockPushNotificationService) Send(ctx context.Context, sub *model.PushS
 	return m.sendFunc(ctx, sub, payload)
 }
 
+func (m *mockPushNotificationService) PublishToBuyer(_ context.Context, _ int, _ any) error {
+	return nil
+}
+
 func TestPushNotificationHandler_Handle_InvalidPayload(t *testing.T) {
 	ctx := context.Background()
 

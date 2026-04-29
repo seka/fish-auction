@@ -48,7 +48,7 @@ func TestServerIntegration(t *testing.T) {
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// 3. Service を初期化
-	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg)
+	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, false)
 	if err != nil {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
@@ -543,6 +543,16 @@ func (m *mockPushService) Send(_ context.Context, sub *model.PushSubscription, p
 	defer m.mu.Unlock()
 	m.sentCalls = append(m.sentCalls, pushCall{
 		buyerID: sub.BuyerID,
+		payload: payload,
+	})
+	return nil
+}
+
+func (m *mockPushService) PublishToBuyer(_ context.Context, buyerID int, payload any) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.sentCalls = append(m.sentCalls, pushCall{
+		buyerID: buyerID,
 		payload: payload,
 	})
 	return nil

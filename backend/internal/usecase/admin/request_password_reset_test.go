@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -61,11 +60,11 @@ func (m *mockPwdResetRepoForReqPwd) DeleteAllByUserID(ctx context.Context, userI
 	return args.Error(0)
 }
 
-type mockPublishEmailUseCaseForAdmin struct {
+type mockAdminEmailService struct {
 	err error
 }
 
-func (m *mockPublishEmailUseCaseForAdmin) Execute(_ context.Context, _ emailMessage.EmailMessage) error {
+func (m *mockAdminEmailService) SendAdminPasswordReset(_ context.Context, _, _ string) error {
 	return m.err
 }
 
@@ -150,7 +149,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			publishEmail := &mockPublishEmailUseCaseForAdmin{err: tt.mockSndErr}
+			publishEmail := &mockAdminEmailService{err: tt.mockSndErr}
 			txMgr := &usetesting.MockTransactionManager{}
 
 			frontendURL, _ := url.Parse("https://localhost")
