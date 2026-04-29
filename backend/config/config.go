@@ -42,14 +42,14 @@ var NoCacheConfig CacheConfig = noCacheConfig{}
 
 type EmailConfig interface {
 	SMTPAddress() string
-	GetSMTPFrom() string
+	SMTPFrom() string
 }
 
 // noEmailConfig is a null implementation for processes that don't need email.
 type noEmailConfig struct{}
 
 func (n noEmailConfig) SMTPAddress() string { return "" }
-func (n noEmailConfig) GetSMTPFrom() string { return "" }
+func (n noEmailConfig) SMTPFrom() string    { return "" }
 
 // NoEmailConfig can be used when a process doesn't need to send emails.
 var NoEmailConfig EmailConfig = noEmailConfig{}
