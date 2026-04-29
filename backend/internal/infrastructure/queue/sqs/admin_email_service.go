@@ -10,18 +10,18 @@ import (
 	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-type sqsAdminEmailService struct {
+type adminEmailService struct {
 	jobQueue queue.JobQueue
 }
 
-var _ service.AdminEmailService = (*sqsAdminEmailService)(nil)
+var _ service.AdminEmailService = (*adminEmailService)(nil)
 
 // NewAdminEmailService creates an AdminEmailService that enqueues email jobs via SQS.
 func NewAdminEmailService(jobQueue queue.JobQueue) service.AdminEmailService {
-	return &sqsAdminEmailService{jobQueue: jobQueue}
+	return &adminEmailService{jobQueue: jobQueue}
 }
 
-func (s *sqsAdminEmailService) SendAdminPasswordReset(ctx context.Context, to, resetURL string) error {
+func (s *adminEmailService) SendAdminPasswordReset(ctx context.Context, to, resetURL string) error {
 	wire := emailMessage.EmailMessage{
 		EmailType: emailMessage.EmailTypeAdminPasswordReset,
 		To:        to,

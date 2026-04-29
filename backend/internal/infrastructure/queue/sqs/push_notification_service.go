@@ -10,22 +10,22 @@ import (
 	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-type sqsPushNotificationService struct {
+type pushNotificationService struct {
 	jobQueue queue.JobQueue
 }
 
-var _ service.PushNotificationService = (*sqsPushNotificationService)(nil)
+var _ service.PushNotificationService = (*pushNotificationService)(nil)
 
 // NewPushNotificationService creates a PushNotificationService that enqueues jobs via SQS.
 func NewPushNotificationService(jobQueue queue.JobQueue) service.PushNotificationService {
-	return &sqsPushNotificationService{jobQueue: jobQueue}
+	return &pushNotificationService{jobQueue: jobQueue}
 }
 
-func (s *sqsPushNotificationService) Send(ctx context.Context, sub *model.PushSubscription, payload any) error {
+func (s *pushNotificationService) Send(_ context.Context, _ *model.PushSubscription, _ any) error {
 	return errors.New("Send is not supported in sqsPushNotificationService")
 }
 
-func (s *sqsPushNotificationService) PublishToBuyer(ctx context.Context, buyerID int, payload any) error {
+func (s *pushNotificationService) PublishToBuyer(ctx context.Context, buyerID int, payload any) error {
 	jobParams := notificationMessage.PushNotificationMessage{
 		BuyerID: buyerID,
 		Payload: payload,

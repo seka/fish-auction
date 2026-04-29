@@ -10,18 +10,18 @@ import (
 	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-type sqsBuyerEmailService struct {
+type buyerEmailService struct {
 	jobQueue queue.JobQueue
 }
 
-var _ service.BuyerEmailService = (*sqsBuyerEmailService)(nil)
+var _ service.BuyerEmailService = (*buyerEmailService)(nil)
 
 // NewBuyerEmailService creates a BuyerEmailService that enqueues email jobs via SQS.
 func NewBuyerEmailService(jobQueue queue.JobQueue) service.BuyerEmailService {
-	return &sqsBuyerEmailService{jobQueue: jobQueue}
+	return &buyerEmailService{jobQueue: jobQueue}
 }
 
-func (s *sqsBuyerEmailService) SendBuyerPasswordReset(ctx context.Context, to, resetURL string) error {
+func (s *buyerEmailService) SendBuyerPasswordReset(ctx context.Context, to, resetURL string) error {
 	wire := emailMessage.EmailMessage{
 		EmailType: emailMessage.EmailTypeBuyerPasswordReset,
 		To:        to,
