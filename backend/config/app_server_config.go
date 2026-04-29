@@ -26,7 +26,7 @@ type AppServerConfig struct {
 	AllowedOrigins   string
 	SMTPHost         string
 	SMTPPort         string
-	SMTPSender       string
+	SMTPFrom         string
 	ReadTimeout      time.Duration
 	WriteTimeout     time.Duration
 	IdleTimeout      time.Duration
@@ -64,7 +64,7 @@ func LoadAppServerConfig() (*AppServerConfig, error) {
 		AllowedOrigins:   GetEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
 		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
-		SMTPSender:       GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
+		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
 		ReadTimeout:      time.Duration(GetEnvInt("SERVER_READ_TIMEOUT_SEC", 60)) * time.Second,
 		WriteTimeout:     time.Duration(GetEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeout:      time.Duration(GetEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
@@ -101,8 +101,8 @@ func (c *AppServerConfig) SMTPAddress() string {
 	return fmt.Sprintf("%s:%s", c.SMTPHost, c.SMTPPort)
 }
 
-func (c *AppServerConfig) SMTPFrom() string {
-	return c.SMTPSender
+func (c *AppServerConfig) GetSMTPFrom() string {
+	return c.SMTPFrom
 }
 
 func (c *AppServerConfig) SQSConfig() (region, queueURL, endpoint string) {

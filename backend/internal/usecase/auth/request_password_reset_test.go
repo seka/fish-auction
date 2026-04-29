@@ -138,6 +138,13 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			mockBuyer: validBuyer,
 			wantError: true,
 		},
+		{
+			name:      "TransactionCommitError",
+			email:     "buyer@example.com",
+			mockBuyer: validBuyer,
+			wantError: true,
+			wantSent:  false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -160,6 +167,16 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 
 			publishEmail := &mockBuyerEmailService{err: tt.mockEmailErr}
 			txMgr := &usetesting.MockTransactionManager{}
+			if tt.name == "TransactionCommitError" {
+				txMgr.WithTransactionFunc = func(ctx context.Context, fn func(ctx context.Context) error) error {
+					if err := fn(ctx); err != nil {
+						return err
+					}
+					return errors.New("commit failed")
+				}
+				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
+			}
 
 			if tt.name == "RandomError" {
 				cleanup := auth.SetRandRead(func(_ []byte) (int, error) {

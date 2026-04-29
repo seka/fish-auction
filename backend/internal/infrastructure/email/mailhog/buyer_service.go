@@ -40,7 +40,7 @@ func (s *BuyerEmailService) send(to, subject, body string) error {
 		"%s", to, subject, body)
 
 	// MailHog doesn't require auth
-	return buyerSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.SMTPFrom(), []string{to}, msg)
+	return buyerSendMailFunc(s.cfg.SMTPAddress(), nil, s.cfg.GetSMTPFrom(), []string{to}, msg)
 }
 
 // SendBuyerPasswordReset provides SendBuyerPasswordReset related functionality.

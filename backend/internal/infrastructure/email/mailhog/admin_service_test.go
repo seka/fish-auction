@@ -18,9 +18,9 @@ func TestAdminEmailService(t *testing.T) {
 	}
 
 	cfg := &config.AppServerConfig{
-		SMTPHost:   "localhost",
-		SMTPPort:   "1025",
-		SMTPSender: "noreply@example.com",
+		SMTPHost: "localhost",
+		SMTPPort: "1025",
+		SMTPFrom: "noreply@example.com",
 	}
 
 	t.Run("SendAdminPasswordReset", func(t *testing.T) {

@@ -267,7 +267,7 @@ func TestServerIntegration(t *testing.T) {
 		// 7. Verify Notification via Worker (Async)
 		t.Log("Waiting for worker to process outbid notification...")
 		found := false
-		for i := 0; i < 30; i++ { // Try for 15 seconds (30 * 500ms)
+		for range 30 { // Try for 15 seconds (30 * 500ms)
 			calls := mockPush.getCalls()
 			for _, call := range calls {
 				// Buyer A (ID 2 or similar) should have received a notification

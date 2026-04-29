@@ -25,7 +25,7 @@ type WorkerConfig struct {
 	SQSEndpoint      string
 	SMTPHost         string
 	SMTPPort         string
-	SMTPSender       string
+	SMTPFrom         string
 }
 
 // LoadWorkerConfig loads configuration for the background worker.
@@ -49,7 +49,7 @@ func LoadWorkerConfig() (*WorkerConfig, error) {
 		SQSEndpoint:      GetEnv("SQS_ENDPOINT", "http://localhost:4566"),
 		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
-		SMTPSender:       GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
+		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
 	}
 
 	return cfg, nil
@@ -75,8 +75,8 @@ func (c *WorkerConfig) SMTPAddress() string {
 	return net.JoinHostPort(c.SMTPHost, c.SMTPPort)
 }
 
-func (c *WorkerConfig) SMTPFrom() string {
-	return c.SMTPSender
+func (c *WorkerConfig) GetSMTPFrom() string {
+	return c.SMTPFrom
 }
 
 func (c *WorkerConfig) DBConnectionURL() string {

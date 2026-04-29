@@ -74,24 +74,28 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
-	// 3. Atomic Save to DB and send email (expires in 30 mins)
-	// Email send inside transaction: failure rolls back DB for consistency
+	// 3. Save token in transaction (expires in 30 mins)
 	resetURL := u.frontendURL.JoinPath("/login/reset_password")
 	q := resetURL.Query()
 	q.Set("token", token)
 	resetURL.RawQuery = q.Encode()
 
 	expiresAt := u.clock.Now().Add(30 * time.Minute)
-	return u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+	if err := u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
 		if err := u.pwdResetRepo.DeleteAllByUserID(txCtx, buyer.ID, "buyer"); err != nil {
 			return fmt.Errorf("failed to invalidate old reset tokens: %w", err)
 		}
 		if err = u.pwdResetRepo.Create(txCtx, buyer.ID, "buyer", tokenHash, expiresAt); err != nil {
 			return fmt.Errorf("failed to create new reset token: %w", err)
 		}
-		if err := u.emailService.SendBuyerPasswordReset(txCtx, email, resetURL.String()); err != nil {
-			return fmt.Errorf("failed to send password reset email: %w", err)
-		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
+
+	if err := u.emailService.SendBuyerPasswordReset(ctx, email, resetURL.String()); err != nil {
+		return fmt.Errorf("failed to send password reset email: %w", err)
+	}
+
+	return nil
 }
