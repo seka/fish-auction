@@ -3,6 +3,10 @@ run:
   timeout: 5m
   modules-download-mode: readonly
 
+formatters:
+  enable:
+    - gofmt
+
 linters:
   disable-all: true
   enable:
@@ -18,7 +22,6 @@ linters:
     - noctx
     - copyloopvar
     - misspell
-    - gofmt
   settings:
     govet:
       enable-all: true
