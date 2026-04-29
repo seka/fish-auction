@@ -57,7 +57,6 @@ type UseCase interface {
 	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
 	NewSubscribeNotificationUseCase() notification.SubscribeNotificationUseCase
 	NewPublishNotificationUseCase() notification.PublishNotificationUseCase
-	NewPublishEmailUseCase() notification.PublishEmailUseCase
 	NewCreateAdminUseCase() admin.CreateAdminUseCase
 }
 
@@ -223,15 +222,11 @@ func (u *useCaseRegistry) NewBuyerUpdatePasswordUseCase() buyer.UpdatePasswordUs
 	return buyer.NewUpdatePasswordUseCase(u.repo.NewAuthenticationRepository(), u.repo.NewSessionRepository())
 }
 
-func (u *useCaseRegistry) NewPublishEmailUseCase() notification.PublishEmailUseCase {
-	return notification.NewPublishEmailUseCase(u.service.NewJobQueue())
-}
-
 func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordResetUseCase {
 	return auth.NewRequestPasswordResetUseCase(
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
-		u.NewPublishEmailUseCase(),
+		u.service.NewBuyerEmailService(),
 		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
@@ -255,7 +250,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
 		u.repo.PasswordReset(),
-		u.NewPublishEmailUseCase(),
+		u.service.NewAdminEmailService(),
 		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
@@ -280,9 +275,7 @@ func (u *useCaseRegistry) NewSubscribeNotificationUseCase() notification.Subscri
 }
 
 func (u *useCaseRegistry) NewPublishNotificationUseCase() notification.PublishNotificationUseCase {
-	return notification.NewPublishNotificationUseCase(
-		u.service.NewJobQueue(),
-	)
+	return notification.NewPublishNotificationUseCase(u.service.NewPushNotificationService())
 }
 
 func (u *useCaseRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {

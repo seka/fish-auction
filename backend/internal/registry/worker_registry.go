@@ -5,7 +5,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
 	"github.com/seka/fish-auction/backend/internal/job/handler"
 	"github.com/seka/fish-auction/backend/internal/worker"
@@ -17,7 +17,7 @@ type WorkerRegistry interface {
 }
 
 type workerRegistry struct {
-	queue      service.JobQueue
+	queue      queue.JobQueue
 	repoReg    Repository
 	serviceReg Service
 }

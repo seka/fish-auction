@@ -9,6 +9,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/mailhog"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/email/templates"
 	pushNotification "github.com/seka/fish-auction/backend/internal/infrastructure/push_notification"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
 )
 
@@ -18,7 +19,7 @@ type Service interface {
 	NewAdminEmailService() service.AdminEmailService
 	NewBuyerEmailService() service.BuyerEmailService
 	NewClock() service.Clock
-	NewJobQueue() service.JobQueue
+	NewJobQueue() queue.JobQueue
 }
 
 type serviceRegistry struct {
@@ -26,7 +27,7 @@ type serviceRegistry struct {
 	adminEmailService       service.AdminEmailService
 	buyerEmailService       service.BuyerEmailService
 	clock                   service.Clock
-	jobQueue                service.JobQueue
+	jobQueue                queue.JobQueue
 }
 
 // NewServiceRegistry creates a new Service registry
@@ -34,16 +35,9 @@ func NewServiceRegistry(
 	emailCfg config.EmailConfig,
 	webpushCfg config.WebpushConfig,
 	jobQueueCfg config.QueueConfig,
+	isWorker bool,
 ) (Service, error) {
-	loader, err := templates.NewTemplateLoader()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load templates: %w", err)
-	}
-	adminEmailService := mailhog.NewAdminEmailService(emailCfg, loader)
-	buyerEmailService := mailhog.NewBuyerEmailService(emailCfg, loader)
-
-	pushNotificationService := pushNotification.NewWebpushService(webpushCfg)
-	var jobQueue service.JobQueue
+	var jobQueue queue.JobQueue
 	if jobQueueCfg != config.NoQueueConfig {
 		region, url, endpoint := jobQueueCfg.SQSConfig()
 		var err error
@@ -51,6 +45,29 @@ func NewServiceRegistry(
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Use SQS-backed email/push services when a job queue is available (API server),
+	// otherwise use SMTP/Webpush directly (Worker).
+	var adminEmailService service.AdminEmailService
+	var buyerEmailService service.BuyerEmailService
+	var pushNotificationService service.PushNotificationService
+
+	if !isWorker {
+		if jobQueue == nil {
+			return nil, fmt.Errorf("jobQueue is required for non-worker process")
+		}
+		adminEmailService = sqs.NewAdminEmailService(jobQueue)
+		buyerEmailService = sqs.NewBuyerEmailService(jobQueue)
+		pushNotificationService = sqs.NewPushNotificationService(jobQueue)
+	} else {
+		loader, err := templates.NewTemplateLoader()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load templates: %w", err)
+		}
+		adminEmailService = mailhog.NewAdminEmailService(emailCfg, loader)
+		buyerEmailService = mailhog.NewBuyerEmailService(emailCfg, loader)
+		pushNotificationService = pushNotification.NewWebpushService(webpushCfg)
 	}
 
 	return &serviceRegistry{
@@ -78,6 +95,6 @@ func (s *serviceRegistry) NewClock() service.Clock {
 	return s.clock
 }
 
-func (s *serviceRegistry) NewJobQueue() service.JobQueue {
+func (s *serviceRegistry) NewJobQueue() queue.JobQueue {
 	return s.jobQueue
 }
