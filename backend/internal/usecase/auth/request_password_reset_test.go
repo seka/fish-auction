@@ -67,13 +67,21 @@ type mockBuyerEmailService struct {
 	err      error
 }
 
-var _ service.BuyerEmailQueue = (*mockBuyerEmailService)(nil)
+var _ service.JobQueue = (*mockBuyerEmailService)(nil)
 
-func (m *mockBuyerEmailService) EnqueueBuyerPasswordReset(_ context.Context, _, _ string) error {
+func (m *mockBuyerEmailService) Enqueue(_ context.Context, _ model.JobType, _ any) error {
 	if m.err != nil {
 		return m.err
 	}
 	m.executed = true
+	return nil
+}
+
+func (m *mockBuyerEmailService) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+	return nil, nil
+}
+
+func (m *mockBuyerEmailService) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
 	return nil
 }
 

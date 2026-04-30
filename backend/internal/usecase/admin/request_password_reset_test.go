@@ -65,10 +65,18 @@ type mockAdminEmailService struct {
 	err error
 }
 
-var _ service.AdminEmailQueue = (*mockAdminEmailService)(nil)
+var _ service.JobQueue = (*mockAdminEmailService)(nil)
 
-func (m *mockAdminEmailService) EnqueueAdminPasswordReset(_ context.Context, _, _ string) error {
+func (m *mockAdminEmailService) Enqueue(_ context.Context, _ model.JobType, _ any) error {
 	return m.err
+}
+
+func (m *mockAdminEmailService) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+	return nil, nil
+}
+
+func (m *mockAdminEmailService) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+	return nil
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {

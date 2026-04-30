@@ -4,14 +4,24 @@ import (
 	"context"
 	"errors"
 	"testing"
+
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
 type mockPushQueue struct {
-	enqueueFunc func(ctx context.Context, buyerID int, payload any) error
+	enqueueFunc func(ctx context.Context, jobType model.JobType, payload any) error
 }
 
-func (m *mockPushQueue) Enqueue(ctx context.Context, buyerID int, payload any) error {
-	return m.enqueueFunc(ctx, buyerID, payload)
+func (m *mockPushQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
+	return m.enqueueFunc(ctx, jobType, payload)
+}
+
+func (m *mockPushQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+	return nil, nil
+}
+
+func (m *mockPushQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+	return nil
 }
 
 func TestPublishNotificationUseCase_Execute(t *testing.T) {
@@ -21,12 +31,12 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		enqueueCalled := false
-		var capturedBuyerID int
+		var capturedJobType model.JobType
 
 		mockQueue := &mockPushQueue{
-			enqueueFunc: func(_ context.Context, bID int, _ any) error {
+			enqueueFunc: func(_ context.Context, jt model.JobType, _ any) error {
 				enqueueCalled = true
-				capturedBuyerID = bID
+				capturedJobType = jt
 				return nil
 			},
 		}
@@ -40,15 +50,15 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 		if !enqueueCalled {
 			t.Error("Expected PushNotificationQueue.Enqueue to be called")
 		}
-		if capturedBuyerID != buyerID {
-			t.Errorf("Expected BuyerID %d, got %d", buyerID, capturedBuyerID)
+		if capturedJobType != model.JobTypePushNotification {
+			t.Errorf("Expected JobType %s, got %s", model.JobTypePushNotification, capturedJobType)
 		}
 	})
 
 	t.Run("enqueue error", func(t *testing.T) {
 		enqueueErr := errors.New("enqueue failed")
 		mockQueue := &mockPushQueue{
-			enqueueFunc: func(_ context.Context, _ int, _ any) error {
+			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
 				return enqueueErr
 			},
 		}
