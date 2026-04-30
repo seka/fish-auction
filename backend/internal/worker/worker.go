@@ -103,6 +103,8 @@ func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 
 				if err := handler(ctx, msg); err != nil {
 					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
+					// 無限ループを防ぐため、インフラ（SQS）側で DLQ（Dead Letter Queue）および
+					// RedrivePolicy（maxReceiveCount）が設定されている必要があります。
 					log.Printf("Worker: error processing message %v (attempt %d): %v", msg.ID, msg.ReceiveCount, err)
 					continue
 				}
