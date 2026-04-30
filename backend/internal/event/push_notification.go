@@ -1,4 +1,4 @@
-package message
+package event
 
 // PushNotificationMessage is the wire format for push notification messages.
 // It is used as a data contract between queue producers and worker handlers.

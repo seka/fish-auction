@@ -22,7 +22,10 @@ type BuyerEmailService struct {
 var _ service.BuyerEmailService = (*BuyerEmailService)(nil)
 
 // NewBuyerEmailService creates a new BuyerEmailService instance.
-func NewBuyerEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) *BuyerEmailService {
+func NewBuyerEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) service.BuyerEmailService {
+	if cfg == config.NoEmailConfig {
+		return &noopBuyerEmailService{}
+	}
 	return &BuyerEmailService{
 		cfg:            cfg,
 		templateLoader: loader,

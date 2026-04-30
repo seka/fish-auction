@@ -17,16 +17,16 @@ type Service interface {
 	NewPushNotificationService() service.PushNotificationService
 	NewAdminEmailService() service.AdminEmailService
 	NewBuyerEmailService() service.BuyerEmailService
-	NewClock() service.Clock
 	NewJobQueue() service.JobQueue
+	NewClock() service.Clock
 }
 
 type serviceRegistry struct {
 	pushNotificationService service.PushNotificationService
 	adminEmailService       service.AdminEmailService
 	buyerEmailService       service.BuyerEmailService
-	clock                   service.Clock
 	jobQueue                service.JobQueue
+	clock                   service.Clock
 }
 
 // NewServiceRegistry creates a new Service registry
@@ -34,15 +34,8 @@ func NewServiceRegistry(
 	emailCfg config.EmailConfig,
 	webpushCfg config.WebpushConfig,
 	jobQueueCfg config.QueueConfig,
+	isWorker bool,
 ) (Service, error) {
-	loader, err := templates.NewTemplateLoader()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load templates: %w", err)
-	}
-	adminEmailService := mailhog.NewAdminEmailService(emailCfg, loader)
-	buyerEmailService := mailhog.NewBuyerEmailService(emailCfg, loader)
-
-	pushNotificationService := pushNotification.NewWebpushService(webpushCfg)
 	var jobQueue service.JobQueue
 	if jobQueueCfg != config.NoQueueConfig {
 		region, url, endpoint := jobQueueCfg.SQSConfig()
@@ -53,12 +46,32 @@ func NewServiceRegistry(
 		}
 	}
 
+	// Initialize queue clients whenever a job queue is available.
+	var adminEmailService service.AdminEmailService
+	var buyerEmailService service.BuyerEmailService
+	var pushNotificationService service.PushNotificationService
+
+	if isWorker {
+		if jobQueue == nil {
+			return nil, fmt.Errorf("jobQueue is required for worker process")
+		}
+		loader, err := templates.NewTemplateLoader()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load templates: %w", err)
+		}
+		adminEmailService = mailhog.NewAdminEmailService(emailCfg, loader)
+		buyerEmailService = mailhog.NewBuyerEmailService(emailCfg, loader)
+		pushNotificationService = pushNotification.NewWebpushService(webpushCfg)
+	} else if jobQueue == nil {
+		return nil, fmt.Errorf("jobQueue is required for non-worker process")
+	}
+
 	return &serviceRegistry{
 		pushNotificationService: pushNotificationService,
 		adminEmailService:       adminEmailService,
 		buyerEmailService:       buyerEmailService,
-		clock:                   service.NewRealClock(),
 		jobQueue:                jobQueue,
+		clock:                   service.NewRealClock(),
 	}, nil
 }
 
@@ -74,10 +87,10 @@ func (s *serviceRegistry) NewBuyerEmailService() service.BuyerEmailService {
 	return s.buyerEmailService
 }
 
-func (s *serviceRegistry) NewClock() service.Clock {
-	return s.clock
-}
-
 func (s *serviceRegistry) NewJobQueue() service.JobQueue {
 	return s.jobQueue
+}
+
+func (s *serviceRegistry) NewClock() service.Clock {
+	return s.clock
 }

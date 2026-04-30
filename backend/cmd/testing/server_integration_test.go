@@ -21,6 +21,13 @@ import (
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
+	"github.com/seka/fish-auction/backend/internal/worker"
+	"github.com/seka/fish-auction/backend/internal/worker/handler"
+)
+
+const (
+	shouldMigrate = true
+	isWorker      = false
 )
 
 func TestServerIntegration(t *testing.T) {
@@ -41,36 +48,44 @@ func TestServerIntegration(t *testing.T) {
 	}
 
 	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, true)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, shouldMigrate)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// 3. Service を初期化
-	realServiceReg, err := registry.NewServiceRegistry(cfg, config.NoWebpushConfig, cfg)
+	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, isWorker)
 	if err != nil {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
 
-	// 統合テスト用にプッシュ通知サービスをモックに差し替え
+	// 統合テスト用にプッシュ通知サービスをモックに差し替え、メールサービスは noop を注入
 	mockPush := &mockPushService{}
 	serviceReg := &wrappedServiceRegistry{
-		Service:  realServiceReg,
-		mockPush: mockPush,
+		Service:       realServiceReg,
+		mockPush:      mockPush,
+		buyerEmailSvc: &noopBuyerEmailService{},
+		adminEmailSvc: &noopAdminEmailService{},
 	}
 
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
 	// 4. Worker を初期化して起動
-	workerReg, err := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
-	if err != nil {
-		t.Fatalf("Failed to initialize worker registry: %v", err)
-	}
-	w, err := workerReg.NewWorker()
-	if err != nil {
-		t.Fatalf("Failed to create worker: %v", err)
-	}
+	pushRepo := repoReg.NewPushRepository()
+	pushSvc := serviceReg.NewPushNotificationService()
+	pushHandlerSvc := handler.NewPushNotificationHandler(pushRepo, pushSvc)
+
+	buyerEmailSvc := serviceReg.NewBuyerEmailService()
+	adminEmailSvc := serviceReg.NewAdminEmailService()
+	emailHandlerSvc := handler.NewEmailHandler(buyerEmailSvc, adminEmailSvc)
+
+	queue := serviceReg.NewJobQueue()
+	w := worker.NewWorker(
+		queue,
+		worker.HandlerFunc(emailHandlerSvc.Handle),
+		worker.HandlerFunc(pushHandlerSvc.Handle),
+	)
 
 	go func() {
 		if err := w.Start(ctx); err != nil && ctx.Err() == nil {
@@ -262,7 +277,7 @@ func TestServerIntegration(t *testing.T) {
 		// 7. Verify Notification via Worker (Async)
 		t.Log("Waiting for worker to process outbid notification...")
 		found := false
-		for i := 0; i < 30; i++ { // Try for 15 seconds (30 * 500ms)
+		for range 30 { // Try for 15 seconds (30 * 500ms)
 			calls := mockPush.getCalls()
 			for _, call := range calls {
 				// Buyer A (ID 2 or similar) should have received a notification
@@ -558,9 +573,31 @@ func (m *mockPushService) getCalls() []pushCall {
 
 type wrappedServiceRegistry struct {
 	registry.Service
-	mockPush service.PushNotificationService
+	mockPush      service.PushNotificationService
+	buyerEmailSvc service.BuyerEmailService
+	adminEmailSvc service.AdminEmailService
 }
 
 func (w *wrappedServiceRegistry) NewPushNotificationService() service.PushNotificationService {
 	return w.mockPush
+}
+
+func (w *wrappedServiceRegistry) NewBuyerEmailService() service.BuyerEmailService {
+	return w.buyerEmailSvc
+}
+
+func (w *wrappedServiceRegistry) NewAdminEmailService() service.AdminEmailService {
+	return w.adminEmailSvc
+}
+
+type noopBuyerEmailService struct{}
+
+func (n *noopBuyerEmailService) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
+	return nil
+}
+
+type noopAdminEmailService struct{}
+
+func (n *noopAdminEmailService) SendAdminPasswordReset(_ context.Context, _, _ string) error {
+	return nil
 }

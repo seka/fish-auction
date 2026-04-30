@@ -10,18 +10,18 @@ import (
 
 // AuctionItem provides AuctionItem related functionality.
 type AuctionItem struct {
-	ID                int              `db:"id"`
-	AuctionID         int              `db:"auction_id"`
-	FishermanID       int              `db:"fisherman_id"`
-	FishType          string           `db:"fish_type"`
-	Quantity          int              `db:"quantity"`
-	Unit              string           `db:"unit"`
-	HighestBid        *int             `db:"highest_bid"`
-	HighestBidderID   *int             `db:"highest_bidder_id"`
-	HighestBidderName *string          `db:"highest_bidder_name"`
-	SortOrder         int              `db:"sort_order"`
-	CreatedAt         time.Time        `db:"created_at"`
-	DeletedAt         *time.Time       `db:"deleted_at"`
+	ID                int        `db:"id"`
+	AuctionID         int        `db:"auction_id"`
+	FishermanID       int        `db:"fisherman_id"`
+	FishType          string     `db:"fish_type"`
+	Quantity          int        `db:"quantity"`
+	Unit              string     `db:"unit"`
+	HighestBid        *int       `db:"highest_bid"`
+	HighestBidderID   *int       `db:"highest_bidder_id"`
+	HighestBidderName *string    `db:"highest_bidder_name"`
+	SortOrder         int        `db:"sort_order"`
+	CreatedAt         time.Time  `db:"created_at"`
+	DeletedAt         *time.Time `db:"deleted_at"`
 }
 
 // Validate provides Validate related functionality.

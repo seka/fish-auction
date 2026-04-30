@@ -102,7 +102,6 @@ func (r *AuctionStore) List(ctx context.Context, filters *repository.AuctionFilt
 		if filters.Status != nil {
 			conditions = append(conditions, fmt.Sprintf("status = $%d", argIndex))
 			args = append(args, *filters.Status)
-			argIndex++
 		}
 	}
 

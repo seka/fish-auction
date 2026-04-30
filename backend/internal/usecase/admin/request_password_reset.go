@@ -10,8 +10,10 @@ import (
 	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	emailMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 var randRead = rand.Read
@@ -25,7 +27,7 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.PasswordResetRepository
-	emailService service.AdminEmailService
+	jobQueue     service.JobQueue
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
 	clock        service.Clock
@@ -37,7 +39,7 @@ var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
-	emailService service.AdminEmailService,
+	jobQueue service.JobQueue,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
 	clock service.Clock,
@@ -45,7 +47,7 @@ func NewRequestPasswordResetUseCase(
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,
-		emailService: emailService,
+		jobQueue:     jobQueue,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
 		clock:        clock,
@@ -74,10 +76,14 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
-	// 3. Atomic Save to DB (expires in 30 mins)
+	// 3. Save token in DB transaction (expires in 30 mins)
+	resetURL := u.frontendURL.JoinPath("/login/admin/reset_password")
+	q := resetURL.Query()
+	q.Set("token", token)
+	resetURL.RawQuery = q.Encode()
+
 	expiresAt := u.clock.Now().Add(30 * time.Minute)
-	err = u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
-		// Invalidate old tokens for this user first
+	if err := u.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
 		if err := u.pwdResetRepo.DeleteAllByUserID(txCtx, admin.ID, "admin"); err != nil {
 			return fmt.Errorf("failed to invalidate old reset tokens: %w", err)
 		}
@@ -85,19 +91,17 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 			return fmt.Errorf("failed to create new reset token: %w", err)
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 
-	// 4. Send Email
-	resetURL := u.frontendURL.JoinPath("/login/admin/reset_password")
-	q := resetURL.Query()
-	q.Set("token", token)
-	resetURL.RawQuery = q.Encode()
-
-	if err := u.emailService.SendAdminPasswordReset(ctx, email, resetURL.String()); err != nil {
-		return fmt.Errorf("failed to send password reset email: %w", err)
+	wire := emailMessage.EmailMessage{
+		EmailType: emailMessage.EmailTypeAdminPasswordReset,
+		To:        email,
+		ResetURL:  resetURL.String(),
+	}
+	if err := u.jobQueue.Enqueue(ctx, model.JobTypeEmail, wire); err != nil {
+		return fmt.Errorf("failed to enqueue password reset email: %w", err)
 	}
 
 	return nil

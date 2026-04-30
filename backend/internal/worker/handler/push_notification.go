@@ -8,9 +8,10 @@ import (
 	"log"
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 // pushNotificationHandler implements the Handler interface for push notifications.
@@ -23,16 +24,16 @@ type pushNotificationHandler struct {
 func NewPushNotificationHandler(
 	repo repository.PushRepository,
 	pushSvc service.PushNotificationService,
-) Handler {
+) *pushNotificationHandler {
 	return &pushNotificationHandler{
 		repo:    repo,
 		pushSvc: pushSvc,
 	}
 }
 
-func (h *pushNotificationHandler) Handle(ctx context.Context, payload []byte) error {
+func (h *pushNotificationHandler) Handle(ctx context.Context, msg *model.JobMessage) error {
 	var job notificationMessage.PushNotificationMessage
-	if err := json.Unmarshal(payload, &job); err != nil {
+	if err := json.Unmarshal(msg.Payload, &job); err != nil {
 		return fmt.Errorf("failed to unmarshal job payload: %w", err)
 	}
 

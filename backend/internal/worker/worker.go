@@ -2,10 +2,12 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
 
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
@@ -15,28 +17,37 @@ const (
 	retryDelay      = 5 * time.Second
 )
 
+// HandlerFunc is a function that processes a job message.
+type HandlerFunc func(ctx context.Context, msg *model.JobMessage) error
+
 // Worker represents the background job worker.
 type Worker struct {
-	queue      service.JobQueue
-	dispatcher *Dispatcher
-	wg         sync.WaitGroup
+	queue        service.JobQueue
+	emailHandler HandlerFunc
+	pushHandler  HandlerFunc
+	wg           sync.WaitGroup
 }
 
 // NewWorker creates a new Worker instance.
-func NewWorker(queue service.JobQueue, dispatcher *Dispatcher) *Worker {
+func NewWorker(
+	queue service.JobQueue,
+	emailHandler HandlerFunc,
+	pushHandler HandlerFunc,
+) *Worker {
 	return &Worker{
-		queue:      queue,
-		dispatcher: dispatcher,
+		queue:        queue,
+		emailHandler: emailHandler,
+		pushHandler:  pushHandler,
 	}
 }
 
-// Start runs the worker polling loop and blocks until the context is canceled.
+// Start runs the worker polling loops and blocks until the context is canceled.
 func (w *Worker) Start(ctx context.Context) error {
 	log.Println("Worker starting...")
 
-	// Run polling loop in a separate goroutine
+	// Start a single polling loop and dispatch by JobType.
 	w.wg.Add(1)
-	go w.runLoop(ctx)
+	go w.runLoop(ctx, w.queue)
 
 	// Block until context is canceled
 	<-ctx.Done()
@@ -63,39 +74,56 @@ func (w *Worker) Start(ctx context.Context) error {
 	return nil
 }
 
-func (w *Worker) runLoop(ctx context.Context) {
+func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 	defer w.wg.Done()
-	log.Println("Worker starting polling loop...")
+	log.Println("Worker: starting polling loop...")
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			messages, err := w.queue.Dequeue(ctx, waitTimeSeconds)
+			messages, err := poller.Dequeue(ctx, waitTimeSeconds)
 			if err != nil {
 				// Avoid log spamming if the context is canceled
 				if ctx.Err() != nil {
 					return
 				}
-				log.Printf("Error receiving messages: %v", err)
+				log.Printf("Worker: error receiving messages: %v", err)
 				time.Sleep(retryDelay) // Wait before retrying
 				continue
 			}
 
 			for _, msg := range messages {
-				if err := w.dispatcher.Dispatch(ctx, msg); err != nil {
-					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
-					// 無限ループを防ぐため、インフラ（SQS）側で DLQ（Dead Letter Queue）および
-					// RedrivePolicy（maxReceiveCount）が設定されている必要があります。
-					log.Printf("Error processing message %v (attempt %d): %v", msg.ID, msg.ReceiveCount, err)
+				handler, err := w.selectHandler(msg.JobType)
+				if err != nil {
+					log.Printf("Worker: unsupported job type for message %v: %v", msg.ID, err)
 					continue
 				}
 
-				if err := w.queue.DeleteMessage(ctx, msg); err != nil {
-					log.Printf("Error deleting message %v: %v", msg.ID, err)
+				if err := handler(ctx, msg); err != nil {
+					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
+					// 無限ループを防ぐため、インフラ（SQS）側で DLQ（Dead Letter Queue）および
+					// RedrivePolicy（maxReceiveCount）が設定されている必要があります。
+					log.Printf("Worker: error processing message %v (attempt %d): %v", msg.ID, msg.ReceiveCount, err)
+					continue
+				}
+
+				if err := poller.DeleteMessage(ctx, msg); err != nil {
+					log.Printf("Worker: error deleting message %v: %v", msg.ID, err)
 				}
 			}
 		}
+	}
+}
+
+func (w *Worker) selectHandler(jobType model.JobType) (HandlerFunc, error) {
+	switch jobType {
+	case model.JobTypeEmail:
+		return w.emailHandler, nil
+	case model.JobTypePushNotification:
+		return w.pushHandler, nil
+	default:
+		return nil, fmt.Errorf("unsupported job type: %s", jobType)
 	}
 }

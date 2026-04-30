@@ -21,7 +21,10 @@ type AdminEmailService struct {
 
 var _ service.AdminEmailService = (*AdminEmailService)(nil)
 
-func NewAdminEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) *AdminEmailService {
+func NewAdminEmailService(cfg config.EmailConfig, loader templates.TemplateProvider) service.AdminEmailService {
+	if cfg == config.NoEmailConfig {
+		return &noopAdminEmailService{}
+	}
 	return &AdminEmailService{
 		cfg:            cfg,
 		templateLoader: loader,

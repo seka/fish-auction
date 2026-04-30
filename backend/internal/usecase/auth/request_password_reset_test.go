@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -28,8 +29,6 @@ func (m *mockBuyerRepository) FindByEmail(_ context.Context, _ string) (*model.B
 	if m.err != nil {
 		return nil, m.err
 	}
-	// Simulate checking email (mapped to buyer in mock setup or logic)
-	// Since model.Buyer doesn't have Email, use external check or standard return
 	return m.buyer, nil
 }
 func (m *mockBuyerRepository) List(_ context.Context) ([]model.Buyer, error) { return nil, nil }
@@ -63,24 +62,26 @@ func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context
 	return args.Error(0)
 }
 
-type mockEmailService struct {
-	sentBuyerURL string
-	sentAdminURL string
-	err          error
+type mockJobQueue struct {
+	executed bool
+	err      error
 }
 
-func (m *mockEmailService) SendBuyerPasswordReset(_ context.Context, _, resetURL string) error {
+var _ service.JobQueue = (*mockJobQueue)(nil)
+
+func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error {
 	if m.err != nil {
 		return m.err
 	}
-	m.sentBuyerURL = resetURL
+	m.executed = true
 	return nil
 }
-func (m *mockEmailService) SendAdminPasswordReset(_ context.Context, _, resetURL string) error {
-	if m.err != nil {
-		return m.err
-	}
-	m.sentAdminURL = resetURL
+
+func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+	return nil, nil
+}
+
+func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
 	return nil
 }
 
@@ -132,17 +133,15 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			name:          "DeleteTokenError",
 			email:         "buyer@example.com",
 			mockBuyer:     validBuyer,
-			mockResetRepo: nil, // Setup in body
+			mockResetRepo: nil,
 			wantError:     true,
 		},
 		{
 			name:          "CreateTokenError",
 			email:         "buyer@example.com",
 			mockBuyer:     validBuyer,
-			mockResetRepo: nil, // Will setup in test body
-			// we can't put mock expectations in struct easily here without changing struct type.
-			// Let's rely on name/logic to setup mocks.
-			wantError: true,
+			mockResetRepo: nil,
+			wantError:     true,
 		},
 		{
 			name:      "RandomError",
@@ -150,17 +149,17 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			mockBuyer: validBuyer,
 			wantError: true,
 		},
+		{
+			name:      "TransactionCommitError",
+			email:     "buyer@example.com",
+			mockBuyer: validBuyer,
+			wantError: true,
+			wantSent:  false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Need to add methods to satisfy interface if changed.
-			// Re-check interface:
-			// List() ([]model.Buyer, error)
-			// FindByName(ctx, name) (*model.Buyer, error)
-			// Add FindByName to mock if missing?
-			// Yes, existing mock is manual and might be missing FindByName which is in interface.
-
 			buyerRepo := &mockBuyerRepository{buyer: tt.mockBuyer, err: tt.mockRepoErr}
 			resetRepo := &mockBuyerPasswordResetRepository{}
 			switch tt.name {
@@ -176,14 +175,20 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			}
-			// Other cases like UserNotFound don't call repo methods.
 
-			// For RandomError, if it fails before repo, no calls. SetRandRead fails inside Execute?
-			// Random error happens during token generation which is before repo calls. So no repo calls expected.
-			emailService := &mockEmailService{err: tt.mockEmailErr}
+			publishEmail := &mockJobQueue{err: tt.mockEmailErr}
 			txMgr := &usetesting.MockTransactionManager{}
+			if tt.name == "TransactionCommitError" {
+				txMgr.WithTransactionFunc = func(ctx context.Context, fn func(ctx context.Context) error) error {
+					if err := fn(ctx); err != nil {
+						return err
+					}
+					return errors.New("commit failed")
+				}
+				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
+				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
+			}
 
-			// Mock rand.Read if testing random error
 			if tt.name == "RandomError" {
 				cleanup := auth.SetRandRead(func(_ []byte) (int, error) {
 					return 0, errors.New("random failed")
@@ -192,11 +197,10 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, emailService, frontendURL, txMgr, mockClock)
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, publishEmail, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {
-				// Re-check logic: FindByEmail error returns nil.
 				if tt.name == "RepoError" && err == nil {
 					t.Log("Expected behavior as per implementation: error suppressed")
 				} else {
@@ -204,10 +208,10 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			if tt.wantSent && emailService.sentBuyerURL == "" {
+			if tt.wantSent && !publishEmail.executed {
 				t.Error("expected email to be sent, but wasn't")
 			}
-			if !tt.wantSent && emailService.sentBuyerURL != "" {
+			if !tt.wantSent && publishEmail.executed {
 				t.Error("expected email NOT to be sent, but was")
 			}
 		})

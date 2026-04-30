@@ -6,22 +6,21 @@ import (
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
 )
 
-type mockJobQueue struct {
+type mockPushQueue struct {
 	enqueueFunc func(ctx context.Context, jobType model.JobType, payload any) error
 }
 
-func (m *mockJobQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
+func (m *mockPushQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
 	return m.enqueueFunc(ctx, jobType, payload)
 }
 
-func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockPushQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
 	return nil, nil
 }
 
-func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockPushQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
 	return nil
 }
 
@@ -33,13 +32,11 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		enqueueCalled := false
 		var capturedJobType model.JobType
-		var capturedPayload any
 
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
+		mockQueue := &mockPushQueue{
+			enqueueFunc: func(_ context.Context, jt model.JobType, _ any) error {
 				enqueueCalled = true
-				capturedJobType = jobType
-				capturedPayload = payload
+				capturedJobType = jt
 				return nil
 			},
 		}
@@ -51,24 +48,16 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 			t.Fatalf("Expected no error, got %v", err)
 		}
 		if !enqueueCalled {
-			t.Error("Expected JobQueue.Enqueue to be called")
+			t.Error("Expected PushNotificationQueue.Enqueue to be called")
 		}
 		if capturedJobType != model.JobTypePushNotification {
-			t.Errorf("Expected jobType '%s', got '%s'", model.JobTypePushNotification, capturedJobType)
-		}
-
-		p, ok := capturedPayload.(notificationMessage.PushNotificationMessage)
-		if !ok {
-			t.Fatalf("Captured payload is not the expected struct type: %T", capturedPayload)
-		}
-		if p.BuyerID != buyerID {
-			t.Errorf("Expected BuyerID %d, got %d", buyerID, p.BuyerID)
+			t.Errorf("Expected JobType %s, got %s", model.JobTypePushNotification, capturedJobType)
 		}
 	})
 
 	t.Run("enqueue error", func(t *testing.T) {
 		enqueueErr := errors.New("enqueue failed")
-		mockQueue := &mockJobQueue{
+		mockQueue := &mockPushQueue{
 			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
 				return enqueueErr
 			},

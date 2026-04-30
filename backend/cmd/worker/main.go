@@ -11,6 +11,13 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/registry"
+	"github.com/seka/fish-auction/backend/internal/worker"
+	"github.com/seka/fish-auction/backend/internal/worker/handler"
+)
+
+const (
+	shouldMigrate = false
+	isWorker      = true
 )
 
 func main() {
@@ -28,29 +35,33 @@ func run() error {
 	}
 
 	// Initialize Repository Registry
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig, false)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig, shouldMigrate)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, cfg, config.NoQueueConfig)
+	serviceReg, err := registry.NewServiceRegistry(cfg, cfg, cfg, isWorker)
 	if err != nil {
 		return fmt.Errorf("failed to initialize service registry: %w", err)
 	}
 
-	// Initialize Worker Registry
-	workerReg, err := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
-	if err != nil {
-		return fmt.Errorf("failed to initialize worker registry: %w", err)
-	}
-
 	// Create Worker
-	w, err := workerReg.NewWorker()
-	if err != nil {
-		return fmt.Errorf("failed to create worker: %w", err)
-	}
+	pushRepo := repoReg.NewPushRepository()
+	pushSvc := serviceReg.NewPushNotificationService()
+	pushHandler := handler.NewPushNotificationHandler(pushRepo, pushSvc)
+
+	buyerEmailSvc := serviceReg.NewBuyerEmailService()
+	adminEmailSvc := serviceReg.NewAdminEmailService()
+	emailHandler := handler.NewEmailHandler(buyerEmailSvc, adminEmailSvc)
+
+	queue := serviceReg.NewJobQueue()
+	w := worker.NewWorker(
+		queue,
+		worker.HandlerFunc(emailHandler.Handle),
+		worker.HandlerFunc(pushHandler.Handle),
+	)
 
 	// Start Worker with modern signal handling
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
