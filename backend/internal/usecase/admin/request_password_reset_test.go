@@ -61,21 +61,21 @@ func (m *mockPwdResetRepoForReqPwd) DeleteAllByUserID(ctx context.Context, userI
 	return args.Error(0)
 }
 
-type mockAdminEmailService struct {
+type mockJobQueue struct {
 	err error
 }
 
-var _ service.JobQueue = (*mockAdminEmailService)(nil)
+var _ service.JobQueue = (*mockJobQueue)(nil)
 
-func (m *mockAdminEmailService) Enqueue(_ context.Context, _ model.JobType, _ any) error {
+func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error {
 	return m.err
 }
 
-func (m *mockAdminEmailService) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
 	return nil, nil
 }
 
-func (m *mockAdminEmailService) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
 	return nil
 }
 
@@ -160,7 +160,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			publishEmail := &mockAdminEmailService{err: tt.mockSndErr}
+			publishEmail := &mockJobQueue{err: tt.mockSndErr}
 			txMgr := &usetesting.MockTransactionManager{}
 
 			frontendURL, _ := url.Parse("https://localhost")

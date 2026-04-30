@@ -62,14 +62,14 @@ func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context
 	return args.Error(0)
 }
 
-type mockBuyerEmailService struct {
+type mockJobQueue struct {
 	executed bool
 	err      error
 }
 
-var _ service.JobQueue = (*mockBuyerEmailService)(nil)
+var _ service.JobQueue = (*mockJobQueue)(nil)
 
-func (m *mockBuyerEmailService) Enqueue(_ context.Context, _ model.JobType, _ any) error {
+func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error {
 	if m.err != nil {
 		return m.err
 	}
@@ -77,11 +77,11 @@ func (m *mockBuyerEmailService) Enqueue(_ context.Context, _ model.JobType, _ an
 	return nil
 }
 
-func (m *mockBuyerEmailService) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
 	return nil, nil
 }
 
-func (m *mockBuyerEmailService) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
 	return nil
 }
 
@@ -176,7 +176,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			}
 
-			publishEmail := &mockBuyerEmailService{err: tt.mockEmailErr}
+			publishEmail := &mockJobQueue{err: tt.mockEmailErr}
 			txMgr := &usetesting.MockTransactionManager{}
 			if tt.name == "TransactionCommitError" {
 				txMgr.WithTransactionFunc = func(ctx context.Context, fn func(ctx context.Context) error) error {
