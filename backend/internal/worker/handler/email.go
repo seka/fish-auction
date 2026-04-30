@@ -7,7 +7,7 @@ import (
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
-	emailMessage "github.com/seka/fish-auction/backend/internal/worker/message"
+	emailMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 type emailHandler struct {

@@ -11,7 +11,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/worker/message"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 // pushNotificationHandler implements the Handler interface for push notifications.

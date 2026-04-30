@@ -8,7 +8,7 @@ import (
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/worker/message"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 type mockPushRepository struct {

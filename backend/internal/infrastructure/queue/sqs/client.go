@@ -12,17 +12,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
-	jobMessage "github.com/seka/fish-auction/backend/internal/worker/message"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
+	jobMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
-// Client implements queue.JobQueue using AWS SQS.
+// Client implements service.JobQueue using AWS SQS.
 type Client struct {
 	client   *sqs.Client
 	queueURL string
 }
 
-var _ queue.JobQueue = (*Client)(nil)
+var _ service.JobQueue = (*Client)(nil)
 
 // NewClient creates a new SQS client.
 func NewClient(ctx context.Context, region, queueURL, endpoint string) (*Client, error) {
