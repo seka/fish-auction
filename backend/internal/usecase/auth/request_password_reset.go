@@ -25,7 +25,7 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	buyerRepo    repository.BuyerRepository
 	pwdResetRepo repository.PasswordResetRepository
-	emailService service.BuyerEmailService
+	emailQueue   service.BuyerEmailQueue
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
 	clock        service.Clock
@@ -37,7 +37,7 @@ var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
 func NewRequestPasswordResetUseCase(
 	buyerRepo repository.BuyerRepository,
 	pwdResetRepo repository.PasswordResetRepository,
-	emailService service.BuyerEmailService,
+	emailQueue service.BuyerEmailQueue,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
 	clock service.Clock,
@@ -45,7 +45,7 @@ func NewRequestPasswordResetUseCase(
 	return &requestPasswordResetUseCase{
 		buyerRepo:    buyerRepo,
 		pwdResetRepo: pwdResetRepo,
-		emailService: emailService,
+		emailQueue:   emailQueue,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
 		clock:        clock,
@@ -93,8 +93,8 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 		return err
 	}
 
-	if err := u.emailService.SendBuyerPasswordReset(ctx, email, resetURL.String()); err != nil {
-		return fmt.Errorf("failed to send password reset email: %w", err)
+	if err := u.emailQueue.EnqueueBuyerPasswordReset(ctx, email, resetURL.String()); err != nil {
+		return fmt.Errorf("failed to enqueue password reset email: %w", err)
 	}
 
 	return nil

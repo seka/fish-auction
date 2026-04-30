@@ -226,7 +226,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 	return auth.NewRequestPasswordResetUseCase(
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
-		u.service.NewBuyerEmailService(),
+		u.service.NewBuyerEmailQueue(),
 		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
@@ -250,7 +250,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
 		u.repo.PasswordReset(),
-		u.service.NewAdminEmailService(),
+		u.service.NewAdminEmailQueue(),
 		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
@@ -275,7 +275,7 @@ func (u *useCaseRegistry) NewSubscribeNotificationUseCase() notification.Subscri
 }
 
 func (u *useCaseRegistry) NewPublishNotificationUseCase() notification.PublishNotificationUseCase {
-	return notification.NewPublishNotificationUseCase(u.service.NewPushNotificationService())
+	return notification.NewPublishNotificationUseCase(u.service.NewPushNotificationQueue())
 }
 
 func (u *useCaseRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {

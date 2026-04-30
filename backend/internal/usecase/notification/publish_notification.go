@@ -13,20 +13,20 @@ type PublishNotificationUseCase interface {
 }
 
 type publishNotificationUseCase struct {
-	pushSvc service.PushNotificationService
+	pushQueue service.PushNotificationQueue
 }
 
 var _ PublishNotificationUseCase = (*publishNotificationUseCase)(nil)
 
 // NewPublishNotificationUseCase creates a new instance of PublishNotificationUseCase.
 func NewPublishNotificationUseCase(
-	pushSvc service.PushNotificationService,
+	pushQueue service.PushNotificationQueue,
 ) PublishNotificationUseCase {
 	return &publishNotificationUseCase{
-		pushSvc: pushSvc,
+		pushQueue: pushQueue,
 	}
 }
 
 func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, payload any) error {
-	return uc.pushSvc.PublishToBuyer(ctx, buyerID, payload)
+	return uc.pushQueue.Enqueue(ctx, buyerID, payload)
 }

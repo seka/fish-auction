@@ -25,7 +25,7 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.PasswordResetRepository
-	emailService service.AdminEmailService
+	emailQueue   service.AdminEmailQueue
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
 	clock        service.Clock
@@ -37,7 +37,7 @@ var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
-	emailService service.AdminEmailService,
+	emailQueue service.AdminEmailQueue,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
 	clock service.Clock,
@@ -45,7 +45,7 @@ func NewRequestPasswordResetUseCase(
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,
-		emailService: emailService,
+		emailQueue:   emailQueue,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
 		clock:        clock,
@@ -89,8 +89,8 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 		if err = u.pwdResetRepo.Create(txCtx, admin.ID, "admin", tokenHash, expiresAt); err != nil {
 			return fmt.Errorf("failed to create new reset token: %w", err)
 		}
-		if err := u.emailService.SendAdminPasswordReset(txCtx, email, resetURL.String()); err != nil {
-			return fmt.Errorf("failed to send password reset email: %w", err)
+		if err := u.emailQueue.EnqueueAdminPasswordReset(txCtx, email, resetURL.String()); err != nil {
+			return fmt.Errorf("failed to enqueue password reset email: %w", err)
 		}
 		return nil
 	})

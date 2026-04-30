@@ -16,18 +16,22 @@ import (
 // Service defines the interface for creating domain services
 type Service interface {
 	NewPushNotificationService() service.PushNotificationService
+	NewPushNotificationQueue() service.PushNotificationQueue
+	NewAdminEmailQueue() service.AdminEmailQueue
+	NewBuyerEmailQueue() service.BuyerEmailQueue
 	NewAdminEmailService() service.AdminEmailService
 	NewBuyerEmailService() service.BuyerEmailService
 	NewClock() service.Clock
-	NewJobQueue() queue.JobQueue
 }
 
 type serviceRegistry struct {
 	pushNotificationService service.PushNotificationService
+	pushNotificationQueue   service.PushNotificationQueue
+	adminEmailQueue         service.AdminEmailQueue
+	buyerEmailQueue         service.BuyerEmailQueue
 	adminEmailService       service.AdminEmailService
 	buyerEmailService       service.BuyerEmailService
 	clock                   service.Clock
-	jobQueue                queue.JobQueue
 }
 
 // NewServiceRegistry creates a new Service registry
@@ -47,20 +51,24 @@ func NewServiceRegistry(
 		}
 	}
 
-	// Use SQS-backed email/push services when a job queue is available (API server),
-	// otherwise use SMTP/Webpush directly (Worker).
+	// Initialize queue clients whenever a job queue is available.
 	var adminEmailService service.AdminEmailService
 	var buyerEmailService service.BuyerEmailService
 	var pushNotificationService service.PushNotificationService
 
-	if !isWorker {
+	var pushNotificationQueue service.PushNotificationQueue
+	var adminEmailQueue service.AdminEmailQueue
+	var buyerEmailQueue service.BuyerEmailQueue
+	if jobQueue != nil {
+		adminEmailQueue = sqs.NewAdminEmailQueue(jobQueue)
+		buyerEmailQueue = sqs.NewBuyerEmailQueue(jobQueue)
+		pushNotificationQueue = sqs.NewPushNotificationQueue(jobQueue)
+	}
+
+	if isWorker {
 		if jobQueue == nil {
-			return nil, fmt.Errorf("jobQueue is required for non-worker process")
+			return nil, fmt.Errorf("jobQueue is required for worker process")
 		}
-		adminEmailService = sqs.NewAdminEmailService(jobQueue)
-		buyerEmailService = sqs.NewBuyerEmailService(jobQueue)
-		pushNotificationService = sqs.NewPushNotificationService(jobQueue)
-	} else {
 		loader, err := templates.NewTemplateLoader()
 		if err != nil {
 			return nil, fmt.Errorf("failed to load templates: %w", err)
@@ -68,19 +76,35 @@ func NewServiceRegistry(
 		adminEmailService = mailhog.NewAdminEmailService(emailCfg, loader)
 		buyerEmailService = mailhog.NewBuyerEmailService(emailCfg, loader)
 		pushNotificationService = pushNotification.NewWebpushService(webpushCfg)
+	} else if jobQueue == nil {
+		return nil, fmt.Errorf("jobQueue is required for non-worker process")
 	}
 
 	return &serviceRegistry{
 		pushNotificationService: pushNotificationService,
+		pushNotificationQueue:   pushNotificationQueue,
+		adminEmailQueue:         adminEmailQueue,
+		buyerEmailQueue:         buyerEmailQueue,
 		adminEmailService:       adminEmailService,
 		buyerEmailService:       buyerEmailService,
 		clock:                   service.NewRealClock(),
-		jobQueue:                jobQueue,
 	}, nil
 }
 
 func (s *serviceRegistry) NewPushNotificationService() service.PushNotificationService {
 	return s.pushNotificationService
+}
+
+func (s *serviceRegistry) NewPushNotificationQueue() service.PushNotificationQueue {
+	return s.pushNotificationQueue
+}
+
+func (s *serviceRegistry) NewAdminEmailQueue() service.AdminEmailQueue {
+	return s.adminEmailQueue
+}
+
+func (s *serviceRegistry) NewBuyerEmailQueue() service.BuyerEmailQueue {
+	return s.buyerEmailQueue
 }
 
 func (s *serviceRegistry) NewAdminEmailService() service.AdminEmailService {
@@ -93,8 +117,4 @@ func (s *serviceRegistry) NewBuyerEmailService() service.BuyerEmailService {
 
 func (s *serviceRegistry) NewClock() service.Clock {
 	return s.clock
-}
-
-func (s *serviceRegistry) NewJobQueue() queue.JobQueue {
-	return s.jobQueue
 }
