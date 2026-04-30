@@ -2,12 +2,12 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 const (
@@ -27,28 +27,22 @@ type HandlerFunc func(ctx context.Context, msg *model.JobMessage) error
 
 // Worker represents the background job worker.
 type Worker struct {
-	adminEmailQueue       service.AdminEmailQueue
-	buyerEmailQueue       service.BuyerEmailQueue
-	pushNotificationQueue service.PushNotificationQueue
-	emailHandler          HandlerFunc
-	pushHandler           HandlerFunc
-	wg                    sync.WaitGroup
+	queue        queuePoller
+	emailHandler HandlerFunc
+	pushHandler  HandlerFunc
+	wg           sync.WaitGroup
 }
 
 // NewWorker creates a new Worker instance.
 func NewWorker(
-	adminEmailQueue service.AdminEmailQueue,
-	buyerEmailQueue service.BuyerEmailQueue,
-	pushNotificationQueue service.PushNotificationQueue,
+	queue queuePoller,
 	emailHandler HandlerFunc,
 	pushHandler HandlerFunc,
 ) *Worker {
 	return &Worker{
-		adminEmailQueue:       adminEmailQueue,
-		buyerEmailQueue:       buyerEmailQueue,
-		pushNotificationQueue: pushNotificationQueue,
-		emailHandler:          emailHandler,
-		pushHandler:           pushHandler,
+		queue:        queue,
+		emailHandler: emailHandler,
+		pushHandler:  pushHandler,
 	}
 }
 
@@ -56,11 +50,9 @@ func NewWorker(
 func (w *Worker) Start(ctx context.Context) error {
 	log.Println("Worker starting...")
 
-	// Start polling loops for each specialized queue
-	w.wg.Add(3)
-	go w.runLoop(ctx, w.adminEmailQueue, w.emailHandler, "AdminEmail")
-	go w.runLoop(ctx, w.buyerEmailQueue, w.emailHandler, "BuyerEmail")
-	go w.runLoop(ctx, w.pushNotificationQueue, w.pushHandler, "PushNotification")
+	// Start a single polling loop and dispatch by JobType.
+	w.wg.Add(1)
+	go w.runLoop(ctx, w.queue, "JobQueue")
 
 	// Block until context is canceled
 	<-ctx.Done()
@@ -87,7 +79,7 @@ func (w *Worker) Start(ctx context.Context) error {
 	return nil
 }
 
-func (w *Worker) runLoop(ctx context.Context, poller queuePoller, handler HandlerFunc, name string) {
+func (w *Worker) runLoop(ctx context.Context, poller queuePoller, name string) {
 	defer w.wg.Done()
 	log.Printf("Worker: starting polling loop for %s queue...", name)
 
@@ -108,6 +100,12 @@ func (w *Worker) runLoop(ctx context.Context, poller queuePoller, handler Handle
 			}
 
 			for _, msg := range messages {
+				handler, err := w.selectHandler(msg.JobType)
+				if err != nil {
+					log.Printf("Worker (%s): unsupported job type for message %v: %v", name, msg.ID, err)
+					continue
+				}
+
 				if err := handler(ctx, msg); err != nil {
 					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
 					log.Printf("Worker (%s): error processing message %v (attempt %d): %v", name, msg.ID, msg.ReceiveCount, err)
@@ -119,5 +117,16 @@ func (w *Worker) runLoop(ctx context.Context, poller queuePoller, handler Handle
 				}
 			}
 		}
+	}
+}
+
+func (w *Worker) selectHandler(jobType model.JobType) (HandlerFunc, error) {
+	switch jobType {
+	case model.JobTypeEmail:
+		return w.emailHandler, nil
+	case model.JobTypePushNotification:
+		return w.pushHandler, nil
+	default:
+		return nil, fmt.Errorf("unsupported job type: %s", jobType)
 	}
 }
