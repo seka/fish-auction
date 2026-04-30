@@ -553,16 +553,6 @@ func (m *mockPushService) Send(_ context.Context, sub *model.PushSubscription, p
 	return nil
 }
 
-func (m *mockPushService) PublishToBuyer(_ context.Context, buyerID int, payload any) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.sentCalls = append(m.sentCalls, pushCall{
-		buyerID: buyerID,
-		payload: payload,
-	})
-	return nil
-}
-
 func (m *mockPushService) getCalls() []pushCall {
 	m.mu.Lock()
 	defer m.mu.Unlock()

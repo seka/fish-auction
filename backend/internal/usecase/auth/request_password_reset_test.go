@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -66,7 +67,9 @@ type mockBuyerEmailService struct {
 	err      error
 }
 
-func (m *mockBuyerEmailService) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
+var _ service.BuyerEmailQueue = (*mockBuyerEmailService)(nil)
+
+func (m *mockBuyerEmailService) EnqueueBuyerPasswordReset(_ context.Context, _, _ string) error {
 	if m.err != nil {
 		return m.err
 	}

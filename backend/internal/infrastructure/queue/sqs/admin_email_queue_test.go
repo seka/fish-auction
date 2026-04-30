@@ -1,4 +1,4 @@
-package sqs
+package sqs_test
 
 import (
 	"context"
@@ -6,26 +6,12 @@ import (
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/mock"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
+	emailMessage "github.com/seka/fish-auction/backend/internal/worker/message"
 )
 
-type mockJobQueue struct {
-	enqueueFunc func(ctx context.Context, jobType model.JobType, payload any) error
-}
-
-func (m *mockJobQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
-	return m.enqueueFunc(ctx, jobType, payload)
-}
-
-func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
-	return nil, nil
-}
-
-func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
-	return nil
-}
-
-func TestAdminEmailService_SendAdminPasswordReset(t *testing.T) {
+func TestAdminEmailQueue_EnqueueAdminPasswordReset(t *testing.T) {
 	ctx := context.Background()
 	to := "admin@example.com"
 	resetURL := "http://example.com/reset"
@@ -35,8 +21,8 @@ func TestAdminEmailService_SendAdminPasswordReset(t *testing.T) {
 		var capturedJobType model.JobType
 		var capturedPayload any
 
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
+		mockQueue := &mock.MockJobQueue{
+			EnqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
 				enqueueCalled = true
 				capturedJobType = jobType
 				capturedPayload = payload
@@ -44,8 +30,8 @@ func TestAdminEmailService_SendAdminPasswordReset(t *testing.T) {
 			},
 		}
 
-		svc := NewAdminEmailService(mockQueue)
-		err := svc.SendAdminPasswordReset(ctx, to, resetURL)
+		svc := sqs.NewAdminEmailQueue(mockQueue)
+		err := svc.EnqueueAdminPasswordReset(ctx, to, resetURL)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
@@ -74,14 +60,14 @@ func TestAdminEmailService_SendAdminPasswordReset(t *testing.T) {
 
 	t.Run("enqueue error", func(t *testing.T) {
 		expectedErr := errors.New("enqueue error")
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
+		mockQueue := &mock.MockJobQueue{
+			EnqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
 				return expectedErr
 			},
 		}
 
-		svc := NewAdminEmailService(mockQueue)
-		err := svc.SendAdminPasswordReset(ctx, to, resetURL)
+		svc := sqs.NewAdminEmailQueue(mockQueue)
+		err := svc.EnqueueAdminPasswordReset(ctx, to, resetURL)
 
 		if !errors.Is(err, expectedErr) {
 			t.Errorf("Expected error %v, got %v", expectedErr, err)

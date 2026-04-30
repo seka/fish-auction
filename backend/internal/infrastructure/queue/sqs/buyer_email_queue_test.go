@@ -1,4 +1,4 @@
-package sqs
+package sqs_test
 
 import (
 	"context"
@@ -6,10 +6,12 @@ import (
 	"testing"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	emailMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/mock"
+	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
+	emailMessage "github.com/seka/fish-auction/backend/internal/worker/message"
 )
 
-func TestBuyerEmailService_SendBuyerPasswordReset(t *testing.T) {
+func TestBuyerEmailQueue_EnqueueBuyerPasswordReset(t *testing.T) {
 	ctx := context.Background()
 	to := "buyer@example.com"
 	resetURL := "http://example.com/reset"
@@ -19,8 +21,8 @@ func TestBuyerEmailService_SendBuyerPasswordReset(t *testing.T) {
 		var capturedJobType model.JobType
 		var capturedPayload any
 
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
+		mockQueue := &mock.MockJobQueue{
+			EnqueueFunc: func(_ context.Context, jobType model.JobType, payload any) error {
 				enqueueCalled = true
 				capturedJobType = jobType
 				capturedPayload = payload
@@ -28,8 +30,8 @@ func TestBuyerEmailService_SendBuyerPasswordReset(t *testing.T) {
 			},
 		}
 
-		svc := NewBuyerEmailService(mockQueue)
-		err := svc.SendBuyerPasswordReset(ctx, to, resetURL)
+		svc := sqs.NewBuyerEmailQueue(mockQueue)
+		err := svc.EnqueueBuyerPasswordReset(ctx, to, resetURL)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
@@ -58,14 +60,14 @@ func TestBuyerEmailService_SendBuyerPasswordReset(t *testing.T) {
 
 	t.Run("enqueue error", func(t *testing.T) {
 		expectedErr := errors.New("enqueue error")
-		mockQueue := &mockJobQueue{
-			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
+		mockQueue := &mock.MockJobQueue{
+			EnqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
 				return expectedErr
 			},
 		}
 
-		svc := NewBuyerEmailService(mockQueue)
-		err := svc.SendBuyerPasswordReset(ctx, to, resetURL)
+		svc := sqs.NewBuyerEmailQueue(mockQueue)
+		err := svc.EnqueueBuyerPasswordReset(ctx, to, resetURL)
 
 		if !errors.Is(err, expectedErr) {
 			t.Errorf("Expected error %v, got %v", expectedErr, err)

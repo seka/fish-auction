@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -64,7 +65,9 @@ type mockAdminEmailService struct {
 	err error
 }
 
-func (m *mockAdminEmailService) SendAdminPasswordReset(_ context.Context, _, _ string) error {
+var _ service.AdminEmailQueue = (*mockAdminEmailService)(nil)
+
+func (m *mockAdminEmailService) EnqueueAdminPasswordReset(_ context.Context, _, _ string) error {
 	return m.err
 }
 

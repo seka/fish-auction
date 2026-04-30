@@ -21,6 +21,10 @@ func bpp(amount int) *model.BidPrice {
 	return &p
 }
 
+func intp(v int) *int {
+	return &v
+}
+
 func TestCreateBidUseCase_Execute(t *testing.T) {
 	createBidErr := errors.New("create bid failed")
 	txErr := errors.New("tx error")
@@ -315,7 +319,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				AuctionID:       1,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: new(1),
+				HighestBidderID: intp(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -355,7 +359,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				AuctionID:       1,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: new(1),
+				HighestBidderID: intp(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
@@ -382,7 +386,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				AuctionID:       1,
 				FishType:        "Maguro",
 				HighestBid:      bpp(1500),
-				HighestBidderID: new(1),
+				HighestBidderID: intp(1),
 			},
 			wantID:           1,
 			wantCreateCalled: true,
