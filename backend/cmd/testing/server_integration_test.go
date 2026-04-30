@@ -573,9 +573,9 @@ func (m *mockPushService) getCalls() []pushCall {
 
 type wrappedServiceRegistry struct {
 	registry.Service
-	mockPush       service.PushNotificationService
-	buyerEmailSvc  service.BuyerEmailService
-	adminEmailSvc  service.AdminEmailService
+	mockPush      service.PushNotificationService
+	buyerEmailSvc service.BuyerEmailService
+	adminEmailSvc service.AdminEmailService
 }
 
 func (w *wrappedServiceRegistry) NewPushNotificationService() service.PushNotificationService {

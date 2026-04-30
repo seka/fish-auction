@@ -77,4 +77,3 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 
 	return nil
 }
-

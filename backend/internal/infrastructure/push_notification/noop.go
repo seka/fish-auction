@@ -11,4 +11,3 @@ type noopPushNotificationService struct{}
 func (n *noopPushNotificationService) Send(_ context.Context, _ *model.PushSubscription, _ any) error {
 	return nil
 }
-

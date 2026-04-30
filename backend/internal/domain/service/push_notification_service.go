@@ -10,4 +10,3 @@ import (
 type PushNotificationService interface {
 	Send(ctx context.Context, sub *model.PushSubscription, payload any) error
 }
-
