@@ -10,8 +10,10 @@ import (
 	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	emailMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 var randRead = rand.Read
@@ -25,7 +27,7 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	buyerRepo    repository.BuyerRepository
 	pwdResetRepo repository.PasswordResetRepository
-	emailQueue   service.BuyerEmailQueue
+	jobQueue     service.JobQueue
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
 	clock        service.Clock
@@ -37,7 +39,7 @@ var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
 func NewRequestPasswordResetUseCase(
 	buyerRepo repository.BuyerRepository,
 	pwdResetRepo repository.PasswordResetRepository,
-	emailQueue service.BuyerEmailQueue,
+	jobQueue service.JobQueue,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
 	clock service.Clock,
@@ -45,7 +47,7 @@ func NewRequestPasswordResetUseCase(
 	return &requestPasswordResetUseCase{
 		buyerRepo:    buyerRepo,
 		pwdResetRepo: pwdResetRepo,
-		emailQueue:   emailQueue,
+		jobQueue:     jobQueue,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
 		clock:        clock,
@@ -93,7 +95,12 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 		return err
 	}
 
-	if err := u.emailQueue.EnqueueBuyerPasswordReset(ctx, email, resetURL.String()); err != nil {
+	wire := emailMessage.EmailMessage{
+		EmailType: emailMessage.EmailTypeBuyerPasswordReset,
+		To:        email,
+		ResetURL:  resetURL.String(),
+	}
+	if err := u.jobQueue.Enqueue(ctx, model.JobTypeEmail, wire); err != nil {
 		return fmt.Errorf("failed to enqueue password reset email: %w", err)
 	}
 

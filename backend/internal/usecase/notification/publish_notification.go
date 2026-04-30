@@ -3,7 +3,9 @@ package notification
 import (
 	"context"
 
+	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 // PublishNotificationUseCase defines the interface for publish notifications.
@@ -13,20 +15,24 @@ type PublishNotificationUseCase interface {
 }
 
 type publishNotificationUseCase struct {
-	pushQueue service.PushNotificationQueue
+	jobQueue service.JobQueue
 }
 
 var _ PublishNotificationUseCase = (*publishNotificationUseCase)(nil)
 
 // NewPublishNotificationUseCase creates a new instance of PublishNotificationUseCase.
 func NewPublishNotificationUseCase(
-	pushQueue service.PushNotificationQueue,
+	jobQueue service.JobQueue,
 ) PublishNotificationUseCase {
 	return &publishNotificationUseCase{
-		pushQueue: pushQueue,
+		jobQueue: jobQueue,
 	}
 }
 
 func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, payload any) error {
-	return uc.pushQueue.Enqueue(ctx, buyerID, payload)
+	wire := notificationMessage.PushNotificationMessage{
+		BuyerID: buyerID,
+		Payload: payload,
+	}
+	return uc.jobQueue.Enqueue(ctx, model.JobTypePushNotification, wire)
 }
