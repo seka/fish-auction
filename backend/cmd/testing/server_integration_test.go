@@ -21,6 +21,8 @@ import (
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
+	"github.com/seka/fish-auction/backend/internal/worker"
+	"github.com/seka/fish-auction/backend/internal/worker/handler"
 )
 
 const (
@@ -68,14 +70,20 @@ func TestServerIntegration(t *testing.T) {
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
 	// 4. Worker を初期化して起動
-	workerReg, err := registry.NewWorkerRegistry(cfg, repoReg, serviceReg)
-	if err != nil {
-		t.Fatalf("Failed to initialize worker registry: %v", err)
-	}
-	w, err := workerReg.NewWorker()
-	if err != nil {
-		t.Fatalf("Failed to create worker: %v", err)
-	}
+	pushRepo := repoReg.NewPushRepository()
+	pushSvc := serviceReg.NewPushNotificationService()
+	pushHandlerSvc := handler.NewPushNotificationHandler(pushRepo, pushSvc)
+
+	buyerEmailSvc := serviceReg.NewBuyerEmailService()
+	adminEmailSvc := serviceReg.NewAdminEmailService()
+	emailHandlerSvc := handler.NewEmailHandler(buyerEmailSvc, adminEmailSvc)
+
+	queue := serviceReg.NewJobQueue()
+	w := worker.NewWorker(
+		queue,
+		worker.HandlerFunc(emailHandlerSvc.Handle),
+		worker.HandlerFunc(pushHandlerSvc.Handle),
+	)
 
 	go func() {
 		if err := w.Start(ctx); err != nil && ctx.Err() == nil {
