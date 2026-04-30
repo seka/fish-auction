@@ -60,11 +60,13 @@ func TestServerIntegration(t *testing.T) {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
 
-	// 統合テスト用にプッシュ通知サービスをモックに差し替え
+	// 統合テスト用にプッシュ通知サービスをモックに差し替え、メールサービスは noop を注入
 	mockPush := &mockPushService{}
 	serviceReg := &wrappedServiceRegistry{
-		Service:  realServiceReg,
-		mockPush: mockPush,
+		Service:       realServiceReg,
+		mockPush:      mockPush,
+		buyerEmailSvc: &noopBuyerEmailService{},
+		adminEmailSvc: &noopAdminEmailService{},
 	}
 
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
@@ -571,9 +573,31 @@ func (m *mockPushService) getCalls() []pushCall {
 
 type wrappedServiceRegistry struct {
 	registry.Service
-	mockPush service.PushNotificationService
+	mockPush       service.PushNotificationService
+	buyerEmailSvc  service.BuyerEmailService
+	adminEmailSvc  service.AdminEmailService
 }
 
 func (w *wrappedServiceRegistry) NewPushNotificationService() service.PushNotificationService {
 	return w.mockPush
+}
+
+func (w *wrappedServiceRegistry) NewBuyerEmailService() service.BuyerEmailService {
+	return w.buyerEmailSvc
+}
+
+func (w *wrappedServiceRegistry) NewAdminEmailService() service.AdminEmailService {
+	return w.adminEmailSvc
+}
+
+type noopBuyerEmailService struct{}
+
+func (n *noopBuyerEmailService) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
+	return nil
+}
+
+type noopAdminEmailService struct{}
+
+func (n *noopAdminEmailService) SendAdminPasswordReset(_ context.Context, _, _ string) error {
+	return nil
 }
