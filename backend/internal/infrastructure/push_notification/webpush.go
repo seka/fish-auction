@@ -78,7 +78,3 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 	return nil
 }
 
-// PublishToBuyer provides PublishToBuyer related functionality.
-func (s *WebpushNotificationService) PublishToBuyer(_ context.Context, _ int, _ any) error {
-	return fmt.Errorf("PublishToBuyer is not supported in WebpushNotificationService")
-}

@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
-	jobMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	jobMessage "github.com/seka/fish-auction/backend/internal/worker/message"
 )
 
 // Client implements queue.JobQueue using AWS SQS.

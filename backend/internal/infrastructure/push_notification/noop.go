@@ -12,6 +12,3 @@ func (n *noopPushNotificationService) Send(_ context.Context, _ *model.PushSubsc
 	return nil
 }
 
-func (n *noopPushNotificationService) PublishToBuyer(_ context.Context, _ int, _ any) error {
-	return nil
-}
