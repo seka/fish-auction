@@ -76,7 +76,7 @@ func TestLoadTest(t *testing.T) {
 	// ワーカー起動
 	for range concurrency {
 		wg.Add(1)
-		go worker(&wg, requestChan, stopChan, targetURL, endpoints, totalWeight, metrics)
+		go loadTestWorker(&wg, requestChan, stopChan, targetURL, endpoints, totalWeight, metrics)
 	}
 
 	// 期間指定の場合はタイマーを設定
@@ -119,8 +119,8 @@ func sendRequests(duration, totalRequests int, requestChan chan<- struct{}, stop
 	}
 }
 
-// worker は並行してリクエストを送信するワーカー
-func worker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL string, endpoints []Endpoint, totalWeight int, metrics *Metrics) {
+// loadTestWorker は並行してリクエストを送信するワーカー
+func loadTestWorker(wg *sync.WaitGroup, requestChan, stopChan <-chan struct{}, targetURL string, endpoints []Endpoint, totalWeight int, metrics *Metrics) {
 	defer wg.Done()
 
 	client := &http.Client{
