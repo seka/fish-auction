@@ -5,7 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/seka/fish-auction/backend/internal/job/handler"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/worker/handler"
 )
 
 type mockBuyerEmailSvc struct {
@@ -73,7 +74,7 @@ func TestEmailHandler_Handle(t *testing.T) {
 				&mockBuyerEmailSvc{err: tt.buyerErr},
 				&mockAdminEmailSvc{err: tt.adminErr},
 			)
-			err := h.Handle(context.Background(), []byte(tt.payload))
+			err := h.Handle(context.Background(), &model.JobMessage{Payload: []byte(tt.payload)})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error=%v, got %v", tt.wantErr, err)
 			}

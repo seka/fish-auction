@@ -8,7 +8,7 @@ import (
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/job/message"
+	notificationMessage "github.com/seka/fish-auction/backend/internal/worker/message"
 )
 
 type mockPushRepository struct {
@@ -36,15 +36,11 @@ func (m *mockPushNotificationService) Send(ctx context.Context, sub *model.PushS
 	return m.sendFunc(ctx, sub, payload)
 }
 
-func (m *mockPushNotificationService) PublishToBuyer(_ context.Context, _ int, _ any) error {
-	return nil
-}
-
 func TestPushNotificationHandler_Handle_InvalidPayload(t *testing.T) {
 	ctx := context.Background()
 
 	h := NewPushNotificationHandler(&mockPushRepository{}, &mockPushNotificationService{})
-	err := h.Handle(ctx, []byte("invalid json"))
+	err := h.Handle(ctx, &model.JobMessage{Payload: []byte("invalid json")})
 
 	if err == nil {
 		t.Error("Expected error for invalid JSON payload, got nil")
@@ -71,7 +67,7 @@ func TestPushNotificationHandler_Handle_RepositoryError(t *testing.T) {
 	}
 
 	h := NewPushNotificationHandler(repo, pushSvc)
-	err := h.Handle(ctx, payloadBytes)
+	err := h.Handle(ctx, &model.JobMessage{Payload: payloadBytes})
 
 	if !errors.Is(err, repoErr) {
 		t.Errorf("Expected error %v, got %v", repoErr, err)
@@ -102,7 +98,7 @@ func TestPushNotificationHandler_Handle(t *testing.T) {
 		}
 
 		h := NewPushNotificationHandler(repo, pushSvc)
-		err := h.Handle(ctx, payloadBytes)
+		err := h.Handle(ctx, &model.JobMessage{Payload: payloadBytes})
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
@@ -127,7 +123,7 @@ func TestPushNotificationHandler_Handle(t *testing.T) {
 		}
 
 		h := NewPushNotificationHandler(repo, pushSvc)
-		err := h.Handle(ctx, payloadBytes)
+		err := h.Handle(ctx, &model.JobMessage{Payload: payloadBytes})
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
@@ -157,7 +153,7 @@ func TestPushNotificationHandler_Handle(t *testing.T) {
 		}
 
 		h := NewPushNotificationHandler(repo, pushSvc)
-		err := h.Handle(ctx, payloadBytes)
+		err := h.Handle(ctx, &model.JobMessage{Payload: payloadBytes})
 
 		if err != nil {
 			t.Errorf("Expected no error (handler should swallow individual push errors), got %v", err)
@@ -187,7 +183,7 @@ func TestPushNotificationHandler_Handle(t *testing.T) {
 		}
 
 		h := NewPushNotificationHandler(repo, pushSvc)
-		err := h.Handle(ctx, payloadBytes)
+		err := h.Handle(ctx, &model.JobMessage{Payload: payloadBytes})
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
@@ -217,7 +213,7 @@ func TestPushNotificationHandler_Handle(t *testing.T) {
 		}
 
 		h := NewPushNotificationHandler(repo, pushSvc)
-		err := h.Handle(ctx, payloadBytes)
+		err := h.Handle(ctx, &model.JobMessage{Payload: payloadBytes})
 
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
