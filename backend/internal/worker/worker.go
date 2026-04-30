@@ -52,7 +52,7 @@ func (w *Worker) Start(ctx context.Context) error {
 
 	// Start a single polling loop and dispatch by JobType.
 	w.wg.Add(1)
-	go w.runLoop(ctx, w.queue, "JobQueue")
+	go w.runLoop(ctx, w.queue)
 
 	// Block until context is canceled
 	<-ctx.Done()
@@ -79,9 +79,9 @@ func (w *Worker) Start(ctx context.Context) error {
 	return nil
 }
 
-func (w *Worker) runLoop(ctx context.Context, poller queuePoller, name string) {
+func (w *Worker) runLoop(ctx context.Context, poller queuePoller) {
 	defer w.wg.Done()
-	log.Printf("Worker: starting polling loop for %s queue...", name)
+	log.Println("Worker: starting polling loop...")
 
 	for {
 		select {
@@ -94,7 +94,7 @@ func (w *Worker) runLoop(ctx context.Context, poller queuePoller, name string) {
 				if ctx.Err() != nil {
 					return
 				}
-				log.Printf("Worker (%s): error receiving messages: %v", name, err)
+				log.Printf("Worker: error receiving messages: %v", err)
 				time.Sleep(retryDelay) // Wait before retrying
 				continue
 			}
@@ -102,18 +102,18 @@ func (w *Worker) runLoop(ctx context.Context, poller queuePoller, name string) {
 			for _, msg := range messages {
 				handler, err := w.selectHandler(msg.JobType)
 				if err != nil {
-					log.Printf("Worker (%s): unsupported job type for message %v: %v", name, msg.ID, err)
+					log.Printf("Worker: unsupported job type for message %v: %v", msg.ID, err)
 					continue
 				}
 
 				if err := handler(ctx, msg); err != nil {
 					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
-					log.Printf("Worker (%s): error processing message %v (attempt %d): %v", name, msg.ID, msg.ReceiveCount, err)
+					log.Printf("Worker: error processing message %v (attempt %d): %v", msg.ID, msg.ReceiveCount, err)
 					continue
 				}
 
 				if err := poller.DeleteMessage(ctx, msg); err != nil {
-					log.Printf("Worker (%s): error deleting message %v: %v", name, msg.ID, err)
+					log.Printf("Worker: error deleting message %v: %v", msg.ID, err)
 				}
 			}
 		}
