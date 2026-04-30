@@ -6,9 +6,9 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
-// PushNotificationQueue defines the interface for enqueueing push notifications
-type PushNotificationQueue interface {
-	Enqueue(ctx context.Context, buyerID int, payload any) error
+// JobQueue defines the interface for asynchronous job messaging.
+type JobQueue interface {
+	Enqueue(ctx context.Context, jobType model.JobType, payload any) error
 	Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error)
 	DeleteMessage(ctx context.Context, message *model.JobMessage) error
 }
