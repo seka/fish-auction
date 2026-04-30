@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 const (
@@ -16,18 +17,12 @@ const (
 	retryDelay      = 5 * time.Second
 )
 
-// queuePoller is a helper interface for runLoop to poll any domain queue.
-type queuePoller interface {
-	Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error)
-	DeleteMessage(ctx context.Context, message *model.JobMessage) error
-}
-
 // HandlerFunc is a function that processes a job message.
 type HandlerFunc func(ctx context.Context, msg *model.JobMessage) error
 
 // Worker represents the background job worker.
 type Worker struct {
-	queue        queuePoller
+	queue        service.JobQueue
 	emailHandler HandlerFunc
 	pushHandler  HandlerFunc
 	wg           sync.WaitGroup
@@ -35,7 +30,7 @@ type Worker struct {
 
 // NewWorker creates a new Worker instance.
 func NewWorker(
-	queue queuePoller,
+	queue service.JobQueue,
 	emailHandler HandlerFunc,
 	pushHandler HandlerFunc,
 ) *Worker {
@@ -79,7 +74,7 @@ func (w *Worker) Start(ctx context.Context) error {
 	return nil
 }
 
-func (w *Worker) runLoop(ctx context.Context, poller queuePoller) {
+func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 	defer w.wg.Done()
 	log.Println("Worker: starting polling loop...")
 
