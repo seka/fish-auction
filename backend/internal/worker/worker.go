@@ -6,7 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/infrastructure/queue"
+	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 )
 
 const (
@@ -15,30 +16,51 @@ const (
 	retryDelay      = 5 * time.Second
 )
 
+// queuePoller is a helper interface for runLoop to poll any domain queue.
+type queuePoller interface {
+	Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error)
+	DeleteMessage(ctx context.Context, message *model.JobMessage) error
+}
+
+// HandlerFunc is a function that processes a job message.
+type HandlerFunc func(ctx context.Context, msg *model.JobMessage) error
+
 // Worker represents the background job worker.
 type Worker struct {
-	queue      queue.JobQueue
-	dispatcher *Dispatcher
-	wg         sync.WaitGroup
-	stopCh     chan struct{}
+	adminEmailQueue       service.AdminEmailQueue
+	buyerEmailQueue       service.BuyerEmailQueue
+	pushNotificationQueue service.PushNotificationQueue
+	emailHandler          HandlerFunc
+	pushHandler           HandlerFunc
+	wg                    sync.WaitGroup
 }
 
 // NewWorker creates a new Worker instance.
-func NewWorker(jobQueue queue.JobQueue, dispatcher *Dispatcher) *Worker {
+func NewWorker(
+	adminEmailQueue service.AdminEmailQueue,
+	buyerEmailQueue service.BuyerEmailQueue,
+	pushNotificationQueue service.PushNotificationQueue,
+	emailHandler HandlerFunc,
+	pushHandler HandlerFunc,
+) *Worker {
 	return &Worker{
-		queue:      jobQueue,
-		dispatcher: dispatcher,
-		stopCh:     make(chan struct{}),
+		adminEmailQueue:       adminEmailQueue,
+		buyerEmailQueue:       buyerEmailQueue,
+		pushNotificationQueue: pushNotificationQueue,
+		emailHandler:          emailHandler,
+		pushHandler:           pushHandler,
 	}
 }
 
-// Start runs the worker polling loop and blocks until the context is canceled.
+// Start runs the worker polling loops and blocks until the context is canceled.
 func (w *Worker) Start(ctx context.Context) error {
 	log.Println("Worker starting...")
 
-	// Run polling loop in a separate goroutine
-	w.wg.Add(1)
-	go w.runLoop(ctx)
+	// Start polling loops for each specialized queue
+	w.wg.Add(3)
+	go w.runLoop(ctx, w.adminEmailQueue, w.emailHandler, "AdminEmail")
+	go w.runLoop(ctx, w.buyerEmailQueue, w.emailHandler, "BuyerEmail")
+	go w.runLoop(ctx, w.pushNotificationQueue, w.pushHandler, "PushNotification")
 
 	// Block until context is canceled
 	<-ctx.Done()
@@ -65,37 +87,35 @@ func (w *Worker) Start(ctx context.Context) error {
 	return nil
 }
 
-func (w *Worker) runLoop(ctx context.Context) {
+func (w *Worker) runLoop(ctx context.Context, poller queuePoller, handler HandlerFunc, name string) {
 	defer w.wg.Done()
-	log.Println("Worker starting polling loop...")
+	log.Printf("Worker: starting polling loop for %s queue...", name)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			messages, err := w.queue.Dequeue(ctx, waitTimeSeconds)
+			messages, err := poller.Dequeue(ctx, waitTimeSeconds)
 			if err != nil {
 				// Avoid log spamming if the context is canceled
 				if ctx.Err() != nil {
 					return
 				}
-				log.Printf("Error receiving messages: %v", err)
+				log.Printf("Worker (%s): error receiving messages: %v", name, err)
 				time.Sleep(retryDelay) // Wait before retrying
 				continue
 			}
 
 			for _, msg := range messages {
-				if err := w.dispatcher.Dispatch(ctx, msg); err != nil {
+				if err := handler(ctx, msg); err != nil {
 					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
-					// 無限ループを防ぐため、インフラ（SQS）側で DLQ（Dead Letter Queue）および
-					// RedrivePolicy（maxReceiveCount）が設定されている必要があります。
-					log.Printf("Error processing message %v (attempt %d): %v", msg.ID, msg.ReceiveCount, err)
+					log.Printf("Worker (%s): error processing message %v (attempt %d): %v", name, msg.ID, msg.ReceiveCount, err)
 					continue
 				}
 
-				if err := w.queue.DeleteMessage(ctx, msg); err != nil {
-					log.Printf("Error deleting message %v: %v", msg.ID, err)
+				if err := poller.DeleteMessage(ctx, msg); err != nil {
+					log.Printf("Worker (%s): error deleting message %v: %v", name, msg.ID, err)
 				}
 			}
 		}
