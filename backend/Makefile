@@ -92,7 +92,7 @@ app.integration-test: ## Run integration tests with dynamic DB lifecycle
 	export SERVER_HOST=0.0.0.0; \
 	export SERVER_PORT=18080; \
 	export APP_ENV=test; \
-	export SMTP_HOST=localhost; \
+	export SMTP_HOST=$${SMTP_HOST:-localhost}; \
 	export SMTP_PORT=1025; \
 	export SMTP_FROM=test@example.com; \
 	export FRONTEND_URL=https://localhost; \
