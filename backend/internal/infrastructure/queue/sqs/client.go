@@ -91,6 +91,24 @@ func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload any
 	return nil
 }
 
+// EnqueueRaw sends a pre-serialized payload to the SQS queue.
+func (c *Client) EnqueueRaw(ctx context.Context, jobType model.JobType, payload []byte) error {
+	_, err := c.client.SendMessage(ctx, &sqs.SendMessageInput{
+		MessageBody: aws.String(string(payload)),
+		QueueUrl:    aws.String(c.queueURL),
+		MessageAttributes: map[string]types.MessageAttributeValue{
+			"JobType": {
+				DataType:    aws.String("String"),
+				StringValue: aws.String(string(jobType)),
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to send SQS message: %w", err)
+	}
+	return nil
+}
+
 // Dequeue polls for messages from the SQS queue.
 func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error) {
 	output, err := c.client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{

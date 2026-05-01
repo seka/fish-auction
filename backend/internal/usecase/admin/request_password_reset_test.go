@@ -71,6 +71,10 @@ func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error 
 	return m.err
 }
 
+func (m *mockJobQueue) EnqueueRaw(_ context.Context, _ model.JobType, _ []byte) error {
+	return nil
+}
+
 func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
 	return nil, nil
 }

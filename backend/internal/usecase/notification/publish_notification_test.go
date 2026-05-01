@@ -16,6 +16,10 @@ func (m *mockPushQueue) Enqueue(ctx context.Context, jobType model.JobType, payl
 	return m.enqueueFunc(ctx, jobType, payload)
 }
 
+func (m *mockPushQueue) EnqueueRaw(_ context.Context, _ model.JobType, _ []byte) error {
+	return nil
+}
+
 func (m *mockPushQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
 	return nil, nil
 }
