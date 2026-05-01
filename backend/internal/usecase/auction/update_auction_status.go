@@ -30,10 +30,10 @@ func NewUpdateAuctionStatusUseCase(
 	txMgr repository.TransactionManager,
 ) UpdateAuctionStatusUseCase {
 	return &updateAuctionStatusUseCase{
-		auctionRepo:                auctionRepo,
-		buyerRepo:                  buyerRepo,
-		outboxRepo:                 outboxRepo,
-		txMgr:                      txMgr,
+		auctionRepo: auctionRepo,
+		buyerRepo:   buyerRepo,
+		outboxRepo:  outboxRepo,
+		txMgr:       txMgr,
 	}
 }
 

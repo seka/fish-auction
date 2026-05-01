@@ -148,7 +148,7 @@ func (u *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.
 	return createdBid, nil
 }
 
-func (u *createBidUseCase) notifyOutbid(ctx context.Context, item *model.AuctionItem, buyerID int, previousAmount int) error {
+func (u *createBidUseCase) notifyOutbid(ctx context.Context, item *model.AuctionItem, buyerID, previousAmount int) error {
 	payload := map[string]interface{}{
 		"type":            "outbid",
 		"item_id":         item.ID,

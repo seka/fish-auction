@@ -12,9 +12,10 @@ import (
 
 // OutboxRelay polls the outbox table and forwards messages to SQS.
 // Uses a 3-phase approach to avoid holding DB locks during external I/O:
-//   Phase 1 (TX1): Claim pending messages (status → processing)
-//   Phase 2 (no TX): Send to SQS
-//   Phase 3 (TX2): Mark as processed or record failure with backoff
+//
+//	Phase 1 (TX1): Claim pending messages (status → processing)
+//	Phase 2 (no TX): Send to SQS
+//	Phase 3 (TX2): Mark as processed or record failure with backoff
 type OutboxRelay struct {
 	outboxRepo repository.OutboxRepository
 	jobQueue   service.JobQueue

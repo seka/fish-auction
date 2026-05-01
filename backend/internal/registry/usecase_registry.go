@@ -274,7 +274,6 @@ func (u *useCaseRegistry) NewSubscribeNotificationUseCase() notification.Subscri
 	return notification.NewSubscribeNotificationUseCase(u.repo.NewPushRepository())
 }
 
-
 func (u *useCaseRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {
 	return admin.NewCreateAdminUseCase(u.repo.NewAdminRepository())
 }

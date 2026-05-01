@@ -21,7 +21,7 @@ type MockOutboxRepository struct {
 
 var _ repository.OutboxRepository = (*MockOutboxRepository)(nil)
 
-func (m *MockOutboxRepository) InsertEmailJob(ctx context.Context, to string, resetURL string, emailType string) error {
+func (m *MockOutboxRepository) InsertEmailJob(ctx context.Context, to, resetURL, emailType string) error {
 	if m.InsertEmailJobFunc != nil {
 		return m.InsertEmailJobFunc(ctx, to, resetURL, emailType)
 	}

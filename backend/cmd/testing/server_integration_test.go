@@ -17,6 +17,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/registry"
+	"github.com/seka/fish-auction/backend/internal/relay"
 	"github.com/seka/fish-auction/backend/internal/server"
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	buyerHandler "github.com/seka/fish-auction/backend/internal/server/handler/buyer"
@@ -46,6 +47,10 @@ func TestServerIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
+	relayCfg, err := config.LoadRelayConfig()
+	if err != nil {
+		t.Fatalf("Failed to load relay config: %v", err)
+	}
 
 	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, shouldMigrate)
@@ -55,7 +60,7 @@ func TestServerIntegration(t *testing.T) {
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// 3. Service を初期化
-	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, isWorker)
+	realServiceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, relayCfg, isWorker)
 	if err != nil {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
@@ -71,7 +76,14 @@ func TestServerIntegration(t *testing.T) {
 
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
 
-	// 4. Worker を初期化して起動
+	// 4. Relay と Worker を初期化して起動
+	outboxRepo := repoReg.NewOutboxRepository()
+	queue := serviceReg.NewJobQueue()
+
+	rly := relay.NewOutboxRelay(outboxRepo, queue, 100*time.Millisecond, 10, "test-instance")
+	var wg sync.WaitGroup
+	rly.Start(ctx, &wg)
+
 	pushRepo := repoReg.NewPushRepository()
 	pushSvc := serviceReg.NewPushNotificationService()
 	pushHandlerSvc := handler.NewPushNotificationHandler(pushRepo, pushSvc)
@@ -80,14 +92,15 @@ func TestServerIntegration(t *testing.T) {
 	adminEmailSvc := serviceReg.NewAdminEmailService()
 	emailHandlerSvc := handler.NewEmailHandler(buyerEmailSvc, adminEmailSvc)
 
-	queue := serviceReg.NewJobQueue()
 	w := worker.NewWorker(
 		queue,
 		worker.HandlerFunc(emailHandlerSvc.Handle),
 		worker.HandlerFunc(pushHandlerSvc.Handle),
 	)
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		if err := w.Start(ctx); err != nil && ctx.Err() == nil {
 			t.Errorf("Worker failed: %v", err)
 		}
@@ -316,6 +329,8 @@ func TestServerIntegration(t *testing.T) {
 	if err := srv.Shutdown(ctx); err != nil {
 		t.Errorf("Failed to shutdown server: %v", err)
 	}
+
+	wg.Wait()
 }
 
 // waitForServer はサーバーが起動するまで待機

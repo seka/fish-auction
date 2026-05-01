@@ -37,7 +37,7 @@ func (s *OutboxStore) insert(ctx context.Context, jobType model.JobType, schemaV
 }
 
 // InsertEmailJob serializes and inserts an email job.
-func (s *OutboxStore) InsertEmailJob(ctx context.Context, to string, resetURL string, emailType string) error {
+func (s *OutboxStore) InsertEmailJob(ctx context.Context, to, resetURL, emailType string) error {
 	msg := event.EmailMessage{
 		EmailType: event.EmailType(emailType),
 		To:        to,

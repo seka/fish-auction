@@ -71,7 +71,7 @@ type mockOutboxRepository struct {
 	err error
 }
 
-func (m *mockOutboxRepository) InsertEmailJob(_ context.Context, _ string, _ string, _ string) error {
+func (m *mockOutboxRepository) InsertEmailJob(_ context.Context, _, _, _ string) error {
 	return m.err
 }
 

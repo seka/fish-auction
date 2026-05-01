@@ -285,7 +285,6 @@ func (m *MockRegistry) NewSubscribeNotificationUseCase() notification.SubscribeN
 	return m.SubscribeNotificationUC
 }
 
-
 // NewCreateAdminUseCase creates a new CreateAdminUseCase instance.
 func (m *MockRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {
 	return m.CreateAdminUC
