@@ -5,13 +5,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
-	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 	emailMessage "github.com/seka/fish-auction/backend/internal/event"
@@ -91,15 +89,8 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 		if err = u.pwdResetRepo.Create(txCtx, admin.ID, "admin", tokenHash, expiresAt); err != nil {
 			return fmt.Errorf("failed to create new reset token: %w", err)
 		}
-		body, err := json.Marshal(emailMessage.EmailMessage{
-			EmailType: emailMessage.EmailTypeAdminPasswordReset,
-			To:        email,
-			ResetURL:  resetURL.String(),
-		})
-		if err != nil {
-			return fmt.Errorf("failed to marshal email payload: %w", err)
-		}
-		if err := u.outboxRepo.Insert(txCtx, model.JobTypeEmail, 1, body); err != nil {
+
+		if err := u.outboxRepo.InsertEmailJob(txCtx, email, resetURL.String(), string(emailMessage.EmailTypeAdminPasswordReset)); err != nil {
 			return fmt.Errorf("failed to insert outbox message: %w", err)
 		}
 		return nil

@@ -64,8 +64,11 @@ type mockOutboxRepository struct {
 	err error
 }
 
-func (m *mockOutboxRepository) Insert(_ context.Context, _ model.JobType, _ int, _ []byte) error {
+func (m *mockOutboxRepository) InsertEmailJob(_ context.Context, _ string, _ string, _ string) error {
 	return m.err
+}
+func (m *mockOutboxRepository) InsertPushNotificationJob(_ context.Context, _ int, _ any) error {
+	return nil
 }
 func (m *mockOutboxRepository) Claim(_ context.Context, _ int, _ string) ([]*model.OutboxMessage, error) {
 	return nil, nil

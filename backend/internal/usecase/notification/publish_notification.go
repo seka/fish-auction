@@ -2,12 +2,8 @@ package notification
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
-	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	notificationMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 // PublishNotificationUseCase defines the interface for publish notifications.
@@ -32,13 +28,5 @@ func NewPublishNotificationUseCase(
 }
 
 func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, payload any) error {
-	wire := notificationMessage.PushNotificationMessage{
-		BuyerID: buyerID,
-		Payload: payload,
-	}
-	body, err := json.Marshal(wire)
-	if err != nil {
-		return fmt.Errorf("failed to marshal push notification payload: %w", err)
-	}
-	return uc.outboxRepo.Insert(ctx, model.JobTypePushNotification, 1, body)
+	return uc.outboxRepo.InsertPushNotificationJob(ctx, buyerID, payload)
 }

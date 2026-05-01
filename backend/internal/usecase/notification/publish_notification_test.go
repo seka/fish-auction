@@ -10,11 +10,15 @@ import (
 )
 
 type mockOutboxRepository struct {
-	insertFunc func(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error
+	insertPushFunc func(ctx context.Context, buyerID int, payload any) error
 }
 
-func (m *mockOutboxRepository) Insert(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error {
-	return m.insertFunc(ctx, jobType, schemaVersion, payload)
+func (m *mockOutboxRepository) InsertEmailJob(ctx context.Context, to string, resetURL string, emailType string) error {
+	return nil
+}
+
+func (m *mockOutboxRepository) InsertPushNotificationJob(ctx context.Context, buyerID int, payload any) error {
+	return m.insertPushFunc(ctx, buyerID, payload)
 }
 
 func (m *mockOutboxRepository) Claim(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error) {
@@ -44,12 +48,10 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		insertCalled := false
-		var capturedJobType model.JobType
 
 		mockRepo := &mockOutboxRepository{
-			insertFunc: func(_ context.Context, jt model.JobType, _ int, _ []byte) error {
+			insertPushFunc: func(_ context.Context, _ int, _ any) error {
 				insertCalled = true
-				capturedJobType = jt
 				return nil
 			},
 		}
@@ -61,17 +63,14 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 			t.Fatalf("Expected no error, got %v", err)
 		}
 		if !insertCalled {
-			t.Error("Expected OutboxRepository.Insert to be called")
-		}
-		if capturedJobType != model.JobTypePushNotification {
-			t.Errorf("Expected JobType %s, got %s", model.JobTypePushNotification, capturedJobType)
+			t.Error("Expected OutboxRepository.InsertPushNotificationJob to be called")
 		}
 	})
 
 	t.Run("insert error", func(t *testing.T) {
 		insertErr := errors.New("insert failed")
 		mockRepo := &mockOutboxRepository{
-			insertFunc: func(_ context.Context, _ model.JobType, _ int, _ []byte) error {
+			insertPushFunc: func(_ context.Context, _ int, _ any) error {
 				return insertErr
 			},
 		}

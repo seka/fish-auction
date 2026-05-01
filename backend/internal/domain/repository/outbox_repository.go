@@ -9,12 +9,14 @@ import (
 
 // OutboxRepository manages outbox messages for the transactional outbox pattern.
 type OutboxRepository interface {
-	// Insert adds a new outbox message within the caller's transaction.
-	Insert(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error
+	// InsertEmailJob serializes and inserts an email job.
+	InsertEmailJob(ctx context.Context, to string, resetURL string, emailType string) error
 
-	// Claim atomically selects and marks pending messages as processing.
-	// Uses FOR UPDATE SKIP LOCKED for safe concurrent access.
-	Claim(ctx context.Context, limit int, claimedBy string) ([]*model.OutboxMessage, error)
+	// InsertPushNotificationJob serializes and inserts a push notification job.
+	InsertPushNotificationJob(ctx context.Context, buyerID int, payload any) error
+
+	// Claim claims pending messages for processing.
+	Claim(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error)
 
 	// MarkProcessed sets status to processed for successfully sent messages.
 	MarkProcessed(ctx context.Context, ids []int64) error

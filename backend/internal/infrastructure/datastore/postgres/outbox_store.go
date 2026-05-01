@@ -2,12 +2,14 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/event"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 )
 
@@ -23,7 +25,7 @@ func NewOutboxStore(db datastore.Database) *OutboxStore {
 	return &OutboxStore{db: db}
 }
 
-func (s *OutboxStore) Insert(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error {
+func (s *OutboxStore) insert(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error {
 	query := `
 		INSERT INTO outbox (job_type, schema_version, payload)
 		VALUES ($1, $2, $3)
@@ -32,6 +34,33 @@ func (s *OutboxStore) Insert(ctx context.Context, jobType model.JobType, schemaV
 		return fmt.Errorf("failed to insert outbox message: %w", err)
 	}
 	return nil
+}
+
+// InsertEmailJob serializes and inserts an email job.
+func (s *OutboxStore) InsertEmailJob(ctx context.Context, to string, resetURL string, emailType string) error {
+	msg := event.EmailMessage{
+		EmailType: event.EmailType(emailType),
+		To:        to,
+		ResetURL:  resetURL,
+	}
+	payload, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal email job: %w", err)
+	}
+	return s.insert(ctx, model.JobTypeEmail, 1, payload)
+}
+
+// InsertPushNotificationJob serializes and inserts a push notification job.
+func (s *OutboxStore) InsertPushNotificationJob(ctx context.Context, buyerID int, payload any) error {
+	msg := event.PushNotificationMessage{
+		BuyerID: buyerID,
+		Payload: payload,
+	}
+	body, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal push notification job: %w", err)
+	}
+	return s.insert(ctx, model.JobTypePushNotification, 1, body)
 }
 
 func (s *OutboxStore) Claim(ctx context.Context, limit int, claimedBy string) ([]*model.OutboxMessage, error) {
