@@ -62,8 +62,6 @@ func NewServiceRegistry(
 		adminEmailService = mailhog.NewAdminEmailService(emailCfg, loader)
 		buyerEmailService = mailhog.NewBuyerEmailService(emailCfg, loader)
 		pushNotificationService = pushNotification.NewWebpushService(webpushCfg)
-	} else if jobQueue == nil {
-		return nil, fmt.Errorf("jobQueue is required for non-worker process")
 	}
 
 	return &serviceRegistry{
