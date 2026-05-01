@@ -102,6 +102,10 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 		}
 
 		result = created
+
+		// 6. 高値更新通知（outbox INSERT を TX 内で実行）
+		uc.notifyOutbid(txCtx, result, lockedItem)
+
 		return nil
 	})
 
@@ -109,9 +113,7 @@ func (uc *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model
 		return nil, err
 	}
 
-	// 入札成功後の後処理（トランザクション外）
 	uc.invalidateCache(ctx, result.ItemID)
-	uc.notifyOutbid(ctx, result, lockedItem)
 
 	return result, nil
 }

@@ -2,9 +2,11 @@ package notification
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
+	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	notificationMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
@@ -15,17 +17,17 @@ type PublishNotificationUseCase interface {
 }
 
 type publishNotificationUseCase struct {
-	jobQueue service.JobQueue
+	outboxRepo repository.OutboxRepository
 }
 
 var _ PublishNotificationUseCase = (*publishNotificationUseCase)(nil)
 
 // NewPublishNotificationUseCase creates a new instance of PublishNotificationUseCase.
 func NewPublishNotificationUseCase(
-	jobQueue service.JobQueue,
+	outboxRepo repository.OutboxRepository,
 ) PublishNotificationUseCase {
 	return &publishNotificationUseCase{
-		jobQueue: jobQueue,
+		outboxRepo: outboxRepo,
 	}
 }
 
@@ -34,5 +36,9 @@ func (uc *publishNotificationUseCase) Execute(ctx context.Context, buyerID int, 
 		BuyerID: buyerID,
 		Payload: payload,
 	}
-	return uc.jobQueue.Enqueue(ctx, model.JobTypePushNotification, wire)
+	body, err := json.Marshal(wire)
+	if err != nil {
+		return fmt.Errorf("failed to marshal push notification payload: %w", err)
+	}
+	return uc.outboxRepo.Insert(ctx, model.JobTypePushNotification, 1, body)
 }

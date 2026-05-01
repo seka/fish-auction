@@ -35,6 +35,7 @@ type Repository interface {
 	PasswordReset() repository.PasswordResetRepository
 	NewItemCacheInvalidator() repository.CacheInvalidator
 	NewSessionRepository() repository.SessionRepository
+	NewOutboxRepository() repository.OutboxRepository
 	// Cleanup closes underlying connections (DB, Redis, etc.) via their interfaces.
 	Cleanup() error
 }
@@ -226,4 +227,8 @@ func (r *repositoryRegistry) PasswordReset() repository.PasswordResetRepository 
 
 func (r *repositoryRegistry) NewSessionRepository() repository.SessionRepository {
 	return cacheStore.NewSessionStore(r.cache, r.sessionTTL)
+}
+
+func (r *repositoryRegistry) NewOutboxRepository() repository.OutboxRepository {
+	return postgres.NewOutboxStore(r.db)
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -27,7 +28,7 @@ type RequestPasswordResetUseCase interface {
 type requestPasswordResetUseCase struct {
 	adminRepo    repository.AdminRepository
 	pwdResetRepo repository.PasswordResetRepository
-	jobQueue     service.JobQueue
+	outboxRepo   repository.OutboxRepository
 	frontendURL  *url.URL
 	txMgr        repository.TransactionManager
 	clock        service.Clock
@@ -39,7 +40,7 @@ var _ RequestPasswordResetUseCase = (*requestPasswordResetUseCase)(nil)
 func NewRequestPasswordResetUseCase(
 	adminRepo repository.AdminRepository,
 	pwdResetRepo repository.PasswordResetRepository,
-	jobQueue service.JobQueue,
+	outboxRepo repository.OutboxRepository,
 	frontendURL *url.URL,
 	txMgr repository.TransactionManager,
 	clock service.Clock,
@@ -47,7 +48,7 @@ func NewRequestPasswordResetUseCase(
 	return &requestPasswordResetUseCase{
 		adminRepo:    adminRepo,
 		pwdResetRepo: pwdResetRepo,
-		jobQueue:     jobQueue,
+		outboxRepo:   outboxRepo,
 		frontendURL:  frontendURL,
 		txMgr:        txMgr,
 		clock:        clock,
@@ -76,7 +77,7 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 	hash := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(hash[:])
 
-	// 3. Save token in DB transaction (expires in 30 mins)
+	// 3. Save token and enqueue email in the same transaction
 	resetURL := u.frontendURL.JoinPath("/login/admin/reset_password")
 	q := resetURL.Query()
 	q.Set("token", token)
@@ -90,18 +91,20 @@ func (u *requestPasswordResetUseCase) Execute(ctx context.Context, email string)
 		if err = u.pwdResetRepo.Create(txCtx, admin.ID, "admin", tokenHash, expiresAt); err != nil {
 			return fmt.Errorf("failed to create new reset token: %w", err)
 		}
+		body, err := json.Marshal(emailMessage.EmailMessage{
+			EmailType: emailMessage.EmailTypeAdminPasswordReset,
+			To:        email,
+			ResetURL:  resetURL.String(),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to marshal email payload: %w", err)
+		}
+		if err := u.outboxRepo.Insert(txCtx, model.JobTypeEmail, 1, body); err != nil {
+			return fmt.Errorf("failed to insert outbox message: %w", err)
+		}
 		return nil
 	}); err != nil {
 		return err
-	}
-
-	wire := emailMessage.EmailMessage{
-		EmailType: emailMessage.EmailTypeAdminPasswordReset,
-		To:        email,
-		ResetURL:  resetURL.String(),
-	}
-	if err := u.jobQueue.Enqueue(ctx, model.JobTypeEmail, wire); err != nil {
-		return fmt.Errorf("failed to enqueue password reset email: %w", err)
 	}
 
 	return nil
