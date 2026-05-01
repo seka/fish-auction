@@ -4,28 +4,37 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 )
 
-type mockPushQueue struct {
-	enqueueFunc func(ctx context.Context, jobType model.JobType, payload any) error
+type mockOutboxRepository struct {
+	insertFunc func(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error
 }
 
-func (m *mockPushQueue) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
-	return m.enqueueFunc(ctx, jobType, payload)
+func (m *mockOutboxRepository) Insert(ctx context.Context, jobType model.JobType, schemaVersion int, payload []byte) error {
+	return m.insertFunc(ctx, jobType, schemaVersion, payload)
 }
 
-func (m *mockPushQueue) EnqueueRaw(_ context.Context, _ model.JobType, _ []byte) error {
-	return nil
-}
-
-func (m *mockPushQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockOutboxRepository) Claim(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error) {
 	return nil, nil
 }
 
-func (m *mockPushQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockOutboxRepository) MarkProcessed(ctx context.Context, ids []int64) error {
 	return nil
+}
+
+func (m *mockOutboxRepository) MarkFailed(ctx context.Context, id int64, lastError string) error {
+	return nil
+}
+
+func (m *mockOutboxRepository) RecoverStale(ctx context.Context, timeout time.Duration) (int64, error) {
+	return 0, nil
+}
+
+func (m *mockOutboxRepository) DeleteProcessedBefore(ctx context.Context, before time.Time) (int64, error) {
+	return 0, nil
 }
 
 func TestPublishNotificationUseCase_Execute(t *testing.T) {
@@ -34,44 +43,44 @@ func TestPublishNotificationUseCase_Execute(t *testing.T) {
 	payload := map[string]string{"title": "test", "body": "hello"}
 
 	t.Run("success", func(t *testing.T) {
-		enqueueCalled := false
+		insertCalled := false
 		var capturedJobType model.JobType
 
-		mockQueue := &mockPushQueue{
-			enqueueFunc: func(_ context.Context, jt model.JobType, _ any) error {
-				enqueueCalled = true
+		mockRepo := &mockOutboxRepository{
+			insertFunc: func(_ context.Context, jt model.JobType, _ int, _ []byte) error {
+				insertCalled = true
 				capturedJobType = jt
 				return nil
 			},
 		}
 
-		uc := NewPublishNotificationUseCase(mockQueue)
+		uc := NewPublishNotificationUseCase(mockRepo)
 		err := uc.Execute(ctx, buyerID, payload)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
-		if !enqueueCalled {
-			t.Error("Expected PushNotificationQueue.Enqueue to be called")
+		if !insertCalled {
+			t.Error("Expected OutboxRepository.Insert to be called")
 		}
 		if capturedJobType != model.JobTypePushNotification {
 			t.Errorf("Expected JobType %s, got %s", model.JobTypePushNotification, capturedJobType)
 		}
 	})
 
-	t.Run("enqueue error", func(t *testing.T) {
-		enqueueErr := errors.New("enqueue failed")
-		mockQueue := &mockPushQueue{
-			enqueueFunc: func(_ context.Context, _ model.JobType, _ any) error {
-				return enqueueErr
+	t.Run("insert error", func(t *testing.T) {
+		insertErr := errors.New("insert failed")
+		mockRepo := &mockOutboxRepository{
+			insertFunc: func(_ context.Context, _ model.JobType, _ int, _ []byte) error {
+				return insertErr
 			},
 		}
 
-		uc := NewPublishNotificationUseCase(mockQueue)
+		uc := NewPublishNotificationUseCase(mockRepo)
 		err := uc.Execute(ctx, buyerID, payload)
 
-		if !errors.Is(err, enqueueErr) {
-			t.Errorf("Expected error %v, got %v", enqueueErr, err)
+		if !errors.Is(err, insertErr) {
+			t.Errorf("Expected error %v, got %v", insertErr, err)
 		}
 	})
 }

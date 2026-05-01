@@ -62,6 +62,13 @@ func (m *mockPushUseCaseForStatusUpdate) Execute(_ context.Context, _ int, _ any
 	return nil
 }
 
+type mockTransactionManager struct{}
+
+func (m *mockTransactionManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	return fn(ctx)
+}
+
+
 func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -95,7 +102,8 @@ func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 			repo := &mockAuctionRepoForStatusUpdate{err: tt.mockErr}
 			buyerRepo := &mockBuyerRepoForStatusUpdate{}
 			pushUseCase := &mockPushUseCaseForStatusUpdate{}
-			uc := auction.NewUpdateAuctionStatusUseCase(repo, buyerRepo, pushUseCase)
+			txMgr := &mockTransactionManager{}
+			uc := auction.NewUpdateAuctionStatusUseCase(repo, buyerRepo, pushUseCase, txMgr)
 
 			err := uc.Execute(context.Background(), tt.id, tt.status)
 

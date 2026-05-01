@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -61,26 +60,27 @@ func (m *mockPwdResetRepoForReqPwd) DeleteAllByUserID(ctx context.Context, userI
 	return args.Error(0)
 }
 
-type mockJobQueue struct {
+type mockOutboxRepository struct {
 	err error
 }
 
-var _ service.JobQueue = (*mockJobQueue)(nil)
-
-func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error {
+func (m *mockOutboxRepository) Insert(_ context.Context, _ model.JobType, _ int, _ []byte) error {
 	return m.err
 }
-
-func (m *mockJobQueue) EnqueueRaw(_ context.Context, _ model.JobType, _ []byte) error {
-	return nil
-}
-
-func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockOutboxRepository) Claim(_ context.Context, _ int, _ string) ([]*model.OutboxMessage, error) {
 	return nil, nil
 }
-
-func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64) error {
 	return nil
+}
+func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string) error {
+	return nil
+}
+func (m *mockOutboxRepository) RecoverStale(_ context.Context, _ time.Duration) (int64, error) {
+	return 0, nil
+}
+func (m *mockOutboxRepository) DeleteProcessedBefore(_ context.Context, _ time.Time) (int64, error) {
+	return 0, nil
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
@@ -164,11 +164,11 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			publishEmail := &mockJobQueue{err: tt.mockSndErr}
+			outboxRepo := &mockOutboxRepository{err: tt.mockSndErr}
 			txMgr := &usetesting.MockTransactionManager{}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, publishEmail, frontendURL, txMgr, mockClock)
+			uc := admin.NewRequestPasswordResetUseCase(adminRepo, pwdResetRepo, outboxRepo, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantErr {

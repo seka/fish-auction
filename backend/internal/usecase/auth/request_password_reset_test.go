@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -62,31 +61,32 @@ func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context
 	return args.Error(0)
 }
 
-type mockJobQueue struct {
+type mockOutboxRepository struct {
 	executed bool
 	err      error
 }
 
-var _ service.JobQueue = (*mockJobQueue)(nil)
-
-func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error {
+func (m *mockOutboxRepository) Insert(_ context.Context, _ model.JobType, _ int, _ []byte) error {
 	if m.err != nil {
 		return m.err
 	}
 	m.executed = true
 	return nil
 }
-
-func (m *mockJobQueue) EnqueueRaw(_ context.Context, _ model.JobType, _ []byte) error {
-	return nil
-}
-
-func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockOutboxRepository) Claim(_ context.Context, _ int, _ string) ([]*model.OutboxMessage, error) {
 	return nil, nil
 }
-
-func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64) error {
 	return nil
+}
+func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string) error {
+	return nil
+}
+func (m *mockOutboxRepository) RecoverStale(_ context.Context, _ time.Duration) (int64, error) {
+	return 0, nil
+}
+func (m *mockOutboxRepository) DeleteProcessedBefore(_ context.Context, _ time.Time) (int64, error) {
+	return 0, nil
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
@@ -180,13 +180,14 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			}
 
-			publishEmail := &mockJobQueue{err: tt.mockEmailErr}
+			outboxRepo := &mockOutboxRepository{err: tt.mockEmailErr}
 			txMgr := &usetesting.MockTransactionManager{}
 			if tt.name == "TransactionCommitError" {
 				txMgr.WithTransactionFunc = func(ctx context.Context, fn func(ctx context.Context) error) error {
 					if err := fn(ctx); err != nil {
 						return err
 					}
+					outboxRepo.executed = false // シミュレートされたロールバック
 					return errors.New("commit failed")
 				}
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
@@ -201,7 +202,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, publishEmail, frontendURL, txMgr, mockClock)
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, outboxRepo, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {
@@ -212,10 +213,10 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			if tt.wantSent && !publishEmail.executed {
-				t.Error("expected email to be sent, but wasn't")
+			if tt.wantSent && !outboxRepo.executed {
+				t.Error("expected email to be sent (outbox inserted), but wasn't")
 			}
-			if !tt.wantSent && publishEmail.executed {
+			if !tt.wantSent && outboxRepo.executed {
 				t.Error("expected email NOT to be sent, but was")
 			}
 		})
