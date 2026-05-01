@@ -86,8 +86,8 @@ app.integration-test: ## Run integration tests with dynamic DB lifecycle
 	export POSTGRES_PASSWORD=$$TEST_DB_PASSWORD; \
 	export POSTGRES_DB=$$TEST_DB_NAME; \
 	export POSTGRES_SSLMODE=disable; \
-	export REDIS_HOST=localhost; \
-	export REDIS_PORT=6379; \
+	export REDIS_HOST=$${REDIS_HOST:-localhost}; \
+	export REDIS_PORT=$${REDIS_PORT:-6379}; \
 	export REDIS_DB=15; \
 	export SERVER_HOST=0.0.0.0; \
 	export SERVER_PORT=18080; \
