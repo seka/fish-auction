@@ -21,20 +21,26 @@ type mockBuyerRepository struct {
 func (m *mockBuyerRepository) Create(_ context.Context, _ *model.Buyer) (*model.Buyer, error) {
 	return nil, nil
 }
+
 func (m *mockBuyerRepository) FindByID(_ context.Context, _ int) (*model.Buyer, error) {
 	return nil, nil
 }
+
 func (m *mockBuyerRepository) FindByEmail(_ context.Context, _ string) (*model.Buyer, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
 	return m.buyer, nil
 }
+
 func (m *mockBuyerRepository) List(_ context.Context) ([]model.Buyer, error) { return nil, nil }
+
 func (m *mockBuyerRepository) FindByName(_ context.Context, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepository) Count(_ context.Context) (int, error)  { return 0, nil }
+
+func (m *mockBuyerRepository) Count(_ context.Context) (int, error) { return 0, nil }
+
 func (m *mockBuyerRepository) Delete(_ context.Context, _ int) error { return nil }
 
 type mockBuyerPasswordResetRepository struct {
@@ -45,6 +51,7 @@ func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, userID in
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
+
 func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (*model.PasswordResetToken, error) {
 	args := m.Called(ctx, tokenHash)
 	if args.Get(0) == nil {
@@ -52,10 +59,12 @@ func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, 
 	}
 	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
 }
+
 func (m *mockBuyerPasswordResetRepository) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
 	args := m.Called(ctx, tokenHash)
 	return args.Error(0)
 }
+
 func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context, userID int, role string) error {
 	args := m.Called(ctx, userID, role)
 	return args.Error(0)
@@ -73,21 +82,27 @@ func (m *mockOutboxRepository) InsertEmailJob(_ context.Context, _ string, _ str
 	m.executed = true
 	return nil
 }
+
 func (m *mockOutboxRepository) InsertPushNotificationJob(_ context.Context, _ int, _ any) error {
 	return nil
 }
+
 func (m *mockOutboxRepository) Claim(_ context.Context, _ int, _ string) ([]*model.OutboxMessage, error) {
 	return nil, nil
 }
+
 func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64) error {
 	return nil
 }
+
 func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string) error {
 	return nil
 }
+
 func (m *mockOutboxRepository) RecoverStale(_ context.Context, _ time.Duration) (int64, error) {
 	return 0, nil
 }
+
 func (m *mockOutboxRepository) DeleteProcessedBefore(_ context.Context, _ time.Time) (int64, error) {
 	return 0, nil
 }

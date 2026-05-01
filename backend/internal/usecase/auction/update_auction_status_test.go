@@ -8,6 +8,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/usecase/auction"
+	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
 )
 
 type mockAuctionRepoForStatusUpdate struct {
@@ -56,19 +57,6 @@ func (m *mockBuyerRepoForStatusUpdate) FindByEmail(_ context.Context, _ string) 
 }
 func (m *mockBuyerRepoForStatusUpdate) Delete(_ context.Context, _ int) error { return nil }
 
-type mockPushUseCaseForStatusUpdate struct{}
-
-func (m *mockPushUseCaseForStatusUpdate) Execute(_ context.Context, _ int, _ any) error {
-	return nil
-}
-
-type mockTransactionManager struct{}
-
-func (m *mockTransactionManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	return fn(ctx)
-}
-
-
 func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -101,9 +89,13 @@ func TestUpdateAuctionStatusUseCase_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mockAuctionRepoForStatusUpdate{err: tt.mockErr}
 			buyerRepo := &mockBuyerRepoForStatusUpdate{}
-			pushUseCase := &mockPushUseCaseForStatusUpdate{}
-			txMgr := &mockTransactionManager{}
-			uc := auction.NewUpdateAuctionStatusUseCase(repo, buyerRepo, pushUseCase, txMgr)
+			outboxRepo := &mock.MockOutboxRepository{}
+			txMgr := &mock.MockTransactionManager{
+				WithTransactionFunc: func(ctx context.Context, fn func(ctx context.Context) error) error {
+					return fn(ctx)
+				},
+			}
+			uc := auction.NewUpdateAuctionStatusUseCase(repo, buyerRepo, outboxRepo, txMgr)
 
 			err := uc.Execute(context.Background(), tt.id, tt.status)
 
