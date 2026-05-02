@@ -16,6 +16,7 @@ import (
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
+	notificationEvent "github.com/seka/fish-auction/backend/internal/event"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/relay"
 	"github.com/seka/fish-auction/backend/internal/server"
@@ -65,13 +66,15 @@ func TestServerIntegration(t *testing.T) {
 		t.Fatalf("Failed to initialize service registry: %v", err)
 	}
 
-	// 統合テスト用にプッシュ通知サービスをモックに差し替え、メールサービスは noop を注入
+	// 統合テスト用にプッシュ通知 / メール送信サービスをすべて呼び出しを記録するモックに差し替える
 	mockPush := &mockPushService{}
+	mockBuyerEmail := &mockBuyerEmailService{}
+	mockAdminEmail := &mockAdminEmailService{}
 	serviceReg := &wrappedServiceRegistry{
 		Service:       realServiceReg,
 		mockPush:      mockPush,
-		buyerEmailSvc: &noopBuyerEmailService{},
-		adminEmailSvc: &noopAdminEmailService{},
+		buyerEmailSvc: mockBuyerEmail,
+		adminEmailSvc: mockAdminEmail,
 	}
 
 	useCaseReg := registry.NewUseCaseRegistry(repoReg, serviceReg, cfg)
@@ -96,6 +99,7 @@ func TestServerIntegration(t *testing.T) {
 		queue,
 		worker.HandlerFunc(emailHandlerSvc.Handle),
 		worker.HandlerFunc(pushHandlerSvc.Handle),
+		1,
 	)
 
 	wg.Add(1)
@@ -290,23 +294,16 @@ func TestServerIntegration(t *testing.T) {
 		// 7. Verify Notification via Worker (Async)
 		t.Log("Waiting for worker to process outbid notification...")
 		found := false
-		for range 30 { // Try for 15 seconds (30 * 500ms)
+		for range 90 { // Try for 45 seconds (90 * 500ms) — Worker uses 1s long polling in tests
 			calls := mockPush.getCalls()
 			for _, call := range calls {
-				// Buyer A (ID 2 or similar) should have received a notification
-				// We checking by email or just knowing it's Buyer A.
-				// In this test, Buyer A is the first buyer we created in this t.Run.
-				// Their ID depends on DB state, but we know it's not Buyer B.
-				// Let's just check if ANY notification reached Buyer A.
-				if call.payload != nil {
-					payloadMap, ok := call.payload.(map[string]any)
-					if ok {
-						title, ok := payloadMap["title"].(string)
-						if ok && strings.Contains(title, "高値更新") {
-							found = true
-							break
-						}
-					}
+				payload, ok := call.payload.(notificationEvent.PushPayload)
+				if !ok {
+					continue
+				}
+				if strings.Contains(payload.Title, "高値更新") {
+					found = true
+					break
 				}
 			}
 			if found {
@@ -322,15 +319,66 @@ func TestServerIntegration(t *testing.T) {
 		}
 	})
 
-	// 11. サーバーをシャットダウン
-	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// 10. Email Notification Flow Test (Outbox → Relay → SQS → Worker → Email handler)
+	t.Run("EmailNotificationFlow", func(t *testing.T) {
+		jar, _ := cookiejar.New(nil)
+		client := &http.Client{Jar: jar}
 
-	if err := srv.Shutdown(ctx); err != nil {
+		adminCookies := login(t, client, serverURL+"/api/login", `{"email": "admin@example.com", "password": "Admin-Password123"}`)
+
+		t.Run("BuyerPasswordReset", func(t *testing.T) {
+			buyerEmail := "email-reset-buyer@example.com"
+			_ = registerUser(t, client, serverURL+"/api/admin/buyers", `{"name": "Reset Buyer", "email": "`+buyerEmail+`", "password": "Password123", "organization": "Org", "contact_info": "email"}`, adminCookies)
+
+			postResource(t, client, serverURL+"/api/auth/password-reset/request", `{"email": "`+buyerEmail+`"}`, nil)
+
+			t.Log("Waiting for worker to process buyer password reset email...")
+			if !waitForEmail(mockBuyerEmail.getCalls, buyerEmail) {
+				t.Error("Timed out waiting for buyer password reset email")
+			} else {
+				t.Log("Successfully verified asynchronous buyer password reset email!")
+			}
+		})
+
+		t.Run("AdminPasswordReset", func(t *testing.T) {
+			adminEmail := "admin@example.com"
+
+			postResource(t, client, serverURL+"/api/admin/password-reset/request", `{"email": "`+adminEmail+`"}`, nil)
+
+			t.Log("Waiting for worker to process admin password reset email...")
+			if !waitForEmail(mockAdminEmail.getCalls, adminEmail) {
+				t.Error("Timed out waiting for admin password reset email")
+			} else {
+				t.Log("Successfully verified asynchronous admin password reset email!")
+			}
+		})
+	})
+
+	// 11. サーバーをシャットダウン
+	// outer ctx を cancel して relay/worker goroutines を停止させてから wg.Wait() に入る。
+	cancel()
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		t.Errorf("Failed to shutdown server: %v", err)
 	}
 
 	wg.Wait()
+}
+
+// waitForEmail はモックメール送信サービスが指定宛先の送信を記録するまでポーリング
+func waitForEmail(getCalls func() []emailCall, expectedTo string) bool {
+	for range 90 {
+		for _, call := range getCalls() {
+			if call.to == expectedTo {
+				return true
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return false
 }
 
 // waitForServer はサーバーが起動するまで待機
@@ -605,14 +653,48 @@ func (w *wrappedServiceRegistry) NewAdminEmailService() service.AdminEmailServic
 	return w.adminEmailSvc
 }
 
-type noopBuyerEmailService struct{}
+// emailCall captures a SendXxxPasswordReset invocation for assertion.
+type emailCall struct {
+	to       string
+	resetURL string
+}
 
-func (n *noopBuyerEmailService) SendBuyerPasswordReset(_ context.Context, _, _ string) error {
+type mockBuyerEmailService struct {
+	mu    sync.Mutex
+	calls []emailCall
+}
+
+func (m *mockBuyerEmailService) SendBuyerPasswordReset(_ context.Context, to, url string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.calls = append(m.calls, emailCall{to: to, resetURL: url})
 	return nil
 }
 
-type noopAdminEmailService struct{}
+func (m *mockBuyerEmailService) getCalls() []emailCall {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := make([]emailCall, len(m.calls))
+	copy(out, m.calls)
+	return out
+}
 
-func (n *noopAdminEmailService) SendAdminPasswordReset(_ context.Context, _, _ string) error {
+type mockAdminEmailService struct {
+	mu    sync.Mutex
+	calls []emailCall
+}
+
+func (m *mockAdminEmailService) SendAdminPasswordReset(_ context.Context, to, url string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.calls = append(m.calls, emailCall{to: to, resetURL: url})
 	return nil
+}
+
+func (m *mockAdminEmailService) getCalls() []emailCall {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := make([]emailCall, len(m.calls))
+	copy(out, m.calls)
+	return out
 }

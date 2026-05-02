@@ -86,6 +86,7 @@ func (r *OutboxRelay) relay(ctx context.Context) {
 			continue
 		}
 		successIDs = append(successIDs, msg.ID)
+		log.Printf("OutboxRelay: successfully enqueued message %d (type: %s)", msg.ID, msg.JobType)
 	}
 
 	// Phase 3b: Mark successful messages as processed

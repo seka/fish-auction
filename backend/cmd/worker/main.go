@@ -61,6 +61,7 @@ func run() error {
 		queue,
 		worker.HandlerFunc(emailHandler.Handle),
 		worker.HandlerFunc(pushHandler.Handle),
+		20,
 	)
 
 	// Start Worker with modern signal handling

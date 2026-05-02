@@ -97,9 +97,11 @@ app.integration-test: ## Run integration tests with dynamic DB lifecycle
 	export SMTP_FROM=test@example.com; \
 	export FRONTEND_URL=https://localhost; \
 	export ALLOWED_ORIGINS=https://localhost,http://localhost:3000; \
-	export SQS_REGION=$${SQS_REGION:-ap-northeast-1}; \
-	export SQS_QUEUE_URL=$${SQS_QUEUE_URL:-http://localhost:4566/000000000000/notification-queue}; \
-	export SQS_ENDPOINT=$${SQS_ENDPOINT:-http://localhost:4566}; \
+	export AWS_SQS_REGION=$${AWS_SQS_REGION:-ap-northeast-1}; \
+	export AWS_SQS_QUEUE_URL=$${AWS_SQS_QUEUE_URL:-http://localstack:4566/000000000000/notification-queue-test}; \
+	export AWS_SQS_ENDPOINT=$${AWS_SQS_ENDPOINT:-http://localstack:4566}; \
+	export AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID:-test}; \
+	export AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY:-test}; \
 	go test ./cmd/testing/... -run TestServerIntegration -v; \
 	EXIT_CODE=$$?; \
 	echo "Cleaning up test environment..."; \
