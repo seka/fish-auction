@@ -16,6 +16,16 @@ type RedisConfig interface {
 	GetRedisDB() int
 }
 
+// noRedisConfig is a null implementation for processes that don't need Redis.
+type noRedisConfig struct{}
+
+func (n noRedisConfig) RedisAddr() string { return "" }
+
+func (n noRedisConfig) GetRedisDB() int { return 0 }
+
+// NoRedisConfig can be used when a process doesn't need to connect to Redis.
+var NoRedisConfig RedisConfig = noRedisConfig{}
+
 type SessionConfig interface {
 	GetSessionTTL() time.Duration
 }

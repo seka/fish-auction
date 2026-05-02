@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -13,10 +12,12 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
-	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
+	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/relay"
 )
+
+const shouldMigrate = false
 
 func main() {
 	if err := run(); err != nil {
@@ -31,18 +32,19 @@ func run() error {
 		return fmt.Errorf("failed to load relay config: %w", err)
 	}
 
-	db, err := sql.Open("postgres", cfg.DBConnectionURL())
+	repoReg, err := registry.NewRepositoryRegistry(
+		cfg,
+		config.NoRedisConfig,
+		config.NoCacheConfig,
+		config.NoSessionConfig,
+		shouldMigrate,
+	)
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		return err
 	}
-	defer func() { _ = db.Close() }()
+	defer func() { _ = repoReg.Cleanup() }()
 
-	if err := db.PingContext(context.Background()); err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	pgClient := postgres.NewClient(db)
-	outboxRepo := postgres.NewOutboxStore(pgClient)
+	outboxRepo := repoReg.NewOutboxRepository()
 
 	region, queueURL, endpoint := cfg.SQSConfig()
 	jobQueue, err := sqs.NewClient(context.Background(), region, queueURL, endpoint)

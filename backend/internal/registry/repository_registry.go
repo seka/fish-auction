@@ -69,15 +69,20 @@ func NewRepositoryRegistry(
 		}
 	}
 
-	redisClient, err := connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())
-	if err != nil {
-		_ = db.Close()
-		return nil, err
+	// RedisAddr が空のときは Redis 接続をスキップする（relay のような Redis 不要プロセス向け）。
+	var cache datastore.Cache
+	if redisCfg.RedisAddr() != "" {
+		redisClient, err := connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())
+		if err != nil {
+			_ = db.Close()
+			return nil, err
+		}
+		cache = cacheStore.NewClient(redisClient)
 	}
 
 	return &repositoryRegistry{
 		db:         postgres.NewClient(db),
-		cache:      cacheStore.NewClient(redisClient),
+		cache:      cache,
 		cacheTTL:   cacheCfg.GetCacheTTL(),
 		sessionTTL: sessionCfg.GetSessionTTL(),
 	}, nil
@@ -88,8 +93,10 @@ func (r *repositoryRegistry) Cleanup() error {
 	if err := r.db.Close(); err != nil {
 		errs = append(errs, fmt.Sprintf("database close error: %v", err))
 	}
-	if err := r.cache.Close(); err != nil {
-		errs = append(errs, fmt.Sprintf("cache close error: %v", err))
+	if r.cache != nil {
+		if err := r.cache.Close(); err != nil {
+			errs = append(errs, fmt.Sprintf("cache close error: %v", err))
+		}
 	}
 	if len(errs) > 0 {
 		return fmt.Errorf("cleanup errors: %s", strings.Join(errs, "; "))
