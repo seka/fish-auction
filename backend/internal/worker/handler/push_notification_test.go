@@ -51,7 +51,10 @@ func TestPushNotificationHandler_Handle_RepositoryError(t *testing.T) {
 	ctx := context.Background()
 	repoErr := errors.New("db connection failed")
 
-	job := notificationMessage.PushNotificationMessage{BuyerID: 1, Payload: "test"}
+	job := notificationMessage.PushNotificationMessage{
+		BuyerID: 1,
+		Payload: notificationMessage.PushPayload{Title: "test", Body: "test", URL: "/"},
+	}
 	payloadBytes, _ := json.Marshal(job)
 
 	repo := &mockPushRepository{
@@ -77,7 +80,7 @@ func TestPushNotificationHandler_Handle_RepositoryError(t *testing.T) {
 func TestPushNotificationHandler_Handle(t *testing.T) {
 	ctx := context.Background()
 	buyerID := 1
-	jobPayload := map[string]string{"title": "test", "body": "hello"}
+	jobPayload := notificationMessage.PushPayload{Title: "test", Body: "hello", URL: "/"}
 	job := notificationMessage.PushNotificationMessage{
 		BuyerID: buyerID,
 		Payload: jobPayload,

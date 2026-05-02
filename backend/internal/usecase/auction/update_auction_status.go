@@ -56,14 +56,12 @@ func (uc *updateAuctionStatusUseCase) Execute(ctx context.Context, id int, statu
 			return fmt.Errorf("failed to list buyers for notification: %w", err)
 		}
 
-		notificationPayload := map[string]interface{}{
-			"type":       "auction_status_changed",
-			"auction_id": id,
-			"new_status": string(status),
-		}
+		title := "オークションステータス変更"
+		body := fmt.Sprintf("オークション #%d のステータスが %s に変更されました", id, status)
+		url := fmt.Sprintf("/auctions/%d", id)
 
 		for _, buyer := range buyers {
-			if err := uc.outboxRepo.InsertPushNotificationJob(txCtx, buyer.ID, notificationPayload); err != nil {
+			if err := uc.outboxRepo.InsertPushJob(txCtx, model.JobTypePushAuctionStatusChanged, buyer.ID, title, body, url); err != nil {
 				// Log error but continue for other buyers
 				fmt.Printf("failed to enqueue notification for buyer %d: %v\n", buyer.ID, err)
 			}

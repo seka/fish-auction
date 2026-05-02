@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	waitTimeSeconds = 20
 	shutdownTimeout = 30 * time.Second
 	retryDelay      = 5 * time.Second
 )
@@ -25,6 +24,7 @@ type Worker struct {
 	queue        service.JobQueue
 	emailHandler HandlerFunc
 	pushHandler  HandlerFunc
+	waitTime     int32
 	wg           sync.WaitGroup
 }
 
@@ -33,11 +33,13 @@ func NewWorker(
 	queue service.JobQueue,
 	emailHandler HandlerFunc,
 	pushHandler HandlerFunc,
+	waitTime int32,
 ) *Worker {
 	return &Worker{
 		queue:        queue,
 		emailHandler: emailHandler,
 		pushHandler:  pushHandler,
+		waitTime:     waitTime,
 	}
 }
 
@@ -83,7 +85,7 @@ func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 		case <-ctx.Done():
 			return
 		default:
-			messages, err := poller.Dequeue(ctx, waitTimeSeconds)
+			messages, err := poller.Dequeue(ctx, w.waitTime)
 			if err != nil {
 				// Avoid log spamming if the context is canceled
 				if ctx.Err() != nil {
@@ -121,7 +123,7 @@ func (w *Worker) selectHandler(jobType model.JobType) (HandlerFunc, error) {
 	switch jobType {
 	case model.JobTypeEmail:
 		return w.emailHandler, nil
-	case model.JobTypePushNotification:
+	case model.JobTypePushOutbid, model.JobTypePushAuctionStatusChanged:
 		return w.pushHandler, nil
 	default:
 		return nil, fmt.Errorf("unsupported job type: %s", jobType)

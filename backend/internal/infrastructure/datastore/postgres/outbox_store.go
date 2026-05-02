@@ -50,17 +50,21 @@ func (s *OutboxStore) InsertEmailJob(ctx context.Context, to, resetURL, emailTyp
 	return s.insert(ctx, model.JobTypeEmail, 1, payload)
 }
 
-// InsertPushNotificationJob serializes and inserts a push notification job.
-func (s *OutboxStore) InsertPushNotificationJob(ctx context.Context, buyerID int, payload any) error {
+// InsertPushJob serializes and inserts a push notification job.
+func (s *OutboxStore) InsertPushJob(ctx context.Context, jobType model.JobType, buyerID int, title, body, url string) error {
 	msg := event.PushNotificationMessage{
 		BuyerID: buyerID,
-		Payload: payload,
+		Payload: event.PushPayload{
+			Title: title,
+			Body:  body,
+			URL:   url,
+		},
 	}
-	body, err := json.Marshal(msg)
+	bodyBytes, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal push notification job: %w", err)
 	}
-	return s.insert(ctx, model.JobTypePushNotification, 1, body)
+	return s.insert(ctx, jobType, 1, bodyBytes)
 }
 
 func (s *OutboxStore) Claim(ctx context.Context, limit int, claimedBy string) ([]*model.OutboxMessage, error) {

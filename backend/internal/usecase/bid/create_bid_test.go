@@ -477,7 +477,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 			notificationCalled := false
 			mockOutboxRepo := &mock.MockOutboxRepository{
-				InsertPushNotificationJobFunc: func(_ context.Context, _ int, _ any) error {
+				InsertPushJobFunc: func(_ context.Context, _ model.JobType, _ int, _, _, _ string) error {
 					notificationCalled = true
 					return tt.notificationErr
 				},

@@ -10,13 +10,13 @@ import (
 
 // MockOutboxRepository is a mock implementation of OutboxRepository for testing.
 type MockOutboxRepository struct {
-	InsertEmailJobFunc            func(ctx context.Context, to string, resetURL string, emailType string) error
-	InsertPushNotificationJobFunc func(ctx context.Context, buyerID int, payload any) error
-	ClaimFunc                     func(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error)
-	MarkProcessedFunc             func(ctx context.Context, ids []int64) error
-	MarkFailedFunc                func(ctx context.Context, id int64, lastError string) error
-	RecoverStaleFunc              func(ctx context.Context, timeout time.Duration) (int64, error)
-	DeleteProcessedBeforeFunc     func(ctx context.Context, before time.Time) (int64, error)
+	InsertEmailJobFunc        func(ctx context.Context, to string, resetURL string, emailType string) error
+	InsertPushJobFunc         func(ctx context.Context, jobType model.JobType, buyerID int, title, body, url string) error
+	ClaimFunc                 func(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error)
+	MarkProcessedFunc         func(ctx context.Context, ids []int64) error
+	MarkFailedFunc            func(ctx context.Context, id int64, lastError string) error
+	RecoverStaleFunc          func(ctx context.Context, timeout time.Duration) (int64, error)
+	DeleteProcessedBeforeFunc func(ctx context.Context, before time.Time) (int64, error)
 }
 
 var _ repository.OutboxRepository = (*MockOutboxRepository)(nil)
@@ -28,9 +28,9 @@ func (m *MockOutboxRepository) InsertEmailJob(ctx context.Context, to, resetURL,
 	return nil
 }
 
-func (m *MockOutboxRepository) InsertPushNotificationJob(ctx context.Context, buyerID int, payload any) error {
-	if m.InsertPushNotificationJobFunc != nil {
-		return m.InsertPushNotificationJobFunc(ctx, buyerID, payload)
+func (m *MockOutboxRepository) InsertPushJob(ctx context.Context, jobType model.JobType, buyerID int, title, body, url string) error {
+	if m.InsertPushJobFunc != nil {
+		return m.InsertPushJobFunc(ctx, jobType, buyerID, title, body, url)
 	}
 	return nil
 }

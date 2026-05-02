@@ -83,7 +83,7 @@ func (m *mockOutboxRepository) InsertEmailJob(_ context.Context, _, _, _ string)
 	return nil
 }
 
-func (m *mockOutboxRepository) InsertPushNotificationJob(_ context.Context, _ int, _ any) error {
+func (m *mockOutboxRepository) InsertPushJob(_ context.Context, _ model.JobType, _ int, _, _, _ string) error {
 	return nil
 }
 

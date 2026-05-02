@@ -149,12 +149,8 @@ func (u *createBidUseCase) Execute(ctx context.Context, bid *model.Bid) (*model.
 }
 
 func (u *createBidUseCase) notifyOutbid(ctx context.Context, item *model.AuctionItem, buyerID, previousAmount int) error {
-	payload := map[string]interface{}{
-		"type":            "outbid",
-		"item_id":         item.ID,
-		"fish_type":       item.FishType,
-		"previous_amount": previousAmount,
-		"current_amount":  item.HighestBid.Amount(),
-	}
-	return u.outboxRepo.InsertPushNotificationJob(ctx, buyerID, payload)
+	title := "高値更新"
+	body := fmt.Sprintf("%s への入札が更新されました（¥%d → ¥%d）", item.FishType, previousAmount, item.HighestBid.Amount())
+	url := fmt.Sprintf("/auctions/items/%d", item.ID)
+	return u.outboxRepo.InsertPushJob(ctx, model.JobTypePushOutbid, buyerID, title, body, url)
 }

@@ -12,8 +12,9 @@ type OutboxRepository interface {
 	// InsertEmailJob serializes and inserts an email job.
 	InsertEmailJob(ctx context.Context, to string, resetURL string, emailType string) error
 
-	// InsertPushNotificationJob serializes and inserts a push notification job.
-	InsertPushNotificationJob(ctx context.Context, buyerID int, payload any) error
+	// InsertPushJob serializes and inserts a push notification job.
+	// jobType must be one of JobTypePush* values; title/body/url are delivered as-is to the browser Service Worker.
+	InsertPushJob(ctx context.Context, jobType model.JobType, buyerID int, title, body, url string) error
 
 	// Claim claims pending messages for processing.
 	Claim(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error)
