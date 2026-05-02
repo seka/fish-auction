@@ -26,9 +26,9 @@ func LoadRelayConfig() (*RelayConfig, error) {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
-		SQSQueueURL:      GetEnv("SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
-		SQSRegion:        GetEnv("SQS_REGION", "ap-northeast-1"),
-		SQSEndpoint:      GetEnv("SQS_ENDPOINT", "http://localhost:4566"),
+		SQSQueueURL:      GetEnv("AWS_SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
+		SQSRegion:        GetEnv("AWS_SQS_REGION", "ap-northeast-1"),
+		SQSEndpoint:      GetEnv("AWS_SQS_ENDPOINT", "http://localhost:4566"),
 	}
 
 	return cfg, nil
