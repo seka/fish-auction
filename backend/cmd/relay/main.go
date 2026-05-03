@@ -17,8 +17,6 @@ import (
 	"github.com/seka/fish-auction/backend/internal/relay"
 )
 
-const shouldMigrate = true
-
 func main() {
 	if err := run(); err != nil {
 		log.Printf("Error: %v", err)
@@ -37,7 +35,6 @@ func run() error {
 		config.NoRedisConfig,
 		config.NoCacheConfig,
 		config.NoSessionConfig,
-		shouldMigrate,
 	)
 	if err != nil {
 		return err

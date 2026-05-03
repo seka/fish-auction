@@ -2,22 +2,18 @@ package registry
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/golang-migrate/migrate/v4"
-	migratepg "github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
 	cacheStore "github.com/seka/fish-auction/backend/internal/infrastructure/datastore/redis"
-	"github.com/seka/fish-auction/backend/migrations"
+	"github.com/seka/fish-auction/backend/internal/migration"
 )
 
 // Repository defines the interface for creating repositories and managing lifecycle.
@@ -48,25 +44,18 @@ type repositoryRegistry struct {
 	sessionTTL time.Duration
 }
 
-// NewRepositoryRegistry creates a new Repository registry
-// It handles DB connection, Redis connection, and migration initialization
+// NewRepositoryRegistry creates a new Repository registry.
+// Migrations are no longer run here; invoke cmd/migration before starting
+// processes that depend on schema state.
 func NewRepositoryRegistry(
 	dbCfg config.DatabaseConfig,
 	redisCfg config.RedisConfig,
 	cacheCfg config.CacheConfig,
 	sessionCfg config.SessionConfig,
-	shouldMigrate bool,
 ) (Repository, error) {
-	db, err := connectDB(dbCfg.DBConnectionURL())
+	db, err := migration.Connect(context.Background(), dbCfg.DBConnectionURL())
 	if err != nil {
 		return nil, err
-	}
-
-	if shouldMigrate {
-		if err := runMigrations(db); err != nil {
-			_ = db.Close()
-			return nil, err
-		}
 	}
 
 	// RedisAddr が空のときは Redis 接続をスキップする（relay のような Redis 不要プロセス向け）。
@@ -101,56 +90,6 @@ func (r *repositoryRegistry) Cleanup() error {
 	if len(errs) > 0 {
 		return fmt.Errorf("cleanup errors: %s", strings.Join(errs, "; "))
 	}
-	return nil
-}
-
-func connectDB(postgresAddr string) (*sql.DB, error) {
-	var db *sql.DB
-	var err error
-
-	for range 10 {
-		db, err = sql.Open("postgres", postgresAddr)
-		if err == nil {
-			err = db.PingContext(context.Background())
-		}
-		if err == nil {
-			return db, nil
-		}
-		log.Printf("Failed to connect to DB: %v. Retrying in 2s...", err)
-		time.Sleep(2 * time.Second)
-	}
-
-	return nil, fmt.Errorf("could not connect to database after retries: %w", err)
-}
-
-func runMigrations(db *sql.DB) error {
-	src, err := iofs.New(migrations.FS, ".")
-	if err != nil {
-		return fmt.Errorf("failed to create migration source: %w", err)
-	}
-
-	driver, err := migratepg.WithInstance(db, &migratepg.Config{})
-	if err != nil {
-		return fmt.Errorf("failed to create migration driver: %w", err)
-	}
-
-	m, err := migrate.NewWithInstance("iofs", src, "postgres", driver)
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to run migrations: %w", err)
-	}
-
-	version, dirty, err := m.Version()
-	if err != nil && err != migrate.ErrNilVersion {
-		return fmt.Errorf("failed to get migration version: %w", err)
-	}
-	if dirty {
-		return fmt.Errorf("migration is in dirty state at version %d, manual intervention required", version)
-	}
-	log.Printf("Migration complete: version=%d, dirty=%v", version, dirty)
 	return nil
 }
 

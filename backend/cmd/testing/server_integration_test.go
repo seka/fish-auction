@@ -17,6 +17,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
 	notificationEvent "github.com/seka/fish-auction/backend/internal/event"
+	"github.com/seka/fish-auction/backend/internal/migration"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/relay"
 	"github.com/seka/fish-auction/backend/internal/server"
@@ -27,10 +28,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/worker/handler"
 )
 
-const (
-	shouldMigrate = true
-	isWorker      = false
-)
+const isWorker = false
 
 func TestServerIntegration(t *testing.T) {
 	requireIntegrationTests(t)
@@ -53,8 +51,19 @@ func TestServerIntegration(t *testing.T) {
 		t.Fatalf("Failed to load relay config: %v", err)
 	}
 
-	// 2. Registry を初期化（DB 接続、Redis 接続、マイグレーション）
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, shouldMigrate)
+	// 2. マイグレーションをテスト DB に適用
+	migrationDB, err := migration.Connect(ctx, cfg.DBConnectionURL())
+	if err != nil {
+		t.Fatalf("Failed to connect for migration: %v", err)
+	}
+	if err := migration.Up(migrationDB); err != nil {
+		_ = migrationDB.Close()
+		t.Fatalf("Failed to run migrations: %v", err)
+	}
+	_ = migrationDB.Close()
+
+	// 3. Registry を初期化（DB 接続、Redis 接続）
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
 		t.Fatalf("Failed to initialize registry: %v", err)
 	}

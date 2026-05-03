@@ -15,10 +15,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/worker/handler"
 )
 
-const (
-	shouldMigrate = false
-	isWorker      = true
-)
+const isWorker = true
 
 func main() {
 	if err := run(); err != nil {
@@ -35,7 +32,7 @@ func run() error {
 	}
 
 	// Initialize Repository Registry
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig, shouldMigrate)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig)
 	if err != nil {
 		return err
 	}
