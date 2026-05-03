@@ -29,6 +29,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migration:
+        condition: service_completed_successfully
 
     healthcheck:
       test:
@@ -47,6 +49,24 @@ services:
       - app-network
     volumes:
       - ./backend:/app
+
+  migration:
+    build:
+      context: ./backend
+      target: dev
+    command: ["go", "run", "./cmd/migration/main.go"]
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: "no"
 
   frontend:
     build:
@@ -199,6 +219,8 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     networks:
       - app-network
 
@@ -223,6 +245,8 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     networks:
       - app-network
 
