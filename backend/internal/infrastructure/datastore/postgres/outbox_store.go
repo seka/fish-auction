@@ -108,15 +108,21 @@ func (s *OutboxStore) Claim(ctx context.Context, limit int, claimedBy string) ([
 	return msgs, nil
 }
 
-func (s *OutboxStore) MarkProcessed(ctx context.Context, ids []int64) error {
-	query := `UPDATE outbox SET status = 'processed', processed_at = NOW(), claimed_at = NULL, claimed_by = NULL WHERE id = ANY($1)`
-	if _, err := s.db.Execute(ctx, query, pq.Array(ids)); err != nil {
+func (s *OutboxStore) MarkProcessed(ctx context.Context, ids []int64, claimedBy string) error {
+	// claimed_by が一致するメッセージのみ更新する。
+	// stale recovery で別インスタンスに再 claim されたメッセージを誤って processed にしないため。
+	query := `
+		UPDATE outbox
+		SET status = 'processed', processed_at = NOW(), claimed_at = NULL, claimed_by = NULL
+		WHERE id = ANY($1) AND claimed_by = $2
+	`
+	if _, err := s.db.Execute(ctx, query, pq.Array(ids), claimedBy); err != nil {
 		return fmt.Errorf("failed to mark outbox messages as processed: %w", err)
 	}
 	return nil
 }
 
-func (s *OutboxStore) MarkFailed(ctx context.Context, id int64, lastError string) error {
+func (s *OutboxStore) MarkFailed(ctx context.Context, id int64, lastError string, claimedBy string) error {
 	query := `
 		UPDATE outbox
 		SET status = CASE WHEN attempts >= max_attempts THEN 'failed' ELSE 'pending' END,
@@ -126,9 +132,9 @@ func (s *OutboxStore) MarkFailed(ctx context.Context, id int64, lastError string
 		    last_error = $2,
 		    claimed_at = NULL,
 		    claimed_by = NULL
-		WHERE id = $1
+		WHERE id = $1 AND claimed_by = $3
 	`
-	if _, err := s.db.Execute(ctx, query, id, lastError); err != nil {
+	if _, err := s.db.Execute(ctx, query, id, lastError, claimedBy); err != nil {
 		return fmt.Errorf("failed to mark outbox message %d as failed: %w", id, err)
 	}
 	return nil

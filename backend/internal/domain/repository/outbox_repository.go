@@ -20,11 +20,13 @@ type OutboxRepository interface {
 	Claim(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error)
 
 	// MarkProcessed sets status to processed for successfully sent messages.
-	MarkProcessed(ctx context.Context, ids []int64) error
+	// claimedBy 所有者チェック: 別インスタンスが奪取したメッセージは更新しない。
+	MarkProcessed(ctx context.Context, ids []int64, claimedBy string) error
 
 	// MarkFailed records a send failure with exponential backoff.
 	// When max_attempts is reached, status becomes failed (poison message isolation).
-	MarkFailed(ctx context.Context, id int64, lastError string) error
+	// claimedBy 所有者チェック: 別インスタンスが奪取したメッセージは更新しない。
+	MarkFailed(ctx context.Context, id int64, lastError string, claimedBy string) error
 
 	// RecoverStale resets messages stuck in processing state back to pending.
 	RecoverStale(ctx context.Context, timeout time.Duration) (int64, error)

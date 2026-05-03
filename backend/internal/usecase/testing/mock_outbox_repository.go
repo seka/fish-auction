@@ -13,8 +13,8 @@ type MockOutboxRepository struct {
 	InsertEmailJobFunc        func(ctx context.Context, to string, resetURL string, emailType string) error
 	InsertPushJobFunc         func(ctx context.Context, jobType model.JobType, buyerID int, title, body, url string) error
 	ClaimFunc                 func(ctx context.Context, batchSize int, instanceID string) ([]*model.OutboxMessage, error)
-	MarkProcessedFunc         func(ctx context.Context, ids []int64) error
-	MarkFailedFunc            func(ctx context.Context, id int64, lastError string) error
+	MarkProcessedFunc         func(ctx context.Context, ids []int64, claimedBy string) error
+	MarkFailedFunc            func(ctx context.Context, id int64, lastError string, claimedBy string) error
 	RecoverStaleFunc          func(ctx context.Context, timeout time.Duration) (int64, error)
 	DeleteProcessedBeforeFunc func(ctx context.Context, before time.Time) (int64, error)
 }
@@ -42,16 +42,16 @@ func (m *MockOutboxRepository) Claim(ctx context.Context, batchSize int, instanc
 	return nil, nil
 }
 
-func (m *MockOutboxRepository) MarkProcessed(ctx context.Context, ids []int64) error {
+func (m *MockOutboxRepository) MarkProcessed(ctx context.Context, ids []int64, claimedBy string) error {
 	if m.MarkProcessedFunc != nil {
-		return m.MarkProcessedFunc(ctx, ids)
+		return m.MarkProcessedFunc(ctx, ids, claimedBy)
 	}
 	return nil
 }
 
-func (m *MockOutboxRepository) MarkFailed(ctx context.Context, id int64, lastError string) error {
+func (m *MockOutboxRepository) MarkFailed(ctx context.Context, id int64, lastError string, claimedBy string) error {
 	if m.MarkFailedFunc != nil {
-		return m.MarkFailedFunc(ctx, id, lastError)
+		return m.MarkFailedFunc(ctx, id, lastError, claimedBy)
 	}
 	return nil
 }

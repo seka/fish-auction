@@ -83,11 +83,11 @@ func (m *mockOutboxRepository) Claim(_ context.Context, _ int, _ string) ([]*mod
 	return nil, nil
 }
 
-func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64) error {
+func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64, _ string) error {
 	return nil
 }
 
-func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string) error {
+func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string, _ string) error {
 	return nil
 }
 

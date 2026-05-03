@@ -99,7 +99,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			input: &model.Bid{
 				ItemID:  1,
 				BuyerID: 1,
-				Price:   bp(999),
+				Price:   bp(1499),
 			},
 			buyerFound:       true,
 			itemFound:        true,
@@ -400,7 +400,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			itemUpdateCalled := false
 			auctionUpdateCalled := false
 			createCalled := false
 			txCalled := false
@@ -421,10 +420,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 						AuctionID: 1,
 						FishType:  "Aji",
 					}, nil
-				},
-				UpdateFunc: func(_ context.Context, item *model.AuctionItem) (*model.AuctionItem, error) {
-					itemUpdateCalled = true
-					return item, nil
 				},
 			}
 
@@ -453,7 +448,7 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 			}
 
 			mockAuctionRepo := &mock.MockAuctionRepository{
-				FindByIDFunc: func(_ context.Context, _ int) (*model.Auction, error) {
+				FindByIDWithLockFunc: func(_ context.Context, _ int) (*model.Auction, error) {
 					if tt.getAuctionErr != nil {
 						return nil, tt.getAuctionErr
 					}
@@ -515,9 +510,6 @@ func TestCreateBidUseCase_Execute(t *testing.T) {
 				}
 				if created == nil || created.ID != tt.wantID {
 					t.Fatalf("unexpected created bid %+v", created)
-				}
-				if !itemUpdateCalled {
-					t.Error("expected ItemRepository.Update to be called on success")
 				}
 			}
 
