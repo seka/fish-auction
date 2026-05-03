@@ -56,3 +56,12 @@
 - `git diff` を見直し、不要な差分やデバッグコードが含まれていないか確認する。
 - 必要なテストやビルド手順があれば実行・案内する。未実施なら理由を明記する。
 - 完了通知や次に行うべき操作があればユーザーへ提案する。
+
+## 📦 プロジェクト固有メモ
+
+### DB マイグレーション
+
+- マイグレーションは `cmd/migration` の独立コマンドで適用する（server / worker / relay は migrate を実行しない）。
+- ローカル: `cd backend && make migrate`（= `go run ./cmd/migration/main.go up`）
+- docker-compose: `migration` サービスが `service_completed_successfully` で完了し、`server` / `worker` / `relay` がそれを待機する。
+- マイグレーションファイルを追加した場合は、サーバー起動より前に必ず適用すること。
