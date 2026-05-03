@@ -2,23 +2,23 @@ package auction
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
-	"github.com/seka/fish-auction/backend/internal/usecase/notification"
 )
 
-// UpdateAuctionStatusUseCase defines the interface for updating auction status.
+// UpdateAuctionStatusUseCase defines the interface for updating an auction's status
 type UpdateAuctionStatusUseCase interface {
-	// Execute updates an auction's status and potentially sends notifications.
+	// Execute updates an auction's status
 	Execute(ctx context.Context, id int, status model.AuctionStatus) error
 }
 
 type updateAuctionStatusUseCase struct {
-	auctionRepo                repository.AuctionRepository
-	buyerRepo                  repository.BuyerRepository
-	publishNotificationUseCase notification.PublishNotificationUseCase
+	auctionRepo repository.AuctionRepository
+	buyerRepo   repository.BuyerRepository
+	outboxRepo  repository.OutboxRepository
+	txMgr       repository.TransactionManager
 }
 
 var _ UpdateAuctionStatusUseCase = (*updateAuctionStatusUseCase)(nil)
@@ -26,12 +26,14 @@ var _ UpdateAuctionStatusUseCase = (*updateAuctionStatusUseCase)(nil)
 func NewUpdateAuctionStatusUseCase(
 	auctionRepo repository.AuctionRepository,
 	buyerRepo repository.BuyerRepository,
-	publishNotification notification.PublishNotificationUseCase,
+	outboxRepo repository.OutboxRepository,
+	txMgr repository.TransactionManager,
 ) UpdateAuctionStatusUseCase {
 	return &updateAuctionStatusUseCase{
-		auctionRepo:                auctionRepo,
-		buyerRepo:                  buyerRepo,
-		publishNotificationUseCase: publishNotification,
+		auctionRepo: auctionRepo,
+		buyerRepo:   buyerRepo,
+		outboxRepo:  outboxRepo,
+		txMgr:       txMgr,
 	}
 }
 
@@ -42,44 +44,38 @@ func (uc *updateAuctionStatusUseCase) Execute(ctx context.Context, id int, statu
 		return &InvalidStatusError{Status: string(status)}
 	}
 
-	if err := uc.auctionRepo.UpdateStatus(ctx, id, status); err != nil {
-		return err
-	}
+	return uc.txMgr.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Update status
+		if err := uc.auctionRepo.UpdateStatus(txCtx, id, status); err != nil {
+			return fmt.Errorf("failed to update auction status: %w", err)
+		}
 
-	// オークションが開始または終了した際に全買付人に通知
-	if status == model.AuctionStatusInProgress || status == model.AuctionStatusCompleted {
-		buyers, err := uc.buyerRepo.List(ctx)
-		if err == nil {
-			title := "オークション開始"
-			body := "新しいオークションが開始されました。"
-			if status == model.AuctionStatusCompleted {
-				title = "オークション終了"
-				body = "オークションが終了しました。結果をご確認ください。"
-			}
+		// Notify buyers (in a real app, this might be filtered by subscription)
+		buyers, err := uc.buyerRepo.List(txCtx)
+		if err != nil {
+			return fmt.Errorf("failed to list buyers for notification: %w", err)
+		}
 
-			payload := map[string]any{
-				"title": title,
-				"body":  body,
-				"url":   "/auctions",
-			}
+		title := "オークションステータス変更"
+		body := fmt.Sprintf("オークション #%d のステータスが %s に変更されました", id, status)
+		url := fmt.Sprintf("/auctions/%d", id)
 
-			for _, b := range buyers {
-				if err := uc.publishNotificationUseCase.Execute(ctx, b.ID, payload); err != nil {
-					// 通知失敗はログ出力のみ行い、全体の処理に影響を与えない
-					log.Printf("failed to send notification for auction status update: %v", err)
-				}
+		for _, buyer := range buyers {
+			if err := uc.outboxRepo.InsertPushJob(txCtx, model.JobTypePushAuctionStatusChanged, buyer.ID, title, body, url); err != nil {
+				// Log error but continue for other buyers
+				fmt.Printf("failed to enqueue notification for buyer %d: %v\n", buyer.ID, err)
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
-// InvalidStatusError represents an invalid auction status error
+// InvalidStatusError is returned when the auction status is invalid.
 type InvalidStatusError struct {
 	Status string
 }
 
 func (e *InvalidStatusError) Error() string {
-	return "invalid auction status: " + e.Status
+	return fmt.Sprintf("invalid auction status: %s", e.Status)
 }

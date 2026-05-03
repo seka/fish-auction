@@ -7,6 +7,7 @@ COPY go.mod ./
 
 # Development stage
 FROM base AS dev
+RUN apk add --no-cache postgresql-client
 RUN go install github.com/cosmtrek/air@v1.49.0
 COPY . .
 CMD ["air", "-c", ".air.toml"]

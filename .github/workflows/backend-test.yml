@@ -101,9 +101,9 @@ jobs:
           REDIS_PORT: 6379
           RUN_INTEGRATION_TESTS: "true"
           RUN_STRESS_TESTS: "false"
-          SQS_QUEUE_URL: "http://localhost:4566/000000000000/notification-queue"
-          SQS_REGION: ap-northeast-1
-          SQS_ENDPOINT: "http://localhost:4566"
+          AWS_SQS_QUEUE_URL: "http://localhost:4566/000000000000/notification-queue"
+          AWS_SQS_REGION: ap-northeast-1
+          AWS_SQS_ENDPOINT: "http://localhost:4566"
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           AWS_DEFAULT_REGION: ap-northeast-1

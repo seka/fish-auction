@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
-	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	usetesting "github.com/seka/fish-auction/backend/internal/usecase/testing"
 	"github.com/stretchr/testify/mock"
@@ -22,20 +21,26 @@ type mockBuyerRepository struct {
 func (m *mockBuyerRepository) Create(_ context.Context, _ *model.Buyer) (*model.Buyer, error) {
 	return nil, nil
 }
+
 func (m *mockBuyerRepository) FindByID(_ context.Context, _ int) (*model.Buyer, error) {
 	return nil, nil
 }
+
 func (m *mockBuyerRepository) FindByEmail(_ context.Context, _ string) (*model.Buyer, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
 	return m.buyer, nil
 }
+
 func (m *mockBuyerRepository) List(_ context.Context) ([]model.Buyer, error) { return nil, nil }
+
 func (m *mockBuyerRepository) FindByName(_ context.Context, _ string) (*model.Buyer, error) {
 	return nil, nil
 }
-func (m *mockBuyerRepository) Count(_ context.Context) (int, error)  { return 0, nil }
+
+func (m *mockBuyerRepository) Count(_ context.Context) (int, error) { return 0, nil }
+
 func (m *mockBuyerRepository) Delete(_ context.Context, _ int) error { return nil }
 
 type mockBuyerPasswordResetRepository struct {
@@ -46,6 +51,7 @@ func (m *mockBuyerPasswordResetRepository) Create(ctx context.Context, userID in
 	args := m.Called(ctx, userID, role, tokenHash, expiresAt)
 	return args.Error(0)
 }
+
 func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, tokenHash string) (*model.PasswordResetToken, error) {
 	args := m.Called(ctx, tokenHash)
 	if args.Get(0) == nil {
@@ -53,23 +59,23 @@ func (m *mockBuyerPasswordResetRepository) FindByTokenHash(ctx context.Context, 
 	}
 	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
 }
+
 func (m *mockBuyerPasswordResetRepository) DeleteByTokenHash(ctx context.Context, tokenHash string) error {
 	args := m.Called(ctx, tokenHash)
 	return args.Error(0)
 }
+
 func (m *mockBuyerPasswordResetRepository) DeleteAllByUserID(ctx context.Context, userID int, role string) error {
 	args := m.Called(ctx, userID, role)
 	return args.Error(0)
 }
 
-type mockJobQueue struct {
+type mockOutboxRepository struct {
 	executed bool
 	err      error
 }
 
-var _ service.JobQueue = (*mockJobQueue)(nil)
-
-func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error {
+func (m *mockOutboxRepository) InsertEmailJob(_ context.Context, _, _, _ string) error {
 	if m.err != nil {
 		return m.err
 	}
@@ -77,12 +83,28 @@ func (m *mockJobQueue) Enqueue(_ context.Context, _ model.JobType, _ any) error 
 	return nil
 }
 
-func (m *mockJobQueue) Dequeue(_ context.Context, _ int32) ([]*model.JobMessage, error) {
+func (m *mockOutboxRepository) InsertPushJob(_ context.Context, _ model.JobType, _ int, _, _, _ string) error {
+	return nil
+}
+
+func (m *mockOutboxRepository) Claim(_ context.Context, _ int, _ string) ([]*model.OutboxMessage, error) {
 	return nil, nil
 }
 
-func (m *mockJobQueue) DeleteMessage(_ context.Context, _ *model.JobMessage) error {
+func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64, _ string) error {
 	return nil
+}
+
+func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string, _ string) error {
+	return nil
+}
+
+func (m *mockOutboxRepository) RecoverStale(_ context.Context, _ time.Duration) (int64, error) {
+	return 0, nil
+}
+
+func (m *mockOutboxRepository) DeleteProcessedBefore(_ context.Context, _ time.Time) (int64, error) {
+	return 0, nil
 }
 
 func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
@@ -176,13 +198,14 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				resetRepo.On("Create", mock.Anything, 1, "buyer", mock.AnythingOfType("string"), expectedExpiresAt).Return(nil)
 			}
 
-			publishEmail := &mockJobQueue{err: tt.mockEmailErr}
+			outboxRepo := &mockOutboxRepository{err: tt.mockEmailErr}
 			txMgr := &usetesting.MockTransactionManager{}
 			if tt.name == "TransactionCommitError" {
 				txMgr.WithTransactionFunc = func(ctx context.Context, fn func(ctx context.Context) error) error {
 					if err := fn(ctx); err != nil {
 						return err
 					}
+					outboxRepo.executed = false // シミュレートされたロールバック
 					return errors.New("commit failed")
 				}
 				resetRepo.On("DeleteAllByUserID", mock.Anything, 1, "buyer").Return(nil)
@@ -197,7 +220,7 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 			}
 
 			frontendURL, _ := url.Parse("https://localhost")
-			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, publishEmail, frontendURL, txMgr, mockClock)
+			uc := auth.NewRequestPasswordResetUseCase(buyerRepo, resetRepo, outboxRepo, frontendURL, txMgr, mockClock)
 			err := uc.Execute(context.Background(), tt.email)
 
 			if (err != nil) != tt.wantError {
@@ -208,10 +231,10 @@ func TestRequestPasswordResetUseCase_Execute(t *testing.T) {
 				}
 			}
 
-			if tt.wantSent && !publishEmail.executed {
-				t.Error("expected email to be sent, but wasn't")
+			if tt.wantSent && !outboxRepo.executed {
+				t.Error("expected email to be sent (outbox inserted), but wasn't")
 			}
-			if !tt.wantSent && publishEmail.executed {
+			if !tt.wantSent && outboxRepo.executed {
 				t.Error("expected email NOT to be sent, but was")
 			}
 		})

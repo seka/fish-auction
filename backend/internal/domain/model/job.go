@@ -8,8 +8,10 @@ import (
 type JobType string
 
 const (
-	// JobTypePushNotification is the job type for sending push notifications.
-	JobTypePushNotification JobType = "push_notification"
+	// JobTypePushOutbid is the job type for notifying a buyer that their bid was outbid.
+	JobTypePushOutbid JobType = "push.outbid"
+	// JobTypePushAuctionStatusChanged is the job type for notifying buyers that an auction status changed.
+	JobTypePushAuctionStatusChanged JobType = "push.auction_status_changed"
 	// JobTypeEmail is the job type for sending emails.
 	JobTypeEmail JobType = "email"
 )
@@ -17,8 +19,10 @@ const (
 // NewJobType creates a JobType from a string and validates it.
 func NewJobType(s string) (JobType, error) {
 	switch JobType(s) {
-	case JobTypePushNotification:
-		return JobTypePushNotification, nil
+	case JobTypePushOutbid:
+		return JobTypePushOutbid, nil
+	case JobTypePushAuctionStatusChanged:
+		return JobTypePushAuctionStatusChanged, nil
 	case JobTypeEmail:
 		return JobTypeEmail, nil
 	default:

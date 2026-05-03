@@ -67,7 +67,7 @@ func run() error {
 	defer func() { _ = repoReg.Cleanup() }()
 
 	// Initialize Service Registry
-	serviceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, cfg, isWorker)
+	serviceReg, err := registry.NewServiceRegistry(config.NoEmailConfig, config.NoWebpushConfig, config.NoQueueConfig, isWorker)
 	if err != nil {
 		return fmt.Errorf("failed to initialize service registry: %w", err)
 	}

@@ -86,20 +86,22 @@ app.integration-test: ## Run integration tests with dynamic DB lifecycle
 	export POSTGRES_PASSWORD=$$TEST_DB_PASSWORD; \
 	export POSTGRES_DB=$$TEST_DB_NAME; \
 	export POSTGRES_SSLMODE=disable; \
-	export REDIS_HOST=localhost; \
-	export REDIS_PORT=6379; \
+	export REDIS_HOST=$${REDIS_HOST:-localhost}; \
+	export REDIS_PORT=$${REDIS_PORT:-6379}; \
 	export REDIS_DB=15; \
 	export SERVER_HOST=0.0.0.0; \
 	export SERVER_PORT=18080; \
 	export APP_ENV=test; \
-	export SMTP_HOST=localhost; \
+	export SMTP_HOST=$${SMTP_HOST:-localhost}; \
 	export SMTP_PORT=1025; \
 	export SMTP_FROM=test@example.com; \
 	export FRONTEND_URL=https://localhost; \
 	export ALLOWED_ORIGINS=https://localhost,http://localhost:3000; \
-	export SQS_REGION=$${SQS_REGION:-ap-northeast-1}; \
-	export SQS_QUEUE_URL=$${SQS_QUEUE_URL:-http://localhost:4566/000000000000/notification-queue}; \
-	export SQS_ENDPOINT=$${SQS_ENDPOINT:-http://localhost:4566}; \
+	export AWS_SQS_REGION=$${AWS_SQS_REGION:-ap-northeast-1}; \
+	export AWS_SQS_QUEUE_URL=$${AWS_SQS_QUEUE_URL:-http://localstack:4566/000000000000/notification-queue-test}; \
+	export AWS_SQS_ENDPOINT=$${AWS_SQS_ENDPOINT:-http://localstack:4566}; \
+	export AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID:-test}; \
+	export AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY:-test}; \
 	go test ./cmd/testing/... -run TestServerIntegration -v; \
 	EXIT_CODE=$$?; \
 	echo "Cleaning up test environment..."; \

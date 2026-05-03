@@ -56,7 +56,6 @@ type UseCase interface {
 	NewVerifyAdminResetTokenUseCase() admin.VerifyResetTokenUseCase
 	NewResetAdminPasswordUseCase() admin.ResetPasswordUseCase
 	NewSubscribeNotificationUseCase() notification.SubscribeNotificationUseCase
-	NewPublishNotificationUseCase() notification.PublishNotificationUseCase
 	NewCreateAdminUseCase() admin.CreateAdminUseCase
 }
 
@@ -107,7 +106,7 @@ func (u *useCaseRegistry) NewCreateBidUseCase() bid.CreateBidUseCase {
 		u.repo.NewBuyerRepository(),
 		u.repo.NewBidRepository(),
 		u.repo.NewAuctionRepository(),
-		u.NewPublishNotificationUseCase(),
+		u.repo.NewOutboxRepository(),
 		u.repo.NewTransactionManager(),
 		u.repo.NewItemCacheInvalidator(),
 		u.service.NewClock(),
@@ -206,7 +205,8 @@ func (u *useCaseRegistry) NewUpdateAuctionStatusUseCase() auction.UpdateAuctionS
 	return auction.NewUpdateAuctionStatusUseCase(
 		u.repo.NewAuctionRepository(),
 		u.repo.NewBuyerRepository(),
-		u.NewPublishNotificationUseCase(),
+		u.repo.NewOutboxRepository(),
+		u.repo.NewTransactionManager(),
 	)
 }
 
@@ -226,7 +226,7 @@ func (u *useCaseRegistry) NewRequestPasswordResetUseCase() auth.RequestPasswordR
 	return auth.NewRequestPasswordResetUseCase(
 		u.repo.NewBuyerRepository(),
 		u.repo.PasswordReset(),
-		u.service.NewJobQueue(),
+		u.repo.NewOutboxRepository(),
 		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
@@ -250,7 +250,7 @@ func (u *useCaseRegistry) NewRequestAdminPasswordResetUseCase() admin.RequestPas
 	return admin.NewRequestPasswordResetUseCase(
 		u.repo.NewAdminRepository(),
 		u.repo.PasswordReset(),
-		u.service.NewJobQueue(),
+		u.repo.NewOutboxRepository(),
 		u.cfg.GetFrontendURL(),
 		u.repo.NewTransactionManager(),
 		u.service.NewClock(),
@@ -272,10 +272,6 @@ func (u *useCaseRegistry) NewResetAdminPasswordUseCase() admin.ResetPasswordUseC
 
 func (u *useCaseRegistry) NewSubscribeNotificationUseCase() notification.SubscribeNotificationUseCase {
 	return notification.NewSubscribeNotificationUseCase(u.repo.NewPushRepository())
-}
-
-func (u *useCaseRegistry) NewPublishNotificationUseCase() notification.PublishNotificationUseCase {
-	return notification.NewPublishNotificationUseCase(u.service.NewJobQueue())
 }
 
 func (u *useCaseRegistry) NewCreateAdminUseCase() admin.CreateAdminUseCase {

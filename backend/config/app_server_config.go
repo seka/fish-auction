@@ -31,9 +31,6 @@ type AppServerConfig struct {
 	WriteTimeout     time.Duration
 	IdleTimeout      time.Duration
 	FrontendURL      *url.URL
-	SQSQueueURL      string
-	SQSRegion        string
-	SQSEndpoint      string
 }
 
 // LoadAppServerConfig loads configuration for the API server.
@@ -69,9 +66,6 @@ func LoadAppServerConfig() (*AppServerConfig, error) {
 		WriteTimeout:     time.Duration(GetEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeout:      time.Duration(GetEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 		FrontendURL:      frontendURL,
-		SQSQueueURL:      GetEnv("SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
-		SQSRegion:        GetEnv("SQS_REGION", "ap-northeast-1"),
-		SQSEndpoint:      GetEnv("SQS_ENDPOINT", "http://localhost:4566"),
 	}
 
 	return cfg, nil
@@ -103,10 +97,6 @@ func (c *AppServerConfig) SMTPAddress() string {
 
 func (c *AppServerConfig) GetSMTPFrom() string {
 	return c.SMTPFrom
-}
-
-func (c *AppServerConfig) SQSConfig() (region, queueURL, endpoint string) {
-	return c.SQSRegion, c.SQSQueueURL, c.SQSEndpoint
 }
 
 func (c *AppServerConfig) DBConnectionURL() string {

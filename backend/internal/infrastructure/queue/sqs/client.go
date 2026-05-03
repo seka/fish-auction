@@ -2,7 +2,6 @@ package sqs
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -13,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/service"
-	jobMessage "github.com/seka/fish-auction/backend/internal/event"
 )
 
 // Client implements service.JobQueue using AWS SQS.
@@ -48,35 +46,10 @@ func NewClient(ctx context.Context, region, queueURL, endpoint string) (*Client,
 	}, nil
 }
 
-// Enqueue sends a message to the SQS queue.
-func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload any) error {
-	var body []byte
-	var err error
-
-	// Map domain payload to infrastructure DTO and marshal to JSON.
-	switch jobType {
-	case model.JobTypePushNotification:
-		p, ok := payload.(jobMessage.PushNotificationMessage)
-		if !ok {
-			return fmt.Errorf("invalid payload type for push notification: %T", payload)
-		}
-		body, err = json.Marshal(p)
-	case model.JobTypeEmail:
-		p, ok := payload.(jobMessage.EmailMessage)
-		if !ok {
-			return fmt.Errorf("invalid payload type for email: %T", payload)
-		}
-		body, err = json.Marshal(p)
-	default:
-		return fmt.Errorf("unsupported job type: %s", jobType)
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to marshal job payload: %w", err)
-	}
-
-	_, err = c.client.SendMessage(ctx, &sqs.SendMessageInput{
-		MessageBody: aws.String(string(body)),
+// Enqueue sends a pre-serialized payload to the SQS queue.
+func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload []byte) error {
+	res, err := c.client.SendMessage(ctx, &sqs.SendMessageInput{
+		MessageBody: aws.String(string(payload)),
 		QueueUrl:    aws.String(c.queueURL),
 		MessageAttributes: map[string]types.MessageAttributeValue{
 			"JobType": {
@@ -88,11 +61,13 @@ func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload any
 	if err != nil {
 		return fmt.Errorf("failed to send SQS message: %w", err)
 	}
+	log.Printf("SQS Enqueue: successfully sent message %s to %s", *res.MessageId, c.queueURL)
 	return nil
 }
 
 // Dequeue polls for messages from the SQS queue.
 func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error) {
+	log.Printf("SQS Dequeue: polling %s (wait=%ds)", c.queueURL, waitTimeSeconds)
 	output, err := c.client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(c.queueURL),
 		MaxNumberOfMessages:   10,
@@ -101,7 +76,14 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 		AttributeNames:        []types.QueueAttributeName{"ApproximateReceiveCount"},
 	})
 	if err != nil {
+		log.Printf("SQS Dequeue: error receiving messages: %v", err)
 		return nil, fmt.Errorf("failed to receive SQS messages: %w", err)
+	}
+
+	if len(output.Messages) > 0 {
+		log.Printf("SQS Dequeue: received %d messages from %s", len(output.Messages), c.queueURL)
+	} else {
+		log.Printf("SQS Dequeue: no messages received from %s", c.queueURL)
 	}
 
 	messages := make([]*model.JobMessage, 0, len(output.Messages))
