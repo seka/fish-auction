@@ -1,9 +1,8 @@
 name: 'Setup Frontend'
-description: 'Checkout code and setup Node.js environment'
+description: 'Setup Node.js environment and install dependencies (caller must run actions/checkout first)'
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v6
     - name: Set up Node.js
       uses: actions/setup-node@v6
       with:
