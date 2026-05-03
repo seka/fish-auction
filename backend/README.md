@@ -13,7 +13,7 @@
   - `database/sql` (Standard Library for DB access)
   - `lib/pq` (PostgreSQL Driver)
   - Background Processing (Worker for async jobs like Push Notifications)
-  - 内蔵マイグレーションシステム (SQL埋め込み・自動適用)
+  - golang-migrate (`cmd/migration` で実行する独立マイグレーションコマンド)
 
 ## アーキテクチャ (Architecture)
 
@@ -72,7 +72,9 @@ graph LR
 backend/
 ├── cmd/                # エントリポイント
 │   ├── server/         # API サーバーの起動設定
-│   └── worker/         # バックグラウンドワーカーの起動設定
+│   ├── worker/         # バックグラウンドワーカーの起動設定
+│   ├── relay/          # Outbox リレー
+│   └── migration/      # DB マイグレーション CLI
 ├── internal/
 │   ├── domain/         # ドメイン層 (Entities, Interfaces)
 │   ├── usecase/        # ユースケース層 (Business Logic)
@@ -93,14 +95,26 @@ backend/
 - **PostgreSQL**, **Redis** が起動していること
   - ※ データベース等のインフラのみを Docker で起動する場合は `docker-compose up db redis` を実行してください。
 
-### 1. サーバーの起動 (with Air)
+### 1. データベースマイグレーション
+
+サーバー / ワーカー / リレー はマイグレーションを実行しないため、起動前に必ず適用してください。
+
+```bash
+cd backend
+make migrate          # = go run ./cmd/migration/main.go up
+```
+
+マイグレーションファイルは `migrations/` ディレクトリにあり、`go:embed` でバイナリに含まれます。
+docker-compose 環境では `migration` サービスが起動時に自動で実行され、`server` / `worker` / `relay` は `service_completed_successfully` で待機します。
+
+### 2. サーバーの起動 (with Air)
 
 ```bash
 cd backend
 air
 ```
 
-### 2. ワーカーの起動
+### 3. ワーカーの起動
 
 非同期ジョブを処理するために、サーバーとは別にワーカーを起動する必要があります。
 
@@ -108,8 +122,3 @@ air
 cd backend
 go run ./cmd/worker/main.go
 ```
-
-### 3. データベースマイグレーション
-
-マイグレーションファイルは `migrations/` ディレクトリにあります。
-サーバー起動時に `internal/registry/repository_registry.go` を通じて自動的に適用されます。
