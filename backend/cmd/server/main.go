@@ -19,10 +19,7 @@ import (
 	publicHandler "github.com/seka/fish-auction/backend/internal/server/handler/public"
 )
 
-const (
-	shouldMigrate = true
-	isWorker      = false
-)
+const isWorker = false
 
 type handlers struct {
 	health         *publicHandler.HealthHandler
@@ -59,8 +56,8 @@ func run() error {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// Initialize Repository Registry (handles DB connection, Redis connection, and migration)
-	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg, shouldMigrate)
+	// Initialize Repository Registry (handles DB and Redis connections)
+	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
 		return err
 	}
