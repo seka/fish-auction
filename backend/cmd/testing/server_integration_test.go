@@ -85,7 +85,11 @@ func TestServerIntegration(t *testing.T) {
 
 	rly := relay.NewOutboxRelay(outboxRepo, queue, 100*time.Millisecond, 10, "test-instance")
 	var wg sync.WaitGroup
-	rly.Start(ctx, &wg)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		rly.Run(ctx)
+	}()
 
 	pushRepo := repoReg.NewPushRepository()
 	pushSvc := serviceReg.NewPushNotificationService()

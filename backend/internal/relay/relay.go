@@ -3,7 +3,6 @@ package relay
 import (
 	"context"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -41,24 +40,20 @@ func NewOutboxRelay(
 	}
 }
 
-// Start begins the polling loop as a goroutine.
-func (r *OutboxRelay) Start(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		log.Printf("OutboxRelay: started (interval=%s, batch=%d, instance=%s)", r.interval, r.batchSize, r.instanceID)
-		ticker := time.NewTicker(r.interval)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				log.Println("OutboxRelay: stopping")
-				return
-			case <-ticker.C:
-				r.relay(ctx)
-			}
+// Run drives the polling loop until ctx is canceled.
+func (r *OutboxRelay) Run(ctx context.Context) {
+	log.Printf("OutboxRelay: started (interval=%s, batch=%d, instance=%s)", r.interval, r.batchSize, r.instanceID)
+	ticker := time.NewTicker(r.interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("OutboxRelay: stopping")
+			return
+		case <-ticker.C:
+			r.relay(ctx)
 		}
-	}()
+	}
 }
 
 func (r *OutboxRelay) relay(ctx context.Context) {
@@ -77,9 +72,9 @@ func (r *OutboxRelay) relay(ctx context.Context) {
 	// Phase 2: Send to SQS (outside any transaction)
 	var successIDs []int64
 	for _, msg := range msgs {
-		if err := r.jobQueue.EnqueueRaw(ctx, msg.JobType, msg.Payload); err != nil {
+		if err := r.jobQueue.Enqueue(ctx, msg.JobType, msg.Payload); err != nil {
 			// Phase 3a: Record failure with backoff
-			if markErr := r.outboxRepo.MarkFailed(ctx, msg.ID, err.Error()); markErr != nil {
+			if markErr := r.outboxRepo.MarkFailed(ctx, msg.ID, err.Error(), r.instanceID); markErr != nil {
 				log.Printf("OutboxRelay: failed to mark message %d as failed: %v", msg.ID, markErr)
 			}
 			log.Printf("OutboxRelay: failed to enqueue message %d: %v", msg.ID, err)
@@ -91,7 +86,7 @@ func (r *OutboxRelay) relay(ctx context.Context) {
 
 	// Phase 3b: Mark successful messages as processed
 	if len(successIDs) > 0 {
-		if err := r.outboxRepo.MarkProcessed(ctx, successIDs); err != nil {
+		if err := r.outboxRepo.MarkProcessed(ctx, successIDs, r.instanceID); err != nil {
 			log.Printf("OutboxRelay: failed to mark %d messages as processed: %v", len(successIDs), err)
 		}
 	}

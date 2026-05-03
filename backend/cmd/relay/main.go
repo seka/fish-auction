@@ -17,7 +17,7 @@ import (
 	"github.com/seka/fish-auction/backend/internal/relay"
 )
 
-const shouldMigrate = false
+const shouldMigrate = true
 
 func main() {
 	if err := run(); err != nil {
@@ -63,7 +63,7 @@ func run() error {
 		instanceID,
 	)
 
-	c := relay.NewOutboxCleanup(
+	c := relay.NewOutboxCleaner(
 		outboxRepo,
 		7*24*time.Hour,
 		1*time.Hour,
@@ -75,13 +75,18 @@ func run() error {
 	defer stop()
 
 	var wg sync.WaitGroup
-	r.Start(ctx, &wg)
-	c.Start(ctx, &wg)
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		r.Run(ctx)
+	}()
+	go func() {
+		defer wg.Done()
+		c.Run(ctx)
+	}()
 
 	log.Printf("Relay process started (instance=%s)", instanceID)
 
-	<-ctx.Done()
-	log.Println("Relay process shutting down...")
 	wg.Wait()
 	log.Println("Relay process stopped")
 	return nil
