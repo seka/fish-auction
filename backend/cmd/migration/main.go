@@ -37,6 +37,9 @@ func dispatch(subcommand string, args []string) error {
 	switch subcommand {
 	case "up":
 		return runUp(args)
+	case "help":
+		flag.Usage()
+		return nil
 	default:
 		flag.Usage()
 		return fmt.Errorf("unknown subcommand: %s", subcommand)
