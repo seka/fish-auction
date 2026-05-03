@@ -12,17 +12,40 @@ import (
 	"github.com/seka/fish-auction/backend/internal/migration"
 )
 
+const usage = `Usage: migration <command>
+
+Commands:
+  up    Apply all pending migrations
+`
+
 func main() {
-	if err := run(); err != nil {
+	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
+	flag.Parse()
+
+	if flag.NArg() == 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if err := dispatch(flag.Arg(0), flag.Args()[1:]); err != nil {
 		log.Printf("Error: %v", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	fs := flag.NewFlagSet("migration", flag.ExitOnError)
-	cmd := fs.String("cmd", "up", "migration command (up)")
-	if err := fs.Parse(os.Args[1:]); err != nil {
+func dispatch(subcommand string, args []string) error {
+	switch subcommand {
+	case "up":
+		return runUp(args)
+	default:
+		flag.Usage()
+		return fmt.Errorf("unknown subcommand: %s", subcommand)
+	}
+}
+
+func runUp(args []string) error {
+	fs := flag.NewFlagSet("up", flag.ExitOnError)
+	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("failed to parse flags: %w", err)
 	}
 
@@ -37,10 +60,5 @@ func run() error {
 	}
 	defer func() { _ = db.Close() }()
 
-	switch *cmd {
-	case "up":
-		return migration.Up(db)
-	default:
-		return fmt.Errorf("unsupported command: %s", *cmd)
-	}
+	return migration.Up(db)
 }

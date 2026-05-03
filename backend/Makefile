@@ -126,9 +126,9 @@ app.stress-test: ## Run stress tests
 # ============================================================================
 
 .PHONY: migrate
-migrate: ## Run database migrations
+migrate: ## Run database migrations (up)
 	@echo "Running database migrations..."
-	go run ./cmd/migration/main.go
+	go run ./cmd/migration/main.go up
 
 .PHONY: seed
 seed: ## Run database seed
