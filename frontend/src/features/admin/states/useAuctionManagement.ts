@@ -78,7 +78,10 @@ export const useAuctionManagement = () => {
   const onEdit = (auction: Auction) => {
     setEditingAuction(auction);
     setValue('venueId', auction.venueId);
-    setValue('startAt', auction.duration.startAt ? toDatetimeLocalString(auction.duration.startAt) : '');
+    setValue(
+      'startAt',
+      auction.duration.startAt ? toDatetimeLocalString(auction.duration.startAt) : '',
+    );
     setValue('endAt', auction.duration.endAt ? toDatetimeLocalString(auction.duration.endAt) : '');
   };
 

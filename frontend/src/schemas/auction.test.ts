@@ -57,7 +57,9 @@ describe('Auction Schemas', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('key:required(field:key:Admin.Auctions.start_time)');
+        expect(result.error.issues[0].message).toBe(
+          'key:required(field:key:Admin.Auctions.start_time)',
+        );
       }
     });
   });

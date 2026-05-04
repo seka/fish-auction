@@ -122,7 +122,7 @@ func (s *OutboxStore) MarkProcessed(ctx context.Context, ids []int64, claimedBy 
 	return nil
 }
 
-func (s *OutboxStore) MarkFailed(ctx context.Context, id int64, lastError string, claimedBy string) error {
+func (s *OutboxStore) MarkFailed(ctx context.Context, id int64, lastError, claimedBy string) error {
 	query := `
 		UPDATE outbox
 		SET status = CASE WHEN attempts >= max_attempts THEN 'failed' ELSE 'pending' END,

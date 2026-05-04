@@ -27,7 +27,7 @@ func TestAdminAuthMiddleware_Success(t *testing.T) {
 	})
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/fishermen", nil)
-	req.AddCookie(&http.Cookie{Name: "admin_session", Value: "admin-session-1"})
+	req.AddCookie(&http.Cookie{Name: "admin_session", Value: "admin-session-1", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 	w := httptest.NewRecorder()
 
 	mw.Handle(next).ServeHTTP(w, req)
@@ -46,7 +46,7 @@ func TestAdminAuthMiddleware_RoleMismatch(t *testing.T) {
 	mw := NewAdminAuthMiddleware(sessionRepo)
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/admin/fishermen", nil)
-	req.AddCookie(&http.Cookie{Name: "admin_session", Value: "buyer-session-1"})
+	req.AddCookie(&http.Cookie{Name: "admin_session", Value: "buyer-session-1", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 	w := httptest.NewRecorder()
 
 	mw.Handle(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {})).ServeHTTP(w, req)
@@ -73,7 +73,7 @@ func TestBuyerAuthMiddleware_Success(t *testing.T) {
 	})
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/buyer/me", nil)
-	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
+	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 	w := httptest.NewRecorder()
 
 	mw.Handle(next).ServeHTTP(w, req)

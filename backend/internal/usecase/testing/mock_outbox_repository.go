@@ -49,7 +49,7 @@ func (m *MockOutboxRepository) MarkProcessed(ctx context.Context, ids []int64, c
 	return nil
 }
 
-func (m *MockOutboxRepository) MarkFailed(ctx context.Context, id int64, lastError string, claimedBy string) error {
+func (m *MockOutboxRepository) MarkFailed(ctx context.Context, id int64, lastError, claimedBy string) error {
 	if m.MarkFailedFunc != nil {
 		return m.MarkFailedFunc(ctx, id, lastError, claimedBy)
 	}
