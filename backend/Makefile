@@ -22,7 +22,6 @@ $(shell mkdir -p build/.gopath/bin 2>/dev/null || true)
 .PHONY: bootstrap
 bootstrap: ## Install all development tools
 	@echo "Installing development tools..."
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/air-verse/air@latest
 	@echo "All tools installed successfully!"
 
@@ -56,13 +55,13 @@ app.fmt: ## Format code
 .PHONY: app.lint
 app.lint: ## Run linter
 	@echo "Running golangci-lint..."
-	golangci-lint run --allow-parallel-runners ./...
+	go tool golangci-lint run --allow-parallel-runners ./...
 
 .PHONY: app.lint.fix
 app.lint.fix: ## Run linter and auto-fix
 	@echo "Running go fix and golangci-lint run --fix..."
 	go fix ./...
-	golangci-lint run --fix --allow-parallel-runners ./...
+	go tool golangci-lint run --fix --allow-parallel-runners ./...
 
 .PHONY: app.test
 app.test: ## Run tests
