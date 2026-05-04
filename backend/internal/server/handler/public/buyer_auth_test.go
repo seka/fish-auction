@@ -106,7 +106,7 @@ func TestBuyerAuthHandler_Logout(t *testing.T) {
 	}
 	h := public.NewBuyerAuthHandler(&mock.MockRegistry{}, sessionRepo)
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/api/buyer/logout", nil)
-	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1"})
+	req.AddCookie(&http.Cookie{Name: "buyer_session", Value: "buyer-session-1", Secure: true, HttpOnly: true})
 	w := httptest.NewRecorder()
 	h.Logout(w, req)
 	if w.Code != http.StatusOK {

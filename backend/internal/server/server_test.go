@@ -210,7 +210,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, body)
 
 			if tc.cookieName != "" {
-				req.AddCookie(&http.Cookie{Name: tc.cookieName, Value: tc.cookieValue})
+				req.AddCookie(&http.Cookie{Name: tc.cookieName, Value: tc.cookieValue, Secure: true, HttpOnly: true})
 			}
 			w := httptest.NewRecorder()
 
