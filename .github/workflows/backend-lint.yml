@@ -18,5 +18,8 @@ jobs:
       - uses: ./.github/actions/setup-backend
 
       - name: Run golangci-lint
-        run: go tool golangci-lint run --timeout=5m
-        working-directory: backend
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12.1
+          working-directory: backend
+          args: --timeout=5m
