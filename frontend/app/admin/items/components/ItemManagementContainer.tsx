@@ -86,8 +86,8 @@ export const ItemManagementContainer = () => {
                   <option value="">{t('Admin.Items.filter_all')}</option>
                   {state.auctions.map((auction) => (
                     <option key={auction.id} value={auction.id}>
-                      {auction.duration.startAt ? formatDate(auction.duration.startAt) : '-'}{' '}
-                      (ID: {auction.id})
+                      {auction.duration.startAt ? formatDate(auction.duration.startAt) : '-'} (ID:{' '}
+                      {auction.id})
                     </option>
                   ))}
                 </Select>
