@@ -87,7 +87,7 @@ func (m *mockOutboxRepository) MarkProcessed(_ context.Context, _ []int64, _ str
 	return nil
 }
 
-func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _ string, _ string) error {
+func (m *mockOutboxRepository) MarkFailed(_ context.Context, _ int64, _, _ string) error {
 	return nil
 }
 
