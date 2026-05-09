@@ -19,7 +19,6 @@ import (
 const isWorker = true
 
 func main() {
-	logger.Init(slog.LevelInfo)
 	if err := run(); err != nil {
 		slog.Error("worker fatal", "err", err)
 		os.Exit(1)
@@ -32,6 +31,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
+	logger.Init(cfg.LogLevel)
 
 	// Initialize Repository Registry
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig)

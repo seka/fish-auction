@@ -17,7 +17,6 @@ import (
 var seedSQL string
 
 func main() {
-	logger.Init(slog.LevelInfo)
 	if err := run(); err != nil {
 		slog.Error("seed fatal", "err", err)
 		os.Exit(1)
@@ -36,6 +35,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
+	logger.Init(cfg.LogLevel)
 
 	// Safety check: Only run in development
 	if cfg.AppEnv != "development" && cfg.AppEnv != "test" {
