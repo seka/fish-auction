@@ -49,6 +49,8 @@ type Server struct {
 	gzip                  *middleware.GzipMiddleware
 	maxBody               *middleware.MaxBodyMiddleware
 	recovery              *middleware.RecoveryMiddleware
+	trustedProxy          *middleware.TrustedProxyMiddleware
+	requestID             *middleware.RequestIDMiddleware
 	readTimeout           time.Duration
 	writeTimeout          time.Duration
 	idleTimeout           time.Duration
@@ -76,6 +78,7 @@ func NewServer(
 	pushHandler *buyer.PushHandler,
 	sessionRepo repository.SessionRepository,
 	allowedOrigins []string,
+	trustedProxies []string,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 	idleTimeout time.Duration,
@@ -109,6 +112,8 @@ func NewServer(
 		gzip:                  middleware.NewGzipMiddleware(),
 		maxBody:               middleware.NewMaxBodyMiddleware(1024 * 1024), // 1MB
 		recovery:              middleware.NewRecoveryMiddleware(),
+		trustedProxy:          middleware.NewTrustedProxyMiddleware(trustedProxies),
+		requestID:             middleware.NewRequestIDMiddleware(),
 		readTimeout:           readTimeout,
 		writeTimeout:          writeTimeout,
 		idleTimeout:           idleTimeout,
@@ -170,7 +175,13 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 	handlerWithCache := s.cacheControl.Handle(handlerWithCSRF)
 	handlerWithGzip := s.gzip.Handle(handlerWithCache)
 	handlerWithLimit := s.maxBody.Handle(handlerWithGzip)
-	handlerWithRecovery := s.recovery.Handle(handlerWithLimit)
+	// requestID は trustedProxy 直後に配置し、ALB が付与する X-Request-ID を尊重しつつ
+	// 後段ハンドラ／ミドルウェアが context から request_id を参照できるようにする。
+	handlerWithRequestID := s.requestID.Handle(handlerWithLimit)
+	// trustedProxy はリカバリ直下に配置し、後続のハンドラ全てが
+	// 書き換え後の RemoteAddr / Scheme を見られるようにする。
+	handlerWithProxy := s.trustedProxy.Handle(handlerWithRequestID)
+	handlerWithRecovery := s.recovery.Handle(handlerWithProxy)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,

@@ -100,6 +100,7 @@ func run(cfg *config.AppServerConfig) error {
 		h.push,
 		sessionRepo,
 		strings.Split(cfg.AllowedOrigins, ","),
+		strings.Split(cfg.TrustedProxies, ","),
 		cfg.ReadTimeout,
 		cfg.WriteTimeout,
 		cfg.IdleTimeout,

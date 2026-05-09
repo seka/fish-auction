@@ -84,6 +84,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hPush,
 		sessionRepo,
 		[]string{"https://localhost", "http://localhost:3000"},
+		nil,
 		10*time.Second,
 		10*time.Second,
 		10*time.Second,
