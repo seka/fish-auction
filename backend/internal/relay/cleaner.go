@@ -2,7 +2,7 @@ package relay
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -55,41 +55,43 @@ func (c *OutboxCleaner) Run(ctx context.Context) {
 }
 
 func (c *OutboxCleaner) cleanLoop(ctx context.Context) {
-	log.Printf("OutboxCleaner: started (retention=%s, interval=%s)", c.retention, c.cleanInterval)
+	log := slog.With("component", "outbox_cleaner")
+	log.Info("clean loop started", "retention", c.retention.String(), "interval", c.cleanInterval.String())
 	ticker := time.NewTicker(c.cleanInterval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("OutboxCleaner: stopping")
+			log.Info("clean loop stopping")
 			return
 		case <-ticker.C:
 			before := time.Now().Add(-c.retention)
 			deleted, err := c.outboxRepo.DeleteProcessedBefore(ctx, before)
 			if err != nil {
-				log.Printf("OutboxCleaner: error: %v", err)
+				log.Error("clean loop error", "err", err)
 			} else if deleted > 0 {
-				log.Printf("OutboxCleaner: deleted %d processed messages", deleted)
+				log.Info("deleted processed messages", "count", deleted)
 			}
 		}
 	}
 }
 
 func (c *OutboxCleaner) staleLoop(ctx context.Context) {
-	log.Printf("OutboxCleaner: stale recovery started (timeout=%s, interval=%s)", c.staleTimeout, c.staleInterval)
+	log := slog.With("component", "outbox_cleaner")
+	log.Info("stale recovery started", "timeout", c.staleTimeout.String(), "interval", c.staleInterval.String())
 	ticker := time.NewTicker(c.staleInterval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("OutboxCleaner: stale recovery stopping")
+			log.Info("stale recovery stopping")
 			return
 		case <-ticker.C:
 			recovered, err := c.outboxRepo.RecoverStale(ctx, c.staleTimeout)
 			if err != nil {
-				log.Printf("OutboxCleaner: stale recovery error: %v", err)
+				log.Error("stale recovery error", "err", err)
 			} else if recovered > 0 {
-				log.Printf("OutboxCleaner: recovered %d stale messages", recovered)
+				log.Info("recovered stale messages", "count", recovered)
 			}
 		}
 	}

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -50,7 +50,7 @@ func (h *pushNotificationHandler) Handle(ctx context.Context, msg *model.JobMess
 	// 2. Send notifications
 	for _, sub := range subs {
 		if err := h.pushSvc.Send(ctx, &sub, job.Payload); err != nil {
-			log.Printf("failed to send push to buyer %d (endpoint: %s): %v", job.BuyerID, sub.Endpoint, err)
+			slog.Error("failed to send push notification", "buyer_id", job.BuyerID, "endpoint", sub.Endpoint, "err", err)
 
 			// Cleanup expired subscriptions
 			var goneErr *domainErrors.GoneError

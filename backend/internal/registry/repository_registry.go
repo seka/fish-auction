@@ -3,7 +3,7 @@ package registry
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -105,7 +105,7 @@ func connectRedis(redisAddr string, db int) (*redis.Client, error) {
 		if redisErr == nil {
 			return redisClient, nil
 		}
-		log.Printf("Failed to connect to Redis: %v. Retrying in 2s...", redisErr)
+		slog.Warn("failed to connect to Redis; retrying", "err", redisErr, "interval", "2s")
 		time.Sleep(2 * time.Second)
 	}
 

@@ -3,7 +3,7 @@ package sqs
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -61,13 +61,13 @@ func (c *Client) Enqueue(ctx context.Context, jobType model.JobType, payload []b
 	if err != nil {
 		return fmt.Errorf("failed to send SQS message: %w", err)
 	}
-	log.Printf("SQS Enqueue: successfully sent message %s to %s", *res.MessageId, c.queueURL)
+	slog.Info("sqs enqueue success", "message_id", *res.MessageId, "queue_url", c.queueURL)
 	return nil
 }
 
 // Dequeue polls for messages from the SQS queue.
 func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.JobMessage, error) {
-	log.Printf("SQS Dequeue: polling %s (wait=%ds)", c.queueURL, waitTimeSeconds)
+	slog.Debug("sqs polling", "queue_url", c.queueURL, "wait_seconds", waitTimeSeconds)
 	output, err := c.client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:              aws.String(c.queueURL),
 		MaxNumberOfMessages:   10,
@@ -76,14 +76,14 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 		AttributeNames:        []types.QueueAttributeName{"ApproximateReceiveCount"},
 	})
 	if err != nil {
-		log.Printf("SQS Dequeue: error receiving messages: %v", err)
+		slog.Error("sqs receive error", "queue_url", c.queueURL, "err", err)
 		return nil, fmt.Errorf("failed to receive SQS messages: %w", err)
 	}
 
 	if len(output.Messages) > 0 {
-		log.Printf("SQS Dequeue: received %d messages from %s", len(output.Messages), c.queueURL)
+		slog.Info("sqs messages received", "queue_url", c.queueURL, "count", len(output.Messages))
 	} else {
-		log.Printf("SQS Dequeue: no messages received from %s", c.queueURL)
+		slog.Debug("sqs no messages", "queue_url", c.queueURL)
 	}
 
 	messages := make([]*model.JobMessage, 0, len(output.Messages))
@@ -97,13 +97,13 @@ func (c *Client) Dequeue(ctx context.Context, waitTimeSeconds int32) ([]*model.J
 		if attr, ok := m.MessageAttributes["JobType"]; ok && attr.StringValue != nil {
 			jt, err := model.NewJobType(*attr.StringValue)
 			if err != nil {
-				log.Printf("Received SQS message %v with invalid JobType '%s': %v", *m.MessageId, *attr.StringValue, err)
+				slog.Warn("received SQS message with invalid JobType", "message_id", *m.MessageId, "raw_job_type", *attr.StringValue, "err", err)
 				jobType = model.JobType(fmt.Sprintf("INVALID:%s", *attr.StringValue))
 			} else {
 				jobType = jt
 			}
 		} else {
-			log.Printf("Received SQS message %v without JobType attribute", *m.MessageId)
+			slog.Warn("received SQS message without JobType attribute", "message_id", *m.MessageId)
 			jobType = "UNKNOWN"
 		}
 

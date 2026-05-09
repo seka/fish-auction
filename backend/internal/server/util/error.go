@@ -2,7 +2,7 @@ package util
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 
 	domainErrors "github.com/seka/fish-auction/backend/internal/domain/errors"
@@ -59,7 +59,7 @@ func HandleError(w http.ResponseWriter, err error) {
 		status = http.StatusInternalServerError
 		errorType = "internal_error"
 		message = "An internal error occurred"
-		log.Printf("Internal error: %v", err)
+		slog.Error("internal error", "err", err)
 	}
 
 	resp := ErrorResponse{Error: errorType, Message: message, Code: status}

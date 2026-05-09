@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/url"
 	"os"
 	"strconv"
@@ -23,7 +23,7 @@ func GetEnvInt(key string, defaultValue int) int {
 	}
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		log.Printf("Invalid value for %s: %s. Using default: %d", key, valueStr, defaultValue)
+		slog.Warn("invalid env value, using default", "key", key, "value", valueStr, "default", defaultValue)
 		return defaultValue
 	}
 	return value

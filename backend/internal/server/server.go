@@ -3,8 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -182,14 +183,16 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 	}
 
 	go func() {
-		log.Printf("Server starting on %s\n", addr)
+		slog.Info("server starting", "addr", addr)
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			// listen failure はプロセス継続不可能なため即時終了する。
+			slog.Error("server listen failed", "err", err)
+			os.Exit(1)
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("Shutting down server...")
+	slog.Info("shutting down server")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), defaultShutdownTimeout)
 	defer cancel()
@@ -197,7 +200,7 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
 
-	log.Println("Server exiting")
+	slog.Info("server exiting")
 	return nil
 }
 

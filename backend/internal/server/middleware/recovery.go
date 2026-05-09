@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"runtime/debug"
 
@@ -23,7 +23,10 @@ func (m *RecoveryMiddleware) Handle(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				// パニックエラーとスタックトレースをログ出力
-				log.Printf("[PANIC RECOVERED] %v\n%s", err, debug.Stack())
+				slog.Error("panic recovered",
+					"panic", err,
+					"stack", string(debug.Stack()),
+				)
 
 				// クライアントには 500 Internal Server Error のJSONを返す
 				util.WriteError(w, http.StatusInternalServerError, "Internal Server Error")
