@@ -25,6 +25,7 @@ type AppServerConfig struct {
 	SessionTTL       time.Duration
 	AppEnv           string
 	AllowedOrigins   string
+	TrustedProxies   string
 	SMTPHost         string
 	SMTPPort         string
 	SMTPFrom         string
@@ -61,6 +62,7 @@ func NewAppServerConfig() *AppServerConfig {
 		SessionTTL:       time.Duration(sessionTTL) * time.Second,
 		AppEnv:           GetEnv("APP_ENV", "develop"),
 		AllowedOrigins:   GetEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
+		TrustedProxies:   GetEnv("TRUSTED_PROXIES", ""),
 		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
 		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
