@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
 	domainrepo "github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
@@ -43,8 +44,9 @@ type handlers struct {
 }
 
 func main() {
+	logger.Init(slog.LevelInfo)
 	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+		slog.Error("server fatal", "err", err)
 		os.Exit(1)
 	}
 }

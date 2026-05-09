@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -13,13 +13,15 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/queue/sqs"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/relay"
 )
 
 func main() {
+	logger.Init(slog.LevelInfo)
 	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+		slog.Error("relay fatal", "err", err)
 		os.Exit(1)
 	}
 }
@@ -82,9 +84,9 @@ func run() error {
 		c.Run(ctx)
 	}()
 
-	log.Printf("Relay process started (instance=%s)", instanceID)
+	slog.Info("relay process started", "instance_id", instanceID)
 
 	wg.Wait()
-	log.Println("Relay process stopped")
+	slog.Info("relay process stopped", "instance_id", instanceID)
 	return nil
 }

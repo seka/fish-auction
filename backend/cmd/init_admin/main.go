@@ -6,12 +6,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/seka/fish-auction/backend/config"
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 
 	_ "github.com/lib/pq"
@@ -28,10 +29,11 @@ func init() {
 }
 
 func main() {
+	logger.Init(slog.LevelInfo)
 	flag.Parse()
 
 	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+		slog.Error("init_admin fatal", "err", err)
 		os.Exit(1)
 	}
 }
@@ -43,8 +45,8 @@ func run() error {
 
 	cfg, err := config.LoadAppServerConfig()
 	if err != nil {
-		log.Printf("Failed to load config: %v", err)
-		log.Println("Usage: POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
+		slog.Error("failed to load config", "err", err)
+		slog.Info("usage hint", "msg", "POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
 		return err
 	}
 

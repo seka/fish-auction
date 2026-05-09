@@ -5,19 +5,21 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/logger"
 )
 
 //go:embed seed.sql
 var seedSQL string
 
 func main() {
+	logger.Init(slog.LevelInfo)
 	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+		slog.Error("seed fatal", "err", err)
 		os.Exit(1)
 	}
 }
@@ -72,7 +74,7 @@ func run() error {
 		_, err := db.ExecContext(ctx, fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", table))
 		if err != nil {
 			// Ignore error if table doesn't exist, but log it
-			log.Printf("Warning: failed to truncate table %s: %v", table, err)
+			slog.Warn("failed to truncate table", "table", table, "err", err)
 		}
 	}
 	fmt.Println("Database cleared.")

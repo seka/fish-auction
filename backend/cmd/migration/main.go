@@ -4,11 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/migration"
 )
 
@@ -19,6 +20,7 @@ Commands:
 `
 
 func main() {
+	logger.Init(slog.LevelInfo)
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	flag.Parse()
 
@@ -28,7 +30,7 @@ func main() {
 	}
 
 	if err := dispatch(flag.Arg(0), flag.Args()[1:]); err != nil {
-		log.Printf("Error: %v", err)
+		slog.Error("migration fatal", "err", err)
 		os.Exit(1)
 	}
 }
