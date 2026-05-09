@@ -10,6 +10,7 @@ type MigrationConfig struct {
 	PostgresPassword string
 	PostgresDB       string
 	PostgresSslMode  string
+	LogLevel         string
 }
 
 // LoadMigrationConfig loads configuration for the migration command.
@@ -21,6 +22,7 @@ func LoadMigrationConfig() (*MigrationConfig, error) {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
+		LogLevel:         GetEnv("LOG_LEVEL", "info"),
 	}, nil
 }
 

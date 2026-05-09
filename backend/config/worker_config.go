@@ -26,6 +26,7 @@ type WorkerConfig struct {
 	SMTPHost         string
 	SMTPPort         string
 	SMTPFrom         string
+	LogLevel         string
 }
 
 // LoadWorkerConfig loads configuration for the background worker.
@@ -50,6 +51,7 @@ func LoadWorkerConfig() (*WorkerConfig, error) {
 		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
 		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
+		LogLevel:         GetEnv("LOG_LEVEL", "info"),
 	}
 
 	return cfg, nil
