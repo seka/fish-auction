@@ -31,7 +31,6 @@ type AppServerConfig struct {
 	WriteTimeout     time.Duration
 	IdleTimeout      time.Duration
 	FrontendURL      *url.URL
-	LogLevel         string
 }
 
 // LoadAppServerConfig loads configuration for the API server.
@@ -67,7 +66,6 @@ func LoadAppServerConfig() (*AppServerConfig, error) {
 		WriteTimeout:     time.Duration(GetEnvInt("SERVER_WRITE_TIMEOUT_SEC", 60)) * time.Second,
 		IdleTimeout:      time.Duration(GetEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 		FrontendURL:      frontendURL,
-		LogLevel:         GetEnv("LOG_LEVEL", "info"),
 	}
 
 	return cfg, nil

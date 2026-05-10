@@ -15,7 +15,6 @@ type RelayConfig struct {
 	SQSQueueURL      string
 	SQSRegion        string
 	SQSEndpoint      string
-	LogLevel         string
 }
 
 // LoadRelayConfig loads configuration for the relay process.
@@ -30,7 +29,6 @@ func LoadRelayConfig() (*RelayConfig, error) {
 		SQSQueueURL:      GetEnv("AWS_SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
 		SQSRegion:        GetEnv("AWS_SQS_REGION", "ap-northeast-1"),
 		SQSEndpoint:      GetEnv("AWS_SQS_ENDPOINT", "http://localhost:4566"),
-		LogLevel:         GetEnv("LOG_LEVEL", "info"),
 	}
 
 	return cfg, nil

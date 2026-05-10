@@ -23,12 +23,13 @@ func main() {
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	flag.Parse()
 
+	logger.Init(config.GetLogLevel())
+
 	cfg, err := config.LoadMigrationConfig()
 	if err != nil {
 		slog.Error("failed to load migration config", "err", err)
 		os.Exit(1)
 	}
-	logger.Init(cfg.LogLevel)
 
 	if flag.NArg() == 0 {
 		flag.Usage()

@@ -19,6 +19,8 @@ import (
 )
 
 func main() {
+	logger.Init(config.GetLogLevel())
+
 	if err := run(); err != nil {
 		slog.Error("relay fatal", "err", err)
 		os.Exit(1)
@@ -30,7 +32,6 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to load relay config: %w", err)
 	}
-	logger.Init(cfg.LogLevel)
 
 	repoReg, err := registry.NewRepositoryRegistry(
 		cfg,

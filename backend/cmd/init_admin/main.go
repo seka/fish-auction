@@ -31,6 +31,8 @@ func init() {
 func main() {
 	flag.Parse()
 
+	logger.Init(config.GetLogLevel())
+
 	if err := run(); err != nil {
 		slog.Error("init_admin fatal", "err", err)
 		os.Exit(1)
@@ -48,7 +50,6 @@ func run() error {
 		slog.Info("usage hint", "msg", "POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
 		return err
 	}
-	logger.Init(cfg.LogLevel)
 
 	ctx := context.Background()
 	dbURL := cfg.DBConnectionURL()
