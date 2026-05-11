@@ -20,10 +20,10 @@ Commands:
 `
 
 func main() {
+	logger.Init(config.GetLogLevel())
+
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	flag.Parse()
-
-	logger.Init(config.GetLogLevel())
 
 	cfg := config.NewMigrationConfig()
 
