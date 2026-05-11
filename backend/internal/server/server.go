@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -182,16 +181,25 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 		IdleTimeout:       s.idleTimeout,
 	}
 
+	// listen failure と signal の両方を main goroutine で受け取り、
+	// どちらの経路でも defer 経由のクリーンアップが走るようにする。
+	listenErrCh := make(chan error, 1)
 	go func() {
 		slog.Info("server starting", "addr", addr)
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			// listen failure はプロセス継続不可能なため即時終了する。
-			slog.Error("server listen failed", "err", err)
-			os.Exit(1)
+			listenErrCh <- err
 		}
+		close(listenErrCh)
 	}()
 
-	<-ctx.Done()
+	select {
+	case err, ok := <-listenErrCh:
+		if ok && err != nil {
+			return fmt.Errorf("server listen failed: %w", err)
+		}
+	case <-ctx.Done():
+	}
+
 	slog.Info("shutting down server")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), defaultShutdownTimeout)
