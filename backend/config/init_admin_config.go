@@ -28,3 +28,29 @@ func (c *InitAdminConfig) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
 }
+
+// Validation は DB 接続に必須な値の不足を起動前に検出する。
+// NewInitAdminConfig は空文字をデフォルトに用いるため、未設定時に DB 接続段階で
+// 失敗するまで原因が分かりづらいことを避ける。
+func (c *InitAdminConfig) Validation() error {
+	var missing []string
+	if c.PostgresHost == "" {
+		missing = append(missing, "POSTGRES_HOST")
+	}
+	if c.PostgresPort == "" {
+		missing = append(missing, "POSTGRES_PORT")
+	}
+	if c.PostgresUser == "" {
+		missing = append(missing, "POSTGRES_USER")
+	}
+	if c.PostgresPassword == "" {
+		missing = append(missing, "POSTGRES_PASSWORD")
+	}
+	if c.PostgresDB == "" {
+		missing = append(missing, "POSTGRES_DB")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required env vars: %v", missing)
+	}
+	return nil
+}

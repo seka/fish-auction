@@ -37,7 +37,7 @@ type AppServerConfig struct {
 // NewAppServerConfig は API サーバ用の設定を環境変数からロードする。
 //
 // 本関数は値の妥当性を検証しない。FRONTEND_URL のパースに失敗した場合は
-// FrontendURL を nil のまま返すため、呼び出し側は必ず ValidateAppServerConfig
+// FrontendURL を nil のまま返すため、呼び出し側は必ず (*AppServerConfig).Validation
 // を呼んで検証すること。サーバ起動経路（cmd/server, cmd/testing）はこれを遵守する。
 func NewAppServerConfig() *AppServerConfig {
 	cacheTTL := GetEnvInt("CACHE_TTL_SECONDS", 300)
@@ -71,9 +71,9 @@ func NewAppServerConfig() *AppServerConfig {
 	}
 }
 
-// ValidateAppServerConfig は cfg の値の妥当性を検証する。
-func ValidateAppServerConfig(cfg *AppServerConfig) error {
-	if cfg.FrontendURL == nil || cfg.FrontendURL.Scheme == "" || cfg.FrontendURL.Host == "" {
+// Validation は値の妥当性を検証する。
+func (c *AppServerConfig) Validation() error {
+	if c.FrontendURL == nil || c.FrontendURL.Scheme == "" || c.FrontendURL.Host == "" {
 		return errors.New("invalid FRONTEND_URL: missing scheme or host")
 	}
 	return nil

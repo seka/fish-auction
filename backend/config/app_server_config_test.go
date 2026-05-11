@@ -60,7 +60,7 @@ func TestNewAppServerConfig(t *testing.T) {
 	}
 }
 
-func TestValidateAppServerConfig(t *testing.T) {
+func TestAppServerConfig_Validation(t *testing.T) {
 	defaultEnv := map[string]string{
 		"SERVER_PORT":       "8080",
 		"POSTGRES_HOST":     "localhost",
@@ -125,7 +125,7 @@ func TestValidateAppServerConfig(t *testing.T) {
 			}
 
 			cfg := NewAppServerConfig()
-			err := ValidateAppServerConfig(cfg)
+			err := cfg.Validation()
 			if tt.wantErr {
 				assert.Error(t, err)
 				if tt.errContains != "" {
