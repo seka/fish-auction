@@ -26,6 +26,7 @@ type Worker struct {
 	pushHandler  HandlerFunc
 	waitTime     int32
 	wg           sync.WaitGroup
+	logger       *slog.Logger
 }
 
 // NewWorker creates a new Worker instance.
@@ -40,13 +41,13 @@ func NewWorker(
 		emailHandler: emailHandler,
 		pushHandler:  pushHandler,
 		waitTime:     waitTime,
+		logger:       slog.With("component", "worker"),
 	}
 }
 
 // Start runs the worker polling loops and blocks until the context is canceled.
 func (w *Worker) Start(ctx context.Context) error {
-	log := slog.With("component", "worker")
-	log.Info("worker starting")
+	w.logger.Info("worker starting")
 
 	// Start a single polling loop and dispatch by JobType.
 	w.wg.Add(1)
@@ -54,7 +55,7 @@ func (w *Worker) Start(ctx context.Context) error {
 
 	// Block until context is canceled
 	<-ctx.Done()
-	log.Info("worker received shutdown signal; shutting down gracefully")
+	w.logger.Info("worker received shutdown signal; shutting down gracefully")
 
 	// Graceful shutdown wait
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
@@ -68,19 +69,18 @@ func (w *Worker) Start(ctx context.Context) error {
 
 	select {
 	case <-done:
-		log.Info("worker finished all jobs")
+		w.logger.Info("worker finished all jobs")
 	case <-shutdownCtx.Done():
-		log.Warn("worker shutdown timed out; some jobs may have been interrupted")
+		w.logger.Warn("worker shutdown timed out; some jobs may have been interrupted")
 	}
 
-	log.Info("worker exiting")
+	w.logger.Info("worker exiting")
 	return nil
 }
 
 func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 	defer w.wg.Done()
-	log := slog.With("component", "worker")
-	log.Info("starting polling loop")
+	w.logger.Info("starting polling loop")
 
 	for {
 		select {
@@ -93,7 +93,7 @@ func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 				if ctx.Err() != nil {
 					return
 				}
-				log.Error("error receiving messages", "err", err)
+				w.logger.Error("error receiving messages", "err", err)
 				time.Sleep(retryDelay) // Wait before retrying
 				continue
 			}
@@ -101,7 +101,7 @@ func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 			for _, msg := range messages {
 				handler, err := w.selectHandler(msg.JobType)
 				if err != nil {
-					log.Warn("unsupported job type", "message_id", msg.ID, "err", err)
+					w.logger.Warn("unsupported job type", "message_id", msg.ID, "err", err)
 					continue
 				}
 
@@ -109,12 +109,12 @@ func (w *Worker) runLoop(ctx context.Context, poller service.JobQueue) {
 					// NOTE: 処理失敗時はメッセージを削除せず、SQS の Visibility Timeout 後の再配信に任せます。
 					// 無限ループを防ぐため、インフラ（SQS）側で DLQ（Dead Letter Queue）および
 					// RedrivePolicy（maxReceiveCount）が設定されている必要があります。
-					log.Error("error processing message", "message_id", msg.ID, "attempt", msg.ReceiveCount, "err", err)
+					w.logger.Error("error processing message", "message_id", msg.ID, "attempt", msg.ReceiveCount, "err", err)
 					continue
 				}
 
 				if err := poller.DeleteMessage(ctx, msg); err != nil {
-					log.Error("error deleting message", "message_id", msg.ID, "err", err)
+					w.logger.Error("error deleting message", "message_id", msg.ID, "err", err)
 				}
 			}
 		}

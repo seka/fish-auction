@@ -17,6 +17,7 @@ type OutboxCleaner struct {
 	cleanInterval time.Duration
 	staleTimeout  time.Duration
 	staleInterval time.Duration
+	logger        *slog.Logger
 }
 
 // NewOutboxCleaner creates a new OutboxCleaner.
@@ -33,6 +34,7 @@ func NewOutboxCleaner(
 		cleanInterval: cleanInterval,
 		staleTimeout:  staleTimeout,
 		staleInterval: staleInterval,
+		logger:        slog.With("component", "outbox_cleaner"),
 	}
 }
 
@@ -55,43 +57,41 @@ func (c *OutboxCleaner) Run(ctx context.Context) {
 }
 
 func (c *OutboxCleaner) cleanLoop(ctx context.Context) {
-	log := slog.With("component", "outbox_cleaner")
-	log.Info("clean loop started", "retention", c.retention.String(), "interval", c.cleanInterval.String())
+	c.logger.Info("clean loop started", "retention", c.retention.String(), "interval", c.cleanInterval.String())
 	ticker := time.NewTicker(c.cleanInterval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info("clean loop stopping")
+			c.logger.Info("clean loop stopping")
 			return
 		case <-ticker.C:
 			before := time.Now().Add(-c.retention)
 			deleted, err := c.outboxRepo.DeleteProcessedBefore(ctx, before)
 			if err != nil {
-				log.Error("clean loop error", "err", err)
+				c.logger.Error("clean loop error", "err", err)
 			} else if deleted > 0 {
-				log.Info("deleted processed messages", "count", deleted)
+				c.logger.Info("deleted processed messages", "count", deleted)
 			}
 		}
 	}
 }
 
 func (c *OutboxCleaner) staleLoop(ctx context.Context) {
-	log := slog.With("component", "outbox_cleaner")
-	log.Info("stale recovery started", "timeout", c.staleTimeout.String(), "interval", c.staleInterval.String())
+	c.logger.Info("stale recovery started", "timeout", c.staleTimeout.String(), "interval", c.staleInterval.String())
 	ticker := time.NewTicker(c.staleInterval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info("stale recovery stopping")
+			c.logger.Info("stale recovery stopping")
 			return
 		case <-ticker.C:
 			recovered, err := c.outboxRepo.RecoverStale(ctx, c.staleTimeout)
 			if err != nil {
-				log.Error("stale recovery error", "err", err)
+				c.logger.Error("stale recovery error", "err", err)
 			} else if recovered > 0 {
-				log.Info("recovered stale messages", "count", recovered)
+				c.logger.Info("recovered stale messages", "count", recovered)
 			}
 		}
 	}
