@@ -18,9 +18,9 @@ func TestNewAppServerConfig(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		env            map[string]string
-		wantFrontend   string
+		name         string
+		env          map[string]string
+		wantFrontend string
 	}{
 		{
 			name:         "Default FRONTEND_URL",
