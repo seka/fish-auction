@@ -33,10 +33,7 @@ func run() error {
 	}
 
 	// Load Config
-	cfg := config.NewAppServerConfig()
-	if err := config.ValidateAppServerConfig(cfg); err != nil {
-		return fmt.Errorf("invalid config: %w", err)
-	}
+	cfg := config.NewSeedConfig()
 
 	// Safety check: Only run in development
 	if cfg.AppEnv != "development" && cfg.AppEnv != "test" {
