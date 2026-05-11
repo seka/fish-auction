@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -33,17 +34,15 @@ type AppServerConfig struct {
 	FrontendURL      *url.URL
 }
 
-// LoadAppServerConfig loads configuration for the API server.
-func LoadAppServerConfig() (*AppServerConfig, error) {
+// NewAppServerConfig loads configuration for the API server.
+// パース失敗時は FrontendURL を nil のまま返す。値の妥当性は ValidateAppServerConfig で検証する。
+func NewAppServerConfig() *AppServerConfig {
 	cacheTTL := GetEnvInt("CACHE_TTL_SECONDS", 300)
 	sessionTTL := GetEnvInt("SESSION_TTL_SECONDS", 86400)
 
-	frontendURL, err := loadFrontendURL()
-	if err != nil {
-		return nil, err
-	}
+	frontendURL, _ := url.Parse(GetEnv("FRONTEND_URL", "https://localhost"))
 
-	cfg := &AppServerConfig{
+	return &AppServerConfig{
 		PostgresHost:     GetEnv("POSTGRES_HOST", ""),
 		PostgresPort:     GetEnv("POSTGRES_PORT", ""),
 		PostgresUser:     GetEnv("POSTGRES_USER", ""),
@@ -67,8 +66,14 @@ func LoadAppServerConfig() (*AppServerConfig, error) {
 		IdleTimeout:      time.Duration(GetEnvInt("SERVER_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 		FrontendURL:      frontendURL,
 	}
+}
 
-	return cfg, nil
+// ValidateAppServerConfig は cfg の値の妥当性を検証する。
+func ValidateAppServerConfig(cfg *AppServerConfig) error {
+	if cfg.FrontendURL == nil || cfg.FrontendURL.Scheme == "" || cfg.FrontendURL.Host == "" {
+		return errors.New("invalid FRONTEND_URL: missing scheme or host")
+	}
+	return nil
 }
 
 func (c *AppServerConfig) ServerAddr() string {

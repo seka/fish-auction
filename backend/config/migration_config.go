@@ -12,8 +12,8 @@ type MigrationConfig struct {
 	PostgresSslMode  string
 }
 
-// LoadMigrationConfig loads configuration for the migration command.
-func LoadMigrationConfig() (*MigrationConfig, error) {
+// NewMigrationConfig loads configuration for the migration command.
+func NewMigrationConfig() *MigrationConfig {
 	return &MigrationConfig{
 		PostgresHost:     GetEnv("POSTGRES_HOST", ""),
 		PostgresPort:     GetEnv("POSTGRES_PORT", ""),
@@ -21,7 +21,7 @@ func LoadMigrationConfig() (*MigrationConfig, error) {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
-	}, nil
+	}
 }
 
 func (c *MigrationConfig) DBConnectionURL() string {

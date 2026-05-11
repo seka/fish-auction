@@ -44,11 +44,10 @@ func run() error {
 		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
 	}
 
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		slog.Error("failed to load config", "err", err)
+	cfg := config.NewAppServerConfig()
+	if err := config.ValidateAppServerConfig(cfg); err != nil {
 		slog.Info("usage hint", "msg", "POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
-		return err
+		return fmt.Errorf("invalid config: %w", err)
 	}
 
 	ctx := context.Background()

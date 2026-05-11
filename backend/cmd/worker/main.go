@@ -29,10 +29,7 @@ func main() {
 
 func run() error {
 	// Load Config
-	cfg, err := config.LoadWorkerConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
+	cfg := config.NewWorkerConfig()
 
 	// Initialize Repository Registry
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig)

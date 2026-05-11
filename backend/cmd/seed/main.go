@@ -33,9 +33,9 @@ func run() error {
 	}
 
 	// Load Config
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
+	cfg := config.NewAppServerConfig()
+	if err := config.ValidateAppServerConfig(cfg); err != nil {
+		return fmt.Errorf("invalid config: %w", err)
 	}
 
 	// Safety check: Only run in development

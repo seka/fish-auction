@@ -1,9 +1,7 @@
 package config
 
 import (
-	"fmt"
 	"log/slog"
-	"net/url"
 	"os"
 	"strconv"
 )
@@ -33,16 +31,4 @@ func GetEnvInt(key string, defaultValue int) int {
 		return defaultValue
 	}
 	return value
-}
-
-func loadFrontendURL() (*url.URL, error) {
-	frontendURLStr := GetEnv("FRONTEND_URL", "https://localhost")
-	frontendURL, err := url.Parse(frontendURLStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid FRONTEND_URL: %w", err)
-	}
-	if frontendURL.Scheme == "" || frontendURL.Host == "" {
-		return nil, fmt.Errorf("invalid FRONTEND_URL: missing scheme or host")
-	}
-	return frontendURL, nil
 }

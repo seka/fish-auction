@@ -28,10 +28,7 @@ func main() {
 }
 
 func run() error {
-	cfg, err := config.LoadRelayConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load relay config: %w", err)
-	}
+	cfg := config.NewRelayConfig()
 
 	repoReg, err := registry.NewRepositoryRegistry(
 		cfg,

@@ -25,11 +25,7 @@ func main() {
 
 	logger.Init(config.GetLogLevel())
 
-	cfg, err := config.LoadMigrationConfig()
-	if err != nil {
-		slog.Error("failed to load migration config", "err", err)
-		os.Exit(1)
-	}
+	cfg := config.NewMigrationConfig()
 
 	if flag.NArg() == 0 {
 		flag.Usage()
