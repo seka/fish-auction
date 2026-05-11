@@ -63,7 +63,7 @@ func TestInitAdminConfig_Validate(t *testing.T) {
 	}{
 		{
 			name:    "All required env present",
-			mutate:  func(c *InitAdminConfig) {},
+			mutate:  func(_ *InitAdminConfig) {},
 			wantErr: false,
 		},
 		{
