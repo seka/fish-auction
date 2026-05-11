@@ -5,34 +5,31 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/logger"
 )
 
 //go:embed seed.sql
 var seedSQL string
 
 func main() {
-	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+	cfg := config.NewSeedConfig()
+	logger.Init(config.GetLogLevel())
+
+	if err := run(cfg); err != nil {
+		slog.Error("seed fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(cfg *config.SeedConfig) error {
 	// Check APP_ENV explicitly
-	appEnv := os.Getenv("APP_ENV")
-	if appEnv == "" {
+	if os.Getenv("APP_ENV") == "" {
 		return fmt.Errorf("APP_ENV environment variable is required")
-	}
-
-	// Load Config
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// Safety check: Only run in development
@@ -72,7 +69,7 @@ func run() error {
 		_, err := db.ExecContext(ctx, fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", table))
 		if err != nil {
 			// Ignore error if table doesn't exist, but log it
-			log.Printf("Warning: failed to truncate table %s: %v", table, err)
+			slog.Warn("failed to truncate table", "table", table, "err", err)
 		}
 	}
 	fmt.Println("Database cleared.")

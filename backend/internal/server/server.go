@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -181,15 +181,26 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 		IdleTimeout:       s.idleTimeout,
 	}
 
+	// listen failure と signal の両方を main goroutine で受け取り、
+	// どちらの経路でも defer 経由のクリーンアップが走るようにする。
+	listenErrCh := make(chan error, 1)
 	go func() {
-		log.Printf("Server starting on %s\n", addr)
+		slog.Info("server starting", "addr", addr)
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			listenErrCh <- err
 		}
+		close(listenErrCh)
 	}()
 
-	<-ctx.Done()
-	log.Println("Shutting down server...")
+	select {
+	case err, ok := <-listenErrCh:
+		if ok && err != nil {
+			return fmt.Errorf("server listen failed: %w", err)
+		}
+	case <-ctx.Done():
+	}
+
+	slog.Info("shutting down server")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), defaultShutdownTimeout)
 	defer cancel()
@@ -197,7 +208,7 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
 
-	log.Println("Server exiting")
+	slog.Info("server exiting")
 	return nil
 }
 

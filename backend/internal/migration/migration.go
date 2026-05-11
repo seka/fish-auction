@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -35,7 +35,7 @@ func Connect(ctx context.Context, dsn string) (*sql.DB, error) {
 		if err == nil {
 			return db, nil
 		}
-		log.Printf("Failed to connect to DB: %v. Retrying in %s...", err, connectInterval)
+		slog.Warn("failed to connect to DB; retrying", "err", err, "interval", connectInterval.String())
 		time.Sleep(connectInterval)
 	}
 
@@ -71,6 +71,6 @@ func Up(db *sql.DB) error {
 	if dirty {
 		return fmt.Errorf("migration is in dirty state at version %d, manual intervention required", version)
 	}
-	log.Printf("Migration complete: version=%d, dirty=%v", version, dirty)
+	slog.Info("migration complete", "version", version, "dirty", dirty)
 	return nil
 }

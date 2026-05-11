@@ -6,12 +6,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/seka/fish-auction/backend/config"
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/infrastructure/datastore/postgres"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/usecase/admin"
 
 	_ "github.com/lib/pq"
@@ -28,24 +29,24 @@ func init() {
 }
 
 func main() {
+	cfg := config.NewInitAdminConfig()
+	logger.Init(config.GetLogLevel())
+	if err := cfg.Validate(); err != nil {
+		slog.Error("invalid config", "err", err)
+		os.Exit(1)
+	}
+
 	flag.Parse()
 
-	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+	if err := run(cfg); err != nil {
+		slog.Error("init_admin fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(cfg *config.InitAdminConfig) error {
 	if email == "" || password == "" {
 		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
-	}
-
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		log.Printf("Failed to load config: %v", err)
-		log.Println("Usage: POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
-		return err
 	}
 
 	ctx := context.Background()

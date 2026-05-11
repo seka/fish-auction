@@ -5,11 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestLoadWorkerConfig(t *testing.T) {
-	// 必要な環境変数の最小セット
+func TestNewWorkerConfig(t *testing.T) {
 	defaultEnv := map[string]string{
 		"POSTGRES_HOST":     "localhost",
 		"POSTGRES_PORT":     "5432",
@@ -20,48 +18,65 @@ func TestLoadWorkerConfig(t *testing.T) {
 		"VAPID_PRIVATE_KEY": "test-private-key",
 	}
 
-	tests := []struct {
-		name        string
-		env         map[string]string
-		wantErr     bool
-		errContains string
-	}{
-		{
-			name:    "Success",
-			env:     map[string]string{},
-			wantErr: false,
-		},
-		{
-			name: "Missing env doesn't cause load error",
-			env: map[string]string{
-				"POSTGRES_HOST": "",
-			},
-			wantErr: false,
-		},
+	t.Run("Success", func(t *testing.T) {
+		os.Clearenv()
+		for k, v := range defaultEnv {
+			t.Setenv(k, v)
+		}
+
+		cfg := NewWorkerConfig()
+		assert.NotNil(t, cfg)
+		assert.Equal(t, "localhost", cfg.RedisHost)
+	})
+}
+
+func TestWorkerConfig_RedisAddr(t *testing.T) {
+	cfg := &WorkerConfig{RedisHost: "redis.example.com", RedisPort: "6379"}
+	assert.Equal(t, "redis.example.com:6379", cfg.RedisAddr())
+}
+
+func TestWorkerConfig_SMTPAddress(t *testing.T) {
+	cfg := &WorkerConfig{SMTPHost: "smtp.example.com", SMTPPort: "1025"}
+	assert.Equal(t, "smtp.example.com:1025", cfg.SMTPAddress())
+}
+
+func TestWorkerConfig_VAPIDConfig(t *testing.T) {
+	cfg := &WorkerConfig{
+		VAPIDPublicKey:  "public",
+		VAPIDPrivateKey: "private",
+		VAPIDSubject:    "mailto:admin@example.com",
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			os.Clearenv()
-			for k, v := range defaultEnv {
-				t.Setenv(k, v)
-			}
-			for k, v := range tt.env {
-				t.Setenv(k, v)
-			}
+	pub, priv, sub := cfg.VAPIDConfig()
+	assert.Equal(t, "public", pub)
+	assert.Equal(t, "private", priv)
+	assert.Equal(t, "mailto:admin@example.com", sub)
+}
 
-			cfg, err := LoadWorkerConfig()
-			if tt.wantErr {
-				require.Error(t, err)
-				if tt.errContains != "" {
-					assert.Contains(t, err.Error(), tt.errContains)
-				}
-				assert.Nil(t, cfg)
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, cfg)
-				assert.Equal(t, "localhost", cfg.RedisHost)
-			}
-		})
+func TestWorkerConfig_SQSConfig(t *testing.T) {
+	cfg := &WorkerConfig{
+		SQSRegion:   "ap-northeast-1",
+		SQSQueueURL: "https://sqs.example.com/queue",
+		SQSEndpoint: "https://sqs.example.com",
 	}
+
+	region, queueURL, endpoint := cfg.SQSConfig()
+	assert.Equal(t, "ap-northeast-1", region)
+	assert.Equal(t, "https://sqs.example.com/queue", queueURL)
+	assert.Equal(t, "https://sqs.example.com", endpoint)
+}
+
+func TestWorkerConfig_DBConnectionURL(t *testing.T) {
+	cfg := &WorkerConfig{
+		PostgresHost:     "db.example.com",
+		PostgresPort:     "5432",
+		PostgresUser:     "user",
+		PostgresPassword: "pass",
+		PostgresDB:       "fish_auction",
+		PostgresSslMode:  "require",
+	}
+
+	got := cfg.DBConnectionURL()
+	want := "host=db.example.com port=5432 user=user password=pass dbname=fish_auction sslmode=require"
+	assert.Equal(t, want, got)
 }

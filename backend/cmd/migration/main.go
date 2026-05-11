@@ -4,11 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/migration"
 )
 
@@ -19,6 +20,9 @@ Commands:
 `
 
 func main() {
+	cfg := config.NewMigrationConfig()
+	logger.Init(config.GetLogLevel())
+
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	flag.Parse()
 
@@ -27,16 +31,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := dispatch(flag.Arg(0), flag.Args()[1:]); err != nil {
-		log.Printf("Error: %v", err)
+	if err := dispatch(cfg, flag.Arg(0), flag.Args()[1:]); err != nil {
+		slog.Error("migration fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func dispatch(subcommand string, args []string) error {
+func dispatch(cfg *config.MigrationConfig, subcommand string, args []string) error {
 	switch subcommand {
 	case "up":
-		return runUp(args)
+		return runUp(cfg, args)
 	case "help":
 		flag.Usage()
 		return nil
@@ -46,15 +50,10 @@ func dispatch(subcommand string, args []string) error {
 	}
 }
 
-func runUp(args []string) error {
+func runUp(cfg *config.MigrationConfig, args []string) error {
 	fs := flag.NewFlagSet("up", flag.ExitOnError)
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("failed to parse flags: %w", err)
-	}
-
-	cfg, err := config.LoadMigrationConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load migration config: %w", err)
 	}
 
 	db, err := migration.Connect(context.Background(), cfg.DBConnectionURL())

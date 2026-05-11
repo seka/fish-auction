@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/worker"
 	"github.com/seka/fish-auction/backend/internal/worker/handler"
@@ -18,19 +19,16 @@ import (
 const isWorker = true
 
 func main() {
-	if err := run(); err != nil {
-		log.Printf("Worker Error: %v", err)
+	cfg := config.NewWorkerConfig()
+	logger.Init(config.GetLogLevel())
+
+	if err := run(cfg); err != nil {
+		slog.Error("worker fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	// Load Config
-	cfg, err := config.LoadWorkerConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
+func run(cfg *config.WorkerConfig) error {
 	// Initialize Repository Registry
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig)
 	if err != nil {
@@ -65,6 +63,6 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	log.Println("Worker initialized. Starting...")
+	slog.Info("worker initialized; starting")
 	return w.Start(ctx)
 }

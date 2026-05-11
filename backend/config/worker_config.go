@@ -28,9 +28,9 @@ type WorkerConfig struct {
 	SMTPFrom         string
 }
 
-// LoadWorkerConfig loads configuration for the background worker.
-func LoadWorkerConfig() (*WorkerConfig, error) {
-	cfg := &WorkerConfig{
+// NewWorkerConfig loads configuration for the background worker.
+func NewWorkerConfig() *WorkerConfig {
+	return &WorkerConfig{
 		PostgresHost:     GetEnv("POSTGRES_HOST", ""),
 		PostgresPort:     GetEnv("POSTGRES_PORT", ""),
 		PostgresUser:     GetEnv("POSTGRES_USER", ""),
@@ -51,8 +51,6 @@ func LoadWorkerConfig() (*WorkerConfig, error) {
 		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
 		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
 	}
-
-	return cfg, nil
 }
 
 func (c *WorkerConfig) RedisAddr() string {

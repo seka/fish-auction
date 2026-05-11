@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/SherClockHolmes/webpush-go"
 	"github.com/seka/fish-auction/backend/config"
@@ -60,7 +60,7 @@ func (s *WebpushNotificationService) Send(_ context.Context, sub *model.PushSubs
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	log.Printf("Push notification sent to %s, status: %d", sub.Endpoint, resp.StatusCode)
+	slog.Info("push notification sent", "endpoint", sub.Endpoint, "status", resp.StatusCode)
 
 	if resp.StatusCode == 410 || resp.StatusCode == 404 {
 		return errors.HandleError(&errors.PushNotificationError{

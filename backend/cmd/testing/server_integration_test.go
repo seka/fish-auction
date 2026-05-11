@@ -42,14 +42,11 @@ func TestServerIntegration(t *testing.T) {
 	}
 
 	// 1. 設定を読み込む
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
+	cfg := config.NewAppServerConfig()
+	if err := cfg.Validate(); err != nil {
+		t.Fatalf("Invalid config: %v", err)
 	}
-	relayCfg, err := config.LoadRelayConfig()
-	if err != nil {
-		t.Fatalf("Failed to load relay config: %v", err)
-	}
+	relayCfg := config.NewRelayConfig()
 
 	// 2. マイグレーションをテスト DB に適用
 	migrationDB, err := migration.Connect(ctx, cfg.DBConnectionURL())

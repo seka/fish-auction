@@ -17,9 +17,9 @@ type RelayConfig struct {
 	SQSEndpoint      string
 }
 
-// LoadRelayConfig loads configuration for the relay process.
-func LoadRelayConfig() (*RelayConfig, error) {
-	cfg := &RelayConfig{
+// NewRelayConfig loads configuration for the relay process.
+func NewRelayConfig() *RelayConfig {
+	return &RelayConfig{
 		PostgresHost:     GetEnv("POSTGRES_HOST", ""),
 		PostgresPort:     GetEnv("POSTGRES_PORT", ""),
 		PostgresUser:     GetEnv("POSTGRES_USER", ""),
@@ -30,8 +30,6 @@ func LoadRelayConfig() (*RelayConfig, error) {
 		SQSRegion:        GetEnv("AWS_SQS_REGION", "ap-northeast-1"),
 		SQSEndpoint:      GetEnv("AWS_SQS_ENDPOINT", "http://localhost:4566"),
 	}
-
-	return cfg, nil
 }
 
 func (c *RelayConfig) DBConnectionURL() string {

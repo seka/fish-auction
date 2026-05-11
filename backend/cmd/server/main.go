@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/seka/fish-auction/backend/config"
 	domainrepo "github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/logger"
 	"github.com/seka/fish-auction/backend/internal/registry"
 	"github.com/seka/fish-auction/backend/internal/server"
 	adminHandler "github.com/seka/fish-auction/backend/internal/server/handler/admin"
@@ -43,19 +44,20 @@ type handlers struct {
 }
 
 func main() {
-	if err := run(); err != nil {
-		log.Printf("Error: %v", err)
+	cfg := config.NewAppServerConfig()
+	logger.Init(config.GetLogLevel())
+	if err := cfg.Validate(); err != nil {
+		slog.Error("invalid config", "err", err)
+		os.Exit(1)
+	}
+
+	if err := run(cfg); err != nil {
+		slog.Error("server fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	// Load Config
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
+func run(cfg *config.AppServerConfig) error {
 	// Initialize Repository Registry (handles DB and Redis connections)
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {
