@@ -137,3 +137,33 @@ func TestValidateAppServerConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestAppServerConfig_ServerAddr(t *testing.T) {
+	cfg := &AppServerConfig{ServerHost: "0.0.0.0", ServerPort: "8080"}
+	assert.Equal(t, "0.0.0.0:8080", cfg.ServerAddr())
+}
+
+func TestAppServerConfig_RedisAddr(t *testing.T) {
+	cfg := &AppServerConfig{RedisHost: "redis.example.com", RedisPort: "6379"}
+	assert.Equal(t, "redis.example.com:6379", cfg.RedisAddr())
+}
+
+func TestAppServerConfig_SMTPAddress(t *testing.T) {
+	cfg := &AppServerConfig{SMTPHost: "smtp.example.com", SMTPPort: "1025"}
+	assert.Equal(t, "smtp.example.com:1025", cfg.SMTPAddress())
+}
+
+func TestAppServerConfig_DBConnectionURL(t *testing.T) {
+	cfg := &AppServerConfig{
+		PostgresHost:     "db.example.com",
+		PostgresPort:     "5432",
+		PostgresUser:     "user",
+		PostgresPassword: "pass",
+		PostgresDB:       "fish_auction",
+		PostgresSslMode:  "require",
+	}
+
+	got := cfg.DBConnectionURL()
+	want := "host=db.example.com port=5432 user=user password=pass dbname=fish_auction sslmode=require"
+	assert.Equal(t, want, got)
+}
