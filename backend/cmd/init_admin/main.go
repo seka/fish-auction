@@ -29,9 +29,9 @@ func init() {
 }
 
 func main() {
-	flag.Parse()
-
 	logger.Init(config.GetLogLevel())
+
+	flag.Parse()
 
 	if err := run(); err != nil {
 		slog.Error("init_admin fatal", "err", err)
@@ -42,6 +42,10 @@ func main() {
 func run() error {
 	if email == "" || password == "" {
 		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
+	}
+
+	if err := requireDBEnv(); err != nil {
+		return err
 	}
 
 	cfg := config.NewInitAdminConfig()
@@ -71,5 +75,22 @@ func run() error {
 	}
 
 	fmt.Printf("Successfully created admin user: %s\n", email)
+	return nil
+}
+
+// requireDBEnv は DB 接続に必須な環境変数の不足を起動前に検出する。
+// NewInitAdminConfig は空文字をデフォルト値として返すため、未設定時に DB 接続段階で
+// 失敗するまで原因が分かりづらいことを避ける。
+func requireDBEnv() error {
+	required := []string{"POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB"}
+	var missing []string
+	for _, key := range required {
+		if os.Getenv(key) == "" {
+			missing = append(missing, key)
+		}
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required env vars: %v. Usage: POSTGRES_HOST=... POSTGRES_PORT=... go run cmd/init_admin/main.go --email <email> --password <password>", missing)
+	}
 	return nil
 }
