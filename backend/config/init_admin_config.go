@@ -2,8 +2,8 @@ package config
 
 import "fmt"
 
-// MigrationConfig represents the configuration for the migration CLI.
-type MigrationConfig struct {
+// InitAdminConfig represents the configuration for the init_admin CLI.
+type InitAdminConfig struct {
 	PostgresHost     string
 	PostgresPort     string
 	PostgresUser     string
@@ -12,9 +12,9 @@ type MigrationConfig struct {
 	PostgresSslMode  string
 }
 
-// NewMigrationConfig loads configuration for the migration command.
-func NewMigrationConfig() *MigrationConfig {
-	return &MigrationConfig{
+// NewInitAdminConfig loads configuration for the init_admin command.
+func NewInitAdminConfig() *InitAdminConfig {
+	return &InitAdminConfig{
 		PostgresHost:     GetEnv("POSTGRES_HOST", ""),
 		PostgresPort:     GetEnv("POSTGRES_PORT", ""),
 		PostgresUser:     GetEnv("POSTGRES_USER", ""),
@@ -24,7 +24,7 @@ func NewMigrationConfig() *MigrationConfig {
 	}
 }
 
-func (c *MigrationConfig) DBConnectionURL() string {
+func (c *InitAdminConfig) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
 }

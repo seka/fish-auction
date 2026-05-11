@@ -5,11 +5,62 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestLoadAppServerConfig(t *testing.T) {
-	// 必要な環境変数の最小セットをデフォルトで持っておく
+func TestNewAppServerConfig(t *testing.T) {
+	defaultEnv := map[string]string{
+		"SERVER_PORT":       "8080",
+		"POSTGRES_HOST":     "localhost",
+		"POSTGRES_PORT":     "5432",
+		"POSTGRES_USER":     "postgres",
+		"POSTGRES_PASSWORD": "postgres",
+		"POSTGRES_DB":       "fish_auction",
+	}
+
+	tests := []struct {
+		name           string
+		env            map[string]string
+		wantFrontend   string
+	}{
+		{
+			name:         "Default FRONTEND_URL",
+			env:          map[string]string{},
+			wantFrontend: "https://localhost",
+		},
+		{
+			name: "Valid FRONTEND_URL",
+			env: map[string]string{
+				"FRONTEND_URL": "https://example.com",
+			},
+			wantFrontend: "https://example.com",
+		},
+		{
+			name: "Empty FRONTEND_URL falls back to default",
+			env: map[string]string{
+				"FRONTEND_URL": "",
+			},
+			wantFrontend: "https://localhost",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			os.Clearenv()
+			for k, v := range defaultEnv {
+				t.Setenv(k, v)
+			}
+			for k, v := range tt.env {
+				t.Setenv(k, v)
+			}
+
+			cfg := NewAppServerConfig()
+			assert.NotNil(t, cfg)
+			assert.Equal(t, tt.wantFrontend, cfg.GetFrontendURL().String())
+		})
+	}
+}
+
+func TestValidateAppServerConfig(t *testing.T) {
 	defaultEnv := map[string]string{
 		"SERVER_PORT":       "8080",
 		"POSTGRES_HOST":     "localhost",
@@ -26,42 +77,35 @@ func TestLoadAppServerConfig(t *testing.T) {
 		errContains string
 	}{
 		{
-			name:    "Success with default FRONTEND_URL",
+			name:    "Valid default",
 			env:     map[string]string{},
 			wantErr: false,
 		},
 		{
-			name: "Success with valid FRONTEND_URL",
+			name: "Valid FRONTEND_URL",
 			env: map[string]string{
 				"FRONTEND_URL": "https://example.com",
 			},
 			wantErr: false,
 		},
 		{
-			name: "Error with missing scheme in FRONTEND_URL",
+			name: "Missing scheme in FRONTEND_URL",
 			env: map[string]string{
 				"FRONTEND_URL": "localhost:3000",
 			},
 			wantErr:     true,
-			errContains: "invalid FRONTEND_URL: missing scheme or host",
+			errContains: "invalid FRONTEND_URL",
 		},
 		{
-			name: "Error with missing host in FRONTEND_URL",
+			name: "Missing host in FRONTEND_URL",
 			env: map[string]string{
 				"FRONTEND_URL": "https://",
 			},
 			wantErr:     true,
-			errContains: "invalid FRONTEND_URL: missing scheme or host",
+			errContains: "invalid FRONTEND_URL",
 		},
 		{
-			name: "Success with empty FRONTEND_URL (falls back to default)",
-			env: map[string]string{
-				"FRONTEND_URL": "",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Error with invalid URL characters",
+			name: "Invalid URL characters",
 			env: map[string]string{
 				"FRONTEND_URL": "://invalid",
 			},
@@ -80,22 +124,46 @@ func TestLoadAppServerConfig(t *testing.T) {
 				t.Setenv(k, v)
 			}
 
-			cfg, err := LoadAppServerConfig()
+			cfg := NewAppServerConfig()
+			err := ValidateAppServerConfig(cfg)
 			if tt.wantErr {
-				require.Error(t, err)
+				assert.Error(t, err)
 				if tt.errContains != "" {
 					assert.Contains(t, err.Error(), tt.errContains)
 				}
-				assert.Nil(t, cfg)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, cfg)
-				if val, ok := tt.env["FRONTEND_URL"]; ok && val != "" {
-					assert.Equal(t, val, cfg.GetFrontendURL().String())
-				} else {
-					assert.Equal(t, "https://localhost", cfg.GetFrontendURL().String())
-				}
 			}
 		})
 	}
+}
+
+func TestAppServerConfig_ServerAddr(t *testing.T) {
+	cfg := &AppServerConfig{ServerHost: "0.0.0.0", ServerPort: "8080"}
+	assert.Equal(t, "0.0.0.0:8080", cfg.ServerAddr())
+}
+
+func TestAppServerConfig_RedisAddr(t *testing.T) {
+	cfg := &AppServerConfig{RedisHost: "redis.example.com", RedisPort: "6379"}
+	assert.Equal(t, "redis.example.com:6379", cfg.RedisAddr())
+}
+
+func TestAppServerConfig_SMTPAddress(t *testing.T) {
+	cfg := &AppServerConfig{SMTPHost: "smtp.example.com", SMTPPort: "1025"}
+	assert.Equal(t, "smtp.example.com:1025", cfg.SMTPAddress())
+}
+
+func TestAppServerConfig_DBConnectionURL(t *testing.T) {
+	cfg := &AppServerConfig{
+		PostgresHost:     "db.example.com",
+		PostgresPort:     "5432",
+		PostgresUser:     "user",
+		PostgresPassword: "pass",
+		PostgresDB:       "fish_auction",
+		PostgresSslMode:  "require",
+	}
+
+	got := cfg.DBConnectionURL()
+	want := "host=db.example.com port=5432 user=user password=pass dbname=fish_auction sslmode=require"
+	assert.Equal(t, want, got)
 }

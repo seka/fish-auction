@@ -44,12 +44,7 @@ func run() error {
 		return fmt.Errorf("--email and --password are required. Usage: go run cmd/init_admin/main.go --email <email> --password <password>")
 	}
 
-	cfg, err := config.LoadAppServerConfig()
-	if err != nil {
-		slog.Error("failed to load config", "err", err)
-		slog.Info("usage hint", "msg", "POSTGRES_HOST=... go run cmd/init_admin/main.go --email <email> --password <password>")
-		return err
-	}
+	cfg := config.NewInitAdminConfig()
 
 	ctx := context.Background()
 	dbURL := cfg.DBConnectionURL()
