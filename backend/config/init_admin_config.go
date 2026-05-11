@@ -29,10 +29,10 @@ func (c *InitAdminConfig) DBConnectionURL() string {
 		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
 }
 
-// Validation は DB 接続に必須な値の不足を起動前に検出する。
+// Validate は DB 接続に必須な値の不足を起動前に検出する。
 // NewInitAdminConfig は空文字をデフォルトに用いるため、未設定時に DB 接続段階で
 // 失敗するまで原因が分かりづらいことを避ける。
-func (c *InitAdminConfig) Validation() error {
+func (c *InitAdminConfig) Validate() error {
 	var missing []string
 	if c.PostgresHost == "" {
 		missing = append(missing, "POSTGRES_HOST")

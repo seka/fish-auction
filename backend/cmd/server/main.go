@@ -46,7 +46,7 @@ type handlers struct {
 func main() {
 	cfg := config.NewAppServerConfig()
 	logger.Init(config.GetLogLevel())
-	if err := cfg.Validation(); err != nil {
+	if err := cfg.Validate(); err != nil {
 		slog.Error("invalid config", "err", err)
 		os.Exit(1)
 	}

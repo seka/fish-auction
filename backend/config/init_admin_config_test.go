@@ -45,7 +45,7 @@ func TestInitAdminConfig_DBConnectionURL(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func TestInitAdminConfig_Validation(t *testing.T) {
+func TestInitAdminConfig_Validate(t *testing.T) {
 	full := &InitAdminConfig{
 		PostgresHost:     "localhost",
 		PostgresPort:     "5432",
@@ -87,7 +87,7 @@ func TestInitAdminConfig_Validation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := *full
 			tt.mutate(&cfg)
-			err := cfg.Validation()
+			err := cfg.Validate()
 			if tt.wantErr {
 				assert.Error(t, err)
 				if tt.errContains != "" {

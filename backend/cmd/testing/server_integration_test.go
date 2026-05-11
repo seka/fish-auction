@@ -43,7 +43,7 @@ func TestServerIntegration(t *testing.T) {
 
 	// 1. 設定を読み込む
 	cfg := config.NewAppServerConfig()
-	if err := cfg.Validation(); err != nil {
+	if err := cfg.Validate(); err != nil {
 		t.Fatalf("Invalid config: %v", err)
 	}
 	relayCfg := config.NewRelayConfig()

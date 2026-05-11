@@ -31,7 +31,7 @@ func init() {
 func main() {
 	cfg := config.NewInitAdminConfig()
 	logger.Init(config.GetLogLevel())
-	if err := cfg.Validation(); err != nil {
+	if err := cfg.Validate(); err != nil {
 		slog.Error("invalid config", "err", err)
 		os.Exit(1)
 	}
