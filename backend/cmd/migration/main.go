@@ -20,12 +20,11 @@ Commands:
 `
 
 func main() {
+	cfg := config.NewMigrationConfig()
 	logger.Init(config.GetLogLevel())
 
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	flag.Parse()
-
-	cfg := config.NewMigrationConfig()
 
 	if flag.NArg() == 0 {
 		flag.Usage()

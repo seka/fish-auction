@@ -17,23 +17,20 @@ import (
 var seedSQL string
 
 func main() {
+	cfg := config.NewSeedConfig()
 	logger.Init(config.GetLogLevel())
 
-	if err := run(); err != nil {
+	if err := run(cfg); err != nil {
 		slog.Error("seed fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(cfg *config.SeedConfig) error {
 	// Check APP_ENV explicitly
-	appEnv := os.Getenv("APP_ENV")
-	if appEnv == "" {
+	if os.Getenv("APP_ENV") == "" {
 		return fmt.Errorf("APP_ENV environment variable is required")
 	}
-
-	// Load Config
-	cfg := config.NewSeedConfig()
 
 	// Safety check: Only run in development
 	if cfg.AppEnv != "development" && cfg.AppEnv != "test" {

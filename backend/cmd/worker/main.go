@@ -19,18 +19,16 @@ import (
 const isWorker = true
 
 func main() {
+	cfg := config.NewWorkerConfig()
 	logger.Init(config.GetLogLevel())
 
-	if err := run(); err != nil {
+	if err := run(cfg); err != nil {
 		slog.Error("worker fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	// Load Config
-	cfg := config.NewWorkerConfig()
-
+func run(cfg *config.WorkerConfig) error {
 	// Initialize Repository Registry
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, config.NoCacheConfig, config.NoSessionConfig)
 	if err != nil {

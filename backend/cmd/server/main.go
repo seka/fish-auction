@@ -44,21 +44,20 @@ type handlers struct {
 }
 
 func main() {
+	cfg := config.NewAppServerConfig()
 	logger.Init(config.GetLogLevel())
+	if err := cfg.Validation(); err != nil {
+		slog.Error("invalid config", "err", err)
+		os.Exit(1)
+	}
 
-	if err := run(); err != nil {
+	if err := run(cfg); err != nil {
 		slog.Error("server fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	// Load Config
-	cfg := config.NewAppServerConfig()
-	if err := config.ValidateAppServerConfig(cfg); err != nil {
-		return fmt.Errorf("invalid config: %w", err)
-	}
-
+func run(cfg *config.AppServerConfig) error {
 	// Initialize Repository Registry (handles DB and Redis connections)
 	repoReg, err := registry.NewRepositoryRegistry(cfg, cfg, cfg, cfg)
 	if err != nil {

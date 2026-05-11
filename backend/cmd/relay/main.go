@@ -19,17 +19,16 @@ import (
 )
 
 func main() {
+	cfg := config.NewRelayConfig()
 	logger.Init(config.GetLogLevel())
 
-	if err := run(); err != nil {
+	if err := run(cfg); err != nil {
 		slog.Error("relay fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	cfg := config.NewRelayConfig()
-
+func run(cfg *config.RelayConfig) error {
 	repoReg, err := registry.NewRepositoryRegistry(
 		cfg,
 		config.NoRedisConfig,
