@@ -212,9 +212,9 @@ services:
       - AWS_SQS_QUEUE_URL=http://localstack:4566/000000000000/notification-queue
       - AWS_SQS_REGION=ap-northeast-1
       - AWS_SQS_ENDPOINT=http://localstack:4566
-      # LocalStack 接続用のダミー値を固定
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
+      # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY は LocalStack 接続用のダミー値（.env 参照）
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -241,9 +241,9 @@ services:
       - AWS_SQS_QUEUE_URL=http://localstack:4566/000000000000/notification-queue
       - AWS_SQS_REGION=ap-northeast-1
       - AWS_SQS_ENDPOINT=http://localstack:4566
-      # LocalStack 接続用のダミー値を固定
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
+      # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY は LocalStack 接続用のダミー値（.env 参照）
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       postgres:
         condition: service_healthy
