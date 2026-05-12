@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -12,6 +13,7 @@ const RequestIDHeader = "X-Request-ID"
 
 // RequestIDKey は request_id を context に保持するためのキー。
 const RequestIDKey contextKey = "request_id"
+const maxRequestIDLength = 64
 
 // RequestIDMiddleware injects a request ID into the request context and reflects it back
 // in the response so downstream services / clients can correlate logs.
@@ -28,9 +30,17 @@ func NewRequestIDMiddleware() *RequestIDMiddleware {
 // が利用可能になる。
 func (m *RequestIDMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id := r.Header.Get(RequestIDHeader)
+		id := ""
+		if IsFromTrustedProxy(r.Context()) {
+			candidate := strings.TrimSpace(r.Header.Get(RequestIDHeader))
+			if len(candidate) > 0 && len(candidate) <= maxRequestIDLength {
+				if _, err := uuid.Parse(candidate); err == nil {
+					id = candidate
+				}
+			}
+		}
 		if id == "" {
-			id = uuid.NewString()
+			id = uuid.New().String()
 		}
 
 		ctx := context.WithValue(r.Context(), RequestIDKey, id)
