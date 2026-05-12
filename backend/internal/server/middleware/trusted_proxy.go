@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"strings"
@@ -14,6 +15,9 @@ import (
 type TrustedProxyMiddleware struct {
 	trusted []*net.IPNet
 }
+
+// TrustedProxyKey indicates whether the request passed trusted proxy validation.
+const TrustedProxyKey contextKey = "trusted_proxy"
 
 // NewTrustedProxyMiddleware parses CIDR strings into a trusted proxy network set.
 // 不正な CIDR は無視され、空配列なら本ミドルウェアは何もしない。
@@ -72,8 +76,18 @@ func (m *TrustedProxyMiddleware) Handle(next http.Handler) http.Handler {
 			r.URL.Scheme = strings.ToLower(proto)
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), TrustedProxyKey, true)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// IsFromTrustedProxy returns true when trusted proxy middleware validated the request source.
+func IsFromTrustedProxy(ctx context.Context) bool {
+	if ctx == nil {
+		return false
+	}
+	trusted, _ := ctx.Value(TrustedProxyKey).(bool)
+	return trusted
 }
 
 func (m *TrustedProxyMiddleware) isTrusted(ipStr string) bool {

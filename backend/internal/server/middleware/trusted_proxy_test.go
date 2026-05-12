@@ -13,10 +13,12 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 	captured := struct {
 		remoteAddr string
 		scheme     string
+		trusted    bool
 	}{}
 	next := http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		captured.remoteAddr = r.RemoteAddr
 		captured.scheme = r.URL.Scheme
+		captured.trusted = IsFromTrustedProxy(r.Context())
 	})
 
 	t.Run("noop when trusted CIDRs empty", func(t *testing.T) {
@@ -30,6 +32,7 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 
 		assert.Equal(t, "10.0.0.5:1234", captured.remoteAddr)
 		assert.Empty(t, captured.scheme)
+		assert.False(t, captured.trusted)
 	})
 
 	t.Run("rewrites RemoteAddr and Scheme when source is trusted", func(t *testing.T) {
@@ -43,6 +46,7 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 
 		assert.Equal(t, "203.0.113.10", captured.remoteAddr)
 		assert.Equal(t, "https", captured.scheme)
+		assert.True(t, captured.trusted)
 	})
 
 	t.Run("does not rewrite when source is not trusted", func(t *testing.T) {
@@ -56,6 +60,7 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 
 		assert.Equal(t, "203.0.113.99:1234", captured.remoteAddr)
 		assert.Empty(t, captured.scheme)
+		assert.False(t, captured.trusted)
 	})
 
 	t.Run("invalid CIDR entries are skipped", func(t *testing.T) {
@@ -67,6 +72,7 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
 
 		assert.Equal(t, "198.51.100.7", captured.remoteAddr)
+		assert.True(t, captured.trusted)
 	})
 
 	t.Run("walks XFF right-to-left and stops at first untrusted", func(t *testing.T) {
@@ -79,5 +85,6 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
 
 		assert.Equal(t, "203.0.113.5", captured.remoteAddr)
+		assert.True(t, captured.trusted)
 	})
 }
