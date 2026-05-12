@@ -15,6 +15,13 @@ import (
 //	Phase 1 (TX1): Claim pending messages (status → processing)
 //	Phase 2 (no TX): Send to SQS
 //	Phase 3 (TX2): Mark as processed or record failure with backoff
+//
+// 複数インスタンス起動時の安全性:
+//   - Claim は FOR UPDATE SKIP LOCKED により同一行を二重 claim しない
+//   - MarkProcessed / MarkFailed は claimed_by フィルタで自インスタンス分のみ更新
+//   - クラッシュ等で取り残された処理中行は RecoverStale により pending 復元
+//
+// SQS への enqueue は at-least-once 配送が前提。worker 側ハンドラは冪等であること。
 type OutboxRelay struct {
 	outboxRepo repository.OutboxRepository
 	jobQueue   service.JobQueue
