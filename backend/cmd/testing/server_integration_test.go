@@ -163,6 +163,7 @@ func TestServerIntegration(t *testing.T) {
 		pushHandler,
 		sessionRepo,
 		[]string{"https://localhost", "http://localhost:3000"},
+		nil,
 		time.Minute,
 		time.Minute,
 		time.Minute,

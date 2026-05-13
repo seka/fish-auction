@@ -112,6 +112,28 @@ func TestAppServerConfig_Validate(t *testing.T) {
 			wantErr:     true,
 			errContains: "invalid FRONTEND_URL",
 		},
+		{
+			name: "Valid TRUSTED_PROXIES",
+			env: map[string]string{
+				"TRUSTED_PROXIES": "10.0.0.0/16, 192.168.0.0/24",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Empty TRUSTED_PROXIES is allowed",
+			env: map[string]string{
+				"TRUSTED_PROXIES": "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid TRUSTED_PROXIES CIDR",
+			env: map[string]string{
+				"TRUSTED_PROXIES": "10.0.0.0/16,not-a-cidr",
+			},
+			wantErr:     true,
+			errContains: "invalid TRUSTED_PROXIES",
+		},
 	}
 
 	for _, tt := range tests {

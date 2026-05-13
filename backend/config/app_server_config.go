@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -25,6 +26,7 @@ type AppServerConfig struct {
 	SessionTTL       time.Duration
 	AppEnv           string
 	AllowedOrigins   string
+	TrustedProxies   string
 	SMTPHost         string
 	SMTPPort         string
 	SMTPFrom         string
@@ -61,6 +63,7 @@ func NewAppServerConfig() *AppServerConfig {
 		SessionTTL:       time.Duration(sessionTTL) * time.Second,
 		AppEnv:           GetEnv("APP_ENV", "develop"),
 		AllowedOrigins:   GetEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
+		TrustedProxies:   GetEnv("TRUSTED_PROXIES", ""),
 		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
 		SMTPPort:         GetEnv("SMTP_PORT", "1025"),
 		SMTPFrom:         GetEnv("SMTP_FROM", "noreply@fish-auction.com"),
@@ -75,6 +78,15 @@ func NewAppServerConfig() *AppServerConfig {
 func (c *AppServerConfig) Validate() error {
 	if c.FrontendURL == nil || c.FrontendURL.Scheme == "" || c.FrontendURL.Host == "" {
 		return errors.New("invalid FRONTEND_URL: missing scheme or host")
+	}
+	for _, raw := range strings.Split(c.TrustedProxies, ",") {
+		cidr := strings.TrimSpace(raw)
+		if cidr == "" {
+			continue
+		}
+		if _, _, err := net.ParseCIDR(cidr); err != nil {
+			return fmt.Errorf("invalid TRUSTED_PROXIES: %q is not a valid CIDR: %w", cidr, err)
+		}
 	}
 	return nil
 }
