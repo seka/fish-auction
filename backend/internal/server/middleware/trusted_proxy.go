@@ -45,9 +45,10 @@ func (m *TrustedProxyMiddleware) Handle(next http.Handler) http.Handler {
 			return
 		}
 
-		host, _, err := net.SplitHostPort(r.RemoteAddr)
+		host, port, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
 			host = r.RemoteAddr
+			port = ""
 		}
 		if !m.isTrusted(host) {
 			next.ServeHTTP(w, r)
@@ -64,7 +65,12 @@ func (m *TrustedProxyMiddleware) Handle(next http.Handler) http.Handler {
 					continue
 				}
 				if !m.isTrusted(ip) {
-					r.RemoteAddr = ip
+					// 後段で net.SplitHostPort を呼ぶ既存コードに合わせ host:port 形式を維持する。
+					if port != "" {
+						r.RemoteAddr = net.JoinHostPort(ip, port)
+					} else {
+						r.RemoteAddr = ip
+					}
 					break
 				}
 			}

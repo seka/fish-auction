@@ -44,7 +44,7 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 
 		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
 
-		assert.Equal(t, "203.0.113.10", captured.remoteAddr)
+		assert.Equal(t, "203.0.113.10:443", captured.remoteAddr)
 		assert.Equal(t, "https", captured.scheme)
 		assert.True(t, captured.trusted)
 	})
@@ -71,7 +71,37 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 
 		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
 
-		assert.Equal(t, "198.51.100.7", captured.remoteAddr)
+		assert.Equal(t, "198.51.100.7:80", captured.remoteAddr)
+		assert.True(t, captured.trusted)
+	})
+
+	t.Run("all CIDR entries invalid degrades to noop", func(t *testing.T) {
+		// 設定ミスで全 CIDR がパース失敗した場合、middleware は no-op になり
+		// X-Forwarded-* は反映されない。Validate 側でこの状態に至らないことを担保する想定。
+		mw := NewTrustedProxyMiddleware([]string{"not-a-cidr", "also-bad"})
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
+		req.RemoteAddr = "10.0.0.1:80"
+		req.Header.Set("X-Forwarded-For", "198.51.100.7")
+		req.Header.Set("X-Forwarded-Proto", "https")
+
+		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
+
+		assert.Equal(t, "10.0.0.1:80", captured.remoteAddr)
+		assert.Empty(t, captured.scheme)
+		assert.False(t, captured.trusted)
+	})
+
+	t.Run("rewrites RemoteAddr without port when source has no port", func(t *testing.T) {
+		// net.SplitHostPort が失敗するケース（port 無しの RemoteAddr）。
+		// host:port 形式に組み立て直せないので、上書きも host のみとする。
+		mw := NewTrustedProxyMiddleware([]string{"10.0.0.0/16"})
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
+		req.RemoteAddr = "10.0.1.10"
+		req.Header.Set("X-Forwarded-For", "203.0.113.10")
+
+		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
+
+		assert.Equal(t, "203.0.113.10", captured.remoteAddr)
 		assert.True(t, captured.trusted)
 	})
 
@@ -84,7 +114,7 @@ func TestTrustedProxyMiddleware_Handle(t *testing.T) {
 
 		mw.Handle(next).ServeHTTP(httptest.NewRecorder(), req)
 
-		assert.Equal(t, "203.0.113.5", captured.remoteAddr)
+		assert.Equal(t, "203.0.113.5:80", captured.remoteAddr)
 		assert.True(t, captured.trusted)
 	})
 }
