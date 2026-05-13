@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -77,6 +78,15 @@ func NewAppServerConfig() *AppServerConfig {
 func (c *AppServerConfig) Validate() error {
 	if c.FrontendURL == nil || c.FrontendURL.Scheme == "" || c.FrontendURL.Host == "" {
 		return errors.New("invalid FRONTEND_URL: missing scheme or host")
+	}
+	for _, raw := range strings.Split(c.TrustedProxies, ",") {
+		cidr := strings.TrimSpace(raw)
+		if cidr == "" {
+			continue
+		}
+		if _, _, err := net.ParseCIDR(cidr); err != nil {
+			return fmt.Errorf("invalid TRUSTED_PROXIES: %q is not a valid CIDR: %w", cidr, err)
+		}
 	}
 	return nil
 }
