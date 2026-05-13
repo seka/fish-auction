@@ -58,21 +58,21 @@ EXPOSE 8080
 ENTRYPOINT ["/app/server"]
 
 # ============================================
-# prod-worker: SQS コンシューマー
+# prod-worker: 非同期ジョブのコンシューマー
 # ============================================
 FROM prod-base AS prod-worker
 COPY --from=builder /out/worker /app/worker
 ENTRYPOINT ["/app/worker"]
 
 # ============================================
-# prod-relay: outbox → SQS リレー
+# prod-relay: outbox リレー
 # ============================================
 FROM prod-base AS prod-relay
 COPY --from=builder /out/relay /app/relay
 ENTRYPOINT ["/app/relay"]
 
 # ============================================
-# prod-migration: ECS RunTask 用ワンショット
+# prod-migration: ワンショットの DB マイグレーション
 # ============================================
 FROM prod-base AS prod-migration
 COPY --from=builder /out/migration /app/migration
