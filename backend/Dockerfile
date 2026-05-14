@@ -54,7 +54,7 @@ WORKDIR /app
 # prod-server: HTTP サーバー
 # ============================================
 FROM prod-base AS prod-server
-COPY --from=builder /out/server /app/server
+COPY --chown=app:app --from=builder /out/server /app/server
 EXPOSE 8080
 ENTRYPOINT ["/app/server"]
 
@@ -62,20 +62,20 @@ ENTRYPOINT ["/app/server"]
 # prod-worker: 非同期ジョブのコンシューマー
 # ============================================
 FROM prod-base AS prod-worker
-COPY --from=builder /out/worker /app/worker
+COPY --chown=app:app --from=builder /out/worker /app/worker
 ENTRYPOINT ["/app/worker"]
 
 # ============================================
 # prod-relay: outbox リレー
 # ============================================
 FROM prod-base AS prod-relay
-COPY --from=builder /out/relay /app/relay
+COPY --chown=app:app --from=builder /out/relay /app/relay
 ENTRYPOINT ["/app/relay"]
 
 # ============================================
 # prod-migration: ワンショットの DB マイグレーション
 # ============================================
 FROM prod-base AS prod-migration
-COPY --from=builder /out/migration /app/migration
+COPY --chown=app:app --from=builder /out/migration /app/migration
 ENTRYPOINT ["/app/migration"]
 CMD ["up"]
