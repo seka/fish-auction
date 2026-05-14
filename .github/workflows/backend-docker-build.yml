@@ -1,0 +1,37 @@
+name: Backend Docker Build
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-docker-build.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-docker-build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - prod-server
+          - prod-worker
+          - prod-relay
+          - prod-migration
+          - prod-ops
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.target }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          target: ${{ matrix.target }}
+          push: false
+          load: false
+          cache-from: type=gha,scope=backend-${{ matrix.target }}
+          cache-to: type=gha,scope=backend-${{ matrix.target }},mode=max
