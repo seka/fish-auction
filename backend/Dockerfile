@@ -2,7 +2,7 @@
 
 # dev (builder) と prod の alpine を 1 つの ARG で揃え、musl/userland の drift を防ぐ。
 # 本番運用時は CI で digest pin することを推奨。
-ARG ALPINE_VERSION=3.21
+ARG ALPINE_VERSION=3.22
 ARG GO_VERSION=1.26
 
 # ============================================
