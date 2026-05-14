@@ -24,10 +24,14 @@ CMD ["yarn", "dev"]
 # ============================================
 FROM base AS builder
 
-# NEXT_PUBLIC_* はビルド時にバンドルへ埋め込まれるため ARG で受ける。
+# NEXT_PUBLIC_* はクライアントバンドルにビルド時埋め込み。
+# API_BASE_URL は next.config.ts の rewrites destination で参照され、
+# output: 'standalone' の next build 時点で転送先 URL として焼き込まれる。
+ARG API_BASE_URL=""
 ARG NEXT_PUBLIC_API_URL=""
 ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+ENV API_BASE_URL=${API_BASE_URL} \
+    NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
     NEXT_PUBLIC_VAPID_PUBLIC_KEY=${NEXT_PUBLIC_VAPID_PUBLIC_KEY} \
     NEXT_TELEMETRY_DISABLED=1
 
