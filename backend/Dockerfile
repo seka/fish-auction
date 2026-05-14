@@ -35,10 +35,12 @@ ENV CGO_ENABLED=0 GOOS=linux
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -trimpath -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" \
-        -o /out/server    ./cmd/server && \
-    go build -trimpath -ldflags "-s -w" -o /out/worker    ./cmd/worker && \
-    go build -trimpath -ldflags "-s -w" -o /out/relay     ./cmd/relay && \
-    go build -trimpath -ldflags "-s -w" -o /out/migration ./cmd/migration
+        -o /out/server     ./cmd/server && \
+    go build -trimpath -ldflags "-s -w" -o /out/worker     ./cmd/worker && \
+    go build -trimpath -ldflags "-s -w" -o /out/relay      ./cmd/relay && \
+    go build -trimpath -ldflags "-s -w" -o /out/migration  ./cmd/migration && \
+    go build -trimpath -ldflags "-s -w" -o /out/seed       ./cmd/seed && \
+    go build -trimpath -ldflags "-s -w" -o /out/init_admin ./cmd/init_admin
 
 # ============================================
 # prod-base: 本番ランタイム共通（非 root、CA 証明書、tzdata）
@@ -79,3 +81,11 @@ FROM prod-base AS prod-migration
 COPY --chown=app:app --from=builder /out/migration /app/migration
 ENTRYPOINT ["/app/migration"]
 CMD ["up"]
+
+# ============================================
+# prod-ops: 運用ワンショット（seed / init_admin を同梱）
+# 呼び出し側で /app/init_admin --email ... など command を明示指定する
+# ============================================
+FROM prod-base AS prod-ops
+COPY --chown=app:app --from=builder /out/init_admin /app/init_admin
+COPY --chown=app:app --from=builder /out/seed       /app/seed
