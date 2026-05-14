@@ -1,0 +1,75 @@
+# docker buildx bake 用の build orchestration 定義。
+#
+# 使い方:
+#   cd backend
+#   docker buildx bake                       # 全 prod-* ターゲットを並列ビルド
+#   docker buildx bake prod-server           # 個別ターゲット
+#   VERSION=1.2.3 COMMIT=abc1234 docker buildx bake --push   # リリース時
+#
+# Dockerfile 直叩き (`docker build ./backend`) も従来通り動作する
+# （最終ステージが prod-server）。bake は複数イメージの一括ビルド／push 用。
+
+variable "VERSION" {
+  default = "0.0.0"
+}
+
+variable "COMMIT" {
+  default = "unknown"
+}
+
+variable "REGISTRY" {
+  default = "fish-auction"
+}
+
+variable "TAG" {
+  default = "local"
+}
+
+group "default" {
+  targets = [
+    "prod-server",
+    "prod-worker",
+    "prod-relay",
+    "prod-migration",
+    "prod-ops",
+  ]
+}
+
+target "_common" {
+  context    = "."
+  dockerfile = "Dockerfile"
+  args = {
+    VERSION = VERSION
+    COMMIT  = COMMIT
+  }
+}
+
+target "prod-server" {
+  inherits = ["_common"]
+  target   = "prod-server"
+  tags     = ["${REGISTRY}/server:${TAG}"]
+}
+
+target "prod-worker" {
+  inherits = ["_common"]
+  target   = "prod-worker"
+  tags     = ["${REGISTRY}/worker:${TAG}"]
+}
+
+target "prod-relay" {
+  inherits = ["_common"]
+  target   = "prod-relay"
+  tags     = ["${REGISTRY}/relay:${TAG}"]
+}
+
+target "prod-migration" {
+  inherits = ["_common"]
+  target   = "prod-migration"
+  tags     = ["${REGISTRY}/migration:${TAG}"]
+}
+
+target "prod-ops" {
+  inherits = ["_common"]
+  target   = "prod-ops"
+  tags     = ["${REGISTRY}/ops:${TAG}"]
+}
