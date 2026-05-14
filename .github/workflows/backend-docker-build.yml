@@ -13,25 +13,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - prod-server
-          - prod-worker
-          - prod-relay
-          - prod-migration
-          - prod-ops
     steps:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
 
-      - name: Build ${{ matrix.target }}
-        uses: docker/build-push-action@v6
+      - name: Bake all prod targets
+        uses: docker/bake-action@v6
         with:
-          context: ./backend
-          target: ${{ matrix.target }}
+          workdir: backend
           push: false
           load: false
-          cache-from: type=gha,scope=backend-${{ matrix.target }}
-          cache-to: type=gha,scope=backend-${{ matrix.target }},mode=max
+          set: |
+            *.cache-from=type=gha,scope=backend
+            *.cache-to=type=gha,scope=backend,mode=max
