@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1.7
 
-# golang/alpine のメジャーマイナーを固定。本番運用時は CI で digest pin することを推奨。
-ARG GO_IMAGE=golang:1.26-alpine3.21
-ARG RUNTIME_IMAGE=alpine:3.21
+# dev (builder) と prod の alpine を 1 つの ARG で揃え、musl/userland の drift を防ぐ。
+# 本番運用時は CI で digest pin することを推奨。
+ARG ALPINE_VERSION=3.21
+ARG GO_VERSION=1.26
 
 # ============================================
 # base: 依存解決のキャッシュレイヤー
 # ============================================
-FROM ${GO_IMAGE} AS base
+FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS base
 RUN apk add --no-cache make
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -42,7 +43,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 # ============================================
 # prod-base: 本番ランタイム共通（非 root、CA 証明書、tzdata）
 # ============================================
-FROM ${RUNTIME_IMAGE} AS prod-base
+FROM alpine:${ALPINE_VERSION} AS prod-base
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -g 10001 -S app && \
     adduser  -u 10001 -S app -G app
