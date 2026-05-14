@@ -29,7 +29,7 @@ CMD ["air", "-c", ".air.toml"]
 # ============================================
 FROM base AS builder
 COPY . .
-ARG VERSION=dev
+ARG VERSION=0.0.0
 ARG COMMIT=unknown
 ENV CGO_ENABLED=0 GOOS=linux
 RUN --mount=type=cache,target=/go/pkg/mod \

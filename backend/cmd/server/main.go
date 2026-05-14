@@ -22,6 +22,11 @@ import (
 
 const isWorker = false
 
+var (
+	version = "0.0.0"
+	commit  = "unknown"
+)
+
 type handlers struct {
 	health         *publicHandler.HealthHandler
 	fisherman      *adminHandler.FishermanHandler
@@ -46,6 +51,7 @@ type handlers struct {
 func main() {
 	cfg := config.NewAppServerConfig()
 	logger.Init(config.GetLogLevel())
+	slog.Info("server starting", "version", version, "commit", commit)
 	if err := cfg.Validate(); err != nil {
 		slog.Error("invalid config", "err", err)
 		os.Exit(1)
