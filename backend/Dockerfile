@@ -53,14 +53,6 @@ USER app:app
 WORKDIR /app
 
 # ============================================
-# prod-server: HTTP サーバー
-# ============================================
-FROM prod-base AS prod-server
-COPY --chown=app:app --from=builder /out/server /app/server
-EXPOSE 8080
-ENTRYPOINT ["/app/server"]
-
-# ============================================
 # prod-worker: 非同期ジョブのコンシューマー
 # ============================================
 FROM prod-base AS prod-worker
@@ -89,3 +81,13 @@ CMD ["up"]
 FROM prod-base AS prod-ops
 COPY --chown=app:app --from=builder /out/init_admin /app/init_admin
 COPY --chown=app:app --from=builder /out/seed       /app/seed
+
+# ============================================
+# prod-server: HTTP サーバー
+# `--target` 未指定の docker build がデフォルトでこのステージを生成するよう、
+# 最終ステージに配置する（既存運用との後方互換を維持）。
+# ============================================
+FROM prod-base AS prod-server
+COPY --chown=app:app --from=builder /out/server /app/server
+EXPOSE 8080
+ENTRYPOINT ["/app/server"]
