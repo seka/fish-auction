@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Build / cache artifacts (.gitignore と歩調を揃える)
+build/
+.cache/
+.gocache/
+.gopath/
+scratch/
+
+# Test / lint outputs
+*.test
+*.out
+lint.out
+lint_output.txt
+coverage.*
+
+# Compiled artifacts (誤って backend/ 直下に残った場合の保険)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/server
+/worker
+/relay
+/migration
+/seed
+/init_admin
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# IDE / editor
+.vscode
+.idea
+*.swp
+
+# Docker 自身は context に不要
+Dockerfile
+.dockerignore
