@@ -18,7 +18,7 @@ export const useVenueManagement = () => {
 
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
-  const schema = useMemo(() => getVenueSchema(tValidation), [tValidation]);
+  const schema = useMemo(() => getVenueSchema(tValidation, t), [tValidation, t]);
   const form = useForm<VenueFormData>({
     resolver: zodResolver(schema),
   });

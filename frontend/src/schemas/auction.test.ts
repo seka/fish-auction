@@ -3,8 +3,9 @@ import { getVenueSchema, getAuctionSchema, getBidSchema } from './auction';
 import { tMock } from '@testings/i18n';
 
 const t = tMock;
-const venueSchema = getVenueSchema(t);
-const auctionSchema = getAuctionSchema(t);
+const tField = tMock as unknown as Parameters<typeof getVenueSchema>[1];
+const venueSchema = getVenueSchema(t, tField);
+const auctionSchema = getAuctionSchema(t, tField);
 const bidSchema = getBidSchema(t);
 
 describe('Auction Schemas', () => {
