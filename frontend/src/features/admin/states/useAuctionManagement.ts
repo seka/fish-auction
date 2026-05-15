@@ -31,7 +31,7 @@ export const useAuctionManagement = () => {
     isDeleting,
   } = useAdminAuctionMutations();
 
-  const schema = useMemo(() => getAuctionSchema(tValidation), [tValidation]);
+  const schema = useMemo(() => getAuctionSchema(tValidation, t), [tValidation, t]);
   const form = useForm<AuctionFormInput>({
     resolver: zodResolver(schema),
   });

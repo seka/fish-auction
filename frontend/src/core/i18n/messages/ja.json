@@ -188,6 +188,9 @@
       "invoice": "請求書発行",
       "settings": "設定",
       "logout": "ログアウト"
+    },
+    "Settings": {
+      "title": "アカウント設定"
     }
   },
   "Public": {
@@ -266,6 +269,7 @@
   },
   "Auth": {
     "ResetPassword": {
+      "title": "パスワード変更",
       "verify_loading": "検証中...",
       "invalid_link_title": "無効なリンク",
       "invalid_link_desc": "このリンクは無効か、有効期限が切れています。\nもう一度パスワード再設定リクエストを行ってください。",

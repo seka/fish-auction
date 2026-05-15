@@ -1,24 +1,27 @@
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { ValidationT } from './fields/password';
 import { getPriceSchema } from './fields/price';
 
-export const getVenueSchema = (t: ValidationT) =>
+type RootT = ReturnType<typeof useTranslations>;
+
+export const getVenueSchema = (t: ValidationT, tField: RootT) =>
   z.object({
     id: z.number().optional(),
-    name: z.string().min(1, t('required', { field: t('Admin.Venues.name') })),
+    name: z.string().min(1, t('required', { field: tField('Admin.Venues.name') })),
     location: z.string().optional(),
     description: z.string().optional(),
     createdAt: z.string().optional(),
   });
 
-export const getAuctionSchema = (t: ValidationT) =>
+export const getAuctionSchema = (t: ValidationT, tField: RootT) =>
   z.object({
     id: z.number().optional(),
     venueId: z
       .union([z.string(), z.number()])
       .transform(Number)
-      .refine((n) => n >= 1, t('select_required', { field: t('Admin.Auctions.venue') })),
-    startAt: z.string().min(1, t('required', { field: t('Admin.Auctions.start_time') })),
+      .refine((n) => n >= 1, t('select_required', { field: tField('Admin.Auctions.venue') })),
+    startAt: z.string().min(1, t('required', { field: tField('Admin.Auctions.start_time') })),
     endAt: z.string().optional(),
     status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
     createdAt: z.string().optional(),
