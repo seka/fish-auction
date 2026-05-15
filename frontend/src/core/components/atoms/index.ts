@@ -6,3 +6,4 @@ export * from './stack';
 export * from './text';
 export * from './EmptyState';
 export * from './badge';
+export * from './Spinner';
