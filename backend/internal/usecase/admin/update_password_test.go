@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
@@ -39,6 +40,15 @@ func (m *mockAdminRepositoryForUpdate) Count(_ context.Context) (int, error) {
 }
 func (m *mockAdminRepositoryForUpdate) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return m.updateErr
+}
+func (m *mockAdminRepositoryForUpdate) IncrementFailedAttempts(_ context.Context, _ int) error {
+	return nil
+}
+func (m *mockAdminRepositoryForUpdate) LockAccount(_ context.Context, _ int, _ time.Time) error {
+	return nil
+}
+func (m *mockAdminRepositoryForUpdate) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
+	return nil
 }
 
 type mockSessionRepo struct {

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
@@ -23,11 +24,11 @@ func NewAdminStore(db datastore.Database) *AdminStore {
 
 // FindOneByEmail returns an admin by its email.
 func (r *AdminStore) FindOneByEmail(ctx context.Context, email string) (*model.Admin, error) {
-	query := `SELECT id, email, password_hash, created_at FROM admins WHERE email = $1`
+	query := `SELECT id, email, password_hash, failed_attempts, locked_until, created_at FROM admins WHERE email = $1`
 	row := r.db.QueryRow(ctx, query, email)
 
 	admin := &model.Admin{}
-	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
+	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.FailedAttempts, &admin.LockedUntil, &admin.CreatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Admin", 0, "FindOneByEmail")
 	}
@@ -36,11 +37,11 @@ func (r *AdminStore) FindOneByEmail(ctx context.Context, email string) (*model.A
 
 // FindByID returns an admin by its ID.
 func (r *AdminStore) FindByID(ctx context.Context, id int) (*model.Admin, error) {
-	query := `SELECT id, email, password_hash, created_at FROM admins WHERE id = $1`
+	query := `SELECT id, email, password_hash, failed_attempts, locked_until, created_at FROM admins WHERE id = $1`
 	row := r.db.QueryRow(ctx, query, id)
 
 	admin := &model.Admin{}
-	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.CreatedAt)
+	err := row.Scan(&admin.ID, &admin.Email, &admin.PasswordHash, &admin.FailedAttempts, &admin.LockedUntil, &admin.CreatedAt)
 	if err != nil {
 		return nil, dserrors.HandleError(err, "Admin", id, "FindByID")
 	}
@@ -74,6 +75,36 @@ func (r *AdminStore) UpdatePassword(ctx context.Context, id int, passwordHash st
 	_, err := r.db.Execute(ctx, query, passwordHash, id)
 	if err != nil {
 		return dserrors.HandleError(err, "Admin", id, "UpdatePassword")
+	}
+	return nil
+}
+
+// IncrementFailedAttempts increments the count of failed login attempts.
+func (r *AdminStore) IncrementFailedAttempts(ctx context.Context, id int) error {
+	_, err := r.db.Execute(ctx,
+		`UPDATE admins SET failed_attempts = failed_attempts + 1 WHERE id = $1`, id)
+	if err != nil {
+		return dserrors.HandleError(err, "Admin", id, "IncrementFailedAttempts")
+	}
+	return nil
+}
+
+// LockAccount locks an admin account until the specified time.
+func (r *AdminStore) LockAccount(ctx context.Context, id int, until time.Time) error {
+	_, err := r.db.Execute(ctx,
+		`UPDATE admins SET locked_until = $1 WHERE id = $2`, until, id)
+	if err != nil {
+		return dserrors.HandleError(err, "Admin", id, "LockAccount")
+	}
+	return nil
+}
+
+// UpdateLoginSuccess resets failed attempts and clears the lock on successful login.
+func (r *AdminStore) UpdateLoginSuccess(ctx context.Context, id int, now time.Time) error {
+	_, err := r.db.Execute(ctx,
+		`UPDATE admins SET failed_attempts = 0, locked_until = NULL WHERE id = $1`, id)
+	if err != nil {
+		return dserrors.HandleError(err, "Admin", id, "UpdateLoginSuccess")
 	}
 	return nil
 }

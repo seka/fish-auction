@@ -158,7 +158,7 @@ func (u *useCaseRegistry) NewListInvoicesUseCase() invoice.ListInvoicesUseCase {
 }
 
 func (u *useCaseRegistry) NewLoginUseCase() auth.LoginUseCase {
-	return auth.NewLoginUseCase(u.repo.NewAdminRepository())
+	return auth.NewLoginUseCase(u.repo.NewAdminRepository(), u.service.NewClock())
 }
 
 func (u *useCaseRegistry) NewCreateVenueUseCase() venue.CreateVenueUseCase {

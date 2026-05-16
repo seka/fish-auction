@@ -4,12 +4,21 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
 	"github.com/seka/fish-auction/backend/internal/usecase/auth"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type mockClock struct{}
+
+func (c *mockClock) Now() time.Time                              { return time.Now() }
+func (c *mockClock) NowIn(_ model.LocationName) time.Time        { return time.Now() }
+
+var _ service.Clock = (*mockClock)(nil)
 
 type mockAdminRepository struct {
 	admin *model.Admin
@@ -46,6 +55,18 @@ func (m *mockAdminRepository) Count(_ context.Context) (int, error) {
 }
 
 func (m *mockAdminRepository) UpdatePassword(_ context.Context, _ int, _ string) error {
+	return nil
+}
+
+func (m *mockAdminRepository) IncrementFailedAttempts(_ context.Context, _ int) error {
+	return nil
+}
+
+func (m *mockAdminRepository) LockAccount(_ context.Context, _ int, _ time.Time) error {
+	return nil
+}
+
+func (m *mockAdminRepository) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
 
@@ -107,7 +128,7 @@ func TestLoginUseCase_Execute(t *testing.T) {
 				admin: tt.mockAdmin,
 				err:   tt.mockErr,
 			}
-			uc := auth.NewLoginUseCase(repo)
+			uc := auth.NewLoginUseCase(repo, &mockClock{})
 
 			gotAdmin, err := uc.Execute(context.Background(), tt.email, tt.password)
 			if (err != nil) != tt.wantErr {
