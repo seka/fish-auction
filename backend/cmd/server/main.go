@@ -46,6 +46,7 @@ type handlers struct {
 	authReset      *publicHandler.AuthResetHandler
 	adminAuthReset *adminHandler.AuthResetHandler
 	push           *buyerHandler.PushHandler
+	adminMe        *adminHandler.MeHandler
 }
 
 func main() {
@@ -82,7 +83,7 @@ func run(cfg *config.AppServerConfig) error {
 
 	// Initialize Handlers
 	sessionRepo := repoReg.NewSessionRepository()
-	h := buildHandlers(useCaseReg, sessionRepo)
+	h := buildHandlers(useCaseReg, sessionRepo, repoReg)
 
 	// Initialize Server
 	srv := server.NewServer(
@@ -104,7 +105,9 @@ func run(cfg *config.AppServerConfig) error {
 		h.authReset,
 		h.adminAuthReset,
 		h.push,
+		h.adminMe,
 		sessionRepo,
+		repoReg.RawRedisClient(),
 		strings.Split(cfg.AllowedOrigins, ","),
 		strings.Split(cfg.TrustedProxies, ","),
 		cfg.ReadTimeout,
@@ -122,7 +125,7 @@ func run(cfg *config.AppServerConfig) error {
 	return nil
 }
 
-func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepository) *handlers {
+func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepository, repoReg registry.Repository) *handlers {
 	return &handlers{
 		health:         publicHandler.NewHealthHandler(),
 		fisherman:      adminHandler.NewFishermanHandler(reg),
@@ -142,5 +145,6 @@ func buildHandlers(reg registry.UseCase, sessionRepo domainrepo.SessionRepositor
 		authReset:      publicHandler.NewAuthResetHandler(reg),
 		adminAuthReset: adminHandler.NewAuthResetHandler(reg),
 		push:           buyerHandler.NewPushHandler(reg),
+		adminMe:        adminHandler.NewMeHandler(repoReg.NewAdminRepository()),
 	}
 }

@@ -32,16 +32,20 @@ type Repository interface {
 	NewItemCacheInvalidator() repository.CacheInvalidator
 	NewSessionRepository() repository.SessionRepository
 	NewOutboxRepository() repository.OutboxRepository
+	// RawRedisClient exposes the underlying Redis client for components
+	// that need direct Redis access (e.g. rate limiters).
+	RawRedisClient() *redis.Client
 	// Cleanup closes underlying connections (DB, Redis, etc.) via their interfaces.
 	Cleanup() error
 }
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db         datastore.Database
-	cache      datastore.Cache
-	cacheTTL   time.Duration
-	sessionTTL time.Duration
+	db          datastore.Database
+	cache       datastore.Cache
+	redisClient *redis.Client
+	cacheTTL    time.Duration
+	sessionTTL  time.Duration
 }
 
 // NewRepositoryRegistry creates a new Repository registry.
@@ -60,8 +64,10 @@ func NewRepositoryRegistry(
 
 	// RedisAddr が空のときは Redis 接続をスキップする（relay のような Redis 不要プロセス向け）。
 	var cache datastore.Cache
+	var redisClient *redis.Client
 	if redisCfg.RedisAddr() != "" {
-		redisClient, err := connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())
+		var err error
+		redisClient, err = connectRedis(redisCfg.RedisAddr(), redisCfg.GetRedisDB())
 		if err != nil {
 			_ = db.Close()
 			return nil, err
@@ -70,11 +76,16 @@ func NewRepositoryRegistry(
 	}
 
 	return &repositoryRegistry{
-		db:         postgres.NewClient(db),
-		cache:      cache,
-		cacheTTL:   cacheCfg.GetCacheTTL(),
-		sessionTTL: sessionCfg.GetSessionTTL(),
+		db:          postgres.NewClient(db),
+		cache:       cache,
+		redisClient: redisClient,
+		cacheTTL:    cacheCfg.GetCacheTTL(),
+		sessionTTL:  sessionCfg.GetSessionTTL(),
 	}, nil
+}
+
+func (r *repositoryRegistry) RawRedisClient() *redis.Client {
+	return r.redisClient
 }
 
 func (r *repositoryRegistry) Cleanup() error {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	"github.com/seka/fish-auction/backend/internal/server/handler/buyer"
@@ -40,6 +41,10 @@ type Server struct {
 	adminAuthResetHandler *admin.AuthResetHandler
 	authResetHandler      *public.AuthResetHandler
 	pushHandler           *buyer.PushHandler
+	adminLoginRL          *middleware.RateLimiterMiddleware
+	buyerLoginRL          *middleware.RateLimiterMiddleware
+	resetRL               *middleware.RateLimiterMiddleware
+	adminMe               *admin.MeHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
 	cors                  *middleware.CORSMiddleware
@@ -76,7 +81,9 @@ func NewServer(
 	authResetHandler *public.AuthResetHandler,
 	adminAuthResetHandler *admin.AuthResetHandler,
 	pushHandler *buyer.PushHandler,
+	adminMeHandler *admin.MeHandler,
 	sessionRepo repository.SessionRepository,
+	redisClient *redis.Client,
 	allowedOrigins []string,
 	trustedProxies []string,
 	readTimeout time.Duration,
@@ -103,6 +110,10 @@ func NewServer(
 		authResetHandler:      authResetHandler,
 		adminAuthResetHandler: adminAuthResetHandler,
 		pushHandler:           pushHandler,
+		adminMe:               adminMeHandler,
+		adminLoginRL:          middleware.NewRateLimiterMiddleware(redisClient, "rate:login_admin", middleware.LoginRateLimit, middleware.LoginRateWindow),
+		buyerLoginRL:          middleware.NewRateLimiterMiddleware(redisClient, "rate:login_buyer", middleware.LoginRateLimit, middleware.LoginRateWindow),
+		resetRL:               middleware.NewRateLimiterMiddleware(redisClient, "rate:password_reset", middleware.ResetRateLimit, middleware.ResetRateWindow),
 		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
 		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
@@ -130,13 +141,27 @@ func (s *Server) routes() {
 
 func (s *Server) registerPublicRoutes() {
 	s.healthHandler.RegisterRoutes(s.router)
-	s.adminAuthHandler.RegisterRoutes(s.router)
-	s.authResetHandler.RegisterRoutes(s.router)
-	s.adminAuthResetHandler.RegisterRoutes(s.router)
+
+	// admin login は RL でラップし、logout はそのまま登録する。
+	s.router.Handle("POST /api/login", s.adminLoginRL.Handle(http.HandlerFunc(s.adminAuthHandler.Login)))
+	s.router.HandleFunc("POST /api/admin/logout", s.adminAuthHandler.Logout)
+
+	// buyer login は RL でラップし、logout はそのまま登録する。
+	s.router.Handle("POST /api/buyer/login", s.buyerLoginRL.Handle(http.HandlerFunc(s.buyerAuthHandler.Login)))
+	s.router.HandleFunc("POST /api/buyer/logout", s.buyerAuthHandler.Logout)
+
+	// パスワードリセット request エンドポイントのみ RL 対象。verify / confirm は RL なし。
+	s.router.Handle("POST /api/auth/password-reset/request", s.resetRL.Handle(http.HandlerFunc(s.authResetHandler.RequestReset)))
+	s.router.HandleFunc("POST /api/auth/password-reset/verify", s.authResetHandler.VerifyToken)
+	s.router.HandleFunc("POST /api/auth/password-reset/confirm", s.authResetHandler.ConfirmReset)
+
+	s.router.Handle("POST /api/admin/password-reset/request", s.resetRL.Handle(http.HandlerFunc(s.adminAuthResetHandler.RequestReset)))
+	s.router.HandleFunc("POST /api/admin/password-reset/verify", s.adminAuthResetHandler.VerifyToken)
+	s.router.HandleFunc("POST /api/admin/password-reset/confirm", s.adminAuthResetHandler.ConfirmReset)
+
 	s.publicItemHandler.RegisterRoutes(s.router)
 	s.publicAuctionHandler.RegisterRoutes(s.router)
 	s.publicVenueHandler.RegisterRoutes(s.router)
-	s.buyerAuthHandler.RegisterRoutes(s.router)
 }
 
 func (s *Server) registerAdminRoutes() {
@@ -149,6 +174,7 @@ func (s *Server) registerAdminRoutes() {
 	s.adminVenueHandler.RegisterRoutes(adminMux)
 	s.adminHandler.RegisterRoutes(adminMux)
 	s.invoiceHandler.RegisterRoutes(adminMux)
+	s.adminMe.RegisterRoutes(adminMux)
 
 	s.router.Handle("/api/admin/", s.adminAuth.Handle(http.StripPrefix("/api/admin", adminMux)))
 }
