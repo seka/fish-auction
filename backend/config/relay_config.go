@@ -12,6 +12,7 @@ type RelayConfig struct {
 	PostgresPassword string
 	PostgresDB       string
 	PostgresSslMode  string
+	AppEnv           string
 	SQSQueueURL      string
 	SQSRegion        string
 	SQSEndpoint      string
@@ -26,6 +27,7 @@ func NewRelayConfig() *RelayConfig {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
+		AppEnv:           GetEnv("APP_ENV", "develop"),
 		SQSQueueURL:      GetEnv("AWS_SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
 		SQSRegion:        GetEnv("AWS_SQS_REGION", "ap-northeast-1"),
 		SQSEndpoint:      GetEnv("AWS_SQS_ENDPOINT", "http://localhost:4566"),
@@ -39,4 +41,8 @@ func (c *RelayConfig) DBConnectionURL() string {
 
 func (c *RelayConfig) SQSConfig() (region, queueURL, endpoint string) {
 	return c.SQSRegion, c.SQSQueueURL, c.SQSEndpoint
+}
+
+func (c *RelayConfig) Validate() error {
+	return validateSSLMode(c.AppEnv, c.PostgresSslMode)
 }

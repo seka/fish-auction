@@ -10,6 +10,7 @@ type MigrationConfig struct {
 	PostgresPassword string
 	PostgresDB       string
 	PostgresSslMode  string
+	AppEnv           string
 }
 
 // NewMigrationConfig loads configuration for the migration command.
@@ -21,10 +22,15 @@ func NewMigrationConfig() *MigrationConfig {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
+		AppEnv:           GetEnv("APP_ENV", "develop"),
 	}
 }
 
 func (c *MigrationConfig) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
+}
+
+func (c *MigrationConfig) Validate() error {
+	return validateSSLMode(c.AppEnv, c.PostgresSslMode)
 }

@@ -88,6 +88,9 @@ func (c *AppServerConfig) Validate() error {
 			return fmt.Errorf("invalid TRUSTED_PROXIES: %q is not a valid CIDR: %w", cidr, err)
 		}
 	}
+	if err := validateSSLMode(c.AppEnv, c.PostgresSslMode); err != nil {
+		return err
+	}
 	return nil
 }
 

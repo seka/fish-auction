@@ -22,6 +22,11 @@ func main() {
 	cfg := config.NewRelayConfig()
 	logger.Init(config.GetLogLevel())
 
+	if err := cfg.Validate(); err != nil {
+		slog.Error("invalid config", "err", err)
+		os.Exit(1)
+	}
+
 	if err := run(cfg); err != nil {
 		slog.Error("relay fatal", "err", err)
 		os.Exit(1)

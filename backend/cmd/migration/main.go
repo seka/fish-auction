@@ -23,6 +23,11 @@ func main() {
 	cfg := config.NewMigrationConfig()
 	logger.Init(config.GetLogLevel())
 
+	if err := cfg.Validate(); err != nil {
+		slog.Error("invalid config", "err", err)
+		os.Exit(1)
+	}
+
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	flag.Parse()
 

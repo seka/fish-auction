@@ -81,3 +81,7 @@ func (c *WorkerConfig) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
 }
+
+func (c *WorkerConfig) Validate() error {
+	return validateSSLMode(c.AppEnv, c.PostgresSslMode)
+}
