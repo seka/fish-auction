@@ -1,3 +1,8 @@
+export interface Admin {
+  id: number;
+  email: string;
+}
+
 export interface Fisherman {
   id?: number;
   name: string;
