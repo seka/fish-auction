@@ -20,6 +20,8 @@ export const logout = async (): Promise<boolean> => {
   }
 };
 
+export const adminSessionCookie = 'admin_session';
+
 // src/middleware から呼ばれる。エラーはスローし、呼び出し元で fail-open を判断する。
 export const getAdminMe = async (cookie: CookieHeader): Promise<Admin> => {
   return apiClient.get<Admin>('/api/admin/me', { cookie });

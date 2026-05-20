@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { cookieHeader } from '@/src/core/api/client';
-import { checkAdminSession, checkBuyerSession, ADMIN_SESSION_COOKIE, BUYER_SESSION_COOKIE } from '@/src/middleware/session';
+import { checkAdminSession, checkBuyerSession, adminSessionCookie, buyerSessionCookie } from '@/src/middleware/session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const cookie = cookieHeader(request.headers.get('cookie'));
 
   if (pathname.startsWith('/admin') || pathname.startsWith('/invoice')) {
-    if (!request.cookies.get(ADMIN_SESSION_COOKIE)) {
+    if (!request.cookies.get(adminSessionCookie)) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     if (!await checkAdminSession(cookie)) {
@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith('/auction')) {
-    if (!request.cookies.get(BUYER_SESSION_COOKIE)) {
+    if (!request.cookies.get(buyerSessionCookie)) {
       return NextResponse.redirect(new URL('/login/buyer', request.url));
     }
     if (!await checkBuyerSession(cookie)) {
