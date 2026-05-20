@@ -83,6 +83,7 @@ func run(cfg *config.AppServerConfig) error {
 
 	// Initialize Handlers
 	sessionRepo := repoReg.NewSessionRepository()
+	rateLimitRepo := repoReg.NewRateLimitRepository()
 	h := buildHandlers(useCaseReg, sessionRepo, repoReg)
 
 	// Initialize Server
@@ -107,7 +108,7 @@ func run(cfg *config.AppServerConfig) error {
 		h.push,
 		h.adminMe,
 		sessionRepo,
-		repoReg.RawRedisClient(),
+		rateLimitRepo,
 		strings.Split(cfg.AllowedOrigins, ","),
 		strings.Split(cfg.TrustedProxies, ","),
 		cfg.ReadTimeout,

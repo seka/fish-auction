@@ -32,9 +32,7 @@ type Repository interface {
 	NewItemCacheInvalidator() repository.CacheInvalidator
 	NewSessionRepository() repository.SessionRepository
 	NewOutboxRepository() repository.OutboxRepository
-	// RawRedisClient exposes the underlying Redis client for components
-	// that need direct Redis access (e.g. rate limiters).
-	RawRedisClient() *redis.Client
+	NewRateLimitRepository() repository.RateLimitRepository
 	// Cleanup closes underlying connections (DB, Redis, etc.) via their interfaces.
 	Cleanup() error
 }
@@ -84,8 +82,8 @@ func NewRepositoryRegistry(
 	}, nil
 }
 
-func (r *repositoryRegistry) RawRedisClient() *redis.Client {
-	return r.redisClient
+func (r *repositoryRegistry) NewRateLimitRepository() repository.RateLimitRepository {
+	return postgres.NewRateLimitStore(r.db)
 }
 
 func (r *repositoryRegistry) Cleanup() error {

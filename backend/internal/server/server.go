@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/handler/admin"
 	"github.com/seka/fish-auction/backend/internal/server/handler/buyer"
@@ -41,9 +40,10 @@ type Server struct {
 	adminAuthResetHandler *admin.AuthResetHandler
 	authResetHandler      *public.AuthResetHandler
 	pushHandler           *buyer.PushHandler
-	adminLoginRL          *middleware.RateLimiterMiddleware
-	buyerLoginRL          *middleware.RateLimiterMiddleware
-	resetRL               *middleware.RateLimiterMiddleware
+	adminLoginRL    *middleware.RateLimiterMiddleware
+	buyerLoginRL    *middleware.RateLimiterMiddleware
+	adminResetRL    *middleware.RateLimiterMiddleware
+	buyerResetRL    *middleware.RateLimiterMiddleware
 	adminMe               *admin.MeHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
@@ -83,7 +83,7 @@ func NewServer(
 	pushHandler *buyer.PushHandler,
 	adminMeHandler *admin.MeHandler,
 	sessionRepo repository.SessionRepository,
-	redisClient *redis.Client,
+	rateLimitRepo repository.RateLimitRepository,
 	allowedOrigins []string,
 	trustedProxies []string,
 	readTimeout time.Duration,
@@ -111,9 +111,10 @@ func NewServer(
 		adminAuthResetHandler: adminAuthResetHandler,
 		pushHandler:           pushHandler,
 		adminMe:               adminMeHandler,
-		adminLoginRL:          middleware.NewRateLimiterMiddleware(redisClient, "rate:login_admin", middleware.LoginRateLimit, middleware.LoginRateWindow),
-		buyerLoginRL:          middleware.NewRateLimiterMiddleware(redisClient, "rate:login_buyer", middleware.LoginRateLimit, middleware.LoginRateWindow),
-		resetRL:               middleware.NewRateLimiterMiddleware(redisClient, "rate:password_reset", middleware.ResetRateLimit, middleware.ResetRateWindow),
+		adminLoginRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo, "rate:login_admin", middleware.LoginRateLimit, middleware.LoginRateWindow),
+		buyerLoginRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo, "rate:login_buyer", middleware.LoginRateLimit, middleware.LoginRateWindow),
+		adminResetRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo, "rate:reset_admin", middleware.ResetRateLimit, middleware.ResetRateWindow),
+		buyerResetRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo, "rate:reset_buyer", middleware.ResetRateLimit, middleware.ResetRateWindow),
 		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
 		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
@@ -151,11 +152,11 @@ func (s *Server) registerPublicRoutes() {
 	s.router.HandleFunc("POST /api/buyer/logout", s.buyerAuthHandler.Logout)
 
 	// パスワードリセット request エンドポイントのみ RL 対象。verify / confirm は RL なし。
-	s.router.Handle("POST /api/auth/password-reset/request", s.resetRL.Handle(http.HandlerFunc(s.authResetHandler.RequestReset)))
+	s.router.Handle("POST /api/auth/password-reset/request", s.buyerResetRL.Handle(http.HandlerFunc(s.authResetHandler.RequestReset)))
 	s.router.HandleFunc("POST /api/auth/password-reset/verify", s.authResetHandler.VerifyToken)
 	s.router.HandleFunc("POST /api/auth/password-reset/confirm", s.authResetHandler.ConfirmReset)
 
-	s.router.Handle("POST /api/admin/password-reset/request", s.resetRL.Handle(http.HandlerFunc(s.adminAuthResetHandler.RequestReset)))
+	s.router.Handle("POST /api/admin/password-reset/request", s.adminResetRL.Handle(http.HandlerFunc(s.adminAuthResetHandler.RequestReset)))
 	s.router.HandleFunc("POST /api/admin/password-reset/verify", s.adminAuthResetHandler.VerifyToken)
 	s.router.HandleFunc("POST /api/admin/password-reset/confirm", s.adminAuthResetHandler.ConfirmReset)
 
