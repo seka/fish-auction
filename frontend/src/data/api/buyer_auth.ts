@@ -30,3 +30,8 @@ export const getCurrentBuyer = async (): Promise<Buyer | null> => {
     return null;
   }
 };
+
+// middleware から呼ばれる。エラーはスローし、呼び出し元で fail-open を判断する。
+export const getBuyerMe = async (cookie: CookieHeader): Promise<Buyer> => {
+  return apiClient.get<Buyer>('/api/buyer/me', { cookie });
+};
