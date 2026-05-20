@@ -20,7 +20,7 @@ export const logout = async (): Promise<boolean> => {
   }
 };
 
-// middleware から呼ばれる。エラーはスローし、呼び出し元で fail-open を判断する。
+// src/middleware から呼ばれる。エラーはスローし、呼び出し元で fail-open を判断する。
 export const getAdminMe = async (cookie: CookieHeader): Promise<Admin> => {
   return apiClient.get<Admin>('/api/admin/me', { cookie });
 };
