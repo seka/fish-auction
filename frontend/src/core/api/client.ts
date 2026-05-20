@@ -1,5 +1,8 @@
 import { toCamelCase, toSnakeCase } from '@/src/core/api/caseConverter';
 
+export const cookieHeader = (raw: string | null): CookieHeader =>
+  (raw ?? '') as CookieHeader;
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -55,9 +58,10 @@ export class ApiClient {
     return text ? (toCamelCase(JSON.parse(text)) as T) : ({} as T);
   }
 
-  async get<T>(url: string): Promise<T> {
+  async get<T>(url: string, options?: { cookie?: CookieHeader }): Promise<T> {
     const res = await fetch(this.getFullUrl(url), {
       credentials: 'include',
+      headers: options?.cookie ? { Cookie: options.cookie } : undefined,
     });
     return this.handleResponse<T>(res);
   }
