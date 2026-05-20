@@ -39,11 +39,10 @@ type Repository interface {
 
 // repositoryRegistry implements the Repository interface
 type repositoryRegistry struct {
-	db          datastore.Database
-	cache       datastore.Cache
-	redisClient *redis.Client
-	cacheTTL    time.Duration
-	sessionTTL  time.Duration
+	db         datastore.Database
+	cache      datastore.Cache
+	cacheTTL   time.Duration
+	sessionTTL time.Duration
 }
 
 // NewRepositoryRegistry creates a new Repository registry.
@@ -74,11 +73,10 @@ func NewRepositoryRegistry(
 	}
 
 	return &repositoryRegistry{
-		db:          postgres.NewClient(db),
-		cache:       cache,
-		redisClient: redisClient,
-		cacheTTL:    cacheCfg.GetCacheTTL(),
-		sessionTTL:  sessionCfg.GetSessionTTL(),
+		db:         postgres.NewClient(db),
+		cache:      cache,
+		cacheTTL:   cacheCfg.GetCacheTTL(),
+		sessionTTL: sessionCfg.GetSessionTTL(),
 	}, nil
 }
 
