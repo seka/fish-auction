@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { getCurrentBuyer } from '@/src/data/api/buyer_auth';
+import { getCurrentBuyer, getBuyerMe } from '@/src/data/api/buyer_auth';
+import { getAdminMe } from '@/src/data/api/auth';
+import { ApiError } from '@/src/core/api/client';
 import { authKeys } from './keys';
 
 // Check if user is logged in by calling the backend
@@ -9,6 +11,26 @@ const checkAuth = async (): Promise<boolean> => {
     return buyer !== null;
   } catch {
     return false;
+  }
+};
+
+export const checkAdminSession = async (cookieHeader: CookieHeader): Promise<boolean> => {
+  try {
+    await getAdminMe(cookieHeader);
+    return true;
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) return false;
+    return true;
+  }
+};
+
+export const checkBuyerSession = async (cookieHeader: CookieHeader): Promise<boolean> => {
+  try {
+    await getBuyerMe(cookieHeader);
+    return true;
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) return false;
+    return true;
   }
 };
 
