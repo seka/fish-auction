@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { cookieHeader } from '@/src/core/api/client';
-import { checkAdminSession, checkBuyerSession } from '@/src/data/queries/auth/useQuery';
+import { checkAdminSession, checkBuyerSession } from '@/src/middleware/session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
