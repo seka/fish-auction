@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
-// RateLimitRepository manages per-key fixed-window counters for rate limiting.
+// RateLimitRepository manages per-IP fixed-window counters for rate limiting.
 type RateLimitRepository interface {
-	// Increment atomically increments the request counter for the given IP and window,
-	// and returns the updated count.
-	Increment(ctx context.Context, keyPrefix string, ip string, window time.Duration) (int64, error)
+	IncrementAdminLogin(ctx context.Context, ip string, window time.Duration) (int64, error)
+	IncrementBuyerLogin(ctx context.Context, ip string, window time.Duration) (int64, error)
+	IncrementAdminReset(ctx context.Context, ip string, window time.Duration) (int64, error)
+	IncrementBuyerReset(ctx context.Context, ip string, window time.Duration) (int64, error)
 }

@@ -11,6 +11,13 @@ import (
 
 var _ repository.RateLimitRepository = (*RateLimitStore)(nil)
 
+const (
+	keyAdminLogin = "rate:login_admin"
+	keyBuyerLogin = "rate:login_buyer"
+	keyAdminReset = "rate:reset_admin"
+	keyBuyerReset = "rate:reset_buyer"
+)
+
 // RateLimitStore implements repository.RateLimitRepository using Redis INCR.
 type RateLimitStore struct {
 	client *goredis.Client
@@ -21,10 +28,24 @@ func NewRateLimitStore(client *goredis.Client) *RateLimitStore {
 	return &RateLimitStore{client: client}
 }
 
-// Increment atomically increments the request counter for the given IP and window.
-// The key is constructed internally as "{keyPrefix}:{bucket}:{ip}".
-// Returns 0 without error when Redis is unavailable (fail-open).
-func (s *RateLimitStore) Increment(ctx context.Context, keyPrefix string, ip string, window time.Duration) (int64, error) {
+func (s *RateLimitStore) IncrementAdminLogin(ctx context.Context, ip string, window time.Duration) (int64, error) {
+	return s.increment(ctx, keyAdminLogin, ip, window)
+}
+
+func (s *RateLimitStore) IncrementBuyerLogin(ctx context.Context, ip string, window time.Duration) (int64, error) {
+	return s.increment(ctx, keyBuyerLogin, ip, window)
+}
+
+func (s *RateLimitStore) IncrementAdminReset(ctx context.Context, ip string, window time.Duration) (int64, error) {
+	return s.increment(ctx, keyAdminReset, ip, window)
+}
+
+func (s *RateLimitStore) IncrementBuyerReset(ctx context.Context, ip string, window time.Duration) (int64, error) {
+	return s.increment(ctx, keyBuyerReset, ip, window)
+}
+
+// increment is the shared implementation for all Increment* methods.
+func (s *RateLimitStore) increment(ctx context.Context, keyPrefix, ip string, window time.Duration) (int64, error) {
 	if s.client == nil {
 		return 0, nil
 	}

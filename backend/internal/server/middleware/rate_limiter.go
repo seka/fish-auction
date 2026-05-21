@@ -1,13 +1,13 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/seka/fish-auction/backend/internal/domain/repository"
 	"github.com/seka/fish-auction/backend/internal/server/util"
 )
 
@@ -18,21 +18,22 @@ const (
 	ResetRateLimit  = 10
 )
 
-// RateLimiterMiddleware enforces a per-IP fixed-window rate limit backed by Redis INCR.
+// RateLimitFunc is the increment function signature used by RateLimiterMiddleware.
+type RateLimitFunc func(ctx context.Context, ip string, window time.Duration) (int64, error)
+
+// RateLimiterMiddleware enforces a per-IP fixed-window rate limit.
 type RateLimiterMiddleware struct {
-	repo      repository.RateLimitRepository
+	increment RateLimitFunc
 	limit     int
 	window    time.Duration
-	keyPrefix string
 }
 
 // NewRateLimiterMiddleware creates a RateLimiterMiddleware.
-func NewRateLimiterMiddleware(repo repository.RateLimitRepository, keyPrefix string, limit int, window time.Duration) *RateLimiterMiddleware {
+func NewRateLimiterMiddleware(increment RateLimitFunc, limit int, window time.Duration) *RateLimiterMiddleware {
 	return &RateLimiterMiddleware{
-		repo:      repo,
+		increment: increment,
 		limit:     limit,
 		window:    window,
-		keyPrefix: keyPrefix,
 	}
 }
 
@@ -40,9 +41,9 @@ func NewRateLimiterMiddleware(repo repository.RateLimitRepository, keyPrefix str
 func (m *RateLimiterMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := extractIP(r.RemoteAddr)
-		count, err := m.repo.Increment(r.Context(), m.keyPrefix, ip, m.window)
+		count, err := m.increment(r.Context(), ip, m.window)
 		if err != nil {
-			slog.Warn("rate limiter: increment error", "err", err, "key", key)
+			slog.Warn("rate limiter: increment error", "err", err, "ip", ip)
 			next.ServeHTTP(w, r)
 			return
 		}
