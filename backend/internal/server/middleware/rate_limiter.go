@@ -18,7 +18,7 @@ const (
 	ResetRateLimit  = 10
 )
 
-// RateLimiterMiddleware enforces a per-IP fixed-window rate limit backed by PostgreSQL.
+// RateLimiterMiddleware enforces a per-IP fixed-window rate limit backed by Redis INCR.
 type RateLimiterMiddleware struct {
 	repo      repository.RateLimitRepository
 	limit     int
@@ -40,12 +40,14 @@ func NewRateLimiterMiddleware(repo repository.RateLimitRepository, keyPrefix str
 func (m *RateLimiterMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := extractIP(r.RemoteAddr)
-		windowStart := time.Now().UTC().Truncate(m.window)
-		key := fmt.Sprintf("%s:%s", m.keyPrefix, ip)
+		// Rack::Attack と同様にバケット値をキーに埋め込む。
+		// ウィンドウが変わると bucket が変わり自動的に新しいカウンタになる。
+		bucket := time.Now().UTC().Unix() / int64(m.window.Seconds())
+		key := fmt.Sprintf("%s:%d:%s", m.keyPrefix, bucket, ip)
 
-		count, err := m.repo.Increment(r.Context(), key, windowStart)
+		count, err := m.repo.Increment(r.Context(), key, m.window)
 		if err != nil {
-			slog.Warn("rate limiter: db error", "err", err, "key", key)
+			slog.Warn("rate limiter: increment error", "err", err, "key", key)
 			next.ServeHTTP(w, r)
 			return
 		}
