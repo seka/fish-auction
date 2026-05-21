@@ -61,6 +61,7 @@ func TestServer_SecurityRoutes(t *testing.T) {
 	hAuthReset := publicHandler.NewAuthResetHandler(mockReg)
 	hAdminAuthReset := adminHandler.NewAuthResetHandler(mockReg)
 	hPush := buyerHandler.NewPushHandler(mockReg)
+	hAdminMe := adminHandler.NewMeHandler(nil)
 
 	// Initialize Server
 	s := NewServer(
@@ -82,7 +83,9 @@ func TestServer_SecurityRoutes(t *testing.T) {
 		hAuthReset,
 		hAdminAuthReset,
 		hPush,
+		hAdminMe,
 		sessionRepo,
+		&mock.MockRateLimitRepository{},
 		[]string{"https://localhost", "http://localhost:3000"},
 		nil,
 		10*time.Second,
