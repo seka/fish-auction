@@ -40,10 +40,10 @@ type Server struct {
 	adminAuthResetHandler *admin.AuthResetHandler
 	authResetHandler      *public.AuthResetHandler
 	pushHandler           *buyer.PushHandler
-	adminLoginRL    *middleware.RateLimiterMiddleware
-	buyerLoginRL    *middleware.RateLimiterMiddleware
-	adminResetRL    *middleware.RateLimiterMiddleware
-	buyerResetRL    *middleware.RateLimiterMiddleware
+	adminLoginRL          *middleware.RateLimiterMiddleware
+	buyerLoginRL          *middleware.RateLimiterMiddleware
+	adminResetRL          *middleware.RateLimiterMiddleware
+	buyerResetRL          *middleware.RateLimiterMiddleware
 	adminMe               *admin.MeHandler
 	adminAuth             *middleware.AdminAuthMiddleware
 	buyerAuth             *middleware.BuyerAuthMiddleware
@@ -111,10 +111,10 @@ func NewServer(
 		adminAuthResetHandler: adminAuthResetHandler,
 		pushHandler:           pushHandler,
 		adminMe:               adminMeHandler,
-		adminLoginRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementAdminLogin, middleware.LoginRateLimit, middleware.LoginRateWindow),
-		buyerLoginRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementBuyerLogin, middleware.LoginRateLimit, middleware.LoginRateWindow),
-		adminResetRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementAdminReset, middleware.ResetRateLimit, middleware.ResetRateWindow),
-		buyerResetRL:    middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementBuyerReset, middleware.ResetRateLimit, middleware.ResetRateWindow),
+		adminLoginRL:          middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementAdminLogin, middleware.LoginRateLimit, middleware.LoginRateWindow),
+		buyerLoginRL:          middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementBuyerLogin, middleware.LoginRateLimit, middleware.LoginRateWindow),
+		adminResetRL:          middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementAdminReset, middleware.ResetRateLimit, middleware.ResetRateWindow),
+		buyerResetRL:          middleware.NewRateLimiterMiddleware(rateLimitRepo.IncrementBuyerReset, middleware.ResetRateLimit, middleware.ResetRateWindow),
 		adminAuth:             middleware.NewAdminAuthMiddleware(sessionRepo),
 		buyerAuth:             middleware.NewBuyerAuthMiddleware(sessionRepo),
 		cors:                  middleware.NewCORSMiddleware(allowedOrigins),
