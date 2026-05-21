@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
@@ -20,18 +21,21 @@ func NewRateLimitStore(client *goredis.Client) *RateLimitStore {
 	return &RateLimitStore{client: client}
 }
 
-// Increment atomically increments the counter via INCR and sets TTL on first creation.
+// Increment atomically increments the request counter for the given IP and window.
+// The key is constructed internally as "{keyPrefix}:{bucket}:{ip}".
 // Returns 0 without error when Redis is unavailable (fail-open).
-func (s *RateLimitStore) Increment(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+func (s *RateLimitStore) Increment(ctx context.Context, keyPrefix string, ip string, window time.Duration) (int64, error) {
 	if s.client == nil {
 		return 0, nil
 	}
 
+	bucket := time.Now().UTC().Unix() / int64(window.Seconds())
+	key := fmt.Sprintf("%s:%d:%s", keyPrefix, bucket, ip)
+
 	pipe := s.client.Pipeline()
 	incrCmd := pipe.Incr(ctx, key)
-	// EXPIRE はキー作成時のみ有効にしたいが、パイプラインの簡潔さを優先して毎回設定する。
 	// バケットキーはウィンドウ切り替えで新規キーになるため、TTL のリセットは実害がない。
-	pipe.Expire(ctx, key, ttl)
+	pipe.Expire(ctx, key, window)
 	if _, err := pipe.Exec(ctx); err != nil {
 		return 0, err
 	}

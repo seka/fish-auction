@@ -40,12 +40,7 @@ func NewRateLimiterMiddleware(repo repository.RateLimitRepository, keyPrefix str
 func (m *RateLimiterMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := extractIP(r.RemoteAddr)
-		// Rack::Attack と同様にバケット値をキーに埋め込む。
-		// ウィンドウが変わると bucket が変わり自動的に新しいカウンタになる。
-		bucket := time.Now().UTC().Unix() / int64(m.window.Seconds())
-		key := fmt.Sprintf("%s:%d:%s", m.keyPrefix, bucket, ip)
-
-		count, err := m.repo.Increment(r.Context(), key, m.window)
+		count, err := m.repo.Increment(r.Context(), m.keyPrefix, ip, m.window)
 		if err != nil {
 			slog.Warn("rate limiter: increment error", "err", err, "key", key)
 			next.ServeHTTP(w, r)
