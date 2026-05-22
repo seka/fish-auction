@@ -3,6 +3,7 @@ package buyer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
@@ -54,12 +55,14 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	}
 	if auth == nil {
 		// Only mask user existence by returning Unauthorized
+		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email", email)
 		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
 	}
 
 	// Check if account is locked
 	now := uc.clock.Now()
 	if auth.LockedUntil != nil && now.Before(*auth.LockedUntil) {
+		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "account_locked", "email", email)
 		return nil, &apperrors.UnauthorizedError{Message: "account is locked due to too many failed attempts"}
 	}
 
@@ -69,8 +72,11 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 		// Increment failed attempts
 		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
 
+		newAttempts := auth.FailedAttempts + 1
+		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "bad_password", "email", email, "attempts", newAttempts)
+
 		// Lock account if too many failed attempts
-		if auth.FailedAttempts+1 >= MaxFailedLoginAttempts {
+		if newAttempts >= MaxFailedLoginAttempts {
 			lockUntil := uc.clock.Now().Add(AccountLockDuration)
 			_ = uc.authRepo.LockAccount(ctx, auth.ID, lockUntil)
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}

@@ -4,10 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"time"
 
 	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/domain/repository"
+	"github.com/seka/fish-auction/backend/internal/domain/service"
+)
+
+const (
+	// MaxAdminFailedLoginAttempts is the number of consecutive failed login
+	// attempts before an admin account is locked.
+	MaxAdminFailedLoginAttempts = 5
+
+	// AdminAccountLockDuration is the duration for which an admin account is locked
+	// after exceeding MaxAdminFailedLoginAttempts.
+	AdminAccountLockDuration = 30 * time.Minute
 )
 
 // LoginUseCase defines the interface for user authentication.
@@ -16,37 +29,64 @@ type LoginUseCase interface {
 	Execute(ctx context.Context, email, password string) (*model.Admin, error)
 }
 
-// LoginUseCase handles user authentication
+// loginUseCase handles admin authentication with lockout support.
 type loginUseCase struct {
 	adminRepo repository.AdminRepository
+	clock     service.Clock
 }
 
 var _ LoginUseCase = (*loginUseCase)(nil)
 
 // NewLoginUseCase creates a new instance of LoginUseCase
-func NewLoginUseCase(adminRepo repository.AdminRepository) LoginUseCase {
-	return &loginUseCase{adminRepo: adminRepo}
+func NewLoginUseCase(adminRepo repository.AdminRepository, clock service.Clock) LoginUseCase {
+	return &loginUseCase{adminRepo: adminRepo, clock: clock}
 }
 
-// Execute authenticates a user with the provided email and password.
+// Execute authenticates an admin with the provided email and password.
 func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*model.Admin, error) {
 	admin, err := u.adminRepo.FindOneByEmail(ctx, email)
 	if err != nil {
 		var nfErr *apperrors.NotFoundError
 		if errors.As(err, &nfErr) {
+			slog.WarnContext(ctx, "auth: admin login failed", "reason", "user_not_found", "email", email)
 			return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
 		}
 		return nil, fmt.Errorf("failed to find admin during login: %w", err)
 	}
 	if admin == nil {
+		slog.WarnContext(ctx, "auth: admin login failed", "reason", "user_not_found", "email", email)
 		return nil, &apperrors.UnauthorizedError{Message: "Invalid credentials"}
+	}
+
+	now := u.clock.Now()
+	if admin.LockedUntil != nil && now.Before(*admin.LockedUntil) {
+		slog.WarnContext(ctx, "auth: admin login failed", "reason", "account_locked", "email", email)
+		return nil, &apperrors.UnauthorizedError{Message: "account is locked due to too many failed attempts"}
 	}
 
 	// For login, we only need to verify the password against the stored hash.
 	// We use HashedPassword which doesn't enforce complexity rules to avoid locking out existing users.
 	hp := model.NewHashedPassword(admin.PasswordHash)
 	if err := hp.Verify(password); err != nil {
-		return nil, err // Verify already returns UnauthorizedError for mismatches
+		newAttempts, incrErr := u.adminRepo.IncrementFailedAttempts(ctx, admin.ID)
+		if incrErr != nil {
+			slog.ErrorContext(ctx, "auth: failed to increment lockout counter", "err", incrErr)
+		}
+		slog.WarnContext(ctx, "auth: admin login failed", "reason", "bad_password", "email", email, "attempts", newAttempts)
+
+		if newAttempts >= MaxAdminFailedLoginAttempts {
+			lockUntil := u.clock.Now().Add(AdminAccountLockDuration)
+			if lockErr := u.adminRepo.LockAccount(ctx, admin.ID, lockUntil); lockErr != nil {
+				slog.ErrorContext(ctx, "auth: failed to lock account", "err", lockErr)
+			}
+			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
+		}
+
+		return nil, err
+	}
+
+	if err := u.adminRepo.UpdateLoginSuccess(ctx, admin.ID); err != nil {
+		return nil, fmt.Errorf("failed to update login success: %w", err)
 	}
 
 	return admin, nil

@@ -23,10 +23,10 @@ func TestAdminStore_FindOneByEmail(t *testing.T) {
 	email := "admin@example.com"
 
 	t.Run("Success", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "created_at"}).
-			AddRow(1, email, "hash", time.Now())
+		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "failed_attempts", "locked_until", "created_at"}).
+			AddRow(1, email, "hash", 0, nil, time.Now())
 
-		mock.ExpectQuery("SELECT id, email, password_hash, created_at FROM admins WHERE email = \\$1").
+		mock.ExpectQuery("SELECT id, email, password_hash, failed_attempts, locked_until, created_at FROM admins WHERE email = \\$1").
 			WithArgs(email).
 			WillReturnRows(rows)
 
@@ -36,7 +36,7 @@ func TestAdminStore_FindOneByEmail(t *testing.T) {
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		mock.ExpectQuery("SELECT id, email, password_hash, created_at FROM admins WHERE email = \\$1").
+		mock.ExpectQuery("SELECT id, email, password_hash, failed_attempts, locked_until, created_at FROM admins WHERE email = \\$1").
 			WithArgs(email).
 			WillReturnError(sql.ErrNoRows)
 
@@ -57,10 +57,10 @@ func TestAdminStore_FindByID(t *testing.T) {
 	id := 1
 
 	t.Run("Success", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "created_at"}).
-			AddRow(id, "admin@example.com", "hash", time.Now())
+		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "failed_attempts", "locked_until", "created_at"}).
+			AddRow(id, "admin@example.com", "hash", 0, nil, time.Now())
 
-		mock.ExpectQuery("SELECT id, email, password_hash, created_at FROM admins WHERE id = \\$1").
+		mock.ExpectQuery("SELECT id, email, password_hash, failed_attempts, locked_until, created_at FROM admins WHERE id = \\$1").
 			WithArgs(id).
 			WillReturnRows(rows)
 
