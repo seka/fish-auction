@@ -22,7 +22,7 @@ func NewMigrationConfig() *MigrationConfig {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
-		AppEnv:           GetEnv("APP_ENV", "develop"),
+		AppEnv:           GetEnv("APP_ENV", "development"),
 	}
 }
 

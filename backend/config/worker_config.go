@@ -40,7 +40,7 @@ func NewWorkerConfig() *WorkerConfig {
 		RedisHost:        GetEnv("REDIS_HOST", "localhost"),
 		RedisPort:        GetEnv("REDIS_PORT", "6379"),
 		RedisDB:          GetEnvInt("REDIS_DB", 0),
-		AppEnv:           GetEnv("APP_ENV", "develop"),
+		AppEnv:           GetEnv("APP_ENV", "development"),
 		VAPIDPublicKey:   GetEnv("VAPID_PUBLIC_KEY", ""),
 		VAPIDPrivateKey:  GetEnv("VAPID_PRIVATE_KEY", ""),
 		VAPIDSubject:     GetEnv("VAPID_SUBJECT", "mailto:admin@example.com"),

@@ -27,7 +27,7 @@ func NewRelayConfig() *RelayConfig {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
-		AppEnv:           GetEnv("APP_ENV", "develop"),
+		AppEnv:           GetEnv("APP_ENV", "development"),
 		SQSQueueURL:      GetEnv("AWS_SQS_QUEUE_URL", "http://localhost:4566/000000000000/notification-queue"),
 		SQSRegion:        GetEnv("AWS_SQS_REGION", "ap-northeast-1"),
 		SQSEndpoint:      GetEnv("AWS_SQS_ENDPOINT", "http://localhost:4566"),
