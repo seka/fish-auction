@@ -26,8 +26,12 @@ func (h *MeHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	admin, err := h.adminRepo.FindByID(r.Context(), adminID)
-	if err != nil || admin == nil {
+	if err != nil {
 		util.WriteError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	if admin == nil {
+		util.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 	util.WriteJSON(w, http.StatusOK, struct {

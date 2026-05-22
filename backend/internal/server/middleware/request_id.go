@@ -33,7 +33,7 @@ func (m *RequestIDMiddleware) Handle(next http.Handler) http.Handler {
 		id := ""
 		if IsFromTrustedProxy(r.Context()) {
 			candidate := strings.TrimSpace(r.Header.Get(RequestIDHeader))
-			if len(candidate) > 0 && len(candidate) <= maxRequestIDLength {
+			if candidate != "" && len(candidate) <= maxRequestIDLength {
 				if _, err := uuid.Parse(candidate); err == nil {
 					id = candidate
 				}

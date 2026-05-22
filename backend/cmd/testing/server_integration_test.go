@@ -140,6 +140,8 @@ func TestServerIntegration(t *testing.T) {
 	authResetHandler := publicHandler.NewAuthResetHandler(useCaseReg)
 	adminAuthResetHandler := adminHandler.NewAuthResetHandler(useCaseReg)
 	pushHandler := buyerHandler.NewPushHandler(useCaseReg)
+	adminMeHandler := adminHandler.NewMeHandler(repoReg.NewAdminRepository())
+	rateLimitRepo := repoReg.NewRateLimitRepository()
 
 	// 4. Server を起動
 	srv := server.NewServer(
@@ -161,7 +163,9 @@ func TestServerIntegration(t *testing.T) {
 		authResetHandler,
 		adminAuthResetHandler,
 		pushHandler,
+		adminMeHandler,
 		sessionRepo,
+		rateLimitRepo,
 		[]string{"https://localhost", "http://localhost:3000"},
 		nil,
 		time.Minute,

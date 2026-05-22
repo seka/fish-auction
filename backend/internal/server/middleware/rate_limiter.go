@@ -49,7 +49,8 @@ func (m *RateLimiterMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		if count > int64(m.limit) {
-			retryAfter := int(m.window.Seconds())
+			windowSecs := int64(m.window.Seconds())
+			retryAfter := windowSecs - (time.Now().UTC().Unix() % windowSecs)
 			w.Header().Set("Retry-After", fmt.Sprintf("%d", retryAfter))
 			util.WriteError(w, http.StatusTooManyRequests, "Too Many Requests")
 			return
