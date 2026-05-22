@@ -2,7 +2,6 @@ package buyer
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"log/slog"
 	"time"
@@ -56,14 +55,14 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	}
 	if auth == nil {
 		// Only mask user existence by returning Unauthorized
-		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email_hash", emailHash(email))
+		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email", email)
 		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
 	}
 
 	// Check if account is locked
 	now := uc.clock.Now()
 	if auth.LockedUntil != nil && now.Before(*auth.LockedUntil) {
-		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "account_locked", "email_hash", emailHash(email))
+		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "account_locked", "email", email)
 		return nil, &apperrors.UnauthorizedError{Message: "account is locked due to too many failed attempts"}
 	}
 
@@ -74,7 +73,7 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
 
 		newAttempts := auth.FailedAttempts + 1
-		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "bad_password", "email_hash", emailHash(email), "attempts", newAttempts)
+		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "bad_password", "email", email, "attempts", newAttempts)
 
 		// Lock account if too many failed attempts
 		if newAttempts >= MaxFailedLoginAttempts {
@@ -98,11 +97,4 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	}
 
 	return buyer, nil
-}
-
-// emailHash returns a 4-byte hex prefix of the SHA-256 hash of the email
-// for privacy-preserving log correlation.
-func emailHash(email string) string {
-	h := sha256.Sum256([]byte(email))
-	return fmt.Sprintf("%x", h[:4])
 }
