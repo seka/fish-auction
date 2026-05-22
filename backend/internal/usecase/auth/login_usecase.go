@@ -68,14 +68,17 @@ func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*mo
 	// We use HashedPassword which doesn't enforce complexity rules to avoid locking out existing users.
 	hp := model.NewHashedPassword(admin.PasswordHash)
 	if err := hp.Verify(password); err != nil {
-		_ = u.adminRepo.IncrementFailedAttempts(ctx, admin.ID)
-
-		newAttempts := admin.FailedAttempts + 1
+		newAttempts, incrErr := u.adminRepo.IncrementFailedAttempts(ctx, admin.ID)
+		if incrErr != nil {
+			slog.ErrorContext(ctx, "auth: failed to increment lockout counter", "err", incrErr)
+		}
 		slog.WarnContext(ctx, "auth: admin login failed", "reason", "bad_password", "email", email, "attempts", newAttempts)
 
 		if newAttempts >= MaxAdminFailedLoginAttempts {
 			lockUntil := u.clock.Now().Add(AdminAccountLockDuration)
-			_ = u.adminRepo.LockAccount(ctx, admin.ID, lockUntil)
+			if lockErr := u.adminRepo.LockAccount(ctx, admin.ID, lockUntil); lockErr != nil {
+				slog.ErrorContext(ctx, "auth: failed to lock account", "err", lockErr)
+			}
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
 		}
 
