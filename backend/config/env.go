@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -17,6 +18,13 @@ func GetEnv(key, defaultValue string) string {
 // LogLevel だけは独立した取得経路を用意している。
 func GetLogLevel() string {
 	return GetEnv("LOG_LEVEL", "info")
+}
+
+func validateSSLMode(appEnv, sslMode string) error {
+	if appEnv == "production" && sslMode == "disable" {
+		return fmt.Errorf("POSTGRES_SSLMODE=disable is not allowed in production (APP_ENV=%q)", appEnv)
+	}
+	return nil
 }
 
 // GetEnvInt retrieves the value of the environment variable named by the key as an integer.
