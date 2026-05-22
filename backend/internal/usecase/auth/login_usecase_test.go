@@ -21,9 +21,11 @@ func (c *mockClock) NowIn(_ model.LocationName) time.Time { return time.Now() }
 var _ service.Clock = (*mockClock)(nil)
 
 type mockAdminRepository struct {
-	admin          *model.Admin
-	err            error
-	failedAttempts int64
+	admin              *model.Admin
+	err                error
+	failedAttempts     int64
+	lockCalled         bool
+	loginSuccessCalled bool
 }
 
 func (m *mockAdminRepository) FindByID(_ context.Context, id int) (*model.Admin, error) {
@@ -64,11 +66,85 @@ func (m *mockAdminRepository) IncrementFailedAttempts(_ context.Context, _ int) 
 }
 
 func (m *mockAdminRepository) LockAccount(_ context.Context, _ int, _ time.Time) error {
+	m.lockCalled = true
 	return nil
 }
 
 func (m *mockAdminRepository) UpdateLoginSuccess(_ context.Context, _ int) error {
+	m.loginSuccessCalled = true
 	return nil
+}
+
+func TestLoginUseCase_AccountLocked(t *testing.T) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.MinCost)
+	future := time.Now().Add(30 * time.Minute)
+	repo := &mockAdminRepository{admin: &model.Admin{
+		Email:        "admin@example.com",
+		PasswordHash: string(hash),
+		LockedUntil:  &future,
+	}}
+	uc := auth.NewLoginUseCase(repo, &mockClock{})
+
+	_, err := uc.Execute(context.Background(), "admin@example.com", "password")
+	if err == nil {
+		t.Fatal("expected error for locked account, got nil")
+	}
+	var unauth *apperrors.UnauthorizedError
+	if !errors.As(err, &unauth) {
+		t.Errorf("expected UnauthorizedError, got %T: %v", err, err)
+	}
+}
+
+func TestLoginUseCase_LockExpired(t *testing.T) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.MinCost)
+	past := time.Now().Add(-1 * time.Minute)
+	repo := &mockAdminRepository{admin: &model.Admin{
+		Email:        "admin@example.com",
+		PasswordHash: string(hash),
+		LockedUntil:  &past,
+	}}
+	uc := auth.NewLoginUseCase(repo, &mockClock{})
+
+	got, err := uc.Execute(context.Background(), "admin@example.com", "password")
+	if err != nil {
+		t.Fatalf("expected no error after lock expiry, got %v", err)
+	}
+	if got == nil {
+		t.Fatal("expected admin returned after lock expiry")
+	}
+}
+
+func TestLoginUseCase_LockTriggeredAtThreshold(t *testing.T) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.MinCost)
+	repo := &mockAdminRepository{
+		admin:          &model.Admin{Email: "admin@example.com", PasswordHash: string(hash)},
+		failedAttempts: auth.MaxAdminFailedLoginAttempts,
+	}
+	uc := auth.NewLoginUseCase(repo, &mockClock{})
+
+	_, err := uc.Execute(context.Background(), "admin@example.com", "wrong")
+	if err == nil {
+		t.Fatal("expected error on wrong password")
+	}
+	if !repo.lockCalled {
+		t.Error("expected LockAccount to be called when attempts reach threshold")
+	}
+}
+
+func TestLoginUseCase_SuccessCallsUpdateLoginSuccess(t *testing.T) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.MinCost)
+	repo := &mockAdminRepository{admin: &model.Admin{
+		Email:        "admin@example.com",
+		PasswordHash: string(hash),
+	}}
+	uc := auth.NewLoginUseCase(repo, &mockClock{})
+
+	if _, err := uc.Execute(context.Background(), "admin@example.com", "password"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !repo.loginSuccessCalled {
+		t.Error("expected UpdateLoginSuccess to be called on successful login")
+	}
 }
 
 func TestLoginUseCase_Execute(t *testing.T) {
