@@ -4,22 +4,24 @@ import { ApiError } from '@/src/core/api/client';
 
 export { adminSessionCookie, buyerSessionCookie };
 
-export const checkAdminSession = async (cookie: CookieHeader): Promise<boolean> => {
+export type SessionResult = 'valid' | 'invalid' | 'error';
+
+export const checkAdminSession = async (cookie: CookieHeader): Promise<SessionResult> => {
   try {
     await getAdminMe(cookie);
-    return true;
+    return 'valid';
   } catch (e) {
-    if (e instanceof ApiError && e.status === 401) return false;
-    return true;
+    if (e instanceof ApiError && e.status === 401) return 'invalid';
+    return 'error';
   }
 };
 
-export const checkBuyerSession = async (cookie: CookieHeader): Promise<boolean> => {
+export const checkBuyerSession = async (cookie: CookieHeader): Promise<SessionResult> => {
   try {
     await getBuyerMe(cookie);
-    return true;
+    return 'valid';
   } catch (e) {
-    if (e instanceof ApiError && e.status === 401) return false;
-    return true;
+    if (e instanceof ApiError && e.status === 401) return 'invalid';
+    return 'error';
   }
 };
