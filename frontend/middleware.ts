@@ -1,23 +1,28 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { cookieHeader } from '@/src/core/api/client';
+import { checkAdminSession, checkBuyerSession, adminSessionCookie, buyerSessionCookie, SessionResult } from '@/src/middleware/session';
 
-export function middleware(request: NextRequest) {
-  const adminSession = request.cookies.get('admin_session');
-  const buyerSession = request.cookies.get('buyer_session');
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const cookie = cookieHeader(request.headers.get('cookie'));
 
-  // Protect admin routes
   if (pathname.startsWith('/admin') || pathname.startsWith('/invoice')) {
-    if (!adminSession) {
+    if (!request.cookies.get(adminSessionCookie)) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
+    const adminResult: SessionResult = await checkAdminSession(cookie);
+    if (adminResult === 'error') return NextResponse.redirect(new URL('/error', request.url));
+    if (adminResult === 'invalid') return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Protect auction routes
   if (pathname.startsWith('/auction')) {
-    if (!buyerSession) {
+    if (!request.cookies.get(buyerSessionCookie)) {
       return NextResponse.redirect(new URL('/login/buyer', request.url));
     }
+    const buyerResult: SessionResult = await checkBuyerSession(cookie);
+    if (buyerResult === 'error') return NextResponse.redirect(new URL('/error', request.url));
+    if (buyerResult === 'invalid') return NextResponse.redirect(new URL('/login/buyer', request.url));
   }
 
   return NextResponse.next();

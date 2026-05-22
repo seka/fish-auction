@@ -1,5 +1,8 @@
 import { toCamelCase, toSnakeCase } from '@/src/core/api/caseConverter';
 
+export const cookieHeader = (raw: string | null): CookieHeader =>
+  (raw ?? '') as CookieHeader;
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -55,10 +58,14 @@ export class ApiClient {
     return text ? (toCamelCase(JSON.parse(text)) as T) : ({} as T);
   }
 
-  async get<T>(url: string): Promise<T> {
-    const res = await fetch(this.getFullUrl(url), {
-      credentials: 'include',
-    });
+  async get<T>(url: string, options?: { cookie?: CookieHeader }): Promise<T> {
+    const isEdgeRuntime = typeof EdgeRuntime !== 'undefined';
+    const res = await fetch(
+      this.getFullUrl(url),
+      isEdgeRuntime
+        ? { headers: { Cookie: options?.cookie ?? '' } }
+        : { credentials: 'include' },
+    );
     return this.handleResponse<T>(res);
   }
 
