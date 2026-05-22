@@ -22,11 +22,15 @@ func NewSeedConfig() *SeedConfig {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
-		AppEnv:           GetEnv("APP_ENV", "develop"),
+		AppEnv:           GetEnv("APP_ENV", "development"),
 	}
 }
 
 func (c *SeedConfig) DBConnectionURL() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.PostgresHost, c.PostgresPort, c.PostgresUser, c.PostgresPassword, c.PostgresDB, c.PostgresSslMode)
+}
+
+func (c *SeedConfig) Validate() error {
+	return validateSSLMode(c.AppEnv, c.PostgresSslMode)
 }

@@ -61,7 +61,7 @@ func NewAppServerConfig() *AppServerConfig {
 		RedisDB:          GetEnvInt("REDIS_DB", 0),
 		CacheTTL:         time.Duration(cacheTTL) * time.Second,
 		SessionTTL:       time.Duration(sessionTTL) * time.Second,
-		AppEnv:           GetEnv("APP_ENV", "develop"),
+		AppEnv:           GetEnv("APP_ENV", "development"),
 		AllowedOrigins:   GetEnv("ALLOWED_ORIGINS", "https://localhost,http://localhost:3000"),
 		TrustedProxies:   GetEnv("TRUSTED_PROXIES", ""),
 		SMTPHost:         GetEnv("SMTP_HOST", "mailhog"),
@@ -87,6 +87,9 @@ func (c *AppServerConfig) Validate() error {
 		if _, _, err := net.ParseCIDR(cidr); err != nil {
 			return fmt.Errorf("invalid TRUSTED_PROXIES: %q is not a valid CIDR: %w", cidr, err)
 		}
+	}
+	if err := validateSSLMode(c.AppEnv, c.PostgresSslMode); err != nil {
+		return err
 	}
 	return nil
 }

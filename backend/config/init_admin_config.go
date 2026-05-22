@@ -10,6 +10,7 @@ type InitAdminConfig struct {
 	PostgresPassword string
 	PostgresDB       string
 	PostgresSslMode  string
+	AppEnv           string
 }
 
 // NewInitAdminConfig loads configuration for the init_admin command.
@@ -21,6 +22,7 @@ func NewInitAdminConfig() *InitAdminConfig {
 		PostgresPassword: GetEnv("POSTGRES_PASSWORD", ""),
 		PostgresDB:       GetEnv("POSTGRES_DB", ""),
 		PostgresSslMode:  GetEnv("POSTGRES_SSLMODE", "disable"),
+		AppEnv:           GetEnv("APP_ENV", "development"),
 	}
 }
 
@@ -51,6 +53,9 @@ func (c *InitAdminConfig) Validate() error {
 	}
 	if len(missing) > 0 {
 		return fmt.Errorf("missing required env vars: %v", missing)
+	}
+	if err := validateSSLMode(c.AppEnv, c.PostgresSslMode); err != nil {
+		return err
 	}
 	return nil
 }
