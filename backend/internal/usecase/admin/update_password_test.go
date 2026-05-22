@@ -41,13 +41,13 @@ func (m *mockAdminRepositoryForUpdate) Count(_ context.Context) (int, error) {
 func (m *mockAdminRepositoryForUpdate) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return m.updateErr
 }
-func (m *mockAdminRepositoryForUpdate) IncrementFailedAttempts(_ context.Context, _ int) error {
-	return nil
+func (m *mockAdminRepositoryForUpdate) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+	return 0, nil
 }
 func (m *mockAdminRepositoryForUpdate) LockAccount(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAdminRepositoryForUpdate) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
+func (m *mockAdminRepositoryForUpdate) UpdateLoginSuccess(_ context.Context, _ int) error {
 	return nil
 }
 

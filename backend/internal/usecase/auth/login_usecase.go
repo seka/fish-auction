@@ -82,7 +82,7 @@ func (u *loginUseCase) Execute(ctx context.Context, email, password string) (*mo
 		return nil, err
 	}
 
-	if err := u.adminRepo.UpdateLoginSuccess(ctx, admin.ID, u.clock.Now()); err != nil {
+	if err := u.adminRepo.UpdateLoginSuccess(ctx, admin.ID); err != nil {
 		return nil, fmt.Errorf("failed to update login success: %w", err)
 	}
 

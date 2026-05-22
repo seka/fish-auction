@@ -15,14 +15,15 @@ import (
 
 type mockClock struct{}
 
-func (c *mockClock) Now() time.Time                              { return time.Now() }
-func (c *mockClock) NowIn(_ model.LocationName) time.Time        { return time.Now() }
+func (c *mockClock) Now() time.Time                       { return time.Now() }
+func (c *mockClock) NowIn(_ model.LocationName) time.Time { return time.Now() }
 
 var _ service.Clock = (*mockClock)(nil)
 
 type mockAdminRepository struct {
-	admin *model.Admin
-	err   error
+	admin          *model.Admin
+	err            error
+	failedAttempts int64
 }
 
 func (m *mockAdminRepository) FindByID(_ context.Context, id int) (*model.Admin, error) {
@@ -58,15 +59,15 @@ func (m *mockAdminRepository) UpdatePassword(_ context.Context, _ int, _ string)
 	return nil
 }
 
-func (m *mockAdminRepository) IncrementFailedAttempts(_ context.Context, _ int) error {
-	return nil
+func (m *mockAdminRepository) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+	return m.failedAttempts, nil
 }
 
 func (m *mockAdminRepository) LockAccount(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
 
-func (m *mockAdminRepository) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
+func (m *mockAdminRepository) UpdateLoginSuccess(_ context.Context, _ int) error {
 	return nil
 }
 

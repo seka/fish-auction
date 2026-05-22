@@ -79,14 +79,15 @@ func (r *AdminStore) UpdatePassword(ctx context.Context, id int, passwordHash st
 	return nil
 }
 
-// IncrementFailedAttempts increments the count of failed login attempts.
-func (r *AdminStore) IncrementFailedAttempts(ctx context.Context, id int) error {
-	_, err := r.db.Execute(ctx,
-		`UPDATE admins SET failed_attempts = failed_attempts + 1 WHERE id = $1`, id)
-	if err != nil {
-		return dserrors.HandleError(err, "Admin", id, "IncrementFailedAttempts")
+// IncrementFailedAttempts increments the count of failed login attempts and returns the new count.
+func (r *AdminStore) IncrementFailedAttempts(ctx context.Context, id int) (int64, error) {
+	row := r.db.QueryRow(ctx,
+		`UPDATE admins SET failed_attempts = failed_attempts + 1 WHERE id = $1 RETURNING failed_attempts`, id)
+	var newCount int64
+	if err := row.Scan(&newCount); err != nil {
+		return 0, dserrors.HandleError(err, "Admin", id, "IncrementFailedAttempts")
 	}
-	return nil
+	return newCount, nil
 }
 
 // LockAccount locks an admin account until the specified time.
@@ -100,7 +101,7 @@ func (r *AdminStore) LockAccount(ctx context.Context, id int, until time.Time) e
 }
 
 // UpdateLoginSuccess resets failed attempts and clears the lock on successful login.
-func (r *AdminStore) UpdateLoginSuccess(ctx context.Context, id int, now time.Time) error {
+func (r *AdminStore) UpdateLoginSuccess(ctx context.Context, id int) error {
 	_, err := r.db.Execute(ctx,
 		`UPDATE admins SET failed_attempts = 0, locked_until = NULL WHERE id = $1`, id)
 	if err != nil {
