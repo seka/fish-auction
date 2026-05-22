@@ -59,12 +59,11 @@ export class ApiClient {
   }
 
   async get<T>(url: string, options?: { cookie?: CookieHeader }): Promise<T> {
-    // Edge Runtime（middleware）から呼ぶ場合は cookie を手動でヘッダーに設定する。
-    // ブラウザから呼ぶ場合は credentials: 'include' でブラウザが Cookie を自動付与する。
+    const isEdgeRuntime = typeof EdgeRuntime !== 'undefined';
     const res = await fetch(
       this.getFullUrl(url),
-      options?.cookie
-        ? { headers: { Cookie: options.cookie } }
+      isEdgeRuntime
+        ? { headers: { Cookie: options?.cookie ?? '' } }
         : { credentials: 'include' },
     );
     return this.handleResponse<T>(res);
