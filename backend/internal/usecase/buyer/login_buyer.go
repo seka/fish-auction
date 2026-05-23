@@ -70,9 +70,10 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	hp := model.NewHashedPassword(auth.PasswordHash)
 	if err := hp.Verify(password); err != nil {
 		// Increment failed attempts
-		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
-
-		newAttempts := auth.FailedAttempts + 1
+		newAttempts, incrErr := uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
+		if incrErr != nil {
+			return nil, fmt.Errorf("failed to increment failed attempts: %w", incrErr)
+		}
 		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "bad_password", "email", email, "attempts", newAttempts)
 
 		// Lock account if too many failed attempts
