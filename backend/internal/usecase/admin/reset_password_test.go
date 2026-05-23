@@ -31,7 +31,7 @@ func (m *mockAdminRepositoryForReset) Count(_ context.Context) (int, error) { re
 func (m *mockAdminRepositoryForReset) UpdatePassword(_ context.Context, _ int, _ string) error {
 	return m.err
 }
-func (m *mockAdminRepositoryForReset) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+func (m *mockAdminRepositoryForReset) IncrementFailedAttempts(_ context.Context, _ int) (int, error) {
 	return 0, nil
 }
 func (m *mockAdminRepositoryForReset) LockAccount(_ context.Context, _ int, _ time.Time) error {

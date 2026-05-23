@@ -39,7 +39,7 @@ func (m *mockAdminRepoForReqPwd) UpdatePassword(_ context.Context, _ int, _ stri
 }
 
 func (m *mockAdminRepoForReqPwd) Count(_ context.Context) (int, error) { return 0, nil }
-func (m *mockAdminRepoForReqPwd) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+func (m *mockAdminRepoForReqPwd) IncrementFailedAttempts(_ context.Context, _ int) (int, error) {
 	return 0, nil
 }
 func (m *mockAdminRepoForReqPwd) LockAccount(_ context.Context, _ int, _ time.Time) error {

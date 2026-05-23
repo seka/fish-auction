@@ -33,7 +33,7 @@ func (m *mockAuthRepositoryForReset) FindByBuyerID(_ context.Context, _ int) (*m
 func (m *mockAuthRepositoryForReset) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAuthRepositoryForReset) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+func (m *mockAuthRepositoryForReset) IncrementFailedAttempts(_ context.Context, _ int) (int, error) {
 	return 0, nil
 }
 func (m *mockAuthRepositoryForReset) ResetFailedAttempts(_ context.Context, _ int) error {

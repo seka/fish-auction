@@ -36,7 +36,7 @@ func (m *mockAuthRepoForUpdate) FindByBuyerID(_ context.Context, _ int) (*model.
 func (m *mockAuthRepoForUpdate) UpdateLoginSuccess(_ context.Context, _ int, _ time.Time) error {
 	return nil
 }
-func (m *mockAuthRepoForUpdate) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+func (m *mockAuthRepoForUpdate) IncrementFailedAttempts(_ context.Context, _ int) (int, error) {
 	return 0, nil
 }
 func (m *mockAuthRepoForUpdate) ResetFailedAttempts(_ context.Context, _ int) error {
