@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
@@ -67,11 +68,15 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 			name:        "InvalidEmail",
 			email:       "wrong@example.com",
 			password:    "password",
-			mockAuth:    nil,
-			mockAuthErr: errors.New("not found"), // Repo returns error on not found usually? Or nil?
-			// Usecase: auth, err := uc.authRepo.FindByEmail(ctx, email); if err != nil ...
-			// If implementation treats err as invalid credentials, then we simulate err.
-			wantErr: true,
+			mockAuthErr: &apperrors.NotFoundError{Resource: "Authentication", ID: 0},
+			wantErr:     true,
+		},
+		{
+			name:        "FindByEmail_DBError",
+			email:       "test@example.com",
+			password:    "password",
+			mockAuthErr: errors.New("db error"),
+			wantErr:     true,
 		},
 		{
 			name:     "InvalidPassword",
