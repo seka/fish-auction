@@ -51,6 +51,7 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 		mockBuyer      *model.Buyer
 		mockAuthErr    error
 		mockBuyerErr   error
+		mockIncrErr    error
 		wantErr        bool
 		wantLockCalled bool
 		wantLocked     bool
@@ -102,6 +103,14 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 			mockBuyerErr: errors.New("db error"),
 			wantErr:      true,
 		},
+		{
+			name:        "IncrementFailedAttempts_DBError",
+			email:       "test@example.com",
+			password:    "wrong",
+			mockAuth:    validAuth,
+			mockIncrErr: errors.New("db error"),
+			wantErr:     true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -121,7 +130,10 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 				UpdateLoginSuccessFunc: func(_ context.Context, _ int, _ time.Time) error {
 					return nil
 				},
-				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) (int64, error) {
+				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) (int, error) {
+					if tt.mockIncrErr != nil {
+						return 0, tt.mockIncrErr
+					}
 					if tt.mockAuth != nil {
 						return tt.mockAuth.FailedAttempts + 1, nil
 					}
