@@ -56,14 +56,14 @@ func TestSignupAndSigninFlow(t *testing.T) {
 			}
 			return nil
 		},
-		IncrementFailedAttemptsFunc: func(_ context.Context, id int) error {
+		IncrementFailedAttemptsFunc: func(_ context.Context, id int) (int, error) {
 			for _, a := range auths {
 				if a.ID == id {
 					a.FailedAttempts++
-					return nil
+					return a.FailedAttempts, nil
 				}
 			}
-			return nil
+			return 1, nil
 		},
 		LockAccountFunc: func(_ context.Context, id int, until time.Time) error {
 			for _, a := range auths {
@@ -119,5 +119,22 @@ func TestSignupAndSigninFlow(t *testing.T) {
 	_, err = loginUC.Execute(ctx, "wrong@example.com", password)
 	if err == nil {
 		t.Error("Signin should fail with wrong email, but it succeeded")
+	}
+
+	// 5. Lockout: step 3 already counted as 1 failure; do MaxFailedLoginAttempts-2 more
+	// to reach the attempt just before lockout, then confirm the threshold attempt locks the account.
+	for i := 0; i < buyer.MaxFailedLoginAttempts-2; i++ {
+		_, err = loginUC.Execute(ctx, email, "wrongpassword")
+		if err == nil {
+			t.Errorf("pre-lockout attempt %d: expected error but got nil", i+1)
+		}
+	}
+	_, err = loginUC.Execute(ctx, email, "wrongpassword")
+	if err == nil {
+		t.Error("lockout-triggering attempt should return error")
+	}
+	_, err = loginUC.Execute(ctx, email, password)
+	if err == nil {
+		t.Error("correct password should be rejected while account is locked")
 	}
 }

@@ -2,6 +2,7 @@ package buyer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -50,13 +51,12 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	// Find authentication by email
 	auth, err := uc.authRepo.FindByEmail(ctx, email)
 	if err != nil {
-		// Return internal error for tracing if it's a real DB fault
+		var nfErr *apperrors.NotFoundError
+		if errors.As(err, &nfErr) {
+			slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email", email)
+			return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
+		}
 		return nil, fmt.Errorf("failed to find authentication during login: %w", err)
-	}
-	if auth == nil {
-		// Only mask user existence by returning Unauthorized
-		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email", email)
-		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
 	}
 
 	// Check if account is locked
@@ -70,15 +70,18 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	hp := model.NewHashedPassword(auth.PasswordHash)
 	if err := hp.Verify(password); err != nil {
 		// Increment failed attempts
-		_ = uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
-
-		newAttempts := auth.FailedAttempts + 1
+		newAttempts, incrErr := uc.authRepo.IncrementFailedAttempts(ctx, auth.ID)
+		if incrErr != nil {
+			return nil, fmt.Errorf("failed to increment failed attempts: %w", incrErr)
+		}
 		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "bad_password", "email", email, "attempts", newAttempts)
 
 		// Lock account if too many failed attempts
 		if newAttempts >= MaxFailedLoginAttempts {
 			lockUntil := uc.clock.Now().Add(AccountLockDuration)
-			_ = uc.authRepo.LockAccount(ctx, auth.ID, lockUntil)
+			if lockErr := uc.authRepo.LockAccount(ctx, auth.ID, lockUntil); lockErr != nil {
+				slog.ErrorContext(ctx, "auth: failed to lock buyer account", "err", lockErr)
+			}
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
 		}
 

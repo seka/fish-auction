@@ -23,7 +23,7 @@ var _ service.Clock = (*mockClock)(nil)
 type mockAdminRepository struct {
 	admin              *model.Admin
 	err                error
-	failedAttempts     int64
+	failedAttempts     int
 	lockCalled         bool
 	loginSuccessCalled bool
 }
@@ -61,7 +61,7 @@ func (m *mockAdminRepository) UpdatePassword(_ context.Context, _ int, _ string)
 	return nil
 }
 
-func (m *mockAdminRepository) IncrementFailedAttempts(_ context.Context, _ int) (int64, error) {
+func (m *mockAdminRepository) IncrementFailedAttempts(_ context.Context, _ int) (int, error) {
 	return m.failedAttempts, nil
 }
 

@@ -13,7 +13,7 @@ type MockAuthenticationRepository struct {
 	FindByEmailFunc             func(ctx context.Context, email string) (*model.Authentication, error)
 	FindByBuyerIDFunc           func(ctx context.Context, buyerID int) (*model.Authentication, error)
 	UpdateLoginSuccessFunc      func(ctx context.Context, id int, loginAt time.Time) error
-	IncrementFailedAttemptsFunc func(ctx context.Context, id int) error
+	IncrementFailedAttemptsFunc func(ctx context.Context, id int) (int, error)
 	ResetFailedAttemptsFunc     func(ctx context.Context, id int) error
 	LockAccountFunc             func(ctx context.Context, id int, until time.Time) error
 	UpdatePasswordFunc          func(ctx context.Context, buyerID int, passwordHash string) error
@@ -40,7 +40,7 @@ func (m *MockAuthenticationRepository) UpdateLoginSuccess(ctx context.Context, i
 }
 
 // IncrementFailedAttempts provides IncrementFailedAttempts related functionality.
-func (m *MockAuthenticationRepository) IncrementFailedAttempts(ctx context.Context, id int) error {
+func (m *MockAuthenticationRepository) IncrementFailedAttempts(ctx context.Context, id int) (int, error) {
 	return m.IncrementFailedAttemptsFunc(ctx, id)
 }
 

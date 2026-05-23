@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	apperrors "github.com/seka/fish-auction/backend/internal/domain/errors"
 	"github.com/seka/fish-auction/backend/internal/domain/model"
 	"github.com/seka/fish-auction/backend/internal/usecase/buyer"
 	mock "github.com/seka/fish-auction/backend/internal/usecase/testing"
@@ -51,6 +52,7 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 		mockBuyer      *model.Buyer
 		mockAuthErr    error
 		mockBuyerErr   error
+		mockIncrErr    error
 		wantErr        bool
 		wantLockCalled bool
 		wantLocked     bool
@@ -66,11 +68,15 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 			name:        "InvalidEmail",
 			email:       "wrong@example.com",
 			password:    "password",
-			mockAuth:    nil,
-			mockAuthErr: errors.New("not found"), // Repo returns error on not found usually? Or nil?
-			// Usecase: auth, err := uc.authRepo.FindByEmail(ctx, email); if err != nil ...
-			// If implementation treats err as invalid credentials, then we simulate err.
-			wantErr: true,
+			mockAuthErr: &apperrors.NotFoundError{Resource: "Authentication", ID: 0},
+			wantErr:     true,
+		},
+		{
+			name:        "FindByEmail_DBError",
+			email:       "test@example.com",
+			password:    "password",
+			mockAuthErr: errors.New("db error"),
+			wantErr:     true,
 		},
 		{
 			name:     "InvalidPassword",
@@ -102,6 +108,14 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 			mockBuyerErr: errors.New("db error"),
 			wantErr:      true,
 		},
+		{
+			name:        "IncrementFailedAttempts_DBError",
+			email:       "test@example.com",
+			password:    "wrong",
+			mockAuth:    validAuth,
+			mockIncrErr: errors.New("db error"),
+			wantErr:     true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -121,8 +135,14 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 				UpdateLoginSuccessFunc: func(_ context.Context, _ int, _ time.Time) error {
 					return nil
 				},
-				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) error {
-					return nil
+				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) (int, error) {
+					if tt.mockIncrErr != nil {
+						return 0, tt.mockIncrErr
+					}
+					if tt.mockAuth != nil {
+						return tt.mockAuth.FailedAttempts + 1, nil
+					}
+					return 1, nil
 				},
 				LockAccountFunc: func(_ context.Context, _ int, _ time.Time) error {
 					lockCalled = true
