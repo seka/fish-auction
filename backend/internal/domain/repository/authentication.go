@@ -13,7 +13,7 @@ type AuthenticationRepository interface {
 	FindByEmail(ctx context.Context, email string) (*model.Authentication, error)
 	FindByBuyerID(ctx context.Context, buyerID int) (*model.Authentication, error)
 	UpdateLoginSuccess(ctx context.Context, id int, loginAt time.Time) error
-	IncrementFailedAttempts(ctx context.Context, id int) (int64, error)
+	IncrementFailedAttempts(ctx context.Context, id int) (int, error)
 	ResetFailedAttempts(ctx context.Context, id int) error
 	LockAccount(ctx context.Context, id int, until time.Time) error
 	UpdatePassword(ctx context.Context, buyerID int, passwordHash string) error

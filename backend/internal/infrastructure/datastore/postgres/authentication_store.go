@@ -104,8 +104,8 @@ func (r *AuthenticationStore) UpdateLoginSuccess(ctx context.Context, id int, lo
 }
 
 // IncrementFailedAttempts increments the count of failed login attempts and returns the new count.
-func (r *AuthenticationStore) IncrementFailedAttempts(ctx context.Context, id int) (int64, error) {
-	var newCount int64
+func (r *AuthenticationStore) IncrementFailedAttempts(ctx context.Context, id int) (int, error) {
+	var newCount int
 	err := r.db.QueryRow(ctx,
 		`UPDATE authentications
 		 SET failed_attempts = failed_attempts + 1, updated_at = CURRENT_TIMESTAMP

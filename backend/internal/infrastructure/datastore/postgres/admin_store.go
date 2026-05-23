@@ -80,10 +80,10 @@ func (r *AdminStore) UpdatePassword(ctx context.Context, id int, passwordHash st
 }
 
 // IncrementFailedAttempts increments the count of failed login attempts and returns the new count.
-func (r *AdminStore) IncrementFailedAttempts(ctx context.Context, id int) (int64, error) {
+func (r *AdminStore) IncrementFailedAttempts(ctx context.Context, id int) (int, error) {
 	row := r.db.QueryRow(ctx,
 		`UPDATE admins SET failed_attempts = failed_attempts + 1 WHERE id = $1 RETURNING failed_attempts`, id)
-	var newCount int64
+	var newCount int
 	if err := row.Scan(&newCount); err != nil {
 		return 0, dserrors.HandleError(err, "Admin", id, "IncrementFailedAttempts")
 	}

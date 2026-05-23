@@ -14,7 +14,7 @@ type AdminRepository interface {
 	Create(ctx context.Context, admin *model.Admin) error
 	Count(ctx context.Context) (int, error)
 	UpdatePassword(ctx context.Context, id int, passwordHash string) error
-	IncrementFailedAttempts(ctx context.Context, id int) (int64, error)
+	IncrementFailedAttempts(ctx context.Context, id int) (int, error)
 	LockAccount(ctx context.Context, id int, until time.Time) error
 	UpdateLoginSuccess(ctx context.Context, id int) error
 }
