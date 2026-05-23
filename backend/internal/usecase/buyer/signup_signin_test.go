@@ -56,14 +56,14 @@ func TestSignupAndSigninFlow(t *testing.T) {
 			}
 			return nil
 		},
-		IncrementFailedAttemptsFunc: func(_ context.Context, id int) error {
+		IncrementFailedAttemptsFunc: func(_ context.Context, id int) (int64, error) {
 			for _, a := range auths {
 				if a.ID == id {
 					a.FailedAttempts++
-					return nil
+					return a.FailedAttempts, nil
 				}
 			}
-			return nil
+			return 1, nil
 		},
 		LockAccountFunc: func(_ context.Context, id int, until time.Time) error {
 			for _, a := range auths {

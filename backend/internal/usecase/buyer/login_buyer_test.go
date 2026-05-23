@@ -121,8 +121,11 @@ func TestLoginBuyerUseCase_Execute(t *testing.T) {
 				UpdateLoginSuccessFunc: func(_ context.Context, _ int, _ time.Time) error {
 					return nil
 				},
-				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) error {
-					return nil
+				IncrementFailedAttemptsFunc: func(_ context.Context, _ int) (int64, error) {
+					if tt.mockAuth != nil {
+						return tt.mockAuth.FailedAttempts + 1, nil
+					}
+					return 1, nil
 				},
 				LockAccountFunc: func(_ context.Context, _ int, _ time.Time) error {
 					lockCalled = true
