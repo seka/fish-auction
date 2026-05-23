@@ -2,6 +2,7 @@ package buyer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -50,13 +51,12 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 	// Find authentication by email
 	auth, err := uc.authRepo.FindByEmail(ctx, email)
 	if err != nil {
-		// Return internal error for tracing if it's a real DB fault
+		var nfErr *apperrors.NotFoundError
+		if errors.As(err, &nfErr) {
+			slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email", email)
+			return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
+		}
 		return nil, fmt.Errorf("failed to find authentication during login: %w", err)
-	}
-	if auth == nil {
-		// Only mask user existence by returning Unauthorized
-		slog.WarnContext(ctx, "auth: buyer login failed", "reason", "user_not_found", "email", email)
-		return nil, &apperrors.UnauthorizedError{Message: "invalid credentials"}
 	}
 
 	// Check if account is locked
