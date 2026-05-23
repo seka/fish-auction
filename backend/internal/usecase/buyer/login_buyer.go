@@ -79,7 +79,9 @@ func (uc *loginBuyerUseCase) Execute(ctx context.Context, email, password string
 		// Lock account if too many failed attempts
 		if newAttempts >= MaxFailedLoginAttempts {
 			lockUntil := uc.clock.Now().Add(AccountLockDuration)
-			_ = uc.authRepo.LockAccount(ctx, auth.ID, lockUntil)
+			if lockErr := uc.authRepo.LockAccount(ctx, auth.ID, lockUntil); lockErr != nil {
+				slog.ErrorContext(ctx, "auth: failed to lock buyer account", "err", lockErr)
+			}
 			return nil, &apperrors.UnauthorizedError{Message: "account locked due to too many failed attempts"}
 		}
 
