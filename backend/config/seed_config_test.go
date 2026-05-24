@@ -24,7 +24,7 @@ func TestNewSeedConfig(t *testing.T) {
 		{
 			name:       "Default APP_ENV",
 			env:        map[string]string{},
-			wantAppEnv: "develop",
+			wantAppEnv: "development",
 		},
 		{
 			name: "Explicit APP_ENV",
