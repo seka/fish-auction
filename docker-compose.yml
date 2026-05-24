@@ -7,7 +7,7 @@ services:
       - "8080:8080"
     environment:
       - APP_ENV=${APP_ENV}
-      - POSTGRES_HOST=postgres
+      - POSTGRES_HOST=pgbouncer
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
       - POSTGRES_USER=${POSTGRES_USER}
@@ -25,7 +25,7 @@ services:
       - VAPID_SUBJECT=${VAPID_SUBJECT}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
     depends_on:
-      postgres:
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -101,6 +101,29 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    networks:
+      - app-network
+
+  pgbouncer:
+    image: bitnami/pgbouncer
+    environment:
+      - POSTGRESQL_HOST=postgres
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_USERNAME=${POSTGRES_USER}
+      - POSTGRESQL_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRESQL_DATABASE=${POSTGRES_DB}
+      - PGBOUNCER_PORT=5432
+      - PGBOUNCER_POOL_MODE=transaction
+      - PGBOUNCER_MAX_CLIENT_CONN=1000
+      - PGBOUNCER_DEFAULT_POOL_SIZE=20
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/5432'"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - app-network
 
@@ -196,7 +219,7 @@ services:
     command: ["go", "run", "./cmd/worker/main.go"]
     environment:
       - APP_ENV=${APP_ENV}
-      - POSTGRES_HOST=postgres
+      - POSTGRES_HOST=pgbouncer
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -217,7 +240,7 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
-      postgres:
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -234,7 +257,7 @@ services:
       target: dev
     command: ["go", "run", "./cmd/relay/main.go"]
     environment:
-      - POSTGRES_HOST=postgres
+      - POSTGRES_HOST=pgbouncer
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -246,7 +269,7 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
-      postgres:
+      pgbouncer:
         condition: service_healthy
       localstack:
         condition: service_healthy
