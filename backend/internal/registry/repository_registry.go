@@ -59,6 +59,10 @@ func NewRepositoryRegistry(
 	if err != nil {
 		return nil, err
 	}
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(1 * time.Minute)
 
 	// RedisAddr が空のときは Redis 接続をスキップする（relay のような Redis 不要プロセス向け）。
 	var cache datastore.Cache

@@ -115,6 +115,7 @@ LOAD_TEST_TARGET_URL ?= http://localhost:8080
 .PHONY: app.stress-test
 app.stress-test: ## Run stress tests
 	@echo "Running stress tests (Concurrency: $(LOAD_TEST_CONCURRENCY), Requests: $(LOAD_TEST_REQUESTS))..."
+	RUN_STRESS_TESTS=true \
 	LOAD_TEST_CONCURRENCY=$(LOAD_TEST_CONCURRENCY) \
 	LOAD_TEST_REQUESTS=$(LOAD_TEST_REQUESTS) \
 	LOAD_TEST_TARGET_URL=$(LOAD_TEST_TARGET_URL) \

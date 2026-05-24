@@ -53,6 +53,7 @@ func TestInitAdminConfig_Validate(t *testing.T) {
 		PostgresPassword: "postgres",
 		PostgresDB:       "fish_auction",
 		PostgresSslMode:  "disable",
+		AppEnv:           "development",
 	}
 
 	tests := []struct {
