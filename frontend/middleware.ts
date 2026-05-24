@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { cookieHeader } from '@/src/core/api/client';
-import { checkAdminSession, checkBuyerSession, adminSessionCookie, buyerSessionCookie, SessionResult } from '@/src/middleware/session';
+import {
+  checkAdminSession,
+  checkBuyerSession,
+  adminSessionCookie,
+  buyerSessionCookie,
+  SessionResult,
+} from '@/src/middleware/session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,7 +28,8 @@ export async function middleware(request: NextRequest) {
     }
     const buyerResult: SessionResult = await checkBuyerSession(cookie);
     if (buyerResult === 'error') return NextResponse.redirect(new URL('/error', request.url));
-    if (buyerResult === 'invalid') return NextResponse.redirect(new URL('/login/buyer', request.url));
+    if (buyerResult === 'invalid')
+      return NextResponse.redirect(new URL('/login/buyer', request.url));
   }
 
   return NextResponse.next();

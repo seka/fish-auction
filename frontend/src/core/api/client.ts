@@ -1,7 +1,6 @@
 import { toCamelCase, toSnakeCase } from '@/src/core/api/caseConverter';
 
-export const cookieHeader = (raw: string | null): CookieHeader =>
-  (raw ?? '') as CookieHeader;
+export const cookieHeader = (raw: string | null): CookieHeader => (raw ?? '') as CookieHeader;
 
 export class ApiError extends Error {
   constructor(
@@ -62,9 +61,7 @@ export class ApiClient {
     const isEdgeRuntime = typeof EdgeRuntime !== 'undefined';
     const res = await fetch(
       this.getFullUrl(url),
-      isEdgeRuntime
-        ? { headers: { Cookie: options?.cookie ?? '' } }
-        : { credentials: 'include' },
+      isEdgeRuntime ? { headers: { Cookie: options?.cookie ?? '' } } : { credentials: 'include' },
     );
     return this.handleResponse<T>(res);
   }
