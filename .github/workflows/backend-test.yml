@@ -50,11 +50,11 @@ jobs:
           PGPASSWORD: postgres
 
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.2.2
+        uses: LocalStack/setup-localstack@v0.3.2
         with:
           image-tag: "latest"
           install-awslocal: "true"
-          use-pro: "true"
+          use-pro: "false"
         env:
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
 
