@@ -7,7 +7,7 @@ require (
 	github.com/SherClockHolmes/webpush-go v1.4.0
 	github.com/aws/aws-sdk-go-v2 v1.42.1
 	github.com/aws/aws-sdk-go-v2/config v1.32.30
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.25
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.45.1
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
