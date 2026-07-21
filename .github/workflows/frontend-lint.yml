@@ -18,13 +18,13 @@ jobs:
       - uses: ./.github/actions/setup-frontend
 
       - name: Run lint
-        run: npm run lint
+        run: yarn lint
         working-directory: frontend
 
       - name: Run format check
-        run: npm run format:check
+        run: yarn format:check
         working-directory: frontend
 
       - name: Run typecheck
-        run: npm run typecheck
+        run: yarn typecheck
         working-directory: frontend

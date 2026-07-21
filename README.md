@@ -14,7 +14,7 @@
 
 このプロジェクトは以下の技術スタックで構成されています。詳細は各ディレクトリの README を参照してください。
 
-- **[Frontend (Next.js)](./frontend/README.md)**: Next.js 16, TypeScript, Panda CSS, TanStack Query, npm
+- **[Frontend (Next.js)](./frontend/README.md)**: Next.js 16, TypeScript, Panda CSS, TanStack Query, yarn
 - **[Backend (Go)](./backend/README.md)**: Go, `net/http`, `database/sql`, PostgreSQL, Redis
 - **Infrastructure**: Docker / Docker Compose, Nginx (Reverse Proxy), Mailhog
 

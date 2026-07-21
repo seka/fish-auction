@@ -10,23 +10,25 @@ export const usePushSubscription = () => {
   const [isSupported, setIsSupported] = useState(false);
 
   useEffect(() => {
+    const registerServiceWorker = async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('Service Worker registered:', registration);
+
+        const sub = await registration.pushManager.getSubscription();
+        setSubscription(sub);
+      } catch (error) {
+        console.error('Service Worker registration failed:', error);
+      }
+    };
+
     if ('serviceWorker' in navigator && 'PushManager' in window) {
+      // ブラウザ機能検出はSSRでは行えないため、hydration後にeffect内で反映する
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSupported(true);
       registerServiceWorker();
     }
   }, []);
-
-  const registerServiceWorker = async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service Worker registered:', registration);
-
-      const sub = await registration.pushManager.getSubscription();
-      setSubscription(sub);
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-    }
-  };
 
   const subscribeToPush = async () => {
     if (!isSupported || !VAPID_PUBLIC_KEY) {

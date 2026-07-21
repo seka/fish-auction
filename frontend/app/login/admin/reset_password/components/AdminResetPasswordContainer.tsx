@@ -22,7 +22,7 @@ const AdminResetPasswordContent = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
-  const [isVerifying, setIsVerifying] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(!!token);
   const [isValidToken, setIsValidToken] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -37,7 +37,6 @@ const AdminResetPasswordContent = () => {
 
   useEffect(() => {
     if (!token) {
-      setIsVerifying(false);
       return;
     }
 
