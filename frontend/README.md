@@ -54,16 +54,16 @@ frontend/
 ### 前提条件
 
 - **Node.js**: v20+
-- **npm**: CI と README の手順は npm ベースです
+- **yarn**: CI と README の手順は yarn ベースです
 
 ### コマンド
 
 ```bash
 cd frontend
-npm install   # 依存関係のインストール
-npm run dev   # 開発サーバー起動
-npm run test  # テスト実行
-npm run lint  # リンター起動
+yarn install   # 依存関係のインストール
+yarn dev       # 開発サーバー起動
+yarn test      # テスト実行
+yarn lint      # リンター起動
 ```
 
 ブラウザで `https://localhost` (Nginx 経由) または `http://localhost:3000` (直通) を開いてください。
