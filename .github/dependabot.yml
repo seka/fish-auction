@@ -1,21 +1,43 @@
 version: 2
 updates:
   # Maintain Go dependencies for the backend
+  # 頻繁にメンテしないリポジトリのため、月次でまとめて確認できるよう
+  # minor/patch を 1 PR に集約する（major は破壊的変更の確認が必要なため個別 PR のまま）
   - package-ecosystem: "gomod"
     directory: "/backend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 5
+    groups:
+      backend-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain npm dependencies for the frontend
+  # react / react-dom のようにバージョンを揃える必要がある依存が別 PR に分かれて
+  # 不整合になるのを防ぐため、minor/patch を 1 PR に集約する
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 5
+    groups:
+      frontend-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maintain GitHub Actions dependencies
+  # "/" だけだと .github/workflows 配下しか走査されず、composite action
+  # （.github/actions/setup-backend などが使う actions/setup-go 等）が更新対象から漏れるため明示する
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
