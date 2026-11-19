@@ -29,8 +29,12 @@ updates:
           - "patch"
 
   # Maintain GitHub Actions dependencies
+  # "/" だけだと .github/workflows 配下しか走査されず、composite action
+  # （.github/actions/setup-backend などが使う actions/setup-go 等）が更新対象から漏れるため明示する
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "monthly"
     groups:
