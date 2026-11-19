@@ -54,7 +54,6 @@ jobs:
         with:
           image-tag: "latest"
           install-awslocal: "false"
-          use-pro: "false"
         env:
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
 
