@@ -53,13 +53,13 @@ jobs:
         uses: LocalStack/setup-localstack@v0.3.2
         with:
           image-tag: "latest"
-          install-awslocal: "true"
+          install-awslocal: "false"
           use-pro: "false"
         env:
           LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
 
       - name: Setup LocalStack resources
-        run: bash backend/scripts/init.saws.sh
+        run: bash backend/scripts/localstack-init.sh
 
       - name: Run migrations
         run: go run ./cmd/migration/main.go up
