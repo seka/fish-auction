@@ -37,7 +37,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-backend
 
       - name: Wait for PostgreSQL
@@ -50,7 +50,7 @@ jobs:
           PGPASSWORD: postgres
 
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.3.2
+        uses: LocalStack/setup-localstack@7c8a0cb3405bc58be4c8f763f812aa000bc46303 # v0.3.2
         with:
           image-tag: "latest"
           install-awslocal: "false"
