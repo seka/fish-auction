@@ -203,7 +203,7 @@ services:
       - DEFAULT_REGION=ap-northeast-1
       - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
     volumes:
-      - ./backend/scripts/init.saws.sh:/etc/localstack/init/ready.d/init.saws.sh
+      - ./backend/scripts/localstack-init.sh:/etc/localstack/init/ready.d/localstack-init.sh
     networks:
       - app-network
     healthcheck:
