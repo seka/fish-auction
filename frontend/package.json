@@ -35,7 +35,8 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@pandacss/dev": "^2.5.0",
+    "@pandacss/dev": "2.5.0",
+    "@pandacss/postcss": "2.5.0",
     "@pandacss/preset-base": "2.5.0",
     "@pandacss/preset-panda": "2.5.0",
     "@testing-library/dom": "^10.4.1",
@@ -45,13 +46,15 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "^9",
     "eslint-config-next": "^16.2.12",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.0.2",
+    "postcss": "^8.5.32",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",
-    "vitest": "^4.1.11"
+    "vite": "^8.3.8",
+    "vitest": "4.1.11"
   }
 }

@@ -9,7 +9,7 @@ import {
   SessionResult,
 } from '@/src/middleware/session';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const cookie = cookieHeader(request.headers.get('cookie'));
 
