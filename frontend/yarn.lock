@@ -909,6 +909,20 @@
     "@pandacss/compiler" "2.5.0"
     "@pandacss/compiler-shared" "2.5.0"
 
+"@pandacss/preset-base@2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@pandacss/preset-base/-/preset-base-2.5.0.tgz#678ff5f519b2c5626de2a3e4745b2385fe029872"
+  integrity sha512-1g2LxmmZqyT/JPUWTeooegPfK3S5LkPqusbAKdl+ZBCjyZN0qIHMgGOvoSck4LotSD7BUwSReDaOLRMO7GCTpg==
+  dependencies:
+    "@pandacss/types" "2.5.0"
+
+"@pandacss/preset-panda@2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@pandacss/preset-panda/-/preset-panda-2.5.0.tgz#7d40b90bf637072a65d6e62613fa04d11060c29d"
+  integrity sha512-snArKcPnoAd3sHsTqUomaGjpar1oit2HCoS19oUJfme+FA6u0wN+7vbU3OVOdDcHfR4zN4GD00Qfw816hPM55Q==
+  dependencies:
+    "@pandacss/types" "2.5.0"
+
 "@pandacss/types@2.5.0":
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/@pandacss/types/-/types-2.5.0.tgz#ebfe50141c2a67bccc3b4f9c3588291b657fc6ae"

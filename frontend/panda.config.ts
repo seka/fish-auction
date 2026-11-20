@@ -2,6 +2,9 @@ import { defineConfig } from '@pandacss/dev';
 import { colors, spacing, typography, radii, shadows, animations } from './src/core/styles/tokens';
 
 export default defineConfig({
+  // Panda v2 requires explicit presets for utilities, conditions, and default tokens.
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
+
   // Enable CSS reset
   preflight: true,
 

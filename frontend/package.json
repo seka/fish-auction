@@ -36,6 +36,8 @@
   },
   "devDependencies": {
     "@pandacss/dev": "^2.5.0",
+    "@pandacss/preset-base": "2.5.0",
+    "@pandacss/preset-panda": "2.5.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.1",
